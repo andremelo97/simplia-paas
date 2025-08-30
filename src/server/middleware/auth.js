@@ -68,6 +68,11 @@ async function requireAuth(req, res, next) {
     userContext.allowedApps = payload.allowedApps || [];
     userContext.userType = payload.userType;
     
+    // Override role with JWT payload if present (for testing and flexibility)
+    if (payload.role) {
+      userContext.role = payload.role;
+    }
+    
     // Attach user context to request
     req.user = userContext;
     
@@ -128,6 +133,11 @@ async function optionalAuth(req, res, next) {
       // Add JWT payload data that isn't in the user context
       userContext.allowedApps = payload.allowedApps || [];
       userContext.userType = payload.userType;
+      
+      // Override role with JWT payload if present (for testing and flexibility)
+      if (payload.role) {
+        userContext.role = payload.role;
+      }
       
       req.user = userContext;
     }

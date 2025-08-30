@@ -49,10 +49,9 @@ simplia-paas/
 │   │   │   └── userService.js         # Lógica de negócio de usuários
 │   │   │
 │   │   ├── 📁 migrations/
-│   │   │   ├── 000_create_users_table.sql                    # Base users table
-│   │   │   ├── 001_create_licensing_tables.sql              # Schema de licenciamento
-│   │   │   ├── 002_seed_licensing_data.sql                  # Dados iniciais
-│   │   │   └── 003_structural_fixes_and_audit_fields_v2.sql # Melhorias enterprise
+│   │   │   ├── 001_create_core_tables.sql                   # Todas tabelas core + relacionamentos + auditoria
+│   │   │   ├── 002_create_indexes.sql                      # Estratégia de indexação organizada
+│   │   │   └── 003_seed_initial_data.sql                   # Dados essenciais + tenants padrão
 │   │   │
 │   │   ├── 📁 scripts/
 │   │   │   └── runMigrations.js       # Executor de migrações SQL
@@ -110,10 +109,9 @@ simplia-paas/
 - **`userService.js`**: Regras de negócio para gestão de usuários
 
 #### 🗃️ `migrations/`
-- **`000_create_users_table.sql`**: Tabela base de usuários com tenant isolation
-- **`001_create_licensing_tables.sql`**: Schema completo do sistema de licenciamento
-- **`002_seed_licensing_data.sql`**: Dados iniciais (user types, aplicações com slugs)
-- **`003_structural_fixes_and_audit_fields_v2.sql`**: Tabela tenants + campos de auditoria + 18 índices de performance
+- **`001_create_core_tables.sql`**: Todas as tabelas core com relacionamentos, campos de auditoria e triggers automáticos
+- **`002_create_indexes.sql`**: Estratégia completa de indexação organizada por propósito (lookup, performance, audit)
+- **`003_seed_initial_data.sql`**: Dados essenciais (user types: operations/manager/admin, applications, tenants padrão)
 
 #### 🔨 `scripts/`
 - **`runMigrations.js`**: Executor de migrações SQL em ordem alfabética
@@ -175,7 +173,7 @@ sequenceDiagram
 |--------|---------|-----------|
 | `tenants` | 8 | Registry de tenants com schema mapping e audit fields |
 | `users` | 13 | Usuários com tenant isolation e campos de auditoria |
-| `user_types` | 9 | Hierarquia de usuários com pricing (secretary < doctor < admin) |
+| `user_types` | 9 | Hierarquia de usuários com pricing (operations < manager < admin) |
 | `applications` | 10 | Catálogo com slugs padronizados (tq, pm, billing, reports) |
 | `tenant_applications` | 14 | Licenças por tenant com vigência, limites e controle de assentos |
 | `user_application_access` | 12 | Acesso granular (qual usuário pode usar qual app) |
@@ -242,6 +240,15 @@ npm run build:server
 npm start
 ```
 
+### API e Documentação
+```bash
+# Iniciar servidor para acesso à documentação Swagger
+npm run dev:server
+
+# Acessar documentação da API interna (requer autenticação admin)
+# http://localhost:3001/docs/internal
+```
+
 ## ⚙️ Configuração de Ambiente
 
 Copie `.env.example` para `.env` e configure:
@@ -271,6 +278,15 @@ TENANT_HEADER_NAME=x-tenant-id
 # Server
 PORT=3001
 NODE_ENV=development
+
+# API Configuration (Versioned Internal API)
+INTERNAL_API_PREFIX=/internal/api/v1
+ENABLE_INTERNAL_DOCS=true
+INTERNAL_DOCS_PATH=/docs/internal
+ADMIN_PANEL_ORIGIN=http://localhost:5173
+
+# Security
+ENABLE_HELMET=true
 ```
 
 ## 📊 Stack Tecnológico
@@ -283,7 +299,10 @@ NODE_ENV=development
 - **jsonwebtoken** - Autenticação JWT
 - **pg** - Driver PostgreSQL
 - **dotenv** - Gestão de variáveis de ambiente
-- **cors** - Cross-origin resource sharing
+- **cors** - Cross-origin resource sharing  
+- **swagger-ui-express** - Documentação interativa da API
+- **swagger-jsdoc** - Geração de documentação OpenAPI
+- **helmet** - Security headers middleware
 
 ### Frontend  
 - **React 18** - Biblioteca de interfaces reativas
@@ -317,8 +336,8 @@ NODE_ENV=development
 ### Exemplo de Proteção de Rota
 
 ```javascript
-// Proteger rota por aplicação (usa slug 'tq')
-app.get('/api/tq/dashboard', 
+// Proteger rota por aplicação (usa slug 'tq') - API versionada
+app.get('/internal/api/v1/tq/dashboard', 
   requireAuth,                      // Validar JWT
   requireTranscriptionQuoteAccess(), // 5 camadas: License→Seat→User→Role→Audit
   (req, res) => {
@@ -330,7 +349,7 @@ app.get('/api/tq/dashboard',
 );
 
 // Proteger por role específico no app
-app.get('/api/tq/admin',
+app.get('/internal/api/v1/tq/admin',
   requireAuth,
   requireTranscriptionQuoteAccess('admin'), // Role 'admin' + todas as verificações
   adminHandler
@@ -345,16 +364,21 @@ app.get('/api/tq/admin',
 - **5 camadas de autorização** (License→Seat→User→Role→Audit) com logging detalhado
 - **Multi-tenancy** com isolamento por schema PostgreSQL
 - **JWT otimizado** com application slugs (substitui IDs por strings para performance)
+- **JWT role override** - Middleware permite overriding de role via JWT para testes e flexibilidade
 - **Compliance médico** com logs contextuais completos (IP, User-Agent, API path, decision reason)
 - **Integridade referencial** com 7 relacionamentos FK entre todas as entidades
 - **Sistema de testes completo** com Jest + Supertest + criação automática de DB de teste
-- **Validação das 4 camadas de autorização** com testes críticos end-to-end
+- **Validação das 5 camadas de autorização** com testes críticos end-to-end (todas as 10 validações passando ✅)
 - **Infraestrutura de testes enterprise** com setup/cleanup automático e helpers JWT
+- **API interna versionada** com prefixo `/internal/api/v1` para ferramentas administrativas da Simplia
+- **Documentação Swagger** protegida por autenticação em `/docs/internal` (apenas admins)
+- **CORS restrito** limitado ao domínio do painel administrativo para segurança
+- **Platform roles** para controle de acesso da equipe interna da Simplia
 
 ### 🚀 Próximos Passos
 1. **Frontend Development**: Implementar interface React na pasta `src/client/`
 2. **Tenant Management Interface**: Dashboard para gestão de tenants e licenças
-3. **API Documentation**: Swagger/OpenAPI para documentar endpoints
+3. **Public API Development**: Criar APIs públicas dos produtos (separadas da API interna)
 4. **Linting & Formatting**: Implementar ESLint, Prettier e pre-commit hooks
 5. **Monitoring**: Logging estruturado e métricas de performance
 6. **Production Deployment**: Configurar CI/CD e ambientes

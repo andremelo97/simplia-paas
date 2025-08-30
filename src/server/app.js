@@ -150,21 +150,40 @@ if (ENABLE_DOCS) {
     apis: ['src/server/routes/*.js'], // JSDoc comments in route files
   });
 
-  app.use(
-    DOCS_PATH,
-    requireAuth,
-    requirePlatformRole('internal_admin'), // Only internal admins can access documentation
-    swaggerUi.serve,
-    swaggerUi.setup(swaggerSpec, {
-      customCss: '.swagger-ui .topbar { display: none }',
-      customSiteTitle: 'Simplia Internal API Docs',
-      swaggerOptions: {
-        docExpansion: 'list',
-        filter: true,
-        showRequestDuration: true,
-      },
-    })
-  );
+  // Development: Skip auth for local testing
+  if (process.env.NODE_ENV !== 'development') {
+    // Production: Require authentication and platform role
+    app.use(
+      DOCS_PATH,
+      requireAuth,
+      requirePlatformRole('internal_admin'), // Only internal admins can access documentation
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Simplia Internal API Docs',
+        swaggerOptions: {
+          docExpansion: 'list',
+          filter: true,
+          showRequestDuration: true,
+        },
+      })
+    );
+  } else {
+    // Development: No auth required for local testing
+    app.use(
+      DOCS_PATH,
+      swaggerUi.serve,
+      swaggerUi.setup(swaggerSpec, {
+        customCss: '.swagger-ui .topbar { display: none }',
+        customSiteTitle: 'Simplia Internal API Docs',
+        swaggerOptions: {
+          docExpansion: 'list',
+          filter: true,
+          showRequestDuration: true,
+        },
+      })
+    );
+  }
 }
 
 // Global error handler

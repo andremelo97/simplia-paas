@@ -11,10 +11,14 @@ describe('Critical Authorization Validation', () => {
   let tenant, user, tqApplication;
 
   beforeEach(async () => {
-    // Seed tenant
+    // Seed tenant (using ON CONFLICT to handle existing data from migrations)
     const tenantResult = await global.testDb.query(
       `INSERT INTO tenants (name, subdomain, schema_name, status, active)
        VALUES ($1, $2, $3, 'active', true)
+       ON CONFLICT (subdomain) DO UPDATE SET 
+         name = EXCLUDED.name,
+         status = EXCLUDED.status,
+         active = EXCLUDED.active
        RETURNING *`,
       ['Test Clinic', 'test_clinic', TEST_TENANT_SCHEMA]
     );

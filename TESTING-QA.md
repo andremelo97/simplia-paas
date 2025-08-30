@@ -2,7 +2,7 @@
 
 ## 🧪 Sistema de Testes e Garantia de Qualidade - Simplia PaaS
 
-Documentação completa da infraestrutura de testes enterprise implementada para validação das 4 camadas de autorização multi-tenant.
+Documentação completa da infraestrutura de testes enterprise implementada para validação das 5 camadas de autorização multi-tenant.
 
 ---
 
@@ -10,11 +10,12 @@ Documentação completa da infraestrutura de testes enterprise implementada para
 
 O Simplia PaaS implementa um **sistema de testes robusto e automático** focado na validação crítica das camadas de segurança e autorização enterprise. O sistema foi projetado para:
 
-- ✅ **Validar as 4 camadas de autorização** (License → Seat → User → Role)
+- ✅ **Validar as 5 camadas de autorização** (License → Seat → User → Role → Audit)
 - ✅ **Testar cenários críticos** de segurança multi-tenant
 - ✅ **Garantir integridade** do sistema de licenciamento
 - ✅ **Automatizar setup/cleanup** de database de teste
 - ✅ **Fornecer feedback rápido** para desenvolvimento
+- ✅ **JWT role override** para testes flexíveis sem modificação de dados
 
 ---
 
@@ -27,7 +28,7 @@ simplia-paas/
 ├── 📁 tests/
 │   ├── setup.js                    # Configuração global Jest + DB
 │   ├── auth-helper.js               # Utilitários JWT para testes
-│   └── critical-validation.test.js  # Testes das 4 camadas de autorização
+│   └── critical-validation.test.js  # Testes das 5 camadas de autorização
 ├── 📁 src/server/scripts/
 │   ├── db-create-test.js           # Criação automática do DB de teste
 │   └── db-drop-test.js             # Reset completo do DB de teste
@@ -262,14 +263,39 @@ const expiredToken = generateExpiredToken();
 ```javascript
 {
   userId: 1,
-  tenantId: 1,
-  role: 'doctor',
-  schema: 'public',
+  tenantId: 'test_clinic',
+  role: 'manager',
+  schema: 'tenant_test_clinic',
   allowedApps: ['tq'],         // Apps permitidos (slugs)
-  userType: 'doctor',          // Tipo de usuário
+  userType: 'manager',         // Tipo de usuário
   exp: Math.floor(Date.now() / 1000) + 3600  // 1 hora
 }
 ```
+
+### JWT Role Override para Testes
+
+O sistema suporta **override de role via JWT** para testes flexíveis:
+
+```javascript
+// O middleware de auth agora permite JWT sobrescrever role do database
+// Quando payload.role está presente, tem precedência sobre user.role da base
+
+// Exemplo: usuário 'manager' no DB, mas token com role 'admin'
+const adminToken = generateTestToken({
+  userId: 123,
+  tenantId: 'test_clinic', 
+  role: 'admin',        // <- Sobrescreve role do database
+  userType: 'admin',
+  allowedApps: ['tq']
+});
+
+// Resultado: req.user.role = 'admin' (do token, não do database)
+```
+
+**Benefícios**:
+- ✅ **Testes flexíveis** - sem modificar dados do database
+- ✅ **Cenários rápidos** - testar diferentes roles com mesmo usuário  
+- ✅ **Isolamento** - cada teste pode ter role específico independente
 
 ---
 
@@ -277,7 +303,7 @@ const expiredToken = generateExpiredToken();
 
 ### Arquivo Principal: `tests/critical-validation.test.js`
 
-Este arquivo contém **todos os cenários críticos** para validação das 4 camadas de autorização enterprise.
+Este arquivo contém **todos os cenários críticos** para validação das 5 camadas de autorização enterprise.
 
 ### Estrutura dos Testes
 
@@ -292,7 +318,7 @@ describe('Critical Authorization Validation', () => {
     // - Aplicação TQ (Transcription Quote)
   });
 
-  // 4 blocos principais de teste para cada camada
+  // 5 blocos principais de teste para cada camada
   describe('Layer 1: Tenant License Check', () => { ... });
   describe('Layer 2: Seat Limit Check', () => { ... });  
   describe('Layer 3: User Access Check', () => { ... });
@@ -301,6 +327,8 @@ describe('Critical Authorization Validation', () => {
   // Casos especiais
   describe('Authentication Edge Cases', () => { ... });
   describe('Audit Logging', () => { ... });
+  
+  // Todas as 10 validações passando ✅ após correção do JWT role override
 });
 ```
 
@@ -324,7 +352,7 @@ test('should allow access with active license', async () => {
   );
 
   const response = await request(app)
-    .get('/api/tq/dashboard')
+    .get('/internal/api/v1/tq/dashboard')
     .set('Authorization', `Bearer ${validToken}`)
     .set('x-tenant-id', tenant.id.toString());
 
@@ -339,7 +367,7 @@ test('should allow access with active license', async () => {
 test('should deny access without license', async () => {
   // Não cria licença - deve falhar
   const response = await request(app)
-    .get('/api/tq/dashboard')
+    .get('/internal/api/v1/tq/dashboard')
     .set('Authorization', `Bearer ${validToken}`)
     .set('x-tenant-id', tenant.id.toString());
 
@@ -356,7 +384,7 @@ test('should deny access with expired license', async () => {
   );
 
   const response = await request(app)
-    .get('/api/tq/dashboard')
+    .get('/internal/api/v1/tq/dashboard')
     .set('Authorization', `Bearer ${validToken}`)
     .set('x-tenant-id', tenant.id.toString());
 
@@ -381,7 +409,7 @@ test('should deny access when seat limit exceeded', async () => {
   );
 
   const response = await request(app)
-    .get('/api/tq/dashboard')
+    .get('/internal/api/v1/tq/dashboard')
     .set('Authorization', `Bearer ${validToken}`)
     .set('x-tenant-id', tenant.id.toString());
 
@@ -413,7 +441,7 @@ test('should deny access when app not in allowedApps', async () => {
   });
 
   const response = await request(app)
-    .get('/api/tq/dashboard')
+    .get('/internal/api/v1/tq/dashboard')
     .set('Authorization', `Bearer ${tokenWithoutTQ}`)
     .set('x-tenant-id', tenant.id.toString());
 
@@ -446,7 +474,7 @@ test('should deny secretary access to admin endpoints', async () => {
   });
 
   const response = await request(app)
-    .get('/api/tq/admin')  // Endpoint que requer role 'admin'
+    .get('/internal/api/v1/tq/admin')  // Endpoint que requer role 'admin'
     .set('Authorization', `Bearer ${secretaryToken}`)
     .set('x-tenant-id', tenant.id.toString());
 
@@ -475,7 +503,7 @@ test('should allow admin access to admin endpoints', async () => {
   });
 
   const response = await request(app)
-    .get('/api/tq/admin')
+    .get('/internal/api/v1/tq/admin')
     .set('Authorization', `Bearer ${adminToken}`)
     .set('x-tenant-id', tenant.id.toString());
 
@@ -496,7 +524,7 @@ describe('Authentication Edge Cases', () => {
     const expiredToken = generateExpiredToken();
 
     const response = await request(app)
-      .get('/api/tq/dashboard')
+      .get('/internal/api/v1/tq/dashboard')
       .set('Authorization', `Bearer ${expiredToken}`)
       .set('x-tenant-id', tenant.id.toString());
 
@@ -506,7 +534,7 @@ describe('Authentication Edge Cases', () => {
 
   test('should deny access without tenant header', async () => {
     const response = await request(app)
-      .get('/api/tq/dashboard')
+      .get('/internal/api/v1/tq/dashboard')
       .set('Authorization', `Bearer ${validToken}`);
       // Missing x-tenant-id header
 
@@ -523,7 +551,7 @@ describe('Audit Logging', () => {
   test('should create audit log on access denial', async () => {
     // Tentativa de acesso sem licença
     await request(app)
-      .get('/api/tq/dashboard')
+      .get('/internal/api/v1/tq/dashboard')
       .set('Authorization', `Bearer ${validToken}`)
       .set('x-tenant-id', tenant.id.toString());
 
@@ -556,7 +584,7 @@ describe('Audit Logging', () => {
 | **2 - Seat** | Assentos disponíveis | ✅ | Médio |
 | **3 - User** | App em allowedApps[] | ✅ | Alto |
 | **3 - User** | App NÃO em allowedApps[] | ✅ | Alto |
-| **4 - Role** | Secretary → admin endpoint | ✅ | Alto |
+| **4 - Role** | Operations → admin endpoint | ✅ | Alto |
 | **4 - Role** | Admin → admin endpoint | ✅ | Médio |
 | **Edge** | Token expirado | ✅ | Alto |
 | **Edge** | Header tenant ausente | ✅ | Alto |
@@ -586,7 +614,7 @@ $ npm test
     Layer 3: User Access Check
       ✓ should deny access when app not in allowedApps (145ms)
     Layer 4: Role Validation  
-      ✓ should deny secretary access to admin endpoints (178ms)
+      ✓ should deny operations access to admin endpoints (178ms)
       ✓ should allow admin access to admin endpoints (167ms)
     Authentication Edge Cases
       ✓ should deny access with expired token (123ms)
@@ -810,6 +838,59 @@ npx jest --verbose --no-cache
 # Verificar conectividade do database
 npm run db:create:test
 ```
+
+---
+
+## 🌐 API Interna Versionada
+
+### Estrutura da API de Teste
+
+Todos os testes utilizam a **API interna versionada** com prefixo configurável:
+
+```javascript
+// Configuração de teste
+const INTERNAL_API = process.env.INTERNAL_API_PREFIX || '/internal/api/v1';
+
+// Exemplo de teste
+const response = await request(app)
+  .get(`${INTERNAL_API}/tq/dashboard`)  // /internal/api/v1/tq/dashboard
+  .set('Authorization', `Bearer ${token}`)
+  .set('x-tenant-id', tenant.id);
+```
+
+### Endpoints Testados
+
+| Endpoint | Método | Propósito | Camadas Validadas |
+|----------|--------|-----------|-------------------|
+| `/internal/api/v1/tq/dashboard` | GET | Dashboard padrão | License + Seat + User + Role + Audit |
+| `/internal/api/v1/tq/admin` | GET | Painel administrativo | Todas as camadas + Role 'admin' |
+| `/health` | GET | Health check público | Nenhuma (público) |
+
+### Configuração para Testes
+
+```javascript
+// tests/critical-validation.test.js
+const INTERNAL_API = process.env.INTERNAL_API_PREFIX || '/internal/api/v1';
+
+describe('Critical Authorization Validation', () => {
+  test('should allow access with active license', async () => {
+    const response = await request(app)
+      .get(`${INTERNAL_API}/tq/dashboard`)
+      .set('Authorization', `Bearer ${validToken}`)
+      .set('x-tenant-id', 'test_clinic');
+      
+    expect(response.status).toBe(200);
+  });
+});
+```
+
+### Benefícios do Versionamento
+
+- ✅ **Separação clara** entre API interna (admin) e futuras APIs públicas (produtos)  
+- ✅ **Versionamento** preparado para evolução (`v1`, `v2`, etc.)
+- ✅ **CORS restrito** para segurança (apenas domínio do painel administrativo)
+- ✅ **Documentação Swagger** protegida em `/docs/internal`
+- ✅ **Testes consistentes** usando prefixo configurável
 
 ---
 

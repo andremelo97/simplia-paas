@@ -147,6 +147,71 @@ class AuthService {
   }
 
   /**
+   * Platform login for Simplia internal team
+   * Authenticate user without tenant context, verify platform_role = 'internal_admin'
+   */
+  async platformLogin(credentials) {
+    const { email, password } = credentials;
+
+    if (!email || !password) {
+      throw new InvalidCredentialsError();
+    }
+
+    let user;
+    try {
+      // Find user in public.users table (no tenant context needed)
+      user = await User.findByEmailGlobal(email.toLowerCase().trim());
+    } catch (error) {
+      if (error instanceof UserNotFoundError) {
+        throw new InvalidCredentialsError();
+      }
+      throw error;
+    }
+
+    // Check if user is active
+    if (user.status !== 'active') {
+      throw new Error('Account is inactive or suspended');
+    }
+
+    // Verify platform role
+    if (!user.platformRole || user.platformRole !== 'internal_admin') {
+      throw new Error('Insufficient platform privileges - internal_admin role required');
+    }
+
+    // Verify password
+    const isPasswordValid = await this.comparePassword(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new InvalidCredentialsError();
+    }
+
+    // Create platform JWT payload (no tenant context, no app entitlements)
+    const jwtPayload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      platformRole: user.platformRole,
+      iat: Math.floor(Date.now() / 1000),
+      type: 'platform_admin'
+    };
+    
+    // Generate token
+    const token = this.generateToken(jwtPayload);
+
+    return {
+      user: {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        platformRole: user.platformRole,
+        active: user.active,
+        createdAt: user.createdAt
+      },
+      token,
+      expiresIn: this.jwtExpiresIn
+    };
+  }
+
+  /**
    * Login user
    */
   async login(tenantContext, credentials) {

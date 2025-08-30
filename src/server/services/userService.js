@@ -14,8 +14,8 @@ class UserService {
    * Get all users for a tenant
    */
   async getUsers(tenantContext, requestingUser, options = {}) {
-    // Only admins and doctors can list all users
-    if (!hasRole(requestingUser.role, USER_ROLES.DOCTOR)) {
+    // Only admins and managers can list all users
+    if (!hasRole(requestingUser.role, USER_ROLES.MANAGER)) {
       throw new InsufficientPermissionsError('view users');
     }
 
@@ -43,7 +43,7 @@ class UserService {
       throw new InsufficientPermissionsError('create users');
     }
 
-    const { email, password, name, role = USER_ROLES.SECRETARY } = userData;
+    const { email, password, name, role = USER_ROLES.OPERATIONS } = userData;
 
     // Validate input
     if (!isValidEmail(email)) {
@@ -138,8 +138,8 @@ class UserService {
    * Get users by role
    */
   async getUsersByRole(tenantContext, requestingUser, role, options = {}) {
-    // Only admins and doctors can filter users by role
-    if (!hasRole(requestingUser.role, USER_ROLES.DOCTOR)) {
+    // Only admins and managers can filter users by role
+    if (!hasRole(requestingUser.role, USER_ROLES.MANAGER)) {
       throw new InsufficientPermissionsError('view users by role');
     }
 

@@ -4,10 +4,12 @@ const tenantMiddleware = require('../middleware/tenant');
 const { 
   requireAuth, 
   requireAdmin, 
-  requireDoctorOrAdmin, 
+  requireManagerOrAdmin, 
   requireSelfOrAdmin,
   createRateLimit 
 } = require('../middleware/auth');
+const { UserApplicationAccess } = require('../models/UserApplicationAccess');
+const { Application } = require('../models/Application');
 
 const router = express.Router();
 
@@ -22,10 +24,89 @@ const userRateLimit = createRateLimit(15 * 60 * 1000, 100); // 100 requests per 
 router.use(userRateLimit);
 
 /**
- * GET /users
- * Get all users in tenant
+ * @openapi
+ * /users:
+ *   get:
+ *     tags: [Users (Tenant-scoped)]
+ *     summary: List users in tenant
+ *     description: Get all users belonging to the current tenant with filtering and pagination
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tenant identifier
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 20
+ *         description: Number of users per page
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [operations, manager, admin]
+ *         description: Filter by user role
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive, suspended]
+ *           default: active
+ *         description: Filter by user status
+ *     responses:
+ *       200:
+ *         description: Users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer }
+ *                           email: { type: string }
+ *                           name: { type: string }
+ *                           role: { type: string }
+ *                           status: { type: string }
+ *                           allowedApps: { type: array, items: { type: string } }
+ *                           createdAt: { type: string }
+ *                           updatedAt: { type: string }
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page: { type: integer }
+ *                         limit: { type: integer }
+ *                         total: { type: integer }
+ *                         hasMore: { type: boolean }
+ *       400:
+ *         description: Missing or invalid tenant header
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient permissions
  */
-router.get('/', requireDoctorOrAdmin, async (req, res) => {
+router.get('/', requireManagerOrAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 20, role, status = 'active' } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -38,6 +119,7 @@ router.get('/', requireDoctorOrAdmin, async (req, res) => {
     };
 
     const users = await userService.getUsers(req.tenant, req.user, options);
+    const totalUsers = await userService.getUserCount(req.tenant, { role, status });
 
     res.json({
       success: true,
@@ -46,7 +128,8 @@ router.get('/', requireDoctorOrAdmin, async (req, res) => {
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
-          total: users.length // In production, you'd get total count separately
+          total: totalUsers,
+          hasMore: offset + users.length < totalUsers
         }
       }
     });
@@ -55,14 +138,18 @@ router.get('/', requireDoctorOrAdmin, async (req, res) => {
 
     if (error.name === 'InsufficientPermissionsError') {
       return res.status(403).json({
-        error: 'Forbidden',
-        message: error.message
+        error: {
+          code: 403,
+          message: error.message
+        }
       });
     }
 
     res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Failed to get users'
+      error: {
+        code: 500,
+        message: 'Failed to get users'
+      }
     });
   }
 });
@@ -100,7 +187,7 @@ router.get('/stats', requireAdmin, async (req, res) => {
  * GET /users/role/:role
  * Get users by role
  */
-router.get('/role/:role', requireDoctorOrAdmin, async (req, res) => {
+router.get('/role/:role', requireManagerOrAdmin, async (req, res) => {
   try {
     const { role } = req.params;
     const { page = 1, limit = 20 } = req.query;
@@ -508,6 +595,418 @@ router.put('/me/profile', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to update profile'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /users/{userId}/apps:
+ *   get:
+ *     tags: [Users (Tenant-scoped)]
+ *     summary: Get user's application access
+ *     description: List all applications a specific user has access to
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tenant identifier
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User app access retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId: { type: integer }
+ *                     userName: { type: string }
+ *                     applications:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           slug: { type: string }
+ *                           name: { type: string }
+ *                           roleInApp: { type: string }
+ *                           grantedAt: { type: string }
+ *                           expiresAt: { type: string }
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient permissions
+ */
+router.get('/:userId/apps', requireManagerOrAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { tenantId } = req.tenant;
+    
+    // Verify user exists in tenant
+    const user = await userService.getUserById(req.tenant, req.user, userId);
+    
+    // Get user's app access
+    const userAccess = await UserApplicationAccess.findByUser(
+      parseInt(userId), 
+      tenantId, 
+      { isActive: true }
+    );
+    
+    res.json({
+      success: true,
+      data: {
+        userId: parseInt(userId),
+        userName: user.name,
+        userEmail: user.email,
+        applications: userAccess.map(access => ({
+          slug: access.applicationSlug,
+          name: access.applicationName,
+          roleInApp: access.roleInApp,
+          grantedAt: access.grantedAt,
+          expiresAt: access.expiresAt,
+          isActive: access.isActive
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Get user apps error:', error);
+    
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: error.message
+        }
+      });
+    }
+    
+    if (error.name === 'InsufficientPermissionsError') {
+      return res.status(403).json({
+        error: {
+          code: 403,
+          message: error.message
+        }
+      });
+    }
+    
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to get user applications'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /users/{userId}/apps/grant:
+ *   post:
+ *     tags: [Users (Tenant-scoped)]
+ *     summary: Grant user access to application
+ *     description: Give a user access to a specific application within the tenant
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tenant identifier
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [applicationSlug]
+ *             properties:
+ *               applicationSlug:
+ *                 type: string
+ *                 enum: [tq, pm, billing, reports]
+ *                 example: tq
+ *                 description: Application slug to grant access to
+ *               roleInApp:
+ *                 type: string
+ *                 enum: [user, admin]
+ *                 default: user
+ *                 description: Role within the application
+ *               expiresAt:
+ *                 type: string
+ *                 format: date-time
+ *                 description: When the access expires (optional)
+ *     responses:
+ *       201:
+ *         description: App access granted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId: { type: integer }
+ *                     applicationSlug: { type: string }
+ *                     roleInApp: { type: string }
+ *                     grantedAt: { type: string }
+ *                     grantedBy: { type: integer }
+ *       409:
+ *         description: User already has access to this application
+ *       404:
+ *         description: User or application not found
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient permissions
+ */
+router.post('/:userId/apps/grant', requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { applicationSlug, roleInApp = 'user', expiresAt } = req.body;
+    const { tenantId } = req.tenant;
+    const { userId: grantedBy } = req.user;
+    
+    if (!applicationSlug) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Application slug is required'
+        }
+      });
+    }
+    
+    // Verify user exists in tenant
+    const user = await userService.getUserById(req.tenant, req.user, userId);
+    
+    // Get application
+    const application = await Application.findBySlug(applicationSlug);
+    
+    // Grant access
+    const access = await UserApplicationAccess.grantAccess({
+      userId: parseInt(userId),
+      applicationId: application.id,
+      tenantId,
+      roleInApp,
+      grantedBy,
+      expiresAt: expiresAt ? new Date(expiresAt) : null
+    });
+    
+    res.status(201).json({
+      success: true,
+      message: `Access to ${applicationSlug} granted successfully`,
+      data: {
+        userId: parseInt(userId),
+        userName: user.name,
+        applicationSlug,
+        applicationName: application.name,
+        roleInApp,
+        grantedAt: access.grantedAt,
+        grantedBy,
+        expiresAt: access.expiresAt
+      }
+    });
+  } catch (error) {
+    console.error('Grant app access error:', error);
+    
+    if (error.name === 'UserNotFoundError' || error instanceof ApplicationNotFoundError) {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: error.message
+        }
+      });
+    }
+    
+    if (error.message.includes('already has access') || error.message.includes('Maximum user limit')) {
+      return res.status(409).json({
+        error: {
+          code: 409,
+          message: error.message
+        }
+      });
+    }
+    
+    if (error.name === 'InsufficientPermissionsError') {
+      return res.status(403).json({
+        error: {
+          code: 403,
+          message: error.message
+        }
+      });
+    }
+    
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to grant app access'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /users/{userId}/apps/revoke:
+ *   delete:
+ *     tags: [Users (Tenant-scoped)]
+ *     summary: Revoke user access to application
+ *     description: Remove a user's access to a specific application within the tenant
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tenant identifier
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [applicationSlug]
+ *             properties:
+ *               applicationSlug:
+ *                 type: string
+ *                 enum: [tq, pm, billing, reports]
+ *                 example: tq
+ *                 description: Application slug to revoke access from
+ *     responses:
+ *       200:
+ *         description: App access revoked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId: { type: integer }
+ *                     applicationSlug: { type: string }
+ *                     revokedAt: { type: string }
+ *                     revokedBy: { type: integer }
+ *       404:
+ *         description: User, application, or access record not found
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient permissions
+ */
+router.delete('/:userId/apps/revoke', requireAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { applicationSlug } = req.body;
+    const { tenantId } = req.tenant;
+    const { userId: revokedBy } = req.user;
+    
+    if (!applicationSlug) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Application slug is required'
+        }
+      });
+    }
+    
+    // Verify user exists in tenant
+    const user = await userService.getUserById(req.tenant, req.user, userId);
+    
+    // Get application
+    const application = await Application.findBySlug(applicationSlug);
+    
+    // Find user access
+    const userAccess = await UserApplicationAccess.findByUser(
+      parseInt(userId), 
+      tenantId, 
+      { applicationId: application.id }
+    );
+    
+    if (userAccess.length === 0) {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User does not have access to this application'
+        }
+      });
+    }
+    
+    // Revoke access
+    await userAccess[0].revoke(revokedBy);
+    
+    res.json({
+      success: true,
+      message: `Access to ${applicationSlug} revoked successfully`,
+      data: {
+        userId: parseInt(userId),
+        userName: user.name,
+        applicationSlug,
+        applicationName: application.name,
+        revokedAt: new Date().toISOString(),
+        revokedBy
+      }
+    });
+  } catch (error) {
+    console.error('Revoke app access error:', error);
+    
+    if (error.name === 'UserNotFoundError' || error instanceof ApplicationNotFoundError) {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: error.message
+        }
+      });
+    }
+    
+    if (error.name === 'InsufficientPermissionsError') {
+      return res.status(403).json({
+        error: {
+          code: 403,
+          message: error.message
+        }
+      });
+    }
+    
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to revoke app access'
+      }
     });
   }
 });

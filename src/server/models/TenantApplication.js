@@ -191,6 +191,23 @@ class TenantApplication {
   }
 
   /**
+   * Count active licenses for a tenant
+   */
+  static async countActiveLicenses(tenantId) {
+    const query = `
+      SELECT COUNT(*) as count
+      FROM public.tenant_applications ta
+      JOIN public.applications a ON ta.application_id = a.id
+      WHERE ta.tenant_id_fk = $1 
+      AND ta.active = true 
+      AND ta.status = 'active'
+      AND (ta.expiry_date IS NULL OR ta.expiry_date > CURRENT_DATE)
+    `;
+    const result = await database.query(query, [tenantId]);
+    return parseInt(result.rows[0].count);
+  }
+
+  /**
    * Check if tenant has active license for application
    */
   static async hasActiveLicense(tenantId, applicationSlug) {

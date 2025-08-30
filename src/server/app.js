@@ -10,9 +10,12 @@ const { requireTranscriptionQuoteAccess } = require('./middleware/appAccess');
 
 // Routes
 const authRoutes = require('./routes/auth');
+const platformAuthRoutes = require('./routes/platform-auth');
 const userRoutes = require('./routes/users');
 const applicationsRoutes = require('./routes/applications');
 const entitlementsRoutes = require('./routes/entitlements');
+const tenantsRoutes = require('./routes/tenants');
+const auditRoutes = require('./routes/audit');
 
 // Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -65,7 +68,10 @@ const internalCorsOptions = {
 // Internal API Router
 const internalRouter = express.Router();
 
-// Auth routes (no tenant context needed for login)
+// Platform auth routes (no tenant context needed - for Simplia internal team)
+internalRouter.use('/platform-auth', platformAuthRoutes);
+
+// Auth routes (tenant-scoped for tenant users)
 internalRouter.use('/auth', authRoutes);
 
 // Global platform routes (no tenant context needed)
@@ -74,6 +80,11 @@ internalRouter.use('/applications',
   requirePlatformRole('internal_admin'), 
   applicationsRoutes
 );
+
+internalRouter.use('/tenants', tenantsRoutes);
+
+// Audit routes (platform-scoped, for internal admins only)
+internalRouter.use('/audit', auditRoutes);
 
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();

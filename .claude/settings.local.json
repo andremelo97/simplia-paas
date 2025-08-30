@@ -9,7 +9,9 @@
       "Bash(npm run:*)",
       "Bash(npm test)",
       "Bash(npx jest:*)",
-      "Bash(DATABASE_NAME=simplia_paas_test npm run migrate)"
+      "Bash(DATABASE_NAME=simplia_paas_test npm run migrate)",
+      "Bash(curl:*)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

@@ -160,8 +160,8 @@ class UserType {
    */
   getHierarchyName() {
     const hierarchyNames = {
-      0: 'Secretary',
-      1: 'Doctor',
+      0: 'Operations',
+      1: 'Manager',
       2: 'Administrator'
     };
     return hierarchyNames[this.hierarchyLevel] || 'Unknown';
@@ -249,13 +249,13 @@ class UserType {
    */
   getDefaultPermissions() {
     const permissions = {
-      0: { // Secretary
+      0: { // Operations
         canCreateUsers: false,
         canManageApplications: false,
         canViewReports: false,
         canManageBilling: false
       },
-      1: { // Doctor
+      1: { // Manager
         canCreateUsers: false,
         canManageApplications: false,
         canViewReports: true,

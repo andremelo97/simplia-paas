@@ -1,6 +1,31 @@
 const database = require('../config/database');
 
 class Tenant {
+  constructor(data) {
+    if (data) {
+      this.id = data.id;
+      this.name = data.name;
+      this.subdomain = data.subdomain;
+      this.schemaName = data.schema_name;
+      this.status = data.status;
+      this.active = data.active;
+      this.createdAt = data.created_at;
+      this.updatedAt = data.updated_at;
+    }
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      subdomain: this.subdomain,
+      schemaName: this.schemaName,
+      status: this.status,
+      active: this.active,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt
+    };
+  }
   // Criar novo tenant
   static async create({ name, subdomain, schemaName, status = 'active' }) {
     const query = `
@@ -9,7 +34,7 @@ class Tenant {
       RETURNING *
     `;
     const result = await database.query(query, [name, subdomain, schemaName, status]);
-    return result.rows[0];
+    return new Tenant(result.rows[0]);
   }
 
   // Buscar tenant por subdomain
@@ -19,7 +44,7 @@ class Tenant {
       WHERE subdomain = $1 AND active = true
     `;
     const result = await database.query(query, [subdomain]);
-    return result.rows[0];
+    return result.rows[0] ? new Tenant(result.rows[0]) : null;
   }
 
   // Buscar tenant por ID
@@ -29,10 +54,55 @@ class Tenant {
       WHERE id = $1 AND active = true
     `;
     const result = await database.query(query, [id]);
-    return result.rows[0];
+    return result.rows[0] ? new Tenant(result.rows[0]) : null;
   }
 
-  // Listar todos os tenants ativos
+  // Listar todos os tenants com filtros e paginação
+  static async findAll(options = {}) {
+    const { status, limit = 50, offset = 0, search } = options;
+    
+    let query = 'SELECT * FROM tenants WHERE active = true';
+    const params = [];
+    
+    if (status) {
+      query += ' AND status = $' + (params.length + 1);
+      params.push(status);
+    }
+    
+    if (search) {
+      query += ' AND (name ILIKE $' + (params.length + 1) + ' OR subdomain ILIKE $' + (params.length + 1) + ')';
+      params.push(`%${search}%`);
+    }
+    
+    query += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
+    params.push(limit, offset);
+    
+    const result = await database.query(query, params);
+    return result.rows.map(row => new Tenant(row));
+  }
+
+  // Contar tenants com filtros
+  static async count(options = {}) {
+    const { status, search } = options;
+    
+    let query = 'SELECT COUNT(*) as count FROM tenants WHERE active = true';
+    const params = [];
+    
+    if (status) {
+      query += ' AND status = $' + (params.length + 1);
+      params.push(status);
+    }
+    
+    if (search) {
+      query += ' AND (name ILIKE $' + (params.length + 1) + ' OR subdomain ILIKE $' + (params.length + 1) + ')';
+      params.push(`%${search}%`);
+    }
+    
+    const result = await database.query(query, params);
+    return parseInt(result.rows[0].count);
+  }
+
+  // Listar todos os tenants ativos (compatibilidade)
   static async findAllActive() {
     const query = `
       SELECT * FROM tenants 

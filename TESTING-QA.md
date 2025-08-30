@@ -1,40 +1,60 @@
-# TESTING-QA.md
+# Testing & Quality Assurance Guide
 
-## 🧪 Sistema de Testes e Garantia de Qualidade - Simplia PaaS
+## 🧪 Simplia PaaS - Complete Testing & QA Documentation
 
-Documentação completa da infraestrutura de testes enterprise implementada para validação das 5 camadas de autorização multi-tenant.
-
----
-
-## 📋 Visão Geral
-
-O Simplia PaaS implementa um **sistema de testes robusto e automático** focado na validação crítica das camadas de segurança e autorização enterprise. O sistema foi projetado para:
-
-- ✅ **Validar as 5 camadas de autorização** (License → Seat → User → Role → Audit)
-- ✅ **Testar cenários críticos** de segurança multi-tenant
-- ✅ **Garantir integridade** do sistema de licenciamento
-- ✅ **Automatizar setup/cleanup** de database de teste
-- ✅ **Fornecer feedback rápido** para desenvolvimento
-- ✅ **JWT role override** para testes flexíveis sem modificação de dados
+**Internal Admin API Testing + Multi-tenant Authorization Validation**
 
 ---
 
-## 🏗️ Arquitetura de Testes
+## 📋 Overview
 
-### Estrutura de Pastas
+Simplia PaaS implements a **comprehensive testing system** covering both the **Internal Admin API** (for `internal.simplia.com`) and the **5-layer enterprise authorization system**. The testing framework provides:
+
+### ✅ **Internal Admin API Testing** (New - Complete Coverage)
+- **Applications API**: Platform-scoped endpoints (authentication, permissions, CRUD, error scenarios)
+- **Users API**: Tenant-scoped user management with app grants/revokes 
+- **Entitlements API**: Tenant license management and adjustment
+- **Authorization & Audit**: Platform role validation and access logging
+- **Infrastructure**: CORS, Swagger, health checks
+
+### ✅ **Enterprise Authorization Testing** (5-Layer System)
+- **Layer 1**: Tenant License Check (License → Seat → User → Role → Audit)
+- **Layer 2**: Seat availability and limit validation
+- **Layer 3**: User application access verification  
+- **Layer 4**: Role hierarchy enforcement
+- **Layer 5**: Audit logging and compliance
+- **JWT Role Override**: Flexible testing without database modifications
+
+---
+
+## 🏗️ Test Architecture
+
+### Test Structure  
 
 ```
 simplia-paas/
 ├── 📁 tests/
-│   ├── setup.js                    # Configuração global Jest + DB
-│   ├── auth-helper.js               # Utilitários JWT para testes
-│   └── critical-validation.test.js  # Testes das 5 camadas de autorização
+│   ├── setup.js                           # Global Jest setup + database management
+│   ├── auth-helper.js                     # JWT utilities for testing  
+│   ├── critical-validation.test.js        # 5-layer authorization tests (10 tests)
+│   └── internal-api-validation.test.js    # Internal Admin API tests (24 tests) ✨ NEW
 ├── 📁 src/server/scripts/
-│   ├── db-create-test.js           # Criação automática do DB de teste
-│   └── db-drop-test.js             # Reset completo do DB de teste
-├── jest.config.js                  # Configuração Jest
-└── package.json                    # Scripts de teste
+│   ├── db-create-test.js                  # Automatic test database creation
+│   └── db-drop-test.js                    # Complete database reset
+├── jest.config.js                         # Jest configuration
+└── package.json                           # Test scripts
 ```
+
+### **NEW**: Internal Admin API Test Coverage
+
+The `internal-api-validation.test.js` file provides comprehensive testing for the Internal Admin API:
+
+- ✅ **Applications API** (6 tests): Platform-scoped endpoints with `platform_role` validation
+- ✅ **Users API** (6 tests): Tenant-scoped user management with `x-tenant-id` requirements  
+- ✅ **Entitlements API** (6 tests): License management and adjustment functionality
+- ✅ **Authorization & Audit** (6 tests): Platform role enforcement and access logging
+
+**Total Coverage**: 34 tests (10 authorization + 24 API tests) = **100% passing**
 
 ---
 
@@ -242,7 +262,7 @@ afterAll(async () => {
 ### Geração de Tokens JWT
 
 ```javascript
-// Token padrão (doctor com acesso a 'tq')
+// Token padrão (manager com acesso a 'tq')
 const token = generateTestToken();
 
 // Token customizado 
@@ -452,7 +472,7 @@ test('should deny access when app not in allowedApps', async () => {
 
 ### Layer 4: Role Validation
 
-**Objetivo**: Verificar hierarquia de roles (`secretary < doctor < admin`).
+**Objetivo**: Verificar hierarquia de roles (`operations < manager < admin`).
 
 #### ❌ Caso de Role Insuficiente
 

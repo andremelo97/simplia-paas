@@ -48,12 +48,6 @@ beforeAll(async () => {
   await testDb.query(`CREATE SCHEMA IF NOT EXISTS ${qIdent(TEST_TENANT_SCHEMA)}`);
 });
 
-afterAll(async () => {
-  if (testDb) {
-    await testDb.end();
-  }
-});
-
 // Função de limpeza do schema
 async function truncateTenantSchema(client, schema) {
   const qIdent = (name) => {
@@ -77,19 +71,24 @@ async function truncateTenantSchema(client, schema) {
   }
 }
 
-// Reset simples de dados entre testes
-afterEach(async () => {
+// Cleanup consolidado - executado ao final de todos os testes
+afterAll(async () => {
   try {
-    // limpa tabelas do schema do tenant de teste
-    await truncateTenantSchema(testDb, TEST_TENANT_SCHEMA);
+    if (testDb) {
+      // limpa tabelas do schema do tenant de teste
+      await truncateTenantSchema(testDb, TEST_TENANT_SCHEMA);
 
-    // Se você mantém dados "catálogo" em public (ex.: applications, user_types), preserve-os.
-    // Caso precise, limpe apenas tabelas voláteis do public:
-    await testDb.query('DELETE FROM application_access_logs'); // se ficar em public
-    await testDb.query('DELETE FROM user_application_access');
-    await testDb.query('DELETE FROM tenant_applications');
-    await testDb.query('DELETE FROM users');
-    await testDb.query('DELETE FROM tenants');
+      // Se você mantém dados "catálogo" em public (ex.: applications, user_types), preserve-os.
+      // Caso precise, limpe apenas tabelas voláteis do public:
+      await testDb.query('DELETE FROM application_access_logs'); // se ficar em public
+      await testDb.query('DELETE FROM user_application_access');
+      await testDb.query('DELETE FROM tenant_applications');
+      await testDb.query('DELETE FROM users WHERE email LIKE \'%@test.com\''); // Only test users
+      await testDb.query('DELETE FROM tenants WHERE subdomain LIKE \'%test%\''); // Only test tenants
+
+      // Close connection pool
+      await testDb.end();
+    }
   } catch (error) {
     console.error('Cleanup failed:', error);
   }

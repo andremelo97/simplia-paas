@@ -11,6 +11,14 @@ describe('Critical Authorization Validation', () => {
   let tenant, user, tqApplication;
 
   beforeEach(async () => {
+    // Clean up only critical test data (not all test data)
+    await global.testDb.query('DELETE FROM tenant_applications WHERE tenant_id_fk IN (SELECT id FROM tenants WHERE subdomain = \'critical_test_clinic\')');
+    await global.testDb.query('DELETE FROM user_application_access WHERE user_id IN (SELECT id FROM users WHERE email = \'critical-manager@test.com\')');
+    await global.testDb.query('DELETE FROM application_access_logs WHERE user_id IN (SELECT id FROM users WHERE email = \'critical-manager@test.com\')');
+
+    // Create the tenant schema
+    await global.testDb.query('CREATE SCHEMA IF NOT EXISTS tenant_critical_test_clinic');
+
     // Seed tenant (using ON CONFLICT to handle existing data from migrations)
     const tenantResult = await global.testDb.query(
       `INSERT INTO tenants (name, subdomain, schema_name, status, active)
@@ -20,7 +28,7 @@ describe('Critical Authorization Validation', () => {
          status = EXCLUDED.status,
          active = EXCLUDED.active
        RETURNING *`,
-      ['Test Clinic', 'test_clinic', TEST_TENANT_SCHEMA]
+      ['Critical Test Clinic', 'critical_test_clinic', 'tenant_critical_test_clinic']
     );
     tenant = tenantResult.rows[0];
 
@@ -28,8 +36,13 @@ describe('Critical Authorization Validation', () => {
     const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash('password123', 12);
     const userResult = await global.testDb.query(
-      `INSERT INTO users (tenant_id, email, password_hash, first_name, last_name, role)
-       VALUES ($1, 'manager@test.com', $2, 'Manager', 'Test', 'manager')
+      `INSERT INTO users (tenant_id, email, password_hash, first_name, last_name, role, status)
+       VALUES ($1, 'critical-manager@test.com', $2, 'Critical', 'Manager', 'manager', 'active')
+       ON CONFLICT (email) DO UPDATE SET
+         password_hash = EXCLUDED.password_hash,
+         role = EXCLUDED.role,
+         status = EXCLUDED.status,
+         updated_at = NOW()
        RETURNING *`,
       [tenant.subdomain, hashedPassword]  // Use subdomain instead of id
     );
@@ -59,6 +72,8 @@ describe('Critical Authorization Validation', () => {
       const token = generateTestToken({
         userId: user.id,
         tenantId: tenant.subdomain,
+        allowedApps: ['tq'],
+        role: 'manager'
       });
 
       const response = await request(app)
@@ -76,6 +91,8 @@ describe('Critical Authorization Validation', () => {
       const token = generateTestToken({
         userId: user.id,
         tenantId: tenant.subdomain,
+        allowedApps: ['tq'],
+        role: 'manager'
       });
 
       const response = await request(app)
@@ -98,6 +115,8 @@ describe('Critical Authorization Validation', () => {
       const token = generateTestToken({
         userId: user.id,
         tenantId: tenant.subdomain,
+        allowedApps: ['tq'],
+        role: 'manager'
       });
 
       const response = await request(app)
@@ -122,6 +141,8 @@ describe('Critical Authorization Validation', () => {
       const token = generateTestToken({
         userId: user.id,
         tenantId: tenant.subdomain,
+        allowedApps: ['tq'],
+        role: 'manager'
       });
 
       const response = await request(app)
@@ -229,6 +250,8 @@ describe('Critical Authorization Validation', () => {
       const token = generateTestToken({
         userId: user.id,
         tenantId: tenant.subdomain,
+        allowedApps: ['tq'],
+        role: 'manager'
       });
 
       const response = await request(app)
@@ -248,6 +271,8 @@ describe('Critical Authorization Validation', () => {
       const token = generateTestToken({
         userId: user.id,
         tenantId: tenant.subdomain,
+        allowedApps: ['tq'],
+        role: 'manager'
       });
 
       await request(app)

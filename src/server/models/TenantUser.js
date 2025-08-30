@@ -90,7 +90,7 @@ class TenantUser {
    * Get tenant statistics
    */
   static async getTenantStats(tenantContext) {
-    const [totalUsers, activeUsers, adminUsers, doctorUsers, secretaryUsers] = await Promise.all([
+    const [totalUsers, activeUsers, adminUsers, managerUsers, operationsUsers] = await Promise.all([
       User.countByTenant(tenantContext.tenantId, null), // all statuses
       User.countByTenant(tenantContext.tenantId, 'active'),
       database.query(
@@ -99,11 +99,11 @@ class TenantUser {
       ),
       database.query(
         'SELECT COUNT(*) as count FROM public.users WHERE tenant_id = $1 AND role = $2 AND status = $3',
-        [tenantContext.tenantId, 'doctor', 'active']
+        [tenantContext.tenantId, 'manager', 'active']
       ),
       database.query(
         'SELECT COUNT(*) as count FROM public.users WHERE tenant_id = $1 AND role = $2 AND status = $3',
-        [tenantContext.tenantId, 'secretary', 'active']
+        [tenantContext.tenantId, 'operations', 'active']
       )
     ]);
 
@@ -115,8 +115,8 @@ class TenantUser {
         active: activeUsers,
         byRole: {
           admin: parseInt(adminUsers.rows[0].count),
-          doctor: parseInt(doctorUsers.rows[0].count),
-          secretary: parseInt(secretaryUsers.rows[0].count)
+          manager: parseInt(managerUsers.rows[0].count),
+          operations: parseInt(operationsUsers.rows[0].count)
         }
       }
     };

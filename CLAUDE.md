@@ -157,21 +157,54 @@ Login/registration now includes `allowedApps[]` (application slugs array instead
 ### JWT Role Override for Testing
 Authentication middleware now supports JWT role override - when a JWT token contains a `role` field, it takes precedence over the database user role. This provides flexibility for testing different authorization scenarios and enables fine-grained permission testing without modifying database records.
 
-## Internal API Structure (Versioned)
+## Internal Admin API - Complete Implementation ✅
 
-The system uses a **versioned internal API** structure for administrative tools:
+The **Internal Admin API** for `internal.simplia.com` panel is **100% complete and operational**:
 
-### API Endpoints Structure
+### Applications (Platform-scoped - No tenant header required)
 ```
-GET  /health                            # Public health check (monitoring)
-POST /internal/api/v1/auth/login        # Authentication 
-GET  /internal/api/v1/auth/me           # User profile
-GET  /internal/api/v1/users             # User management (requires x-tenant-id)
-GET  /internal/api/v1/applications      # Product catalog (global, no tenant)
-GET  /internal/api/v1/entitlements      # License management (requires x-tenant-id)
-GET  /internal/api/v1/tq/dashboard      # Protected app endpoint
-GET  /internal/api/v1/tq/admin          # Admin-only endpoint
-GET  /docs/internal                     # Swagger documentation (admin-only)
+GET    /internal/api/v1/applications                    # List applications with filters & pagination
+GET    /internal/api/v1/applications/:id                # Get application by ID  
+GET    /internal/api/v1/applications/slug/:slug         # Get application by slug
+POST   /internal/api/v1/applications                    # Create new application
+PUT    /internal/api/v1/applications/:id                # Update application
+DELETE /internal/api/v1/applications/:id                # Soft-delete (deprecate) application
+GET    /internal/api/v1/applications/:id/tenants        # List tenants licensed for application
+```
+**Access Control**: Requires authentication + `platform_role: internal_admin`
+
+### Users (Tenant-scoped - Requires x-tenant-id header)
+```
+GET    /internal/api/v1/users                           # List users with filters & pagination
+POST   /internal/api/v1/users                           # Create new user  
+GET    /internal/api/v1/users/:id                       # Get user by ID
+PUT    /internal/api/v1/users/:id                       # Update user
+DELETE /internal/api/v1/users/:id                       # Soft-delete (deactivate) user
+GET    /internal/api/v1/users/:id/apps                  # Get user's application access
+POST   /internal/api/v1/users/:id/apps/grant            # Grant user access to application
+DELETE /internal/api/v1/users/:id/apps/revoke           # Revoke user access from application
+POST   /internal/api/v1/users/:id/reset-password        # Reset user password (admin)
+PUT    /internal/api/v1/users/bulk-update                # Bulk update multiple users
+```
+**Access Control**: Requires authentication + `x-tenant-id` header + appropriate tenant permissions
+
+### Entitlements (Tenant-scoped - Requires x-tenant-id header)  
+```
+GET    /internal/api/v1/entitlements                    # List tenant licenses with filters
+GET    /internal/api/v1/entitlements/:slug              # Get specific license details
+POST   /internal/api/v1/entitlements/:slug/activate     # Activate license for application
+PUT    /internal/api/v1/entitlements/:slug/adjust       # Adjust license settings (limits/status/expiry)
+```
+**Access Control**: Requires authentication + `x-tenant-id` header + admin permissions
+
+### Other Platform Services
+```
+GET    /health                                          # Public health check (monitoring)
+POST   /internal/api/v1/auth/login                      # Authentication 
+GET    /internal/api/v1/auth/me                         # User profile
+GET    /internal/api/v1/audit/access-logs               # Platform audit logs (internal_admin only)
+GET    /internal/api/v1/audit/access-summary            # Platform audit summary (internal_admin only)  
+GET    /docs/internal                                   # Swagger documentation (internal_admin only)
 ```
 
 ### Environment Configuration

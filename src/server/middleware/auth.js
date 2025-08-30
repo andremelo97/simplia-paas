@@ -68,6 +68,9 @@ async function requireAuth(req, res, next) {
     userContext.allowedApps = payload.allowedApps || [];
     userContext.userType = payload.userType;
     
+    // Add platform role from database or JWT payload
+    userContext.platformRole = user.platform_role || payload.platformRole;
+    
     // Override role with JWT payload if present (for testing and flexibility)
     if (payload.role) {
       userContext.role = payload.role;
@@ -184,10 +187,10 @@ function requireAdmin(req, res, next) {
 }
 
 /**
- * Doctor or Admin middleware
+ * Manager or Admin middleware
  */
-function requireDoctorOrAdmin(req, res, next) {
-  return requireRole(['doctor', 'admin'])(req, res, next);
+function requireManagerOrAdmin(req, res, next) {
+  return requireRole(['manager', 'admin'])(req, res, next);
 }
 
 /**
@@ -280,7 +283,7 @@ module.exports = {
   optionalAuth,
   requireRole,
   requireAdmin,
-  requireDoctorOrAdmin,
+  requireManagerOrAdmin,
   requireSelfOrAdmin,
   requireTenantMatch,
   createRateLimit,

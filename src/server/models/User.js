@@ -77,6 +77,24 @@ class User {
   }
 
   /**
+   * Find user by email globally (no tenant context) - for platform admin login
+   */
+  static async findByEmailGlobal(email) {
+    const query = `
+      SELECT * FROM public.users 
+      WHERE email = $1 AND status != 'deleted'
+    `;
+    
+    const result = await database.query(query, [email]);
+    
+    if (result.rows.length === 0) {
+      throw new UserNotFoundError(`email: ${email}`);
+    }
+    
+    return new User(result.rows[0]);
+  }
+
+  /**
    * Find all users by tenant
    */
   static async findByTenant(tenantId, options = {}) {

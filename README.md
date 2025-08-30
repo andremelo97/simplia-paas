@@ -95,7 +95,7 @@ simplia-paas/
 - **`Tenant.js`**: Gestão completa de tenants com validação e isolamento de schema
 - **`TenantApplication.js`**: Licenças por tenant com controle de vigência, limites de usuários e assentos
 - **`UserApplicationAccess.js`**: Acesso granular - quais usuários podem usar quais apps
-- **`UserType.js`**: Hierarquia de usuários (secretary < doctor < admin) com permissões
+- **`UserType.js`**: Hierarquia de usuários (operations < manager < admin) com permissões
 - **`AccessLog.js`**: Logs de auditoria com IP, User-Agent, contexto completo para compliance
 
 #### 🛤️ `routes/`
@@ -358,7 +358,42 @@ app.get('/internal/api/v1/tq/admin',
 
 ## 🎯 Status Atual: Sistema Enterprise Completo ✅
 
-### ✅ Implementado
+### ✅ **Internal Admin API - 100% Implementada**
+A **API Interna** para o painel `internal.simplia.com` está **completa e operacional**:
+
+#### **Applications (Escopo Plataforma)**
+- ✅ **Listagem** com filtros e paginação (`GET /applications`)
+- ✅ **Consulta** por ID (`GET /applications/:id`) e slug (`GET /applications/slug/:slug`)
+- ✅ **CRUD completo** (POST, PUT, DELETE com soft-delete)
+- ✅ **Tenants licenciados** (`GET /applications/:id/tenants`)
+- ✅ **Proteção** com `platform_role: internal_admin`
+- ✅ **Swagger** com documentação completa e exemplos
+
+#### **Users (Escopo Tenant)**
+- ✅ **CRUD completo** com validação de permissões e filtros
+- ✅ **Grant/Revoke** de acesso a aplicações (`POST /users/:id/apps/grant`, `DELETE /users/:id/apps/revoke`)
+- ✅ **Bulk operations** e reset de senha
+- ✅ **Header** `x-tenant-id` obrigatório
+- ✅ **Swagger** com documentação completa e exemplos
+
+#### **Entitlements (Escopo Tenant)**  
+- ✅ **Listar licenças** do tenant (`GET /entitlements`)
+- ✅ **Ativar licença** (`POST /entitlements/:slug/activate`)
+- ✅ **Ajustar licença** (`PUT /entitlements/:slug/adjust`) - controle de limites/status/vigência
+- ✅ **Gestão de assentos** automática com tracking
+- ✅ **Header** `x-tenant-id` obrigatório
+- ✅ **Swagger** com documentação completa e exemplos
+
+#### **Infraestrutura Enterprise**
+- ✅ **Prefixo versionado** `/internal/api/v1` com roteamento organizado
+- ✅ **CORS restrito** ao domínio do admin panel para segurança
+- ✅ **Documentação Swagger** protegida (`/docs/internal`) - apenas `internal_admin`
+- ✅ **Platform roles** para controle da equipe Simplia vs. roles de tenant
+- ✅ **Padronização de erros** consistente com códigos e mensagens
+- ✅ **Testes de integração** completos incluindo cenários de erro
+- ✅ **Auditoria automática** em negações de acesso
+
+### ✅ **Fundação Enterprise Implementada**
 - **7 tabelas** com campos de auditoria completos + triggers automáticos para `updated_at`
 - **18 índices** otimizados para performance enterprise
 - **5 camadas de autorização** (License→Seat→User→Role→Audit) com logging detalhado
@@ -370,10 +405,6 @@ app.get('/internal/api/v1/tq/admin',
 - **Sistema de testes completo** com Jest + Supertest + criação automática de DB de teste
 - **Validação das 5 camadas de autorização** com testes críticos end-to-end (todas as 10 validações passando ✅)
 - **Infraestrutura de testes enterprise** com setup/cleanup automático e helpers JWT
-- **API interna versionada** com prefixo `/internal/api/v1` para ferramentas administrativas da Simplia
-- **Documentação Swagger** protegida por autenticação em `/docs/internal` (apenas admins)
-- **CORS restrito** limitado ao domínio do painel administrativo para segurança
-- **Platform roles** para controle de acesso da equipe interna da Simplia
 
 ### 🚀 Próximos Passos
 1. **Frontend Development**: Implementar interface React na pasta `src/client/`

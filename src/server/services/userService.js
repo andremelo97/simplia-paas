@@ -23,6 +23,13 @@ class UserService {
   }
 
   /**
+   * Get count of users for a tenant
+   */
+  async getUserCount(tenantContext, options = {}) {
+    return await TenantUser.getUserCountByTenant(tenantContext, options);
+  }
+
+  /**
    * Get user by ID
    */
   async getUserById(tenantContext, requestingUser, userId) {

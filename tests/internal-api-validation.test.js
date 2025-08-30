@@ -63,6 +63,7 @@ describe('Internal API Validation', () => {
     test('should allow access to Swagger docs in development', async () => {
       const response = await request(app)
         .get('/docs/internal/')
+        .set('Authorization', `Bearer ${internalAdminToken}`)
         .expect(200);
       
       expect(response.text).toContain('Simplia Internal API Docs');
@@ -204,7 +205,7 @@ describe('Internal API Validation', () => {
     test('should return 422 for invalid user creation data', async () => {
       const response = await request(app)
         .post('/internal/api/v1/users')
-        .set('Authorization', `Bearer ${validToken}`)
+        .set('Authorization', `Bearer ${internalAdminToken}`)
         .set('x-tenant-id', 'test_clinic')
         .send({
           email: 'invalid-email', // Invalid email format
@@ -219,7 +220,7 @@ describe('Internal API Validation', () => {
     test('should return 404 when trying to grant access to non-existent user', async () => {
       const response = await request(app)
         .post('/internal/api/v1/users/99999/apps/grant')
-        .set('Authorization', `Bearer ${validToken}`)
+        .set('Authorization', `Bearer ${internalAdminToken}`)
         .set('x-tenant-id', 'test_clinic')
         .send({
           applicationSlug: 'tq'
@@ -233,7 +234,7 @@ describe('Internal API Validation', () => {
     test('should return 400 when missing applicationSlug in grant request', async () => {
       const response = await request(app)
         .post('/internal/api/v1/users/1/apps/grant')
-        .set('Authorization', `Bearer ${validToken}`)
+        .set('Authorization', `Bearer ${internalAdminToken}`)
         .set('x-tenant-id', 'test_clinic')
         .send({}) // Missing applicationSlug
         .expect(400);
@@ -258,7 +259,7 @@ describe('Internal API Validation', () => {
     test('should return 400 for invalid license activation data', async () => {
       const response = await request(app)
         .post('/internal/api/v1/entitlements/tq/activate')
-        .set('Authorization', `Bearer ${validToken}`)
+        .set('Authorization', `Bearer ${internalAdminToken}`)
         .set('x-tenant-id', 'test_clinic')
         .send({
           userLimit: -1, // Invalid negative limit

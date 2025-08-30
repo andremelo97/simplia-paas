@@ -19,6 +19,13 @@ class TenantUser {
   }
 
   /**
+   * Get count of users for a specific tenant
+   */
+  static async getUserCountByTenant(tenantContext, options = {}) {
+    return await User.countByTenant(tenantContext.tenantId, options);
+  }
+
+  /**
    * Create a new user within a tenant context
    */
   static async createUserInTenant(tenantContext, userData) {

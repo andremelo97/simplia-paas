@@ -1,7 +1,7 @@
 const express = require('express');
 const { requireAuth } = require('../middleware/auth');
 const { requirePlatformRole } = require('../middleware/platformRole');
-const { AccessLog } = require('../models/AccessLog');
+const AccessLog = require('../models/AccessLog');
 
 const router = express.Router();
 

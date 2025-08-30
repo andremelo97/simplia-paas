@@ -67,12 +67,21 @@ class TenantMiddleware {
    * Extract subdomain from host header
    */
   extractSubdomain(host) {
-    const parts = host.split('.');
+    // Remove port if present
+    const hostWithoutPort = host.split(':')[0];
+    
+    // Don't extract subdomain from IP addresses
+    const ipRegex = /^\d+\.\d+\.\d+\.\d+$/;
+    if (ipRegex.test(hostWithoutPort)) {
+      return null;
+    }
+    
+    const parts = hostWithoutPort.split('.');
     // Assuming format: tenant.domain.com
     if (parts.length >= 3) {
       const subdomain = parts[0];
       // Filter out common non-tenant subdomains
-      const commonSubdomains = ['www', 'api', 'admin', 'app'];
+      const commonSubdomains = ['www', 'api', 'admin', 'app', 'localhost'];
       if (!commonSubdomains.includes(subdomain)) {
         return subdomain;
       }
@@ -185,14 +194,16 @@ class TenantMiddleware {
         // More specific error based on the message
         if (error.message.includes('header required')) {
           return res.status(400).json({
-            error: 'Tenant ID header required',
-            message: error.message,
+            error: {
+              message: error.message
+            }
           });
         }
         
         return res.status(400).json({
-          error: 'Tenant not found',
-          message: error.message,
+          error: {
+            message: error.message
+          }
         });
       }
       

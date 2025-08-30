@@ -17,45 +17,92 @@ O Simplia PaaS é um monorepo Node.js fullstack que combina:
 simplia-paas/
 ├── 📁 src/
 │   ├── 📁 client/                     # Frontend React + TypeScript
-│   │   └── (vazio - preparado para desenvolvimento)
+│   │   ├── 📁 apps/                   # Multi-aplicação organizada por domínio
+│   │   │   ├── 📁 internal-admin/     # Painel administrativo (internal.simplia.com)
+│   │   │   │   ├── 📁 routes/         # dashboard, tenants, users, applications, entitlements, audit
+│   │   │   │   ├── 📁 features/       # licensing, users, etc. (componentes de negócio)
+│   │   │   │   ├── 📁 components/     # componentes específicos do painel
+│   │   │   │   ├── 📁 layouts/        # layouts do painel administrativo
+│   │   │   │   ├── 📁 services/       # cliente para /internal/api/v1
+│   │   │   │   ├── 📁 store/          # auth (platformRole), tenant selecionado
+│   │   │   │   ├── 📁 assets/         # assets específicos do admin
+│   │   │   │   └── app.tsx            # componente principal (placeholder)
+│   │   │   ├── 📁 tq-client/          # App do produto TQ (cliente final)
+│   │   │   │   ├── 📁 routes/         # rotas específicas do TQ
+│   │   │   │   ├── 📁 features/       # funcionalidades do TQ
+│   │   │   │   ├── 📁 components/     # componentes do TQ
+│   │   │   │   ├── 📁 services/       # cliente para /api/v1/tq
+│   │   │   │   └── app.tsx            # componente principal (placeholder)
+│   │   │   ├── 📁 crm-client/         # App do produto CRM
+│   │   │   │   ├── 📁 routes/ features/ components/ services/
+│   │   │   │   └── app.tsx            # (placeholders)
+│   │   │   └── 📁 automation-client/  # App do produto Automation
+│   │   │       ├── 📁 routes/ features/ components/ services/
+│   │   │       └── app.tsx            # (placeholders)
+│   │   │
+│   │   ├── 📁 common/                 # Reuso visual e utilidades de front
+│   │   │   ├── 📁 ui/                 # design system components
+│   │   │   ├── 📁 components/         # componentes de negócio compartilhados
+│   │   │   ├── 📁 hooks/              # React hooks compartilhados
+│   │   │   ├── 📁 utils/              # funções utilitárias
+│   │   │   └── 📁 constants/          # constantes e configurações
+│   │   │
+│   │   ├── 📁 config/
+│   │   │   ├── env.ts                 # configuração de ambiente (placeholder)
+│   │   │   └── http.ts                # configuração cliente HTTP (placeholder)
+│   │   │
+│   │   └── main.tsx                   # entry point React (placeholder)
 │   │
 │   ├── 📁 server/                     # Backend Express.js + JavaScript
-│   │   ├── 📁 config/
-│   │   │   └── database.js            # Singleton de conexão PostgreSQL com pool
+│   │   ├── 📁 api/                    # Camada de API organizada por domínio
+│   │   │   └── 📁 internal/           # API interna administrativa
+│   │   │       └── 📁 routes/         # Routes da API interna
+│   │   │           ├── auth.js        # Autenticação e gestão de usuários
+│   │   │           ├── users.js       # CRUD de usuários administrativo
+│   │   │           ├── applications.js # Catálogo de aplicações
+│   │   │           ├── entitlements.js # Gestão de licenças e acessos
+│   │   │           ├── audit.js       # Logs de auditoria e compliance
+│   │   │           ├── platform-auth.js # Autenticação de plataforma
+│   │   │           └── tenants.js     # Gestão de tenants
 │   │   │
-│   │   ├── 📁 middleware/
-│   │   │   ├── auth.js                # Autenticação JWT + entitlements
-│   │   │   ├── tenant.js              # Resolução e contexto de tenant
-│   │   │   └── appAccess.js           # Autorização 5-camadas + auditoria completa
-│   │   │
-│   │   ├── 📁 models/
-│   │   │   ├── User.js                # Gestão de usuários multi-tenant
-│   │   │   ├── Tenant.js              # Gestão de tenants com isolamento por schema
-│   │   │   ├── TenantUser.js          # Relacionamento tenant-usuário
-│   │   │   ├── Application.js         # Catálogo de aplicações/produtos
-│   │   │   ├── TenantApplication.js   # Licenças por tenant com controle de assentos
-│   │   │   ├── UserApplicationAccess.js # Acesso granular usuário-aplicação
-│   │   │   ├── UserType.js            # Tipos de usuário com hierarquia
-│   │   │   └── AccessLog.js           # Auditoria detalhada para compliance
-│   │   │
-│   │   ├── 📁 routes/
-│   │   │   ├── auth.js                # Endpoints de autenticação
-│   │   │   ├── users.js               # CRUD de usuários
-│   │   │   ├── applications.js        # Catálogo de aplicações
-│   │   │   └── entitlements.js        # Gestão de licenças e acessos
-│   │   │
-│   │   ├── 📁 services/
+│   │   ├── 📁 infra/                  # Camada de infraestrutura
+│   │   │   ├── 📁 db/
+│   │   │   │   └── database.js        # Singleton de conexão PostgreSQL com pool
+│   │   │   │
+│   │   │   ├── 📁 middleware/
+│   │   │   │   ├── auth.js            # Autenticação JWT + entitlements
+│   │   │   │   ├── tenant.js          # Resolução e contexto de tenant
+│   │   │   │   ├── appAccess.js       # Autorização 5-camadas + auditoria completa
+│   │   │   │   └── platformRole.js    # Validação de roles de plataforma
+│   │   │   │
+│   │   │   ├── 📁 models/
+│   │   │   │   ├── User.js            # Gestão de usuários multi-tenant
+│   │   │   │   ├── Tenant.js          # Gestão de tenants com isolamento por schema
+│   │   │   │   ├── TenantUser.js      # Relacionamento tenant-usuário
+│   │   │   │   ├── Application.js     # Catálogo de aplicações/produtos
+│   │   │   │   ├── TenantApplication.js # Licenças por tenant com controle de assentos
+│   │   │   │   ├── UserApplicationAccess.js # Acesso granular usuário-aplicação
+│   │   │   │   ├── UserType.js        # Tipos de usuário com hierarquia
+│   │   │   │   └── AccessLog.js       # Auditoria detalhada para compliance
+│   │   │   │
+│   │   │   ├── 📁 migrations/
+│   │   │   │   ├── 001_create_core_tables.sql # Todas tabelas core + relacionamentos + auditoria
+│   │   │   │   ├── 002_create_indexes.sql    # Estratégia de indexação organizada
+│   │   │   │   ├── 003_seed_initial_data.sql  # Dados essenciais + tenants padrão
+│   │   │   │   └── 📁 _backup/         # Migrações antigas (backup)
+│   │   │   │
+│   │   │   ├── 📁 scripts/
+│   │   │   │   ├── runMigrations.js   # Executor de migrações SQL
+│   │   │   │   ├── db-create-test.js  # Criação automática de DB teste
+│   │   │   │   └── db-drop-test.js    # Limpeza de DB teste
+│   │   │   │
 │   │   │   ├── authService.js         # Lógica de autenticação + JWT
 │   │   │   └── userService.js         # Lógica de negócio de usuários
 │   │   │
-│   │   ├── 📁 migrations/
-│   │   │   ├── 001_create_core_tables.sql                   # Todas tabelas core + relacionamentos + auditoria
-│   │   │   ├── 002_create_indexes.sql                      # Estratégia de indexação organizada
-│   │   │   └── 003_seed_initial_data.sql                   # Dados essenciais + tenants padrão
+│   │   ├── 📁 core/                   # Core business logic (reservado)
+│   │   │   └── (vazio - para regras de negócio puras)
 │   │   │
-│   │   ├── 📁 scripts/
-│   │   │   └── runMigrations.js       # Executor de migrações SQL
-│   │   │
+│   │   ├── app.js                     # Configuração Express (separado para testes)
 │   │   └── index.js                   # Entry point do servidor Express
 │   │
 │   └── 📁 shared/
@@ -63,9 +110,23 @@ simplia-paas/
 │           ├── tenant.js              # Tipos e utilitários de tenant
 │           └── user.js                # Tipos e validadores de usuário
 │
+├── 📁 tests/                         # Suíte de testes organizada
+│   ├── 📁 integration/               # Testes de integração
+│   │   ├── 📁 internal/              # Testes da API interna administrativa
+│   │   │   ├── critical-validation.test.js  # Validação das 5 camadas de autorização
+│   │   │   └── internal-api-validation.test.js # Testes de endpoints da API interna
+│   │   ├── 📁 tq/                    # Testes de Transcription Quote (placeholder)
+│   │   ├── 📁 crm/                   # Testes de CRM (placeholder)
+│   │   └── 📁 automation/            # Testes de Automation (placeholder)
+│   ├── 📁 unit/                      # Testes unitários
+│   │   └── 📁 core/                  # Testes de lógica de negócio pura
+│   ├── auth-helper.js                # Utilitários para geração de tokens JWT
+│   └── setup.js                      # Setup global dos testes
+│
 ├── 📁 node_modules/                   # Dependências npm
 ├── 📁 dist/                          # Build artifacts (gerado)
 │
+├── 📄 jest.config.js                  # Configuração Jest com aliases de path
 ├── 📄 package.json                    # Configuração npm e scripts
 ├── 📄 tsconfig.json                   # TypeScript para client
 ├── 📄 tsconfig.server.json           # TypeScript para server build
@@ -73,6 +134,7 @@ simplia-paas/
 ├── 📄 .env                           # Variáveis de ambiente (não commitado)
 ├── 📄 .env.example                   # Template de configuração
 ├── 📄 CLAUDE.md                      # Documentação para Claude Code
+├── 📄 TESTING-QA.md                  # Documentação de testes e QA
 └── 📄 README.md                      # Este arquivo
 ```
 
@@ -80,47 +142,86 @@ simplia-paas/
 
 ### 📁 `src/server/` - Backend Express.js
 
-#### 🔧 `config/`
-- **`database.js`**: Singleton de conexão PostgreSQL com pool de conexões, suporte a multi-tenancy via `search_path`, métodos para switching de schema
+#### 🌐 `api/` - Camada de API
+- **`internal/routes/`**: API administrativa interna
+  - **`auth.js`**: Login, registro, gestão de sessões
+  - **`users.js`**: CRUD administrativo de usuários com bulk operations
+  - **`applications.js`**: Catálogo de aplicações e gestão
+  - **`entitlements.js`**: Gestão de licenças tenant e acesso de usuários
+  - **`audit.js`**: Logs de auditoria e relatórios de compliance
+  - **`platform-auth.js`**: Autenticação de plataforma
+  - **`tenants.js`**: Gestão administrativa de tenants
 
-#### 🛡️ `middleware/`
-- **`auth.js`**: Middleware de autenticação JWT com validação de tokens, verificação de status do usuário, injeção de contexto `req.user` com `allowedApps[]`
-- **`tenant.js`**: Resolução de tenant via header `x-tenant-id` ou subdomínio, validação e injeção de contexto `req.tenant`  
-- **`appAccess.js`**: Autorização enterprise em 5 camadas (License→Seat→User→Role→Audit) com logging detalhado
-
-#### 📊 `models/`
-- **`User.js`**: CRUD de usuários com isolamento por tenant, validações, soft delete
-- **`TenantUser.js`**: Relacionamento many-to-many entre tenants e usuários
-- **`Application.js`**: Catálogo de aplicações/produtos disponíveis na plataforma
-- **`Tenant.js`**: Gestão completa de tenants com validação e isolamento de schema
-- **`TenantApplication.js`**: Licenças por tenant com controle de vigência, limites de usuários e assentos
-- **`UserApplicationAccess.js`**: Acesso granular - quais usuários podem usar quais apps
-- **`UserType.js`**: Hierarquia de usuários (operations < manager < admin) com permissões
-- **`AccessLog.js`**: Logs de auditoria com IP, User-Agent, contexto completo para compliance
-
-#### 🛤️ `routes/`
-- **`auth.js`**: Login, registro, refresh token com entitlements
-- **`users.js`**: CRUD de usuários com autorização baseada em roles
-- **`applications.js`**: Catálogo público e gestão de aplicações (admin)
-- **`entitlements.js`**: Gestão de licenças tenant e acesso de usuários
-
-#### ⚙️ `services/`
+#### 🏗️ `infra/` - Camada de Infraestrutura
+- **`db/database.js`**: Singleton de conexão PostgreSQL com pool, suporte a multi-tenancy via `search_path`
+- **`middleware/`**: Processamento de requisições
+  - **`auth.js`**: Middleware de autenticação JWT com validação de tokens, verificação de status, injeção de contexto `req.user` com `allowedApps[]`
+  - **`tenant.js`**: Resolução de tenant via header `x-tenant-id` ou subdomínio, validação e injeção de contexto `req.tenant`  
+  - **`appAccess.js`**: Autorização enterprise em 5 camadas (License→Seat→User→Role→Audit) com logging detalhado
+  - **`platformRole.js`**: Validação de roles de plataforma para APIs internas
+- **`models/`**: Abstrações de banco com CRUD tenant-aware
+  - **`User.js`**: CRUD de usuários com isolamento por tenant, validações, soft delete
+  - **`TenantUser.js`**: Relacionamento many-to-many entre tenants e usuários
+  - **`Application.js`**: Catálogo de aplicações/produtos disponíveis na plataforma
+  - **`Tenant.js`**: Gestão completa de tenants com validação e isolamento de schema
+  - **`TenantApplication.js`**: Licenças por tenant com controle de vigência, limites de usuários e assentos
+  - **`UserApplicationAccess.js`**: Acesso granular - quais usuários podem usar quais apps
+  - **`UserType.js`**: Hierarquia de usuários (operations < manager < admin) com permissões
+  - **`AccessLog.js`**: Logs de auditoria com IP, User-Agent, contexto completo para compliance
+- **`migrations/`**: Evolução do schema de banco
+  - **`001_create_core_tables.sql`**: Todas as tabelas core com relacionamentos, campos de auditoria e triggers automáticos
+  - **`002_create_indexes.sql`**: Estratégia completa de indexação organizada por propósito (lookup, performance, audit)
+  - **`003_seed_initial_data.sql`**: Dados essenciais (user types: operations/manager/admin, applications, tenants padrão)
+  - **`_backup/`**: Migrações antigas preservadas
+- **`scripts/`**: Utilitários de banco
+  - **`runMigrations.js`**: Executor de migrações SQL em ordem alfabética
+  - **`db-create-test.js`**: Criação automática de database de teste
+  - **`db-drop-test.js`**: Limpeza completa de database de teste
 - **`authService.js`**: Hash de senhas (bcrypt), geração/validação JWT, lógica de entitlements
 - **`userService.js`**: Regras de negócio para gestão de usuários
 
-#### 🗃️ `migrations/`
-- **`001_create_core_tables.sql`**: Todas as tabelas core com relacionamentos, campos de auditoria e triggers automáticos
-- **`002_create_indexes.sql`**: Estratégia completa de indexação organizada por propósito (lookup, performance, audit)
-- **`003_seed_initial_data.sql`**: Dados essenciais (user types: operations/manager/admin, applications, tenants padrão)
+#### 🎯 `core/` - Lógica de Negócio (Futuro)
+Reservado para regras de negócio puras sem dependências de HTTP/Database
 
-#### 🔨 `scripts/`
-- **`runMigrations.js`**: Executor de migrações SQL em ordem alfabética
-
-#### 🚀 `index.js`
-Entry point do servidor Express com todas as rotas e middlewares configurados
+#### 🚀 Arquivos Raiz
+- **`app.js`**: Configuração Express (separado para testes)
+- **`index.js`**: Entry point do servidor Express
 
 ### 📁 `src/client/` - Frontend React + TypeScript
-Atualmente vazio, preparado para desenvolvimento futuro da interface
+
+#### 🌐 `apps/` - Arquitetura Multi-Aplicação
+- **`internal-admin/`**: Painel administrativo para internal.simplia.com
+  - **`routes/`**: Rotas específicas (dashboard, tenants, users, applications, entitlements, audit)
+  - **`features/`**: Funcionalidades de negócio (licensing, user management, etc.)
+  - **`components/`**: Componentes específicos do painel administrativo
+  - **`layouts/`**: Layouts e estruturas de página do admin
+  - **`services/`**: Cliente HTTP para `/internal/api/v1`
+  - **`store/`**: Estado global (autenticação platformRole, tenant selecionado)
+  - **`assets/`**: Assets específicos do painel
+  - **`app.tsx`**: Componente principal (placeholder)
+
+- **`tq-client/`**: Aplicação do produto Transcription Quote
+  - **`routes/`**: Rotas específicas do produto TQ
+  - **`features/`**: Funcionalidades específicas do TQ
+  - **`components/`**: Componentes específicos do TQ
+  - **`services/`**: Cliente HTTP para `/api/v1/tq`
+  - **`app.tsx`**: Componente principal (placeholder)
+
+- **`crm-client/`** e **`automation-client/`**: Estrutura similar para produtos CRM e Automation (placeholders)
+
+#### 🔗 `common/` - Componentes e Utilitários Compartilhados
+- **`ui/`**: Design system e componentes visuais base
+- **`components/`**: Componentes de negócio reutilizáveis entre apps
+- **`hooks/`**: React hooks compartilhados
+- **`utils/`**: Funções utilitárias e helpers
+- **`constants/`**: Constantes e configurações globais
+
+#### ⚙️ `config/` - Configuração Global
+- **`env.ts`**: Gerenciamento de variáveis de ambiente (placeholder)
+- **`http.ts`**: Configuração de clientes HTTP e interceptors (placeholder)
+
+#### 🚀 `main.tsx`
+Entry point principal da aplicação React com roteamento global (placeholder)
 
 ### 📁 `src/shared/` - Código Compartilhado
 #### 📝 `types/`
@@ -222,7 +323,13 @@ npm run test:watch
 npx jest --testNamePattern="Layer 1"
 
 # Executar arquivo de teste específico
-npx jest tests/critical-validation.test.js
+npx jest tests/integration/internal/critical-validation.test.js
+
+# Executar apenas testes de API interna
+npx jest tests/integration/internal/
+
+# Executar testes de um produto específico (futuro)
+npx jest tests/integration/tq/
 ```
 
 ### Build e Deploy
@@ -287,6 +394,12 @@ ADMIN_PANEL_ORIGIN=http://localhost:5173
 
 # Security
 ENABLE_HELMET=true
+
+# Frontend Environment Variables (Vite)
+VITE_INTERNAL_API_BASE_URL=/internal/api/v1
+VITE_TQ_API_BASE_URL=/api/v1/tq
+VITE_CRM_API_BASE_URL=/api/v1/crm
+VITE_AUT_API_BASE_URL=/api/v1/automation
 ```
 
 ## 📊 Stack Tecnológico
@@ -407,12 +520,14 @@ A **API Interna** para o painel `internal.simplia.com` está **completa e operac
 - **Infraestrutura de testes enterprise** com setup/cleanup automático e helpers JWT
 
 ### 🚀 Próximos Passos
-1. **Frontend Development**: Implementar interface React na pasta `src/client/`
-2. **Tenant Management Interface**: Dashboard para gestão de tenants e licenças
-3. **Public API Development**: Criar APIs públicas dos produtos (separadas da API interna)
-4. **Linting & Formatting**: Implementar ESLint, Prettier e pre-commit hooks
-5. **Monitoring**: Logging estruturado e métricas de performance
-6. **Production Deployment**: Configurar CI/CD e ambientes
+1. **Internal Admin Panel**: Implementar interface React para `src/client/apps/internal-admin/`
+2. **Product Applications**: Desenvolver interfaces para TQ, CRM e Automation clients
+3. **Shared Component Library**: Criar design system em `src/client/common/ui/`
+4. **Public API Development**: Criar APIs públicas dos produtos (separadas da API interna)
+5. **Frontend State Management**: Implementar stores para autenticação e estado global
+6. **Linting & Formatting**: Implementar ESLint, Prettier e pre-commit hooks
+7. **Monitoring**: Logging estruturado e métricas de performance
+8. **Production Deployment**: Configurar CI/CD e ambientes
 
 ## 📄 Licença
 

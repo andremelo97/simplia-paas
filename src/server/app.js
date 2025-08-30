@@ -3,19 +3,19 @@ const cors = require('cors');
 const helmet = require('helmet');
 
 // Middlewares
-const { requireAuth } = require('./middleware/auth');
-const { requirePlatformRole } = require('./middleware/platformRole');
-const tenantMiddleware = require('./middleware/tenant');
-const { requireTranscriptionQuoteAccess } = require('./middleware/appAccess');
+const { requireAuth } = require('./infra/middleware/auth');
+const { requirePlatformRole } = require('./infra/middleware/platformRole');
+const tenantMiddleware = require('./infra/middleware/tenant');
+const { requireTranscriptionQuoteAccess } = require('./infra/middleware/appAccess');
 
 // Routes
-const authRoutes = require('./routes/auth');
-const platformAuthRoutes = require('./routes/platform-auth');
-const userRoutes = require('./routes/users');
-const applicationsRoutes = require('./routes/applications');
-const entitlementsRoutes = require('./routes/entitlements');
-const tenantsRoutes = require('./routes/tenants');
-const auditRoutes = require('./routes/audit');
+const authRoutes = require('./api/internal/routes/auth');
+const platformAuthRoutes = require('./api/internal/routes/platform-auth');
+const userRoutes = require('./api/internal/routes/users');
+const applicationsRoutes = require('./api/internal/routes/applications');
+const entitlementsRoutes = require('./api/internal/routes/entitlements');
+const tenantsRoutes = require('./api/internal/routes/tenants');
+const auditRoutes = require('./api/internal/routes/audit');
 
 // Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -158,7 +158,7 @@ if (ENABLE_DOCS) {
       },
       security: [{ bearerAuth: [] }],
     },
-    apis: ['src/server/routes/*.js'], // JSDoc comments in route files
+    apis: ['src/server/api/internal/routes/*.js'], // JSDoc comments in route files
   });
 
   // Development: Skip auth for local testing

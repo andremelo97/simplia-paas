@@ -12,7 +12,11 @@
       "Bash(DATABASE_NAME=simplia_paas_test npm run migrate)",
       "Bash(curl:*)",
       "Bash(npm test:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(pkill:*)",
+      "Bash(find:*)",
+      "Bash(timeout:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

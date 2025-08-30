@@ -2,13 +2,13 @@
 
 ## 🧪 Simplia PaaS - Complete Testing & QA Documentation
 
-**Internal Admin API Testing + Multi-tenant Authorization Validation**
+**Internal Admin API Testing + Multi-tenant Authorization Validation + Frontend Structure Prepared**
 
 ---
 
 ## 📋 Overview
 
-Simplia PaaS implements a **comprehensive testing system** covering both the **Internal Admin API** (for `internal.simplia.com`) and the **5-layer enterprise authorization system**. The testing framework provides:
+Simplia PaaS implements a **comprehensive testing system** covering both the **Internal Admin API** (for `internal.simplia.com`) and the **5-layer enterprise authorization system**. The frontend structure has been prepared with placeholder components ready for future testing implementation. The testing framework provides:
 
 ### ✅ **Internal Admin API Testing** (New - Complete Coverage)
 - **Applications API**: Platform-scoped endpoints (authentication, permissions, CRUD, error scenarios)
@@ -33,28 +33,39 @@ Simplia PaaS implements a **comprehensive testing system** covering both the **I
 
 ```
 simplia-paas/
-├── 📁 tests/
+├── 📁 tests/                              # Suíte de testes reorganizada
+│   ├── 📁 integration/                    # Testes de integração
+│   │   ├── 📁 internal/                   # API interna administrativa
+│   │   │   ├── critical-validation.test.js       # 5-layer authorization tests (10 tests)
+│   │   │   └── internal-api-validation.test.js   # Internal Admin API tests (22 tests)
+│   │   ├── 📁 tq/                         # Transcription Quote API (placeholder)
+│   │   ├── 📁 crm/                        # CRM API (placeholder)
+│   │   └── 📁 automation/                 # Automation API (placeholder)
+│   ├── 📁 unit/                           # Testes unitários
+│   │   └── 📁 core/                       # Lógica de negócio pura (sem HTTP/DB)
 │   ├── setup.js                           # Global Jest setup + database management
-│   ├── auth-helper.js                     # JWT utilities for testing  
-│   ├── critical-validation.test.js        # 5-layer authorization tests (10 tests)
-│   └── internal-api-validation.test.js    # Internal Admin API tests (24 tests) ✨ NEW
-├── 📁 src/server/scripts/
+│   └── auth-helper.js                     # JWT utilities for testing
+├── 📁 src/server/infra/scripts/
 │   ├── db-create-test.js                  # Automatic test database creation
 │   └── db-drop-test.js                    # Complete database reset
-├── jest.config.js                         # Jest configuration
+├── jest.config.js                         # Jest configuration with path aliases
 └── package.json                           # Test scripts
 ```
 
-### **NEW**: Internal Admin API Test Coverage
+### **Reorganized**: Test Structure
 
-The `internal-api-validation.test.js` file provides comprehensive testing for the Internal Admin API:
+The test suite has been reorganized into a clear integration/unit structure:
 
-- ✅ **Applications API** (6 tests): Platform-scoped endpoints with `platform_role` validation
-- ✅ **Users API** (6 tests): Tenant-scoped user management with `x-tenant-id` requirements  
-- ✅ **Entitlements API** (6 tests): License management and adjustment functionality
-- ✅ **Authorization & Audit** (6 tests): Platform role enforcement and access logging
+- ✅ **Integration Tests** (`tests/integration/`):
+  - **Internal API** (`internal/`): Admin API endpoints with authorization validation
+    - `critical-validation.test.js` - 5-layer authorization tests (10 tests)
+    - `internal-api-validation.test.js` - Internal Admin API tests (22 tests)
+  - **Product APIs** (`tq/`, `crm/`, `automation/`): Placeholders for future product API tests
+- ✅ **Unit Tests** (`tests/unit/core/`): Pure business logic tests (no HTTP/DB dependencies)
+- ✅ **Test Utilities**: `auth-helper.js`, `setup.js` maintained in root
+- ✅ **Path Aliases**: Jest configured with `@server/*` and `@shared/*` mapping
 
-**Total Coverage**: 34 tests (10 authorization + 24 API tests) = **100% passing**
+**Total Coverage**: 32 tests (10 authorization + 22 API tests) = **100% passing**
 
 ---
 
@@ -80,6 +91,10 @@ module.exports = {
   testMatch: ['**/tests/**/*.test.js'],       // Padrão de arquivos
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'], // Setup global
   testTimeout: 15000,                         // Timeout de 15s por teste
+  moduleNameMapper: {                         // Path aliases for imports
+    '^@server/(.*)$': '<rootDir>/src/server/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+  },
 };
 ```
 
@@ -107,11 +122,11 @@ JWT_SECRET=dev-secret-key-not-for-production
 ```json
 {
   "scripts": {
-    "db:create:test": "node src/server/scripts/db-create-test.js",
-    "db:drop:test": "node src/server/scripts/db-drop-test.js", 
+    "db:create:test": "node src/server/infra/scripts/db-create-test.js",
+    "db:drop:test": "node src/server/infra/scripts/db-drop-test.js", 
     "pretest": "npm run db:create:test",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch --runInBand"
   }
 }
 ```
@@ -130,7 +145,13 @@ npx jest --testNamePattern="Layer 1"
 npx jest --testNamePattern="Tenant License"
 
 # 📁 Executar arquivo específico
-npx jest tests/critical-validation.test.js
+npx jest tests/integration/internal/critical-validation.test.js
+
+# 🎯 Executar apenas testes da API interna
+npx jest tests/integration/internal/
+
+# 🔮 Executar testes de produto específico (futuro)
+npx jest tests/integration/tq/
 
 # 🗃️ Gestão manual do database de teste
 npm run db:create:test  # Criar DB (idempotente)
@@ -161,7 +182,7 @@ graph TD
 
 ### 1. Script de Criação (`db-create-test.js`)
 
-**Localização**: `src/server/scripts/db-create-test.js`
+**Localização**: `src/server/infra/scripts/db-create-test.js`
 
 **Funcionalidades**:
 - ✅ **Criação idempotente** - pode ser executado múltiplas vezes
@@ -176,7 +197,7 @@ graph TD
 $ npm run db:create:test
 
 > simplia-paas@1.0.0 db:create:test
-> node src/server/scripts/db-create-test.js
+> node src/server/infra/scripts/db-create-test.js
 
 [db:create:test] Creating database 'simplia_paas_test'...
 [db:create:test] Database 'simplia_paas_test' created successfully
@@ -672,7 +693,7 @@ npx jest --testNamePattern="Tenant License"
 npx jest --testNamePattern="admin"
 
 # Por arquivo
-npx jest tests/critical-validation.test.js
+npx jest tests/integration/internal/critical-validation.test.js
 
 # Modo verbose (output detalhado)
 npx jest --verbose
@@ -793,19 +814,30 @@ echo "✅ Test environment ready!"
 - [ ] **Testes de performance** para consultas complexas
 - [ ] **Testes de concorrência** para seat limits
 
-### 2. **Qualidade de Código**  
+### 2. **Frontend Testing (Estrutura Preparada)**
+- [ ] **Unit tests** para componentes React em `src/client/common/`
+- [ ] **Integration tests** para cada aplicação (`internal-admin`, `tq-client`, etc.)
+- [ ] **E2E tests** para fluxos críticos com Playwright/Cypress
+- [ ] **Visual regression tests** para componentes de UI
+- [ ] **API mocking** para desenvolvimento frontend isolado
+- [ ] **Component testing** com React Testing Library
+
+### 3. **Qualidade de Código**  
 - [ ] **Code coverage reports** com NYC/Istanbul
 - [ ] **Mutation testing** para validar qualidade dos testes
-- [ ] **Visual regression testing** para interfaces
+- [ ] **TypeScript strict mode** para cliente e testes
+- [ ] **ESLint + Prettier** para frontend
 
-### 3. **CI/CD Avançado**
+### 4. **CI/CD Avançado**
 - [ ] **Parallel test execution** em múltiplos workers
 - [ ] **Database migrations testing** em pipelines
-- [ ] **End-to-end testing** com Playwright/Cypress
+- [ ] **Frontend build testing** em diferentes ambientes
+- [ ] **Multi-app deployment** strategies
 
-### 4. **Monitoring e Observabilidade**
+### 5. **Monitoring e Observabilidade**
 - [ ] **Test metrics collection** (duração, falhas, etc.)
 - [ ] **Performance regression detection**
+- [ ] **Frontend performance monitoring**
 - [ ] **Alertas para falhas críticas** em produção
 
 ---

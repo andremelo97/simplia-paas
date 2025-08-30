@@ -12,7 +12,17 @@ Simplia PaaS is a Node.js fullstack monorepo combining Express.js backend with R
 
 - **Monorepo Structure**: Single `package.json` with all dependencies, unified TypeScript configuration
 - **src/server/**: Express.js backend with PostgreSQL integration (JavaScript only - .js files)
+  - **api/**: API route handlers organized by feature (`internal/routes/`)
+  - **infra/**: Infrastructure layer (database, middleware, models, services, scripts)
+  - **core/**: Core business logic (reserved for future pure business rules)
 - **src/client/**: React frontend built with Vite (TypeScript - .tsx/.ts files)
+  - **apps/**: Multi-application architecture with separate apps for different domains
+    - **internal-admin/**: Administrative panel for internal.simplia.com
+    - **tq-client/**: Transcription Quote product application
+    - **crm-client/**: CRM product application
+    - **automation-client/**: Automation product application
+  - **common/**: Shared UI components, hooks, and utilities across all apps
+  - **config/**: Environment and HTTP client configuration
 - **src/shared/**: Shared utilities between client/server (JavaScript - .js files)
 - **Path Aliases**: 
   - `@shared/*` maps to `src/shared/*`
@@ -90,24 +100,32 @@ npx jest tests/critical-validation.test.js # Run specific test file
 
 ## Backend Architecture (JavaScript)
 
-### Core Components
-- **Models**: Database abstractions with tenant-aware CRUD operations
+### Infrastructure Layer (`src/server/infra/`)
+- **Models** (`models/`): Database abstractions with tenant-aware CRUD operations
   - `User.js`, `TenantUser.js` - User management
   - `Tenant.js` - Tenant management with schema isolation
   - `Application.js`, `TenantApplication.js`, `UserApplicationAccess.js`, `UserType.js` - Licensing system
   - `AccessLog.js` - Audit trail for compliance
 - **Services**: Business logic layer (`authService.js`, `userService.js`) with validation and permissions
-- **Middleware**: Request processing 
+- **Middleware** (`middleware/`): Request processing 
   - `tenant.js` - Multi-tenancy context injection
   - `auth.js` - JWT validation with app entitlements
   - `appAccess.js` - Application-level authorization with audit logging
-- **Routes**: API endpoints 
+  - `platformRole.js` - Platform-level role validation
+- **Database** (`db/`): Connection management (`database.js`)
+- **Scripts** (`scripts/`): Database utilities (`runMigrations.js`, `db-create-test.js`, `db-drop-test.js`)
+- **Migrations** (`migrations/`): Database schema evolution
+
+### API Layer (`src/server/api/`)
+- **Internal Routes** (`internal/routes/`): Administrative API endpoints
   - `auth.js`, `users.js` - Authentication and user management
   - `applications.js` - Application catalog and tenant licenses  
   - `entitlements.js` - License and access management
+  - `audit.js` - Access logging and compliance reports
+  - `platform-auth.js`, `tenants.js` - Platform administration
 
 ### Database Layer
-- **Connection**: Singleton database instance with connection pooling (`database.js`)
+- **Connection**: Singleton database instance with connection pooling (`infra/db/database.js`)
 - **Tenant Isolation**: Schema-per-tenant with automatic `search_path` switching
 - **Queries**: Tenant-aware queries using `database.queryWithTenant(tenantContext, sql, params)`
 
@@ -229,7 +247,7 @@ ENABLE_HELMET=true                      # Security headers
 
 ## Database Migrations
 
-- **Location**: `src/server/migrations/` - SQL files executed in alphabetical order
+- **Location**: `src/server/infra/migrations/` - SQL files executed in alphabetical order
 - **Execution**: `npm run migrate` - Runs all pending migrations
 
 ### Migration Structure (Reorganized)
@@ -274,14 +292,22 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 ## Testing and Quality Assurance
 
 - **Testing Framework**: Jest with Supertest for API testing
-- **Test Structure**: Tests located in `tests/` directory with `*.test.js` pattern
+- **Test Structure**: Organized into integration and unit test directories
+  - `tests/integration/internal/` - Internal Admin API tests (authorization, CORS, Swagger)
+  - `tests/integration/{tq,crm,automation}/` - Product API tests (placeholders for future)
+  - `tests/unit/core/` - Pure business logic tests (no HTTP/DB)
 - **Test Database**: Automatic creation/cleanup with `TEST_DATABASE_NAME` from .env
 - **Test Setup**: Global setup in `tests/setup.js` handles database migrations and cleanup
 - **Auth Helpers**: `tests/auth-helper.js` provides JWT token generation utilities
-- **Critical Tests**: `tests/critical-validation.test.js` validates all 5 authorization layers (all 10 tests passing ✅)
+- **Critical Tests**: `tests/integration/internal/critical-validation.test.js` validates all 5 authorization layers (all 10 tests passing ✅)
+- **API Tests**: `tests/integration/internal/internal-api-validation.test.js` validates Internal Admin API endpoints
+- **Path Aliases**: Jest configured with `@server/*` and `@shared/*` module mapping
 - **Automatic Flow**: `npm test` auto-creates test DB → runs migrations → executes tests
 - **Token Testing**: JWT role override enables testing admin/manager/operations roles without database modifications
-- **No Linting**: No code formatting tools configured yet
+- **Run Commands**: 
+  - `npm test` - Run all tests
+  - `npx jest tests/integration/internal/` - Run only internal API tests
+  - `npx jest --testNamePattern="Layer 1"` - Run specific authorization layer tests
 
 ## Development Notes
 
@@ -290,9 +316,12 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - **Example Routes**: Transcription Quote routes (`/internal/api/v1/tq/*`) demonstrate the full 5-layer authorization flow
 - **Application Slugs**: Use standardized slugs (`tq`, `pm`, `billing`, `reports`) not full names
 - **Database Password**: Must be converted to string in database config (common PostgreSQL connection issue)
-- **Migration Dependencies**: `runMigrations.js` requires `dotenv` loading to access environment variables
-- **Test Database Scripts**: `src/server/scripts/db-create-test.js` and `db-drop-test.js` handle automatic test DB lifecycle
+- **Migration Dependencies**: `infra/scripts/runMigrations.js` requires `dotenv` loading to access environment variables
+- **Test Database Scripts**: `src/server/infra/scripts/db-create-test.js` and `db-drop-test.js` handle automatic test DB lifecycle
 - **Testing Architecture**: Server app separated from bootstrap for testability, test DB creation is gracefully handled when PostgreSQL unavailable locally
+- **Client Entry Point**: `src/client/main.tsx` - React app bootstrap (placeholder for future routing)
+- **Frontend Environment Variables**: Use `VITE_` prefix for client-side environment variables
+- **Multi-App Structure**: Each client app (`internal-admin`, `tq-client`, etc.) has its own routes, features, components, and services
 
 ## Enterprise Features Implemented
 

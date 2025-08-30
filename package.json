@@ -11,9 +11,9 @@
     "build:client": "vite build",
     "build:server": "cp -r src/server dist/ && cp -r src/shared dist/",
     "start": "node src/server/index.js",
-    "migrate": "node src/server/scripts/runMigrations.js",
-    "db:create:test": "node src/server/scripts/db-create-test.js",
-    "db:drop:test": "node src/server/scripts/db-drop-test.js",
+    "migrate": "node src/server/infra/scripts/runMigrations.js",
+    "db:create:test": "node src/server/infra/scripts/db-create-test.js",
+    "db:drop:test": "node src/server/infra/scripts/db-drop-test.js",
     "pretest": "npm run db:create:test",
     "test": "jest --runInBand",
     "test:watch": "jest --watch --runInBand"

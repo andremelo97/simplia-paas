@@ -4,4 +4,8 @@ module.exports = {
   testMatch: ['**/tests/**/*.test.js'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   testTimeout: 15000,
+  moduleNameMapper: {
+    '^@server/(.*)$': '<rootDir>/src/server/$1',
+    '^@shared/(.*)$': '<rootDir>/src/shared/$1',
+  },
 };

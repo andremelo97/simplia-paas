@@ -1,0 +1,195 @@
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+
+// Middlewares
+const { requireAuth } = require('./middleware/auth');
+const { requirePlatformRole } = require('./middleware/platformRole');
+const tenantMiddleware = require('./middleware/tenant');
+const { requireTranscriptionQuoteAccess } = require('./middleware/appAccess');
+
+// Routes
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+const applicationsRoutes = require('./routes/applications');
+const entitlementsRoutes = require('./routes/entitlements');
+
+// Swagger
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const app = express();
+
+// Configuration
+const INTERNAL_PREFIX = process.env.INTERNAL_API_PREFIX || '/internal/api/v1';
+const DOCS_PATH = process.env.INTERNAL_DOCS_PATH || '/docs/internal';
+const ENABLE_DOCS = process.env.ENABLE_INTERNAL_DOCS === 'true';
+const ENABLE_HELMET = process.env.ENABLE_HELMET === 'true';
+const ADMIN_PANEL_ORIGIN = process.env.ADMIN_PANEL_ORIGIN;
+
+// Global middlewares
+if (ENABLE_HELMET) {
+  app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP to prevent Swagger UI conflicts
+  }));
+}
+
+app.use(express.json());
+
+// Health check (outside prefix for monitoring)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', message: 'Server is running' });
+});
+
+// CORS configuration for internal API
+const internalCorsOptions = {
+  origin(origin, callback) {
+    // Allow no origin (curl, Postman, tests)
+    if (!origin) return callback(null, true);
+    
+    // Allow admin panel origin
+    if (origin === ADMIN_PANEL_ORIGIN) {
+      return callback(null, true);
+    }
+    
+    // Block other origins
+    const error = new Error('Not allowed by CORS policy');
+    error.status = 403;
+    return callback(error);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id'],
+};
+
+// Internal API Router
+const internalRouter = express.Router();
+
+// Auth routes (no tenant context needed for login)
+internalRouter.use('/auth', authRoutes);
+
+// Global platform routes (no tenant context needed)
+internalRouter.use('/applications', 
+  requireAuth, 
+  requirePlatformRole('internal_admin'), 
+  applicationsRoutes
+);
+
+// Create tenant-scoped router for routes that need tenant context
+const tenantScopedRouter = express.Router();
+tenantScopedRouter.use(tenantMiddleware, requireAuth);
+
+tenantScopedRouter.use('/users', userRoutes);
+tenantScopedRouter.use('/entitlements', entitlementsRoutes);
+
+// Example protected TQ routes (will move to separate product APIs later)
+tenantScopedRouter.get('/tq/dashboard', requireTranscriptionQuoteAccess(), (req, res) => {
+  res.json({
+    message: 'Welcome to Transcription Quote Dashboard',
+    user: req.user,
+    appAccess: req.appAccess,
+    license: req.tenantLicense
+  });
+});
+
+tenantScopedRouter.get('/tq/admin', requireTranscriptionQuoteAccess('admin'), (req, res) => {
+  res.json({
+    message: 'Transcription Quote Admin Panel',
+    user: req.user,
+    appAccess: req.appAccess
+  });
+});
+
+// Mount tenant-scoped routes
+internalRouter.use(tenantScopedRouter);
+
+// Mount internal API with CORS
+app.use(INTERNAL_PREFIX, cors(internalCorsOptions), internalRouter);
+
+// Swagger Documentation (Protected by platform role)
+if (ENABLE_DOCS) {
+  const swaggerSpec = swaggerJsdoc({
+    definition: {
+      openapi: '3.0.3',
+      info: {
+        title: 'Simplia PaaS - Internal Administrative API',
+        version: '1.0.0',
+        description: 'Internal API for Simplia team to manage tenants, licenses, and system administration',
+      },
+      servers: [
+        {
+          url: INTERNAL_PREFIX,
+          description: 'Internal Administrative API',
+        },
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+        schemas: {
+          Error: {
+            type: 'object',
+            properties: {
+              error: {
+                type: 'object',
+                properties: {
+                  code: { type: 'integer' },
+                  message: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ bearerAuth: [] }],
+    },
+    apis: ['src/server/routes/*.js'], // JSDoc comments in route files
+  });
+
+  app.use(
+    DOCS_PATH,
+    requireAuth,
+    requirePlatformRole('internal_admin'), // Only internal admins can access documentation
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec, {
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'Simplia Internal API Docs',
+      swaggerOptions: {
+        docExpansion: 'list',
+        filter: true,
+        showRequestDuration: true,
+      },
+    })
+  );
+}
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('API Error:', err);
+  
+  const status = err.status || 500;
+  const message = status < 500 ? err.message : 'Internal Server Error';
+  
+  res.status(status).json({
+    error: {
+      code: status,
+      message: message,
+    },
+  });
+});
+
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    error: {
+      code: 404,
+      message: 'Endpoint not found',
+    },
+  });
+});
+
+module.exports = app;

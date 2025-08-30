@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(rd:*)",
+      "Bash(npm run migrate:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npm test)",
+      "Bash(npx jest:*)",
+      "Bash(DATABASE_NAME=simplia_paas_test npm run migrate)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

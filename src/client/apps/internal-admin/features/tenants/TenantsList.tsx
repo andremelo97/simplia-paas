@@ -133,7 +133,12 @@ export const TenantsList: React.FC = () => {
           </p>
         </div>
         <Link to="/tenants/create">
-          <Button>Create Tenant</Button>
+          <Button 
+            variant="default"
+            style={{ width: '120px' }}
+          >
+            + Create
+          </Button>
         </Link>
       </div>
 

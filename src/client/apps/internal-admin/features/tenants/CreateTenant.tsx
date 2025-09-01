@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Label } from '@client/common/ui'
 import { api } from '@client/config/http'
 import { useUIStore } from '../../store'
 
@@ -10,11 +10,41 @@ interface TenantFormData {
   description: string
 }
 
+interface AddressData {
+  country: string
+  address_line_1: string
+  address_line_2: string
+  city: string
+  state: string
+  postal_code: string
+}
+
+interface ContactData {
+  name: string
+  email: string
+  phone: string
+  other_contact_information: string
+}
+
 export const CreateTenant: React.FC = () => {
   const [formData, setFormData] = useState<TenantFormData>({
     name: '',
     schema: '',
     description: ''
+  })
+  const [addressData, setAddressData] = useState<AddressData>({
+    country: '',
+    address_line_1: '',
+    address_line_2: '',
+    city: '',
+    state: '',
+    postal_code: ''
+  })
+  const [contactData, setContactData] = useState<ContactData>({
+    name: '',
+    email: '',
+    phone: '',
+    other_contact_information: '',
   })
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -54,6 +84,24 @@ export const CreateTenant: React.FC = () => {
     if (validationErrors[field]) {
       setValidationErrors(prev => ({ ...prev, [field]: '' }))
     }
+  }
+
+  const handleAddressChange = (field: keyof AddressData) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setAddressData(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }))
+  }
+
+  const handleContactChange = (field: keyof ContactData) => (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setContactData(prev => ({
+      ...prev,
+      [field]: e.target.value
+    }))
   }
 
   const validateForm = () => {
@@ -137,13 +185,16 @@ export const CreateTenant: React.FC = () => {
         </p>
       </div>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <h2 className="text-lg font-semibold text-gray-900">Tenant Information</h2>
-        </CardHeader>
-        
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column - Tenant Information + Contact */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-semibold text-gray-900">Tenant Information</h2>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
             <Input
               label="Tenant Name"
               value={formData.name}
@@ -163,18 +214,18 @@ export const CreateTenant: React.FC = () => {
               placeholder="tenant_clinic_abc"
               helperText="Database schema name (auto-generated from tenant name)"
               required
-              disabled={isSubmitting}
+              disabled
+              readOnly
             />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
+            <div className="space-y-1">
+              <Label htmlFor="description">Description</Label>
               <textarea
+                id="description"
                 value={formData.description}
                 onChange={(e) => handleInputChange('description')(e as any)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]"
                 placeholder="Optional description of the tenant organization"
                 disabled={isSubmitting}
               />
@@ -185,42 +236,136 @@ export const CreateTenant: React.FC = () => {
                 Brief description of the tenant organization (optional)
               </p>
             </div>
-
-            <div className="flex items-center space-x-4 pt-4 border-t border-gray-200">
-              <Button
-                type="submit"
-                isLoading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                Create Tenant
-              </Button>
+              </CardContent>
+            </Card>
+            
+            {/* Contact Information Card */}
+            <Card>
+              <CardHeader>
+                <h2 className="text-lg font-semibold text-gray-900">Contact information</h2>
+              </CardHeader>
               
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <CardContent className="space-y-4">
+                <Input
+                  label="Full name"
+                  value={contactData.name}
+                  onChange={handleContactChange('name')}
+                  placeholder="Full name"
+                  disabled={isSubmitting}
+                />
+                
+                <Input
+                  label="Email"
+                  type="email"
+                  value={contactData.email}
+                  onChange={handleContactChange('email')}
+                  placeholder="Email"
+                  disabled={isSubmitting}
+                />
+                
+                <Input
+                  label="Phone"
+                  type="tel"
+                  value={contactData.phone}
+                  onChange={handleContactChange('phone')}
+                  placeholder="Phone"
+                  disabled={isSubmitting}
+                />
 
-      <Card className="max-w-2xl bg-blue-50 border-blue-200">
-        <CardContent>
-          <h3 className="text-sm font-medium text-blue-900 mb-2">
-            Important Notes
-          </h3>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Each tenant gets its own isolated database schema</li>
-            <li>• Schema names must be unique and follow PostgreSQL naming conventions</li>
-            <li>• Tenant creation will automatically set up the required database structure</li>
-            <li>• You can configure applications and users after the tenant is created</li>
-          </ul>
-        </CardContent>
-      </Card>
+<Input
+                  label="Other contact information"
+                  type="text"
+                  value={contactData.other_contact_information}
+                  onChange={handleContactChange('other_contact_information')}
+                  placeholder="More info (optional)"
+                  disabled={isSubmitting}
+                />
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Right Column - Address (placeholder) */}
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold text-gray-900">Address (placeholder)</h2>
+            </CardHeader>
+            
+            <CardContent className="space-y-4">
+              <Input
+                label="Country"
+                value={addressData.country}
+                onChange={handleAddressChange('country')}
+                placeholder="Country"
+                disabled={isSubmitting}
+              />
+              
+              <Input
+                label="Address line 1"
+                value={addressData.address_line_1}
+                onChange={handleAddressChange('address_line_1')}
+                placeholder="Address line 1"
+                disabled={isSubmitting}
+              />
+              
+              <Input
+                label="Address line 2 (optional)"
+                value={addressData.address_line_2}
+                onChange={handleAddressChange('address_line_2')}
+                placeholder="Address line 2 (optional)"
+                disabled={isSubmitting}
+              />
+              
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  label="City"
+                  value={addressData.city}
+                  onChange={handleAddressChange('city')}
+                  placeholder="City"
+                  disabled={isSubmitting}
+                />
+                
+                <Input
+                  label="State/Province"
+                  value={addressData.state}
+                  onChange={handleAddressChange('state')}
+                  placeholder="State/Province"
+                  disabled={isSubmitting}
+                />
+              </div>
+              
+              <Input
+                label="Postal code"
+                value={addressData.postal_code}
+                onChange={handleAddressChange('postal_code')}
+                placeholder="Postal code"
+                disabled={isSubmitting}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        
+        <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
+          <Button
+            type="submit"
+            variant="default"
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
+          >
+            Create Tenant
+          </Button>
+          
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+            style={{ height: '32px', minHeight: '32px' }}
+          >
+            Cancel
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }

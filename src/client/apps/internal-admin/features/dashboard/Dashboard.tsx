@@ -26,16 +26,16 @@ const MetricCard: React.FC<{
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
+      whileHover={{ scale: 1.01 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       <Card className="relative overflow-hidden border-gray-200/50 shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-6">
+        <CardContent className="p-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2 mb-3">
                 {icon && (
-                  <div className={`p-2.5 rounded-xl border ${colorVariants[color]}`}>
+                  <div className={`p-2 rounded-lg border ${colorVariants[color]}`}>
                     {icon}
                   </div>
                 )}
@@ -56,9 +56,9 @@ const MetricCard: React.FC<{
               </div>
               
               <div className="space-y-1">
-                <p className="text-3xl font-bold text-gray-900 tracking-tight">{value}</p>
+                <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
                 {subtitle && (
-                  <p className="text-sm text-gray-500">{subtitle}</p>
+                  <p className="text-xs text-gray-500">{subtitle}</p>
                 )}
               </div>
             </div>
@@ -141,7 +141,7 @@ export const Dashboard: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="space-y-4"
+        className="space-y-4 overflow-visible"
       >
         <div className="flex items-center gap-3 mb-6">
           <div className="h-8 w-1 bg-blue-600 rounded-full"></div>

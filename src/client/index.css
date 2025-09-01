@@ -2,10 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
+/* Brand Tokens */
+:root {
+  --brand-primary: #B725B7;
+  --brand-primary-hover: #9c1e9c;
+  --brand-secondary: #E91E63;
+  --brand-secondary-hover: #c2185b;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Reset only specific elements that need it, not everything */
+html,
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol,
+li {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
@@ -13,4 +38,37 @@ body {
   line-height: 1.6;
   color: #333;
   background-color: #f8fafc;
+}
+
+/* Force Button styles for consistency */
+button[data-variant="default"] {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 5px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  height: 32px !important;
+}
+
+button[data-variant="default"]:hover {
+  background-color: #333333 !important;
+}
+
+button[data-variant="secondary"] {
+  font-family: 'Montserrat', sans-serif !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding-top: 4px !important;
+  padding-bottom: 4px !important;
+  border-radius: 5px !important;
+}
+
+/* Force Alert destructive text color */
+.alert-destructive,
+.alert-destructive * {
+  color: #b91c1c !important; /* red-700 */
+}
+
+.alert-destructive svg {
+  color: #dc2626 !important; /* red-600 */
 }

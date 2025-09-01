@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { api } from '@client/config/http'
+import { AppError, isAppError } from '../services/errors/types'
 
 interface User {
   id: number
@@ -20,7 +21,7 @@ interface AuthState {
   user: User | null
   token: string | null
   isLoading: boolean
-  error: string | null
+  error: AppError | null
   isHydrated: boolean
   login: (credentials: { email: string; password: string }) => Promise<void>
   logout: () => void
@@ -53,12 +54,18 @@ export const useAuthStore = create<AuthState>()(persist(
           error: null
         })
       } catch (error: any) {
+        // HTTP client now returns AppError instances
+        const appError = isAppError(error) ? error : {
+          kind: 'unknown' as const,
+          message: error?.message || 'Login failed'
+        }
+        
         set({
           isAuthenticated: false,
           user: null,
           token: null,
           isLoading: false,
-          error: error?.response?.data?.error?.message || error.message || 'Login failed'
+          error: appError
         })
       }
     },

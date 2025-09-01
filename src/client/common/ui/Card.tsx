@@ -28,7 +28,7 @@ const CardHeader = React.forwardRef<
   <div 
     ref={ref} 
     className={cn("flex flex-col space-y-1.5", className)} 
-    style={{ padding: '24px' }}
+    style={{ padding: '16px' }}
     {...props} 
   />
 ))
@@ -68,7 +68,7 @@ const CardContent = React.forwardRef<
   <div 
     ref={ref} 
     className={cn("", className)} 
-    style={{ padding: '0 24px 24px 24px' }}
+    style={{ padding: '0 16px 16px 16px' }}
     {...props} 
   />
 ))
@@ -81,7 +81,7 @@ const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={cn("flex items-center", className)}
-    style={{ padding: '0 24px 24px 24px' }}
+    style={{ padding: '0 16px 16px 16px' }}
     {...props}
   />
 ))

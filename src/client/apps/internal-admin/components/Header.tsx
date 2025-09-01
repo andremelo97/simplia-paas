@@ -61,9 +61,9 @@ export const Header: React.FC = () => {
       transition={{ duration: 0.3 }}
       className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-200/50 shadow-sm"
     >
-      <div className="flex h-16 items-center justify-between px-6">
-        {/* Left Side - Breadcrumb */}
-        <div className="flex items-center space-x-4">
+      <div className="flex h-16 items-center justify-between pr-6">
+        {/* Left Side - Breadcrumb - Updated margin */}
+        <div className="flex items-center space-x-4 pl-6">
           <Breadcrumb>
             <BreadcrumbList>
               {parentBreadcrumbs.map((crumb, index) => (

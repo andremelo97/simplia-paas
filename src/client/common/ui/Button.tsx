@@ -4,11 +4,11 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from '../utils/cn'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-black text-white hover:bg-gray-800 active:scale-[0.98]",
+        default: "",
         destructive: "bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]",
         outline: "border border-gray-200 bg-background hover:bg-gray-50 hover:text-gray-900 active:scale-[0.98]",
         secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 active:scale-[0.98]",
@@ -16,10 +16,10 @@ const buttonVariants = cva(
         link: "text-gray-900 underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-11 px-8",
-        icon: "h-10 w-10",
+        default: "h-12 px-4 py-2 text-[15px]",
+        sm: "h-9 px-3 text-sm",
+        lg: "h-11 px-8 text-base",
+        icon: "h-10 w-10 text-[15px]",
       },
     },
     defaultVariants: {
@@ -39,9 +39,28 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, isLoading, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
+    
+    // Custom styles for all variants
+    const customStyles = {
+      fontFamily: 'Montserrat, sans-serif',
+      height: '32px',
+      minHeight: '32px',
+      ...(variant === 'default' && {
+        backgroundColor: '#000000',
+        color: '#ffffff',
+        border: 'none',
+        borderRadius: '5px'
+      })
+    }
+    
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
+        data-variant={variant}
+        style={{
+          ...customStyles,
+          ...props.style
+        }}
         ref={ref}
         disabled={disabled || isLoading}
         {...props}

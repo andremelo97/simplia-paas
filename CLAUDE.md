@@ -325,6 +325,37 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - **Vite Configuration**: Root set to `src/client`, requires `index.html` to be in `src/client/` directory
 - **Frontend Dependencies**: React Router DOM, Tailwind CSS, Framer Motion, Lucide React, Zustand state management
 
+## Frontend Error Handling System
+
+### AppError Architecture
+- **Unified Error Type** (`apps/internal-admin/services/errors/types.ts`): Standardized error model with `kind`, `httpStatus`, `code`, `message`, `details`, `path`
+- **Error Catalog** (`apps/internal-admin/services/errors/catalog.ts`): English-only friendly messages mapped by status/code
+- **HTTP Interceptor** (`config/http.ts`): Normalizes all HTTP errors into AppError instances with telemetry
+- **Auth Store Integration** (`apps/internal-admin/store/auth.ts`): Returns AppError instead of raw HTTP errors
+- **UI Components**: Login page displays friendly messages with proper a11y attributes (`role="alert"`, `aria-live="polite"`)
+
+### Error Flow Examples
+- `401 /auth/login` → "Incorrect email or password." banner
+- `429 Rate Limit` → "Too many attempts. Please wait a moment and try again."
+- `Network failure` → "Can't reach the server. Check your connection and try again."
+- `422 Validation` → Field-level errors + validation summary
+
+## Frontend UI System
+
+### Design System
+- **Global Brand Tokens** (`src/client/index.css`): CSS custom properties for consistent theming
+  - `--brand-primary: #B725B7` (purple), `--brand-secondary: #E91E63` (pink)
+- **Component Library** (`src/client/common/ui/`): Reusable UI components with consistent styling
+  - Alert, Button, Input, Card, Table components with variant support
+  - A11y-compliant with proper ARIA attributes
+- **Tailwind Integration**: v3.4.17 with custom component styling and forced heights for consistency
+
+### Form Architecture
+- **Multi-column responsive layouts** for complex forms (tenant creation)
+- **Combined validation**: Client-side + server-side error handling
+- **Auto-generated fields**: Schema names from display names with validation
+- **Placeholder sections**: Address and contact information collection
+
 ## Enterprise Features Implemented
 
 - **Audit Trail**: All database tables have `active`, `created_at`, `updated_at` fields with automatic PostgreSQL triggers for `updated_at`
@@ -334,3 +365,4 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - **Foreign Key Integrity**: 7 FK relationships ensure referential integrity across all entities
 - **Multi-Status Support**: Applications and tenants support multiple status states (active, trial, expired, suspended)
 - **Automatic Timestamps**: PostgreSQL triggers automatically update `updated_at` on any record modification
+- **Friendly Error Handling**: User-facing error messages with proper accessibility and telemetry

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Building2 } from 'lucide-react'
+import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
 import { useAuthStore } from '../../store'
 import { Button, Input, Card, CardHeader, CardContent, CardTitle, CardDescription, Alert, AlertDescription } from '@client/common/ui'
 import { cn } from '@client/common/utils/cn'
+import { AppError } from '../../services/errors/types'
+import { shouldShowAsBanner, shouldShowFieldErrors } from '../../services/errors/catalog'
 
 export const Login: React.FC = () => {
   const [credentials, setCredentials] = useState({
@@ -41,6 +43,25 @@ export const Login: React.FC = () => {
     return Object.keys(errors).length === 0
   }
 
+  // Get field-level errors from AppError
+  const getFieldErrors = (appError: AppError | null): Record<string, string> => {
+    if (!appError || !shouldShowFieldErrors(appError.kind)) {
+      return {}
+    }
+    return appError.details || {}
+  }
+
+  // Check if we should show banner error
+  const shouldShowBannerError = (appError: AppError | null): boolean => {
+    return appError !== null && shouldShowAsBanner(appError.kind)
+  }
+
+  // Get combined validation + server field errors
+  const allFieldErrors = {
+    ...validationErrors,
+    ...getFieldErrors(error)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     clearError()
@@ -64,6 +85,7 @@ export const Login: React.FC = () => {
       [field]: e.target.value
     }))
     
+    // Clear client-side validation errors
     if (validationErrors[field]) {
       setValidationErrors(prev => ({
         ...prev,
@@ -71,6 +93,7 @@ export const Login: React.FC = () => {
       }))
     }
     
+    // Clear server errors on input change to allow retry
     if (error) {
       clearError()
     }
@@ -86,7 +109,7 @@ export const Login: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="mx-auto w-full max-w-[420px]"
+        className="mx-auto w-full max-w-[380px]"
       >
         <Card className="min-h-[540px]">
           <CardHeader className="text-center space-y-3">
@@ -105,15 +128,15 @@ export const Login: React.FC = () => {
             </CardDescription>
           </CardHeader>
           
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 px-8">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-6" style={{ gap: '16px', display: 'flex', flexDirection: 'column' }}>
+              <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column' }}>
                 <Input
                   label="Email"
                   type="email"
                   value={credentials.email}
                   onChange={handleInputChange('email')}
-                  error={validationErrors.email}
+                  error={allFieldErrors.email}
                   placeholder="your.email@simplia.com"
                   autoComplete="email"
                   disabled={isLoading}
@@ -126,7 +149,7 @@ export const Login: React.FC = () => {
                     type={showPassword ? 'text' : 'password'}
                     value={credentials.password}
                     onChange={handleInputChange('password')}
-                    error={validationErrors.password}
+                    error={allFieldErrors.password}
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     disabled={isLoading}
@@ -158,14 +181,8 @@ export const Login: React.FC = () => {
 
                 <Button
                   type="submit"
-                  className="w-full text-sm font-medium"
-                  style={{ 
-                    height: '32px',
-                    backgroundColor: '#000000',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '5px'
-                  }}
+                  variant="default"
+                  style={{ width: '100%' }}
                   isLoading={isLoading}
                   disabled={isLoading}
                 >
@@ -174,15 +191,42 @@ export const Login: React.FC = () => {
               </div>
             </form>
 
-            {error && (
+            {shouldShowBannerError(error) && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Alert variant="destructive">
-                  <AlertDescription>
-                    {error}
+                <Alert 
+                  variant="destructive" 
+                  role="alert" 
+                  aria-live="polite"
+                  className="flex items-center gap-3 alert-destructive"
+                >
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <AlertDescription className="flex-1">
+                    {error?.message}
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+            
+            {/* Show validation summary if there are field errors from server */}
+            {error && shouldShowFieldErrors(error.kind) && Object.keys(getFieldErrors(error)).length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Alert 
+                  variant="destructive" 
+                  role="alert" 
+                  aria-live="polite"
+                  className="flex items-center gap-3 alert-destructive"
+                >
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <AlertDescription className="flex-1">
+                    {error.message}
                   </AlertDescription>
                 </Alert>
               </motion.div>

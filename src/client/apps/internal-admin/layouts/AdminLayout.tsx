@@ -17,7 +17,7 @@ export const AdminLayout: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-visible">
           <div className="p-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

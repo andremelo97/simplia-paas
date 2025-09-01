@@ -41,7 +41,7 @@ npm run dev
 # Run only server (uses nodemon for hot reload)
 npm run dev:server
 
-# Run only client (Vite dev server on port 3000)
+# Run only client (Vite dev server on port 3002)
 npm run dev:client
 
 # Build entire application
@@ -78,7 +78,7 @@ npx jest tests/critical-validation.test.js # Run specific test file
 ## Tech Stack
 
 - **Backend**: Node.js, Express.js, PostgreSQL (pg), CORS, dotenv, bcrypt, jsonwebtoken (JavaScript only)
-- **Frontend**: React 18, TypeScript, Vite
+- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, React Router, Framer Motion, Lucide React, Zustand
 - **Development**: nodemon, concurrently for parallel execution
 - **Multi-tenancy**: Schema-per-tenant with PostgreSQL search_path switching
 - **Licensing**: ServiceNow/Salesforce-inspired multi-layered entitlement system
@@ -230,7 +230,7 @@ GET    /docs/internal                                   # Swagger documentation 
 INTERNAL_API_PREFIX=/internal/api/v1    # Configurable API prefix
 ENABLE_INTERNAL_DOCS=true               # Enable Swagger documentation
 INTERNAL_DOCS_PATH=/docs/internal       # Swagger endpoint path
-ADMIN_PANEL_ORIGIN=http://localhost:5173  # CORS allowed origin
+ADMIN_PANEL_ORIGIN=http://localhost:3002  # CORS allowed origin
 ENABLE_HELMET=true                      # Security headers
 ```
 
@@ -319,9 +319,11 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - **Migration Dependencies**: `infra/scripts/runMigrations.js` requires `dotenv` loading to access environment variables
 - **Test Database Scripts**: `src/server/infra/scripts/db-create-test.js` and `db-drop-test.js` handle automatic test DB lifecycle
 - **Testing Architecture**: Server app separated from bootstrap for testability, test DB creation is gracefully handled when PostgreSQL unavailable locally
-- **Client Entry Point**: `src/client/main.tsx` - React app bootstrap (placeholder for future routing)
-- **Frontend Environment Variables**: Use `VITE_` prefix for client-side environment variables
+- **Client Entry Point**: `src/client/main.tsx` - React app bootstrap with React Router configured for internal-admin app
+- **Frontend Environment Variables**: Use `VITE_` prefix for client-side environment variables  
 - **Multi-App Structure**: Each client app (`internal-admin`, `tq-client`, etc.) has its own routes, features, components, and services
+- **Vite Configuration**: Root set to `src/client`, requires `index.html` to be in `src/client/` directory
+- **Frontend Dependencies**: React Router DOM, Tailwind CSS, Framer Motion, Lucide React, Zustand state management
 
 ## Enterprise Features Implemented
 

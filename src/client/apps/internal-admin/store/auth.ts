@@ -42,13 +42,13 @@ export const useAuthStore = create<AuthState>()(persist(
     login: async (credentials) => {
       set({ isLoading: true, error: null })
       try {
-        const response = await api.auth.login(credentials)
-        const data = response.data.data // Backend returns { success, message, data: { user, token } }
+        const response = await api.post('/internal/api/v1/platform-auth/login', credentials)
+        const result = response // Backend returns { success, message, data: { user, token } }
         
         set({
           isAuthenticated: true,
-          user: data.user,
-          token: data.token,
+          user: result.data.user,
+          token: result.data.token,
           isLoading: false,
           error: null
         })

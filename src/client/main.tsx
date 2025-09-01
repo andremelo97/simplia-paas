@@ -1,7 +1,13 @@
-// TODO: placeholder - Main entry point for React app
-// This will contain the root React component and routing setup
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import { AppRoutes } from './apps/internal-admin/routes'
+import './index.css'
 
-export default function App() {
-  // TODO: Add app routing and main component
-  return null;
-}
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  </React.StrictMode>
+)

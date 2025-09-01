@@ -7,9 +7,13 @@ class User {
     this.tenantId = data.tenant_id;
     this.email = data.email;
     this.passwordHash = data.password_hash;
-    this.name = data.name;
+    this.firstName = data.first_name;
+    this.lastName = data.last_name;
+    this.name = `${data.first_name || ''} ${data.last_name || ''}`.trim();
     this.role = data.role;
     this.status = data.status;
+    this.userTypeId = data.user_type_id;
+    this.platformRole = data.platform_role;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }

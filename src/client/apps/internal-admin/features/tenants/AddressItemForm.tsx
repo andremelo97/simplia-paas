@@ -32,7 +32,7 @@ export const AddressItemForm: React.FC<AddressItemFormProps> = ({
         <h4 className="text-sm font-medium text-gray-900">
           Address {index + 1}
           {address.is_primary && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800" style={{ backgroundColor: 'rgba(233, 30, 99, 0.1)', color: 'var(--brand-secondary)' }}>
               Primary
             </span>
           )}
@@ -168,27 +168,21 @@ export const AddressItemForm: React.FC<AddressItemFormProps> = ({
         />
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id={`address-${index}-primary`}
-            checked={address.is_primary}
-            onChange={(e) => {
-              if (e.target.checked) {
-                onSetPrimary(index);
-              }
-            }}
-            className="h-4 w-4 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)] border-gray-300 rounded"
-          />
-          <Label htmlFor={`address-${index}-primary`} className="ml-2 text-sm">
-            Set as primary address
-          </Label>
-        </div>
-        
-        <p className="text-xs text-gray-500">
-          Primary address is used for billing and official correspondence
-        </p>
+      <div className="flex items-center pt-2 border-t border-gray-200">
+        <input
+          type="checkbox"
+          id={`address-${index}-primary`}
+          checked={address.is_primary}
+          onChange={(e) => {
+            if (e.target.checked) {
+              onSetPrimary(index);
+            }
+          }}
+          className="h-4 w-4 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)] border-gray-300 rounded"
+        />
+        <Label htmlFor={`address-${index}-primary`} className="ml-2 text-sm">
+          Set as primary address
+        </Label>
       </div>
     </div>
   );

@@ -114,20 +114,6 @@ export const AddressesRepeater: React.FC<AddressesRepeaterProps> = ({
         </div>
       )}
       
-      {items.length > 0 && (
-        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Primary Address:</strong> {
-              items.find(addr => addr.is_primary)
-                ? `${items.find(addr => addr.is_primary)?.label || items.find(addr => addr.is_primary)?.type} address`
-                : 'None selected'
-            }
-          </p>
-          <p className="text-xs text-blue-600 mt-1">
-            The primary address is used for billing and official correspondence.
-          </p>
-        </div>
-      )}
     </FormSection>
   );
 };

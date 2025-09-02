@@ -53,7 +53,7 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
         <h4 className="text-sm font-medium text-gray-900">
           Contact {index + 1}
           {contact.is_primary && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-800" style={{ backgroundColor: 'rgba(233, 30, 99, 0.1)', color: 'var(--brand-secondary)' }}>
               Primary
             </span>
           )}
@@ -184,29 +184,6 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
           />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor={`contact-${index}-language`}>
-            Preferred Language
-          </Label>
-          <select
-            id={`contact-${index}-language`}
-            value={contact.language || ''}
-            onChange={(e) => handleFieldChange('language', e.target.value)}
-            className={`
-              w-full px-3 py-2 border rounded-md shadow-sm 
-              focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]
-              border-gray-300
-            `}
-          >
-            <option value="">Select language...</option>
-            <option value="en">English</option>
-            <option value="pt">Portuguese</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-            <option value="de">German</option>
-          </select>
-          <FieldError error={errors.language} />
-        </div>
 
         <div className="md:col-span-2 space-y-1">
           <Label htmlFor={`contact-${index}-notes`}>
@@ -228,27 +205,21 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-gray-200">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id={`contact-${index}-primary`}
-            checked={contact.is_primary}
-            onChange={(e) => {
-              if (e.target.checked) {
-                onSetPrimary(index);
-              }
-            }}
-            className="h-4 w-4 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)] border-gray-300 rounded"
-          />
-          <Label htmlFor={`contact-${index}-primary`} className="ml-2 text-sm">
-            Set as primary contact
-          </Label>
-        </div>
-        
-        <p className="text-xs text-gray-500">
-          Primary contact is used for important notifications
-        </p>
+      <div className="flex items-center pt-2 border-t border-gray-200">
+        <input
+          type="checkbox"
+          id={`contact-${index}-primary`}
+          checked={contact.is_primary}
+          onChange={(e) => {
+            if (e.target.checked) {
+              onSetPrimary(index);
+            }
+          }}
+          className="h-4 w-4 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)] border-gray-300 rounded"
+        />
+        <Label htmlFor={`contact-${index}-primary`} className="ml-2 text-sm">
+          Set as primary contact
+        </Label>
       </div>
     </div>
   );

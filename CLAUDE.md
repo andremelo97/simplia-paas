@@ -329,9 +329,17 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - **Sample users**: Admin and manager users for testing
 - **Initial licenses**: TQ application licensed for default tenants
 
+#### **004_fix_default_tenant.sql** - Default Tenant Schema Fix
+- **Schema Creation**: Creates `tenant_default` schema for proper tenant isolation
+- **Tenant Update**: Updates default tenant to use `tenant_default` instead of `public` schema
+
+#### **005_fix_admin_password.sql** - Admin Password Fix
+- **Password Hash**: Updates admin user password hash to work correctly with bcrypt
+- **Admin User**: Fixes authentication for `consultoriasimplia@gmail.com` admin user
+
 ### Migration Benefits
-- ✅ **Cleaner structure**: 3 logical migrations vs 5 scattered files
-- ✅ **Better organization**: Tables → Indexes → Seeds
+- ✅ **Organized structure**: 5 logical migrations (3 core + 2 fixes) with clear purposes
+- ✅ **Better organization**: Tables → Indexes → Seeds → Schema Fixes → Admin Setup
 - ✅ **Complete documentation**: Every table and field documented
 - ✅ **Atomic operations**: Each migration has single clear purpose
 - ✅ **Backup preserved**: Old migrations saved in `_backup/` folder

@@ -221,19 +221,17 @@ router.get('/:id', async (req, res) => {
 
     res.json({
       success: true,
-      data: {
-        tenant: tenant.toJSON(),
-        metrics: {
-          totalUsers,
-          activeUsers,
-          applications: applications.map(app => ({
-            slug: app.applicationSlug,
-            status: app.status,
-            userLimit: app.userLimit,
-            seatsUsed: app.seatsUsed,
-            expiresAt: app.expiresAt
-          }))
-        }
+      data: tenant.toJSON(),
+      metrics: {
+        totalUsers,
+        activeUsers,
+        applications: applications.map(app => ({
+          slug: app.applicationSlug,
+          status: app.status,
+          userLimit: app.userLimit,
+          seatsUsed: app.seatsUsed,
+          expiresAt: app.expiresAt
+        }))
       }
     });
   } catch (error) {
@@ -423,11 +421,12 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, status } = req.body;
+    const { name, status, description } = req.body;
 
     const updateData = {};
     if (name !== undefined) updateData.name = name.trim();
     if (status !== undefined) updateData.status = status;
+    if (description !== undefined) updateData.description = description.trim();
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({
@@ -446,11 +445,11 @@ router.put('/:id', async (req, res) => {
     }
 
     res.json({
-      success: true,
-      message: 'Tenant updated successfully',
-      data: {
-        tenant: tenant.toJSON()
-      }
+      meta: {
+        code: "TENANT_UPDATED",
+        message: "Tenant updated successfully."
+      },
+      data: tenant.toJSON()
     });
   } catch (error) {
     console.error('Error updating tenant:', error);
@@ -613,7 +612,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/:id/addresses', async (req, res) => {
   try {
     const { id } = req.params;
-    const { type, limit = 20, offset = 0 } = req.query;
+    const { type, active, limit = 20, offset = 0 } = req.query;
     const tenantId = parseInt(id);
 
     // Verify tenant exists
@@ -627,12 +626,13 @@ router.get('/:id/addresses', async (req, res) => {
 
     const options = {
       type,
+      active: active !== undefined ? active === 'true' : undefined,
       limit: Math.min(parseInt(limit), 50),
       offset: parseInt(offset)
     };
 
     const addresses = await TenantAddress.findByTenant(tenantId, options);
-    const total = await TenantAddress.count(tenantId, { type });
+    const total = await TenantAddress.count(tenantId, { type, active: options.active });
 
     res.json({
       success: true,
@@ -1097,7 +1097,7 @@ router.delete('/:id/addresses/:addressId', async (req, res) => {
 router.get('/:id/contacts', async (req, res) => {
   try {
     const { id } = req.params;
-    const { type, limit = 20, offset = 0 } = req.query;
+    const { type, active, limit = 20, offset = 0 } = req.query;
     const tenantId = parseInt(id);
 
     // Verify tenant exists
@@ -1111,12 +1111,14 @@ router.get('/:id/contacts', async (req, res) => {
 
     const options = {
       type,
+      active: active !== undefined ? active === 'true' : undefined,
       limit: Math.min(parseInt(limit), 50),
       offset: parseInt(offset)
     };
 
     const contacts = await TenantContact.findByTenant(tenantId, options);
-    const total = await TenantContact.count(tenantId, { type });
+    const total = await TenantContact.count(tenantId, { type, active: options.active });
+
 
     res.json({
       success: true,

@@ -7,12 +7,19 @@ export interface CreateTenantRequest {
   status?: 'active' | 'trial' | 'inactive'
 }
 
+export interface UpdateTenantRequest {
+  name?: string
+  description?: string
+  status?: 'active' | 'trial' | 'inactive'
+}
+
 export interface TenantResponse {
   id: number
   name: string
   subdomain: string
   schemaName: string
   status: string
+  description?: string
   createdAt: string
   updatedAt: string
 }
@@ -142,8 +149,31 @@ export class TenantsService {
    * @param id - Tenant ID
    * @returns Promise with tenant data
    */
-  async getById(id: number): Promise<{ success: boolean; data: { tenant: TenantResponse } }> {
+  async getTenant(id: number): Promise<{ success: boolean; data: TenantResponse }> {
     console.log('🏢 [TenantsService] Fetching tenant by ID:', id)
+
+    try {
+      const response = await api.get(`${this.baseEndpoint}/${id}`)
+      
+      console.log('✅ [TenantsService] Tenant fetched:', {
+        tenantId: response.data?.id,
+        name: response.data?.name
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to fetch tenant:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Get tenant by ID (alias for backward compatibility)
+   * @param id - Tenant ID
+   * @returns Promise with tenant data
+   */
+  async getById(id: number): Promise<{ success: boolean; data: { tenant: TenantResponse } }> {
+    console.log('🏢 [TenantsService] Fetching tenant by ID (deprecated method):', id)
 
     try {
       const response = await api.get(`${this.baseEndpoint}/${id}`)
@@ -156,6 +186,30 @@ export class TenantsService {
       return response
     } catch (error) {
       console.error('❌ [TenantsService] Failed to fetch tenant:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Update tenant by ID
+   * @param id - Tenant ID
+   * @param tenantData - Update data
+   * @returns Promise with updated tenant data
+   */
+  async updateTenant(id: number, tenantData: UpdateTenantRequest): Promise<{ success: boolean; data: TenantResponse }> {
+    console.log('🏢 [TenantsService] Updating tenant:', { id, ...tenantData })
+
+    try {
+      const response = await api.put(`${this.baseEndpoint}/${id}`, tenantData)
+      
+      console.log('✅ [TenantsService] Tenant updated:', {
+        tenantId: response.data?.id,
+        name: response.data?.name
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to update tenant:', error)
       throw error
     }
   }

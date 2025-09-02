@@ -8,8 +8,8 @@ export interface TenantContact {
   email?: string;
   phoneE164?: string;
   title?: string;
+  department?: string;
   notes?: string;
-  preferences?: Record<string, any>;
   isPrimary: boolean;
   active: boolean;
   createdAt: string;
@@ -22,8 +22,8 @@ export interface CreateContactData {
   email?: string;
   phoneE164?: string;
   title?: string;
+  department?: string;
   notes?: string;
-  preferences?: Record<string, any>;
   isPrimary?: boolean;
 }
 
@@ -54,6 +54,7 @@ export interface ContactResponse {
 
 export interface ContactListOptions {
   type?: 'ADMIN' | 'BILLING' | 'TECH' | 'LEGAL' | 'OTHER';
+  active?: boolean;
   limit?: number;
   offset?: number;
 }
@@ -71,6 +72,7 @@ class ContactService {
     const params = new URLSearchParams();
     
     if (options.type) params.append('type', options.type);
+    if (options.active !== undefined) params.append('active', options.active.toString());
     if (options.limit) params.append('limit', options.limit.toString());
     if (options.offset) params.append('offset', options.offset.toString());
 

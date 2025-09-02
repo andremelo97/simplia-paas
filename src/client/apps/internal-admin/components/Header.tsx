@@ -30,6 +30,19 @@ const getBreadcrumbs = (pathname: string) => {
   
   segments.forEach((segment, index) => {
     const href = '/' + segments.slice(0, index + 1).join('/')
+    
+    // Special handling for tenant edit routes - hide ID and show "Edit"
+    if (segments[0] === 'tenants' && segments[2] === 'edit' && index === 1) {
+      // Skip the ID segment (index 1) in tenant edit routes
+      return
+    }
+    
+    if (segments[0] === 'tenants' && segments[2] === 'edit' && index === 2) {
+      // Replace 'edit' with 'Edit' for the last breadcrumb
+      breadcrumbs.push({ label: 'Edit', href })
+      return
+    }
+    
     const label = segment.charAt(0).toUpperCase() + segment.slice(1)
     breadcrumbs.push({ label, href })
   })

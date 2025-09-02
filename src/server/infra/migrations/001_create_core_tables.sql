@@ -185,8 +185,8 @@ CREATE TABLE IF NOT EXISTS tenant_contacts (
     email TEXT NULL, -- normalize to lower-case in application
     phone_e164 TEXT NULL, -- E.164 format (+5511999999999)
     title TEXT NULL, -- job title
+    department TEXT NULL, -- department/area
     notes TEXT NULL,
-    preferences JSONB NULL, -- communication channels/hours, etc.
     is_primary BOOLEAN NOT NULL DEFAULT false,
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -200,7 +200,7 @@ COMMENT ON COLUMN tenant_contacts.full_name IS 'Full name of the contact person'
 COMMENT ON COLUMN tenant_contacts.email IS 'Email address (normalized to lowercase in application layer)';
 COMMENT ON COLUMN tenant_contacts.phone_e164 IS 'Phone number in E.164 international format';
 COMMENT ON COLUMN tenant_contacts.title IS 'Job title or position';
-COMMENT ON COLUMN tenant_contacts.preferences IS 'JSON object storing communication preferences, preferred hours, channels, etc.';
+COMMENT ON COLUMN tenant_contacts.department IS 'Department or business area';
 COMMENT ON COLUMN tenant_contacts.is_primary IS 'Whether this is the primary contact for this type (max 1 per tenant+type)';
 
 -- =============================================

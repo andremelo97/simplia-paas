@@ -230,14 +230,9 @@ export const TenantsList: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link
-                        to={`/tenants/${tenant.id}`}
-                        className="text-blue-600 hover:text-blue-900 mr-3"
-                      >
-                        View
-                      </Link>
-                      <Link
                         to={`/tenants/${tenant.id}/edit`}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600 hover:text-indigo-900 font-medium"
+                        aria-label={`Edit tenant ${tenant.name}`}
                       >
                         Edit
                       </Link>

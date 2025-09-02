@@ -13,8 +13,8 @@ class TenantContact {
     this.email = data.email;
     this.phoneE164 = data.phone_e164;
     this.title = data.title;
+    this.department = data.department;
     this.notes = data.notes;
-    this.preferences = data.preferences;
     this.isPrimary = data.is_primary;
     this.active = data.active;
     this.createdAt = data.created_at;
@@ -77,8 +77,8 @@ class TenantContact {
       email,
       phoneE164,
       title,
+      department,
       notes,
-      preferences,
       isPrimary = false
     } = data;
 
@@ -111,10 +111,6 @@ class TenantContact {
       }
     }
 
-    // Validate preferences JSON if provided
-    if (preferences && typeof preferences !== 'object') {
-      throw new Error('Preferences must be a valid JSON object');
-    }
 
     // If setting as primary, unset other primaries of same type first
     if (isPrimary) {
@@ -126,8 +122,8 @@ class TenantContact {
 
     const query = `
       INSERT INTO tenant_contacts (
-        tenant_id, type, full_name, email, phone_e164, title, 
-        notes, preferences, is_primary, active
+        tenant_id, type, full_name, email, phone_e164, title, department,
+        notes, is_primary, active
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
@@ -139,8 +135,8 @@ class TenantContact {
       normalizedEmail,
       phoneE164,
       title ? title.trim() : null,
+      department ? department.trim() : null,
       notes ? notes.trim() : null,
-      preferences ? JSON.stringify(preferences) : null,
       isPrimary,
       true
     ]);
@@ -155,8 +151,8 @@ class TenantContact {
       email,
       phoneE164,
       title,
+      department,
       notes,
-      preferences,
       isPrimary
     } = data;
 
@@ -192,10 +188,10 @@ class TenantContact {
         }
         updates.push(`email = $${paramIndex}`);
         params.push(email.toLowerCase().trim());
+        paramIndex++;
       } else {
         updates.push(`email = NULL`);
       }
-      paramIndex++;
     }
 
     if (phoneE164 !== undefined) {
@@ -206,15 +202,21 @@ class TenantContact {
         }
         updates.push(`phone_e164 = $${paramIndex}`);
         params.push(phoneE164);
+        paramIndex++;
       } else {
         updates.push(`phone_e164 = NULL`);
       }
-      paramIndex++;
     }
 
     if (title !== undefined) {
       updates.push(`title = $${paramIndex}`);
       params.push(title ? title.trim() : null);
+      paramIndex++;
+    }
+
+    if (department !== undefined) {
+      updates.push(`department = $${paramIndex}`);
+      params.push(department ? department.trim() : null);
       paramIndex++;
     }
 
@@ -224,14 +226,6 @@ class TenantContact {
       paramIndex++;
     }
 
-    if (preferences !== undefined) {
-      if (preferences && typeof preferences !== 'object') {
-        throw new Error('Preferences must be a valid JSON object');
-      }
-      updates.push(`preferences = $${paramIndex}`);
-      params.push(preferences ? JSON.stringify(preferences) : null);
-      paramIndex++;
-    }
 
     if (isPrimary !== undefined) {
       if (isPrimary) {
@@ -299,19 +293,6 @@ class TenantContact {
   }
 
   toJSON() {
-    let preferences = null;
-    if (this.preferences) {
-      try {
-        // Check if it's already an object or a string
-        preferences = typeof this.preferences === 'string' 
-          ? JSON.parse(this.preferences) 
-          : this.preferences;
-      } catch (error) {
-        console.warn('Failed to parse preferences JSON:', error);
-        preferences = null;
-      }
-    }
-
     return {
       id: this.id,
       tenantId: this.tenantId,
@@ -320,8 +301,8 @@ class TenantContact {
       email: this.email,
       phoneE164: this.phoneE164,
       title: this.title,
+      department: this.department,
       notes: this.notes,
-      preferences,
       isPrimary: this.isPrimary,
       active: this.active,
       createdAt: this.createdAt,

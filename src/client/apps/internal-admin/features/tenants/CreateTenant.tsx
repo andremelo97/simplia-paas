@@ -204,6 +204,7 @@ export const CreateTenant: React.FC = () => {
             type: contact.type,
             fullName: contact.name,
             title: contact.title,
+            department: contact.department,
             email: contact.email,
             phoneE164: contact.phone_number,
             notes: contact.notes,

@@ -26,7 +26,6 @@ export interface ContactFormValues {
   phone_number?: string;
   title?: string;
   department?: string;
-  language?: string;
   notes?: string;
   is_primary: boolean;
 }

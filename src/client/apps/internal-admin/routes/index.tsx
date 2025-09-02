@@ -1,11 +1,12 @@
 import React from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { RouteGuard } from '../components/RouteGuard'
 import { AdminLayout } from '../layouts/AdminLayout'
 import { Login } from '../features/auth/Login'
 import { Dashboard } from '../features/dashboard/Dashboard'
 import { TenantsList } from '../features/tenants/TenantsList'
 import { CreateTenant } from '../features/tenants/CreateTenant'
+import { EditTenantPage } from '../features/tenants/EditTenant'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -25,6 +26,11 @@ const Unauthorized: React.FC = () => (
   </div>
 )
 
+const TenantViewRedirect: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
+  return <Navigate to={`/tenants/${id}/edit`} replace />
+}
+
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -42,6 +48,8 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<Dashboard />} />
         <Route path="tenants" element={<TenantsList />} />
         <Route path="tenants/create" element={<CreateTenant />} />
+        <Route path="tenants/:id" element={<TenantViewRedirect />} />
+        <Route path="tenants/:id/edit" element={<EditTenantPage />} />
         <Route path="users" element={<div>Users page (coming soon)</div>} />
         <Route path="applications" element={<div>Applications page (coming soon)</div>} />
         <Route path="*" element={<NotFound />} />

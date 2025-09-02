@@ -112,20 +112,6 @@ export const ContactsRepeater: React.FC<ContactsRepeaterProps> = ({
         </div>
       )}
       
-      {items.length > 0 && (
-        <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800">
-            <strong>Primary Contact:</strong> {
-              items.find(contact => contact.is_primary)
-                ? `${items.find(contact => contact.is_primary)?.name} (${items.find(contact => contact.is_primary)?.type})`
-                : 'None selected'
-            }
-          </p>
-          <p className="text-xs text-green-600 mt-1">
-            The primary contact is used for important notifications and communication.
-          </p>
-        </div>
-      )}
     </FormSection>
   );
 };

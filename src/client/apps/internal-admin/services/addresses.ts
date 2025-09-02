@@ -56,6 +56,7 @@ export interface AddressResponse {
 
 export interface AddressListOptions {
   type?: 'HQ' | 'BILLING' | 'SHIPPING' | 'BRANCH' | 'OTHER';
+  active?: boolean;
   limit?: number;
   offset?: number;
 }
@@ -73,6 +74,7 @@ class AddressService {
     const params = new URLSearchParams();
     
     if (options.type) params.append('type', options.type);
+    if (options.active !== undefined) params.append('active', options.active.toString());
     if (options.limit) params.append('limit', options.limit.toString());
     if (options.offset) params.append('offset', options.offset.toString());
 

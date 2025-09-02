@@ -96,6 +96,36 @@ CREATE INDEX IF NOT EXISTS idx_user_access_active_only ON user_application_acces
 CREATE INDEX IF NOT EXISTS idx_access_denied_only ON application_access_logs(tenant_id_fk, created_at DESC, user_id) WHERE decision = 'denied';
 
 -- =============================================
+-- TENANT ADDRESSES INDEXES
+-- =============================================
+
+-- Primary lookup indexes for addresses
+CREATE INDEX IF NOT EXISTS idx_tenant_addresses_tenant_active ON tenant_addresses(tenant_id, active);
+CREATE INDEX IF NOT EXISTS idx_tenant_addresses_tenant_type ON tenant_addresses(tenant_id, type);
+CREATE INDEX IF NOT EXISTS idx_tenant_addresses_country ON tenant_addresses(country_code);
+
+-- Partial unique constraint: only one primary per tenant+type
+CREATE UNIQUE INDEX IF NOT EXISTS uq_tenant_addresses_primary_per_type 
+    ON tenant_addresses(tenant_id, type) 
+    WHERE active = true AND is_primary = true;
+
+-- =============================================
+-- TENANT CONTACTS INDEXES
+-- =============================================
+
+-- Primary lookup indexes for contacts
+CREATE INDEX IF NOT EXISTS idx_tenant_contacts_tenant_active ON tenant_contacts(tenant_id, active);
+CREATE INDEX IF NOT EXISTS idx_tenant_contacts_tenant_type ON tenant_contacts(tenant_id, type);
+
+-- Email lookup with functional index (case-insensitive)
+CREATE INDEX IF NOT EXISTS idx_tenant_contacts_email_lookup ON tenant_contacts(tenant_id, lower(email)) WHERE email IS NOT NULL;
+
+-- Partial unique constraint: only one primary per tenant+type
+CREATE UNIQUE INDEX IF NOT EXISTS uq_tenant_contacts_primary_per_type 
+    ON tenant_contacts(tenant_id, type) 
+    WHERE active = true AND is_primary = true;
+
+-- =============================================
 -- INDEX COMMENTS FOR DOCUMENTATION
 -- =============================================
 
@@ -106,3 +136,11 @@ COMMENT ON INDEX idx_access_logs_tenant_date IS 'Optimizes audit log queries for
 COMMENT ON INDEX idx_auth_flow_tenant_app IS 'Composite index for 5-layer authorization flow optimization';
 COMMENT ON INDEX idx_auth_flow_user_app IS 'User-level authorization flow optimization';
 COMMENT ON INDEX idx_access_denied_only IS 'Partial index for security monitoring of failed access attempts';
+
+-- Address and contact index comments
+COMMENT ON INDEX idx_tenant_addresses_tenant_active IS 'Fast lookup of active addresses by tenant';
+COMMENT ON INDEX idx_tenant_addresses_tenant_type IS 'Optimizes filtering addresses by type within tenant';
+COMMENT ON INDEX uq_tenant_addresses_primary_per_type IS 'Ensures only one primary address per type per tenant';
+COMMENT ON INDEX idx_tenant_contacts_tenant_active IS 'Fast lookup of active contacts by tenant';
+COMMENT ON INDEX idx_tenant_contacts_email_lookup IS 'Case-insensitive email lookup within tenant context';
+COMMENT ON INDEX uq_tenant_contacts_primary_per_type IS 'Ensures only one primary contact per type per tenant';

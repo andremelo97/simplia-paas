@@ -42,7 +42,13 @@ async function requireAuth(req, res, next) {
     const payload = authService.verifyToken(token);
     
     // Verify user still exists and is active
-    const user = await User.findById(payload.userId, payload.tenantId);
+    // For platform admin tokens (type: 'platform_admin'), use global lookup
+    let user;
+    if (payload.type === 'platform_admin') {
+      user = await User.findByIdGlobal(payload.userId);
+    } else {
+      user = await User.findById(payload.userId, payload.tenantId);
+    }
     
     if (user.status !== 'active') {
       return res.status(401).json({
@@ -51,8 +57,8 @@ async function requireAuth(req, res, next) {
       });
     }
     
-    // Verify tenant matches (security check)
-    if (req.tenant && req.tenant.tenantId !== payload.tenantId) {
+    // Verify tenant matches (security check) - skip for platform admin tokens
+    if (payload.type !== 'platform_admin' && req.tenant && req.tenant.tenantId !== payload.tenantId) {
       return res.status(403).json({
         error: 'Forbidden',
         message: 'Token tenant does not match request tenant'
@@ -60,10 +66,16 @@ async function requireAuth(req, res, next) {
     }
     
     // Create user context with JWT payload data
-    const userContext = createUserContext(user, req.tenant || { 
-      tenantId: payload.tenantId, 
-      schema: payload.schema 
-    });
+    // For platform admin tokens, create minimal context without tenant data
+    let userContext;
+    if (payload.type === 'platform_admin') {
+      userContext = createUserContext(user, null);
+    } else {
+      userContext = createUserContext(user, req.tenant || { 
+        tenantId: payload.tenantId, 
+        schema: payload.schema 
+      });
+    }
     
     // Add JWT payload data that isn't in the user context
     userContext.allowedApps = payload.allowedApps || [];

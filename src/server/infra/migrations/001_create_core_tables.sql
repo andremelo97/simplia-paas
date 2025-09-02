@@ -149,6 +149,60 @@ COMMENT ON COLUMN application_access_logs.decision IS 'granted or denied - prima
 COMMENT ON COLUMN application_access_logs.reason IS 'Detailed reason for denied access';
 COMMENT ON COLUMN application_access_logs.api_path IS 'Full API path for access tracking';
 
+-- Tenant addresses (institutional addresses)
+CREATE TABLE IF NOT EXISTS tenant_addresses (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    type TEXT NOT NULL CHECK (type IN ('HQ','BILLING','SHIPPING','BRANCH','OTHER')),
+    label TEXT NULL, -- free label (e.g., 'Headquarters São Paulo')
+    line1 TEXT NOT NULL,
+    line2 TEXT NULL,
+    city TEXT NULL,
+    state TEXT NULL,
+    postal_code TEXT NULL,
+    country_code CHAR(2) NOT NULL, -- ISO-3166-1 alpha-2 (store UPPER)
+    is_primary BOOLEAN NOT NULL DEFAULT false,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE tenant_addresses IS 'Institutional addresses for tenants (HQ, billing, shipping, branch offices, etc.)';
+COMMENT ON COLUMN tenant_addresses.tenant_id IS 'Foreign key reference to tenants table';
+COMMENT ON COLUMN tenant_addresses.type IS 'Address type: HQ=headquarters, BILLING=billing address, SHIPPING=shipping, BRANCH=branch office, OTHER=custom';
+COMMENT ON COLUMN tenant_addresses.label IS 'Optional custom label for the address (e.g., "Main Office Downtown")';
+COMMENT ON COLUMN tenant_addresses.line1 IS 'Primary address line (street, number)';
+COMMENT ON COLUMN tenant_addresses.line2 IS 'Secondary address line (suite, apartment, floor)';
+COMMENT ON COLUMN tenant_addresses.country_code IS 'ISO-3166-1 alpha-2 country code (stored in uppercase)';
+COMMENT ON COLUMN tenant_addresses.is_primary IS 'Whether this is the primary address for this type (max 1 per tenant+type)';
+
+-- Tenant contacts (contact persons)
+CREATE TABLE IF NOT EXISTS tenant_contacts (
+    id BIGSERIAL PRIMARY KEY,
+    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    type TEXT NOT NULL CHECK (type IN ('ADMIN','BILLING','TECH','LEGAL','OTHER')),
+    full_name TEXT NOT NULL,
+    email TEXT NULL, -- normalize to lower-case in application
+    phone_e164 TEXT NULL, -- E.164 format (+5511999999999)
+    title TEXT NULL, -- job title
+    notes TEXT NULL,
+    preferences JSONB NULL, -- communication channels/hours, etc.
+    is_primary BOOLEAN NOT NULL DEFAULT false,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+COMMENT ON TABLE tenant_contacts IS 'Contact persons for tenants (admin, billing, technical, legal contacts, etc.)';
+COMMENT ON COLUMN tenant_contacts.tenant_id IS 'Foreign key reference to tenants table';
+COMMENT ON COLUMN tenant_contacts.type IS 'Contact type: ADMIN=administrative, BILLING=billing contact, TECH=technical, LEGAL=legal contact, OTHER=custom';
+COMMENT ON COLUMN tenant_contacts.full_name IS 'Full name of the contact person';
+COMMENT ON COLUMN tenant_contacts.email IS 'Email address (normalized to lowercase in application layer)';
+COMMENT ON COLUMN tenant_contacts.phone_e164 IS 'Phone number in E.164 international format';
+COMMENT ON COLUMN tenant_contacts.title IS 'Job title or position';
+COMMENT ON COLUMN tenant_contacts.preferences IS 'JSON object storing communication preferences, preferred hours, channels, etc.';
+COMMENT ON COLUMN tenant_contacts.is_primary IS 'Whether this is the primary contact for this type (max 1 per tenant+type)';
+
 -- =============================================
 -- POSTGRESQL TRIGGERS FOR UPDATED_AT (Manual updates for now)
 -- =============================================

@@ -27,7 +27,7 @@ const authRateLimit = createRateLimit(15 * 60 * 1000, 10); // 10 requests per 15
  *               email:
  *                 type: string
  *                 format: email
- *                 example: admin@simplia.com
+ *                 example: consultoriasimplia@gmail.com
  *               password:
  *                 type: string
  *                 format: password
@@ -85,8 +85,10 @@ router.post('/login', authRateLimit, async (req, res) => {
     });
 
     res.json({
-      success: true,
-      message: 'Platform login successful',
+      meta: {
+        code: "LOGIN_SUCCESS",
+        message: "Signed in successfully."
+      },
       data: result
     });
   } catch (error) {

@@ -141,7 +141,7 @@ npx jest tests/critical-validation.test.js # Run specific test file
 
 ServiceNow/Salesforce-inspired entitlement architecture with five authorization levels:
 
-### Database Tables (7 total)
+### Database Tables (9 total)
 - `tenants` - Tenant registry with schema mapping and audit fields
 - `users` - Users with tenant isolation and audit fields (13 columns)
 - `user_types` - User hierarchy (operations < manager < admin) with pricing tiers
@@ -149,6 +149,8 @@ ServiceNow/Salesforce-inspired entitlement architecture with five authorization 
 - `tenant_applications` - Tenant-level licenses with expiration, user limits, and seat tracking (14 columns)
 - `user_application_access` - Individual user permissions per application
 - `application_access_logs` - Complete audit trail with IP, User-Agent, API path, and decision reason (13 columns)
+- `tenant_addresses` - Multi-address support per tenant with type-based primary constraints (HQ, BILLING, SHIPPING, BRANCH, OTHER)
+- `tenant_contacts` - Contact management with role-based organization (ADMIN, BILLING, TECH, LEGAL, OTHER)
 
 ### Enterprise Authorization Flow (5 Layers)
 1. **Tenant License Check**: Does tenant have active, non-expired license for application?
@@ -245,6 +247,58 @@ ENABLE_HELMET=true                      # Security headers
 - **Platform Roles** (`internal_admin`): Control access to Simplia's internal administrative tools
 - JWT tokens include both: `{role: 'admin', platformRole: 'internal_admin'}`
 
+## Tenant Addresses & Contacts Management
+
+Complete implementation for managing multiple addresses and contacts per tenant with enterprise-grade validation and UI components.
+
+### Database Schema
+- **tenant_addresses**: Multi-address support with type-based primary constraints
+  - Types: `HQ`, `BILLING`, `SHIPPING`, `BRANCH`, `OTHER`
+  - Primary constraint: One primary address per type per tenant
+  - Fields: type, label, line1, line2, city, state, postal_code, country_code (ISO-2), is_primary
+- **tenant_contacts**: Contact management with role-based organization
+  - Types: `ADMIN`, `BILLING`, `TECH`, `LEGAL`, `OTHER`
+  - Primary constraint: One primary contact per type per tenant
+  - Fields: type, label, name, title, email, phone_number (E.164), department, language, notes, is_primary
+
+### API Endpoints (8 total)
+All endpoints require authentication + `platform_role: internal_admin`:
+```
+GET    /internal/api/v1/tenants/{id}/addresses     # List with filtering
+POST   /internal/api/v1/tenants/{id}/addresses     # Create new address
+PUT    /internal/api/v1/tenants/{id}/addresses/{addressId}  # Update address
+DELETE /internal/api/v1/tenants/{id}/addresses/{addressId}  # Soft delete address
+
+GET    /internal/api/v1/tenants/{id}/contacts      # List with filtering  
+POST   /internal/api/v1/tenants/{id}/contacts      # Create new contact
+PUT    /internal/api/v1/tenants/{id}/contacts/{contactId}   # Update contact
+DELETE /internal/api/v1/tenants/{id}/contacts/{contactId}   # Soft delete contact
+```
+
+### Frontend Components (7 total)
+- **Types & Enums** (`types.ts`): TypeScript definitions with validation constraints
+- **useRepeater Hook** (`common/hooks/useRepeater.ts`): Generic list management with analytics
+- **Common UI Components**: FormSection, FieldError, SelectCountry (ISO-2 compliant)
+- **Form Components**: AddressItemForm, ContactItemForm with full validation
+- **Repeater Components**: AddressesRepeater, ContactsRepeater with add/remove/primary logic
+- **Integration**: Complete tenant creation flow with addresses and contacts
+
+### Key Features
+- ✅ **Primary Constraints**: Automatic enforcement of one primary per type
+- ✅ **Validation**: Client + server validation with user-friendly error messages
+- ✅ **Accessibility**: Full ARIA compliance and keyboard navigation
+- ✅ **AppFeedback Integration**: Automatic success/error messaging
+- ✅ **Responsive Design**: Mobile-friendly multi-column layouts
+- ✅ **Analytics**: User interaction tracking with telemetry events
+
+### Business Rules
+- Minimum one address required per tenant
+- Address types prevent duplicates (one HQ, one billing, etc.)
+- Phone numbers validated in E.164 format (international standard)
+- Country codes enforced as ISO-2 uppercase (BR, US, CA, etc.)
+- Contact management supports multiple roles per tenant
+- Primary designation ensures clear hierarchy for communications
+
 ## Database Migrations
 
 - **Location**: `src/server/infra/migrations/` - SQL files executed in alphabetical order
@@ -255,11 +309,12 @@ ENABLE_HELMET=true                      # Security headers
 The migration system has been reorganized from 5 fragmented files into 3 well-organized migrations:
 
 #### **001_create_core_tables.sql** - Foundation
-- **All 7 core tables**: tenants, users, user_types, applications, tenant_applications, user_application_access, application_access_logs
+- **All 9 core tables**: tenants, users, user_types, applications, tenant_applications, user_application_access, application_access_logs, tenant_addresses, tenant_contacts
 - **Complete relationships**: All foreign keys and constraints
 - **Audit fields**: `active`, `created_at`, `updated_at` on all tables  
 - **Automatic triggers**: PostgreSQL triggers for `updated_at` maintenance
 - **Comprehensive comments**: Full documentation on tables and columns
+- **Tenant Extensions**: Address and contact management with type-based primary constraints
 
 #### **002_create_indexes.sql** - Performance
 - **Organized by purpose**: Primary lookup, performance, audit, business logic
@@ -328,8 +383,8 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 ## Frontend Error Handling System
 
 ### AppError Architecture
-- **Unified Error Type** (`apps/internal-admin/services/errors/types.ts`): Standardized error model with `kind`, `httpStatus`, `code`, `message`, `details`, `path`
-- **Error Catalog** (`apps/internal-admin/services/errors/catalog.ts`): English-only friendly messages mapped by status/code
+- **Unified Error Type** (`common/feedback/types.ts`): Standardized error model with `kind`, `httpStatus`, `code`, `message`, `details`, `path`
+- **Error Catalog** (`common/feedback/catalog.ts`): English-only friendly messages mapped by status/code
 - **HTTP Interceptor** (`config/http.ts`): Normalizes all HTTP errors into AppError instances with telemetry
 - **Auth Store Integration** (`apps/internal-admin/store/auth.ts`): Returns AppError instead of raw HTTP errors
 - **UI Components**: Login page displays friendly messages with proper a11y attributes (`role="alert"`, `aria-live="polite"`)
@@ -340,6 +395,83 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - `Network failure` → "Can't reach the server. Check your connection and try again."
 - `422 Validation` → Field-level errors + validation summary
 
+## AppFeedback System (Success + Error Standardization)
+
+### Architecture Overview
+- **Backend Meta Envelope**: All 2xx mutation responses include `{meta: {code, message}, data}` structure
+- **HTTP Interceptor**: Automatically detects `meta.code` in successful responses and publishes feedback
+- **Centralized Domain**: `src/client/common/feedback/` contains types, catalog, store, and host components
+- **Global Host**: `FeedbackHost` component mounted in `AdminLayout.tsx` handles all feedback rendering
+
+### Components
+- **Types** (`common/feedback/types.ts`): `AppFeedback` interface with kind, code, message, accessibility props
+- **Catalog** (`common/feedback/catalog.ts`): Maps success codes to user-friendly messages (TENANT_CREATED → "Tenant created successfully.")
+- **Store** (`common/feedback/store.ts`): Zustand-based event bus with auto-dismiss, telemetry, and queue management
+- **Host** (`common/feedback/FeedbackHost.tsx`): Renders toasts and banners with full accessibility support
+
+### Success Flow Examples
+
+#### Tenant Creation
+1. `POST /internal/api/v1/tenants` → `201 {meta: {code: "TENANT_CREATED"}, data: {...}}`
+2. HTTP interceptor detects mutative method + meta.code
+3. Resolves message from catalog: "Tenant created successfully."
+4. Publishes to feedback store: `{kind: 'success', code: 'TENANT_CREATED', message: '...'}`
+5. FeedbackHost renders green toast with checkmark icon and auto-dismiss after 4s
+6. Telemetry: `feedback_shown {kind: 'success', code: 'TENANT_CREATED', path: '/tenants'}`
+
+#### Login Success
+1. `POST /internal/api/v1/platform-auth/login` → `200 {meta: {code: "LOGIN_SUCCESS"}, data: {...}}`
+2. Auth store persists user session and redirects to dashboard
+3. HTTP interceptor detects success + meta.code
+4. Resolves message from catalog: "Signed in successfully."
+5. Publishes to feedback store: `{kind: 'success', code: 'LOGIN_SUCCESS', message: '...'}`
+6. FeedbackHost renders toast on dashboard page after redirect
+7. Telemetry: `feedback_shown {kind: 'success', code: 'LOGIN_SUCCESS', path: '/platform-auth/login'}`
+
+#### Login Error (No Toast)
+1. `POST /internal/api/v1/platform-auth/login` → `401 {error: "Unauthorized", message: "Invalid email..."}`
+2. HTTP interceptor creates AppError (no meta.code = no toast)
+3. Auth store receives AppError and sets error state
+4. Login component renders inline banner with error message
+5. No global toast published - error stays contextual to login form
+
+### Accessibility Features
+- **Toasts**: `aria-live="polite"` for non-intrusive announcements
+- **Error Banners**: `role="alert"` + `aria-live="assertive"` for critical issues
+- **Focus Management**: Error banners receive focus, success toasts do not interrupt workflow
+- **Auto-dismiss**: Success/info messages auto-hide, errors persist until manually dismissed
+
+### Usage Patterns
+- **Automatic**: Components don't need manual feedback code - HTTP interceptor handles it
+- **Manual Override**: Use `publishFeedback()` for client-side only operations
+- **Extensible**: Add new codes to catalog, backend returns them, frontend automatically supports
+- **Backward Compatible**: Existing clients ignore `meta`, new clients get enhanced UX
+
+### Current Feedback Codes
+- **Tenant Operations**: `TENANT_CREATED`, `TENANT_UPDATED`, `TENANT_DELETED`
+- **User Operations**: `USER_CREATED`, `USER_UPDATED`, `USER_DELETED`
+- **License Operations**: `LICENSE_ACTIVATED`, `LICENSE_ADJUSTED`
+- **Address Operations**: `ADDRESS_CREATED`, `ADDRESS_UPDATED`, `ADDRESS_DELETED`
+- **Contact Operations**: `CONTACT_CREATED`, `CONTACT_UPDATED`, `CONTACT_DELETED`
+- **Authentication Operations**: `LOGIN_SUCCESS`, `AUTH_INVALID_CREDENTIALS`, `AUTH_RATE_LIMITED`, `AUTH_LOCKED`, `AUTH_NETWORK_FAILURE`
+- **Fallback Strategy**: Unknown codes use `meta.message` → route-based fallback → generic success message
+
+### Login Migration (Hybrid Behavior)
+- **Error Handling**: Login errors show **inline banner only** (`role="alert"`, `aria-live="assertive"`)
+- **Success Handling**: Login success triggers **global toast** via HTTP interceptor (`LOGIN_SUCCESS` code)
+- **No Duplication**: Errors stay inline, success becomes toast - no overlap or conflict
+- **Deduplication**: 5-second window prevents duplicate toasts during rapid navigation
+- **Clean System**: Old `apps/internal-admin/services/errors/` removed, everything centralized in `@client/common/feedback`
+- **Migration Complete**: All imports now use the unified `@client/common/feedback` system
+
+### Implementation Notes
+- **Telemetry**: All feedback events emit `feedback_shown {kind, code, path}` for analytics
+- **Performance**: Auto-dismiss prevents notification accumulation, errors persist for user action
+- **Deduplication**: Prevents duplicate feedback within 5-second window (same code + kind)
+- **Testing**: Mock `window.analytics.track` in tests to verify telemetry events
+- **Expansion**: Add new codes to catalog, backend endpoints return them, frontend automatically supports
+- **Centralized**: All error and feedback handling unified in `common/feedback` domain
+
 ## Frontend UI System
 
 ### Design System
@@ -347,6 +479,7 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
   - `--brand-primary: #B725B7` (purple), `--brand-secondary: #E91E63` (pink)
 - **Component Library** (`src/client/common/ui/`): Reusable UI components with consistent styling
   - Alert, Button, Input, Card, Table components with variant support
+  - FormSection, FieldError, SelectCountry components for complex forms
   - A11y-compliant with proper ARIA attributes
 - **Tailwind Integration**: v3.4.17 with custom component styling and forced heights for consistency
 
@@ -354,7 +487,9 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - **Multi-column responsive layouts** for complex forms (tenant creation)
 - **Combined validation**: Client-side + server-side error handling
 - **Auto-generated fields**: Schema names from display names with validation
-- **Placeholder sections**: Address and contact information collection
+- **Repeater Components**: Dynamic add/remove functionality for addresses and contacts
+- **Primary Constraints**: Type-based primary selection with business rule enforcement
+- **useRepeater Hook**: Generic state management for list operations with analytics tracking
 
 ## Enterprise Features Implemented
 

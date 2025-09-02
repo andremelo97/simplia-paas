@@ -28,3 +28,6 @@ export {
   BreadcrumbEllipsis 
 } from './Breadcrumb'
 export { Checkbox, type CheckboxProps } from './Checkbox'
+export { FieldError } from './FieldError'
+export { FormSection } from './FormSection'  
+export { SelectCountry } from './SelectCountry'

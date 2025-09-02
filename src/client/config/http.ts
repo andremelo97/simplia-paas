@@ -1,8 +1,9 @@
-import { AppError, createAppError, isAppError } from '../apps/internal-admin/services/errors/types'
-import { mapStatusToErrorCode, getErrorMessage } from '../apps/internal-admin/services/errors/catalog'
+import { AppError, createAppError, isAppError } from '../common/feedback/types'
+import { mapStatusToErrorCode, getErrorMessage } from '../common/feedback/catalog'
+import { publishFeedback, resolveFeedbackMessage } from '../common/feedback'
 
 // HTTP client configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3001'
 
 class HttpClient {
   private baseURL: string
@@ -13,10 +14,25 @@ class HttpClient {
 
   private async request(endpoint: string, options: RequestInit = {}) {
     const url = `${this.baseURL}${endpoint}`
+    
+    // Get auth token from localStorage (persisted by Zustand)
+    const authStorage = localStorage.getItem('auth-storage')
+    let token: string | null = null
+    
+    if (authStorage) {
+      try {
+        const parsed = JSON.parse(authStorage)
+        token = parsed.state?.token || null
+      } catch (e) {
+        console.warn('Failed to parse auth storage:', e)
+      }
+    }
+    
     const config: RequestInit = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...options.headers,
       },
     }
@@ -34,7 +50,7 @@ class HttpClient {
         }
         
         // Log error for telemetry (dev only)
-        if (import.meta.env.DEV) {
+        if ((import.meta as any).env?.DEV) {
           console.error('[HTTP Error]', {
             status: response.status,
             path: endpoint,
@@ -47,14 +63,33 @@ class HttpClient {
         throw this.createAppErrorFromResponse(response, endpoint, errorData)
       }
 
-      return response.json()
+      const responseData = await response.json()
+      
+      // Intercept successful mutations with meta.code
+      if (this.isMutativeMethod(options.method || 'GET') && responseData?.meta?.code) {
+        const feedbackMessage = resolveFeedbackMessage(
+          responseData.meta.code,
+          responseData.meta.message,
+          { method: options.method || 'GET', path: endpoint }
+        )
+        
+        publishFeedback({
+          kind: 'success',
+          code: responseData.meta.code,
+          title: feedbackMessage.title,
+          message: feedbackMessage.message,
+          path: endpoint
+        })
+      }
+      
+      return responseData
     } catch (error) {
       // Handle network errors
       if (error instanceof TypeError && error.message.includes('fetch')) {
         const networkError = createAppError.network()
         networkError.message = getErrorMessage(networkError)
         
-        if (import.meta.env.DEV) {
+        if ((import.meta as any).env?.DEV) {
           console.error('[Network Error]', { path: endpoint, originalError: error })
         }
         
@@ -67,10 +102,14 @@ class HttpClient {
       }
       
       // Unknown error - wrap it
-      const unknownError = createAppError.unknown(error.message)
+      const unknownError = createAppError.unknown((error as any)?.message || 'Unknown error')
       unknownError.message = getErrorMessage(unknownError)
       throw unknownError
     }
+  }
+
+  private isMutativeMethod(method: string): boolean {
+    return ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())
   }
 
   private createAppErrorFromResponse(response: Response, endpoint: string, errorData?: any): AppError {

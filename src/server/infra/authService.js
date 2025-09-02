@@ -201,6 +201,8 @@ class AuthService {
       user: {
         userId: user.id,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         name: user.name,
         platformRole: user.platformRole,
         active: user.active,

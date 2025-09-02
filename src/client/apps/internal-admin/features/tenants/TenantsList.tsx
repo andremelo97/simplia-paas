@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Card, CardHeader, CardContent, Button } from '@client/common/ui'
-import { api } from '@client/config/http'
 import { useUIStore } from '../../store'
+import { tenantsService } from '../../services/tenants'
 
 interface Tenant {
   id: number
   name: string
-  schema: string
-  description?: string
-  active: boolean
+  subdomain: string
+  schemaName: string
+  status: string
   createdAt: string
-  userCount: number
-  applicationCount: number
+  updatedAt: string
+  userCount?: number
+  applicationCount?: number
 }
 
 export const TenantsList: React.FC = () => {
@@ -37,8 +38,8 @@ export const TenantsList: React.FC = () => {
       }
       console.log('📋 [TenantsList] Request params:', params)
       
-      const response = await api.tenants.list(params)
-      const data = response.data.data // Backend returns { success, data: { tenants, pagination } }
+      const response = await tenantsService.list(params)
+      const data = response.data // Backend returns { success, data: { tenants, pagination } }
       
       console.log('✅ [TenantsList] Tenants fetched successfully:', {
         tenantsCount: data.tenants?.length || 0,
@@ -50,9 +51,9 @@ export const TenantsList: React.FC = () => {
     } catch (error) {
       console.error('❌ [TenantsList] Failed to fetch tenants:', error)
       console.error('🔍 [TenantsList] Error details:', {
-        name: error?.name,
-        message: error?.message,
-        stack: error?.stack
+        name: (error as any)?.name,
+        message: (error as any)?.message,
+        stack: (error as any)?.stack
       })
       
       addNotification({
@@ -64,30 +65,33 @@ export const TenantsList: React.FC = () => {
         {
           id: 1,
           name: 'Default Tenant',
-          schema: 'tenant_default',
-          description: 'Default tenant for development',
-          active: true,
+          subdomain: 'default',
+          schemaName: 'tenant_default',
+          status: 'active',
           createdAt: '2024-01-15T10:30:00Z',
+          updatedAt: '2024-01-15T10:30:00Z',
           userCount: 5,
           applicationCount: 3
         },
         {
           id: 2,
           name: 'Clinic ABC',
-          schema: 'tenant_clinic_abc',
-          description: 'Medical clinic management',
-          active: true,
+          subdomain: 'clinic-abc',
+          schemaName: 'tenant_clinic_abc',
+          status: 'active',
           createdAt: '2024-02-20T14:15:00Z',
+          updatedAt: '2024-02-20T14:15:00Z',
           userCount: 12,
           applicationCount: 2
         },
         {
           id: 3,
           name: 'Hospital XYZ',
-          schema: 'tenant_hospital_xyz',
-          description: 'Large hospital system',
-          active: false,
+          subdomain: 'hospital-xyz',
+          schemaName: 'tenant_hospital_xyz',
+          status: 'inactive',
           createdAt: '2024-03-10T09:45:00Z',
+          updatedAt: '2024-03-10T09:45:00Z',
           userCount: 0,
           applicationCount: 1
         }
@@ -143,7 +147,7 @@ export const TenantsList: React.FC = () => {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="p-6 pb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">All Tenants</h2>
             <div className="w-64">
@@ -194,16 +198,14 @@ export const TenantsList: React.FC = () => {
                         <div className="text-sm font-medium text-gray-900">
                           {tenant.name}
                         </div>
-                        {tenant.description && (
-                          <div className="text-sm text-gray-500">
-                            {tenant.description}
-                          </div>
-                        )}
+                        <div className="text-sm text-gray-500">
+                          {tenant.subdomain}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="text-sm font-mono text-gray-600">
-                        {tenant.schema}
+                        {tenant.schemaName}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -215,12 +217,12 @@ export const TenantsList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          tenant.active
+                          tenant.status === 'active'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
                         }`}
                       >
-                        {tenant.active ? 'Active' : 'Inactive'}
+                        {tenant.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

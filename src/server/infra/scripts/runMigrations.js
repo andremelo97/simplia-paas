@@ -41,8 +41,16 @@ async function runMigrations() {
         .map(stmt => stmt.trim())
         .filter(stmt => stmt.length > 0);
       
-      for (const statement of statements) {
-        await database.query(statement);
+      for (let i = 0; i < statements.length; i++) {
+        const statement = statements[i];
+        try {
+          console.log(`Executing statement ${i + 1}/${statements.length} from ${file}: ${statement.substring(0, 100)}...`);
+          await database.query(statement);
+        } catch (error) {
+          console.error(`Error in statement ${i + 1} from ${file}:`);
+          console.error(`Statement: ${statement}`);
+          throw error;
+        }
       }
       
       // Mark migration as completed

@@ -30,19 +30,19 @@ const MetricCard: React.FC<{
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       <Card className="relative overflow-hidden border-gray-200/50 shadow-sm hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-4">
+        <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-3 mb-4">
                 {icon && (
-                  <div className={`p-2 rounded-lg border ${colorVariants[color]}`}>
+                  <div className={`p-2.5 rounded-lg border ${colorVariants[color]}`}>
                     {icon}
                   </div>
                 )}
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{title}</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
                   {trend && (
-                    <div className="flex items-center gap-1 mt-0.5">
+                    <div className="flex items-center gap-1">
                       {trendIcon[trend]}
                       <span className={`text-xs font-medium ${
                         trend === 'up' ? 'text-green-600' : 
@@ -55,10 +55,10 @@ const MetricCard: React.FC<{
                 </div>
               </div>
               
-              <div className="space-y-1">
-                <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
+              <div className="space-y-2">
+                <p className="text-3xl font-bold text-gray-900 tracking-tight">{value}</p>
                 {subtitle && (
-                  <p className="text-xs text-gray-500">{subtitle}</p>
+                  <p className="text-sm text-gray-500">{subtitle}</p>
                 )}
               </div>
             </div>
@@ -76,14 +76,14 @@ const RecentActivity: React.FC = () => {
       action: 'New tenant created',
       details: 'Clinic ABC (tenant_clinic_abc)',
       timestamp: '2 hours ago',
-      user: 'admin@simplia.com'
+      user: 'consultoriasimplia@gmail.com'
     },
     {
       id: 2,
       action: 'User access granted',
       details: 'TQ application access for user john.doe',
       timestamp: '4 hours ago',
-      user: 'admin@simplia.com'
+      user: 'consultoriasimplia@gmail.com'
     },
     {
       id: 3,
@@ -96,10 +96,10 @@ const RecentActivity: React.FC = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="p-6 pb-4">
         <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6">
         <div className="space-y-4">
           {activities.map((activity) => (
             <div key={activity.id} className="flex items-start space-x-3">
@@ -203,11 +203,11 @@ export const Dashboard: React.FC = () => {
           <RecentActivity />
           
           <Card className="border-gray-200/50 shadow-sm">
-            <CardHeader className="pb-4">
+            <CardHeader className="p-6 pb-4">
               <h3 className="text-lg font-semibold text-gray-900">System Status</h3>
               <p className="text-sm text-gray-500 mt-1">Current operational status of platform services</p>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="px-6 pb-6">
               <div className="space-y-4">
                 <div className="flex items-center justify-between p-3 rounded-lg bg-green-50/50 border border-green-200/30">
                   <div className="flex items-center gap-3">

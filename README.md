@@ -19,14 +19,38 @@ simplia-paas/
 │   ├── 📁 client/                     # Frontend React + TypeScript
 │   │   ├── 📁 apps/                   # Multi-aplicação organizada por domínio
 │   │   │   ├── 📁 internal-admin/     # Painel administrativo (internal.simplia.com)
-│   │   │   │   ├── 📁 routes/         # dashboard, tenants, users, applications, entitlements, audit
-│   │   │   │   ├── 📁 features/       # licensing, users, etc. (componentes de negócio)
-│   │   │   │   ├── 📁 components/     # componentes específicos do painel
-│   │   │   │   ├── 📁 layouts/        # layouts do painel administrativo
-│   │   │   │   ├── 📁 services/       # cliente para /internal/api/v1
-│   │   │   │   ├── 📁 store/          # auth (platformRole), tenant selecionado
-│   │   │   │   ├── 📁 assets/         # assets específicos do admin
-│   │   │   │   └── app.tsx            # componente principal (placeholder)
+│   │   │   │   ├── 📁 routes/         # Roteamento do painel
+│   │   │   │   │   └── index.tsx      # Configuração de rotas
+│   │   │   │   ├── 📁 features/       # Funcionalidades admin
+│   │   │   │   │   ├── 📁 auth/       # Autenticação
+│   │   │   │   │   │   └── Login.tsx  # Página de login com AppError
+│   │   │   │   │   ├── 📁 dashboard/  # Dashboard principal
+│   │   │   │   │   │   └── Dashboard.tsx # Dashboard com métricas
+│   │   │   │   │   └── 📁 tenants/    # Gestão de tenants
+│   │   │   │   │       ├── TenantsList.tsx      # Lista de tenants
+│   │   │   │   │       ├── CreateTenant.tsx     # Criação com AppFeedback
+│   │   │   │   │       ├── types.ts             # TypeScript types para addresses/contacts
+│   │   │   │   │       ├── AddressItemForm.tsx  # Form individual de endereço
+│   │   │   │   │       ├── ContactItemForm.tsx  # Form individual de contato
+│   │   │   │   │       ├── AddressesRepeater.tsx # Repeater para endereços
+│   │   │   │   │       └── ContactsRepeater.tsx  # Repeater para contatos
+│   │   │   │   ├── 📁 components/     # Componentes específicos do admin
+│   │   │   │   │   ├── Header.tsx     # Header do layout
+│   │   │   │   │   ├── Sidebar.tsx    # Sidebar de navegação
+│   │   │   │   │   └── RouteGuard.tsx # Proteção de rotas
+│   │   │   │   ├── 📁 layouts/        # Layouts do painel
+│   │   │   │   │   └── AdminLayout.tsx # Layout principal com FeedbackHost
+│   │   │   │   ├── 📁 services/       # Cliente para /internal/api/v1
+│   │   │   │   │   ├── auth.ts        # Serviço de autenticação
+│   │   │   │   │   ├── tenants.ts     # Serviço de tenants
+│   │   │   │   │   ├── addresses.ts   # Serviço de endereços
+│   │   │   │   │   └── contacts.ts    # Serviço de contatos
+│   │   │   │   ├── 📁 store/          # Estado global Zustand
+│   │   │   │   │   ├── auth.ts        # Auth store (platformRole)
+│   │   │   │   │   ├── ui.ts          # UI store (notifications)
+│   │   │   │   │   └── index.ts       # Re-exports
+│   │   │   │   ├── 📁 assets/         # Assets específicos do admin
+│   │   │   │   └── app.tsx            # Componente principal
 │   │   │   ├── 📁 tq-client/          # App do produto TQ (cliente final)
 │   │   │   │   ├── 📁 routes/         # rotas específicas do TQ
 │   │   │   │   ├── 📁 features/       # funcionalidades do TQ
@@ -41,17 +65,42 @@ simplia-paas/
 │   │   │       └── app.tsx            # (placeholders)
 │   │   │
 │   │   ├── 📁 common/                 # Reuso visual e utilidades de front
-│   │   │   ├── 📁 ui/                 # design system components
-│   │   │   ├── 📁 components/         # componentes de negócio compartilhados
+│   │   │   ├── 📁 ui/                 # Design system components (Button, Input, Card, etc.)
+│   │   │   │   ├── Button.tsx         # Componente Button com loading states
+│   │   │   │   ├── Input.tsx          # Componente Input com validação
+│   │   │   │   ├── Card.tsx           # Componente Card refatorado
+│   │   │   │   ├── Toast.tsx          # Sistema de toasts
+│   │   │   │   ├── Toaster.tsx        # Host de toasts
+│   │   │   │   ├── FormSection.tsx    # Seção de formulário com botão add
+│   │   │   │   ├── FieldError.tsx     # Display de erro acessível
+│   │   │   │   ├── SelectCountry.tsx  # Seletor de país ISO-2
+│   │   │   │   └── index.ts           # Re-exports de componentes
+│   │   │   │
+│   │   │   ├── 📁 feedback/           # Sistema AppFeedback (novo)
+│   │   │   │   ├── types.ts           # Interfaces AppFeedback e AppError
+│   │   │   │   ├── catalog.ts         # Catálogo de códigos → mensagens
+│   │   │   │   ├── store.ts           # Zustand store com telemetria
+│   │   │   │   ├── FeedbackHost.tsx   # Componente global de feedback
+│   │   │   │   └── index.ts           # Re-exports do domínio
+│   │   │   │
+│   │   │   ├── 📁 components/         # Componentes de negócio compartilhados
 │   │   │   ├── 📁 hooks/              # React hooks compartilhados
-│   │   │   ├── 📁 utils/              # funções utilitárias
-│   │   │   └── 📁 constants/          # constantes e configurações
+│   │   │   │   ├── use-toast.tsx      # Hook de toast
+│   │   │   │   └── useRepeater.ts     # Hook genérico para listas (add/remove/primary)
+│   │   │   ├── 📁 utils/              # Funções utilitárias
+│   │   │   │   └── cn.ts              # Utility para className
+│   │   │   └── 📁 constants/          # Constantes e configurações
 │   │   │
 │   │   ├── 📁 config/
-│   │   │   ├── env.ts                 # configuração de ambiente (placeholder)
-│   │   │   └── http.ts                # configuração cliente HTTP (placeholder)
+│   │   │   ├── env.ts                 # Configuração de ambiente
+│   │   │   └── http.ts                # Cliente HTTP com interceptors AppError + AppFeedback
 │   │   │
-│   │   └── main.tsx                   # entry point React (placeholder)
+│   │   ├── 📁 styles/                 # Estilos globais
+│   │   │   └── globals.css            # Estilos CSS globais
+│   │   │
+│   │   ├── index.css                  # Estilos principais com tokens de design
+│   │   ├── index.html                 # Template HTML
+│   │   └── main.tsx                   # Entry point React
 │   │
 │   ├── 📁 server/                     # Backend Express.js + JavaScript
 │   │   ├── 📁 api/                    # Camada de API organizada por domínio
@@ -89,6 +138,8 @@ simplia-paas/
 │   │   │   │   ├── 001_create_core_tables.sql # Todas tabelas core + relacionamentos + auditoria
 │   │   │   │   ├── 002_create_indexes.sql    # Estratégia de indexação organizada
 │   │   │   │   ├── 003_seed_initial_data.sql  # Dados essenciais + tenants padrão
+│   │   │   │   ├── 004_fix_default_tenant.sql # Correções do tenant padrão
+│   │   │   │   ├── 005_fix_admin_password.sql # Correção da senha do admin
 │   │   │   │   └── 📁 _backup/         # Migrações antigas (backup)
 │   │   │   │
 │   │   │   ├── 📁 scripts/
@@ -126,13 +177,16 @@ simplia-paas/
 ├── 📁 node_modules/                   # Dependências npm
 ├── 📁 dist/                          # Build artifacts (gerado)
 │
-├── 📄 jest.config.js                  # Configuração Jest com aliases de path
-├── 📄 package.json                    # Configuração npm e scripts
-├── 📄 tsconfig.json                   # TypeScript para client
-├── 📄 tsconfig.server.json           # TypeScript para server build
+├── 📄 package.json                   # Dependências e scripts npm
+├── 📄 tsconfig.json                  # Configuração TypeScript global
+├── 📄 tsconfig.server.json           # Configuração TypeScript para servidor
 ├── 📄 vite.config.ts                 # Configuração Vite
+├── 📄 tailwind.config.js             # Configuração Tailwind CSS
+├── 📄 postcss.config.js              # Configuração PostCSS
+├── 📄 jest.config.js                 # Configuração Jest para testes
 ├── 📄 .env                           # Variáveis de ambiente (não commitado)
 ├── 📄 .env.example                   # Template de configuração
+├── 📄 index.html                     # Template HTML raiz
 ├── 📄 CLAUDE.md                      # Documentação para Claude Code
 ├── 📄 TESTING-QA.md                  # Documentação de testes e QA
 └── 📄 README.md                      # Este arquivo
@@ -533,11 +587,36 @@ O **painel administrativo interno** possui interface moderna e profissional:
 - ✅ **UX Otimizada** - Banners para erros globais, inline para validação de campos
 - ✅ **Exemplos**: "Incorrect email or password" vs "HTTP 401" bruto
 
+#### **AppFeedback System (Sucesso + Erros Padronizados)**
+- ✅ **Backend Meta Envelope** - Respostas 2xx com `{meta: {code, message}, data}` 
+- ✅ **Interceptor HTTP Automático** - Detecta `meta.code` e publica feedback sem código manual
+- ✅ **Domínio Centralizado** - `common/feedback/` com types, catalog, store, host
+- ✅ **Feedback Visual Acessível** - Toasts (`aria-live="polite"`) + Banners (`role="alert"`)
+- ✅ **Catálogo Extensível** - Mapeamento códigos → mensagens (TENANT_CREATED, LOGIN_SUCCESS, etc.)
+- ✅ **Auto-dismiss Inteligente** - Sucessos somem automaticamente, erros persistem
+- ✅ **Deduplicação Avançada** - Janela de 5s evita toasts duplicados durante navegação
+- ✅ **Telemetria Integrada** - `feedback_shown {kind, code, path}` para analytics
+- ✅ **Login Migrado** - Sistema unificado com banner inline (erros) + toast global (sucesso)
+- ✅ **Sistema Limpo** - Removido sistema antigo `services/errors/`, tudo centralizado em `common/feedback/`
+- ✅ **Comportamento Híbrido** - Erros inline no formulário, sucessos como toast global
+
 #### **Formulários Inteligentes**
-- ✅ **Layout Multi-coluna** responsivo (Tenant + Contact | Address)
+- ✅ **Layout Multi-coluna** responsivo com seções organizadas
 - ✅ **Validação Híbrida** - Cliente + servidor com feedback em tempo real  
 - ✅ **Campos Auto-gerados** - Schema names automáticos baseados em display names
-- ✅ **Seções Placeholder** - Coleta estruturada de endereço e contatos
+- ✅ **Componentes Repeater** - Sistema dinâmico de add/remove com constraints de negócio
+
+#### **Gestão de Endereços & Contatos**
+- ✅ **9 Tabelas** - tenant_addresses e tenant_contacts integrados ao sistema principal
+- ✅ **8 Endpoints API** - CRUD completo com autenticação platform_role
+- ✅ **7 Componentes Frontend** - useRepeater hook + UI components modulares
+- ✅ **Tipos Estruturados** - HQ/BILLING/SHIPPING (endereços) + ADMIN/BILLING/TECH/LEGAL (contatos)
+- ✅ **Primary Constraints** - Uma primary por tipo por tenant com enforcement automático  
+- ✅ **Validação E.164** - Phone numbers em formato internacional padrão
+- ✅ **ISO-2 Countries** - Códigos de país com selector pré-populado
+- ✅ **AppFeedback Integration** - Success/error messaging automático
+- ✅ **A11y Compliance** - ARIA completo + navegação por teclado
+- ✅ **Analytics Tracking** - Telemetria em todas interações do usuário
 
 #### **Componentes de Navegação**
 - ✅ **Sidebar Colapsável** com ícones otimizados e hover states
@@ -546,11 +625,12 @@ O **painel administrativo interno** possui interface moderna e profissional:
 - ✅ **Animation System** com Framer Motion para transições fluidas
 
 ### ✅ **Fundação Enterprise Implementada**
-- **7 tabelas** com campos de auditoria completos + triggers automáticos para `updated_at`
-- **18 índices** otimizados para performance enterprise
+- **9 tabelas** com campos de auditoria completos + triggers automáticos para `updated_at`
+- **20+ índices** otimizados para performance enterprise incluindo partial unique constraints
 - **5 camadas de autorização** (License→Seat→User→Role→Audit) com logging detalhado
 - **Multi-tenancy** com isolamento por schema PostgreSQL
 - **JWT otimizado** com application slugs (substitui IDs por strings para performance)
+- **Gestão completa** de endereços e contatos com constraints de negócio
 - **JWT role override** - Middleware permite overriding de role via JWT para testes e flexibilidade
 - **Compliance médico** com logs contextuais completos (IP, User-Agent, API path, decision reason)
 - **Integridade referencial** com 7 relacionamentos FK entre todas as entidades
@@ -560,19 +640,42 @@ O **painel administrativo interno** possui interface moderna e profissional:
 - **Error Handling Profissional** com mensagens amigáveis e acessibilidade completa
 
 ### 🚀 Próximos Passos
-1. **Expansão do Internal Admin Panel**: Páginas de tenants, users, applications e entitlements
-2. **Product Applications**: Desenvolver interfaces para TQ, CRM e Automation clients  
-3. **Public API Development**: Criar APIs públicas dos produtos (separadas da API interna)
-4. **Advanced UI Components**: Tabelas avançadas, modais, dropdowns e filtros
-5. **Dashboard Analytics**: Métricas em tempo real e relatórios visuais
-6. **Linting & Formatting**: Implementar ESLint, Prettier e pre-commit hooks
-7. **Monitoring**: Logging estruturado e métricas de performance
-8. **Production Deployment**: Configurar CI/CD e ambientes
+1. **Expansão do Internal Admin Panel**: Completar páginas de users, applications e entitlements
+2. **Tenant Management Enhancement**: Edição, visualização e histórico de addresses/contacts
+3. **Product Applications**: Desenvolver interfaces para TQ, CRM e Automation clients  
+4. **Public API Development**: Criar APIs públicas dos produtos (separadas da API interna)
+5. **Advanced UI Components**: Tabelas avançadas, modais, dropdowns e filtros
+6. **Dashboard Analytics**: Métricas em tempo real e relatórios visuais
+7. **Linting & Formatting**: Implementar ESLint, Prettier e pre-commit hooks
+8. **Monitoring**: Logging estruturado e métricas de performance
+9. **Production Deployment**: Configurar CI/CD e ambientes
+
+### ✨ Implementações Recentes (Janeiro 2025)
+- **✅ Gestão Completa de Endereços & Contatos**: Sistema enterprise com 9 tabelas, 8 APIs e 7 componentes frontend
+- **✅ Componentes Repeater**: useRepeater hook genérico + UI components modulares 
+- **✅ Validação Avançada**: Primary constraints, E.164 phone, ISO-2 countries
+- **✅ AppFeedback Integration**: Success/error messaging automático
+- **✅ A11y Compliance**: ARIA completo + navegação por teclado
+
+#### Uso dos Novos Componentes
+```typescript
+// useRepeater - Hook genérico para listas com add/remove/primary
+const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues>({
+  initialItems: addresses,
+  primaryKey: 'is_primary',
+  typeKey: 'type'
+});
+
+// Componentes Repeater - Já integrados no CreateTenant
+<AddressesRepeater addresses={addresses} onChange={setAddresses} errors={errors} />
+<ContactsRepeater contacts={contacts} onChange={setContacts} errors={errors} />
+```
 
 ### 📈 Status de Desenvolvimento
-- 🟢 **Backend API**: 100% completo com documentação Swagger
+- 🟢 **Backend API**: 100% completo com documentação Swagger + addresses/contacts APIs
 - 🟢 **Frontend Foundation**: Design system e error handling implementados  
-- 🟡 **Admin Interface**: Login e estrutura base prontos - páginas em desenvolvimento
+- 🟢 **Tenant Management**: Criação completa com addresses/contacts + repeater components
+- 🟡 **Admin Interface**: Dashboard, tenants prontos - users/applications/entitlements pendentes
 - 🔴 **Product Apps**: Estrutura criada - desenvolvimento pendente
 - 🔴 **Public APIs**: Aguardando definição de requisitos dos produtos
 

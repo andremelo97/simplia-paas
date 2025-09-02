@@ -1,52 +1,29 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardContent, Button, Input, Label } from '@client/common/ui'
-import { api } from '@client/config/http'
 import { useUIStore } from '../../store'
+import { tenantsService } from '../../services/tenants'
+import { addressService } from '../../services/addresses'
+import { contactService } from '../../services/contacts'
+import { AddressesRepeater } from './AddressesRepeater'
+import { ContactsRepeater } from './ContactsRepeater'
+import { AddressFormValues, ContactFormValues } from './types'
 
 interface TenantFormData {
   name: string
-  schema: string
   description: string
-}
-
-interface AddressData {
-  country: string
-  address_line_1: string
-  address_line_2: string
-  city: string
-  state: string
-  postal_code: string
-}
-
-interface ContactData {
-  name: string
-  email: string
-  phone: string
-  other_contact_information: string
 }
 
 export const CreateTenant: React.FC = () => {
   const [formData, setFormData] = useState<TenantFormData>({
     name: '',
-    schema: '',
     description: ''
   })
-  const [addressData, setAddressData] = useState<AddressData>({
-    country: '',
-    address_line_1: '',
-    address_line_2: '',
-    city: '',
-    state: '',
-    postal_code: ''
-  })
-  const [contactData, setContactData] = useState<ContactData>({
-    name: '',
-    email: '',
-    phone: '',
-    other_contact_information: '',
-  })
+  const [addresses, setAddresses] = useState<AddressFormValues[]>([])
+  const [contacts, setContacts] = useState<ContactFormValues[]>([])
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [addressErrors, setAddressErrors] = useState<Record<string, Partial<Record<keyof AddressFormValues, string>>>>({})
+  const [contactErrors, setContactErrors] = useState<Record<string, Partial<Record<keyof ContactFormValues, string>>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const navigate = useNavigate()
@@ -86,27 +63,24 @@ export const CreateTenant: React.FC = () => {
     }
   }
 
-  const handleAddressChange = (field: keyof AddressData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setAddressData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }))
+  const handleAddressesChange = (newAddresses: AddressFormValues[]) => {
+    setAddresses(newAddresses)
+    // Clear address errors when addresses change
+    setAddressErrors({})
   }
 
-  const handleContactChange = (field: keyof ContactData) => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setContactData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }))
+  const handleContactsChange = (newContacts: ContactFormValues[]) => {
+    setContacts(newContacts)
+    // Clear contact errors when contacts change
+    setContactErrors({})
   }
 
   const validateForm = () => {
     const errors: Record<string, string> = {}
+    const addrErrors: Record<string, Partial<Record<keyof AddressFormValues, string>>> = {}
+    const contErrors: Record<string, Partial<Record<keyof ContactFormValues, string>>> = {}
     
+    // Validate tenant basic info
     if (!formData.name.trim()) {
       errors.name = 'Tenant name is required'
     } else if (formData.name.length < 3) {
@@ -115,20 +89,56 @@ export const CreateTenant: React.FC = () => {
       errors.name = 'Tenant name must be less than 100 characters'
     }
     
-    if (!formData.schema.trim()) {
-      errors.schema = 'Schema name is required'
-    } else if (!/^tenant_[a-z0-9_]+$/.test(formData.schema)) {
-      errors.schema = 'Schema name must follow the format: tenant_name_format'
-    } else if (formData.schema.length > 63) {
-      errors.schema = 'Schema name must be less than 63 characters (PostgreSQL limit)'
-    }
-    
     if (formData.description && formData.description.length > 500) {
       errors.description = 'Description must be less than 500 characters'
     }
+
+    // Validate addresses - at least one required
+    if (addresses.length === 0) {
+      errors.addresses = 'At least one address is required'
+    } else {
+      addresses.forEach((address, index) => {
+        const addressErrors: Partial<Record<keyof AddressFormValues, string>> = {}
+        
+        if (!address.line1?.trim()) {
+          addressErrors.line1 = 'Address line 1 is required'
+        }
+        if (!address.city?.trim()) {
+          addressErrors.city = 'City is required'
+        }
+        if (!address.country_code?.trim()) {
+          addressErrors.country_code = 'Country is required'
+        }
+        
+        if (Object.keys(addressErrors).length > 0) {
+          addrErrors[address.id || `temp-${index}`] = addressErrors
+        }
+      })
+    }
+
+    // Validate contacts - at least one recommended (not required)
+    contacts.forEach((contact, index) => {
+      const contactErrors: Partial<Record<keyof ContactFormValues, string>> = {}
+      
+      if (!contact.name?.trim()) {
+        contactErrors.name = 'Contact name is required'
+      }
+      if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+        contactErrors.email = 'Invalid email format'
+      }
+      
+      if (Object.keys(contactErrors).length > 0) {
+        contErrors[contact.id || `temp-${index}`] = contactErrors
+      }
+    })
     
     setValidationErrors(errors)
-    return Object.keys(errors).length === 0
+    setAddressErrors(addrErrors)
+    setContactErrors(contErrors)
+    
+    return Object.keys(errors).length === 0 && 
+           Object.keys(addrErrors).length === 0 && 
+           Object.keys(contErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,28 +149,97 @@ export const CreateTenant: React.FC = () => {
     }
 
     setIsSubmitting(true)
+    
     try {
-      await api.tenants.create({
+      // Generate subdomain from tenant name
+      const subdomain = formData.name.trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+      
+      console.log('🏢 [CreateTenant] Submitting tenant creation:', {
         name: formData.name.trim(),
-        schema: formData.schema.trim(),
-        description: formData.description.trim() || undefined
+        subdomain,
+        hasDescription: !!formData.description.trim(),
+        addressCount: addresses.length,
+        contactCount: contacts.length
+      })
+
+      // Step 1: Create the tenant
+      const tenantResponse = await tenantsService.create({
+        name: formData.name.trim(),
+        subdomain,
+        status: 'trial'
       })
       
-      addNotification({
-        type: 'success',
-        message: `Tenant "${formData.name}" created successfully`
-      })
+      const tenant = tenantResponse.data.tenant
+      console.log('✅ [CreateTenant] Tenant created successfully, ID:', tenant.id)
       
+      // Step 2: Create addresses for the tenant
+      if (addresses.length > 0) {
+        console.log('📍 [CreateTenant] Creating addresses...')
+        for (const address of addresses) {
+          await addressService.createAddress(tenant.id, {
+            type: address.type,
+            label: address.label,
+            line1: address.line1,
+            line2: address.line2,
+            city: address.city,
+            state: address.state,
+            postalCode: address.postal_code,
+            countryCode: address.country_code,
+            isPrimary: address.is_primary
+          })
+        }
+        console.log('✅ [CreateTenant] Addresses created successfully')
+      }
+      
+      // Step 3: Create contacts for the tenant
+      if (contacts.length > 0) {
+        console.log('👥 [CreateTenant] Creating contacts...')
+        for (const contact of contacts) {
+          await contactService.createContact(tenant.id, {
+            type: contact.type,
+            fullName: contact.name,
+            title: contact.title,
+            email: contact.email,
+            phoneE164: contact.phone_number,
+            notes: contact.notes,
+            isPrimary: contact.is_primary
+          })
+        }
+        console.log('✅ [CreateTenant] Contacts created successfully')
+      }
+      
+      // Success feedback is now handled automatically by the HTTP interceptor
+      // based on the meta.code from the backend response
+      
+      // Navigate immediately - toast will show on the tenants list page
       navigate('/tenants')
-    } catch (error: any) {
-      console.error('Failed to create tenant:', error)
       
+    } catch (error: any) {
+      console.error('❌ [CreateTenant] Failed to create tenant:', error)
+      
+      // Map backend errors to user-friendly messages
       let errorMessage = 'Failed to create tenant. Please try again.'
       
-      if (error.message.includes('already exists')) {
-        errorMessage = 'A tenant with this name or schema already exists.'
-      } else if (error.message.includes('invalid')) {
-        errorMessage = 'Invalid tenant data provided. Please check your input.'
+      // Handle specific error cases based on backend responses
+      if (error.message?.includes('already exists') || error.message?.includes('duplicate')) {
+        errorMessage = 'A tenant with this subdomain already exists. Please use a different subdomain.'
+      } else if (error.message?.includes('Validation Error')) {
+        errorMessage = 'Please check your input and try again.'
+      } else if (error.message?.includes('Subdomain must contain only lowercase')) {
+        errorMessage = 'Subdomain must contain only lowercase letters, numbers, and hyphens.'
+      } else if (error.status === 409) {
+        errorMessage = 'Subdomain already exists. Please choose a different subdomain.'
+      } else if (error.status === 403) {
+        errorMessage = 'You do not have permission to create tenants.'
+      } else if (error.status === 401) {
+        errorMessage = 'Your session has expired. Please log in again.'
+      } else if (error.status >= 500) {
+        errorMessage = 'Server error occurred. Please try again later.'
       }
       
       addNotification({
@@ -186,159 +265,69 @@ export const CreateTenant: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Left Column - Tenant Information + Contact */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <h2 className="text-lg font-semibold text-gray-900">Tenant Information</h2>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-            <Input
-              label="Tenant Name"
-              value={formData.name}
-              onChange={handleNameChange}
-              error={validationErrors.name}
-              placeholder="e.g., Clinic ABC, Hospital XYZ"
-              helperText="A descriptive name for the tenant organization"
-              required
-              disabled={isSubmitting}
-            />
-
-            <Input
-              label="Schema Name"
-              value={formData.schema}
-              onChange={handleInputChange('schema')}
-              error={validationErrors.schema}
-              placeholder="tenant_clinic_abc"
-              helperText="Database schema name (auto-generated from tenant name)"
-              required
-              disabled
-              readOnly
-            />
-
-            <div className="space-y-1">
-              <Label htmlFor="description">Description</Label>
-              <textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange('description')(e as any)}
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]"
-                placeholder="Optional description of the tenant organization"
-                disabled={isSubmitting}
-              />
-              {validationErrors.description && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Brief description of the tenant organization (optional)
-              </p>
-            </div>
-              </CardContent>
-            </Card>
-            
-            {/* Contact Information Card */}
-            <Card>
-              <CardHeader>
-                <h2 className="text-lg font-semibold text-gray-900">Contact information</h2>
-              </CardHeader>
-              
-              <CardContent className="space-y-4">
-                <Input
-                  label="Full name"
-                  value={contactData.name}
-                  onChange={handleContactChange('name')}
-                  placeholder="Full name"
-                  disabled={isSubmitting}
-                />
-                
-                <Input
-                  label="Email"
-                  type="email"
-                  value={contactData.email}
-                  onChange={handleContactChange('email')}
-                  placeholder="Email"
-                  disabled={isSubmitting}
-                />
-                
-                <Input
-                  label="Phone"
-                  type="tel"
-                  value={contactData.phone}
-                  onChange={handleContactChange('phone')}
-                  placeholder="Phone"
-                  disabled={isSubmitting}
-                />
-
-<Input
-                  label="Other contact information"
-                  type="text"
-                  value={contactData.other_contact_information}
-                  onChange={handleContactChange('other_contact_information')}
-                  placeholder="More info (optional)"
-                  disabled={isSubmitting}
-                />
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* Right Column - Address (placeholder) */}
+        <div className="space-y-8">
+          {/* Tenant Information */}
           <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold text-gray-900">Address (placeholder)</h2>
+            <CardHeader className="p-6 pb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Tenant Information</h2>
             </CardHeader>
             
-            <CardContent className="space-y-4">
-              <Input
-                label="Country"
-                value={addressData.country}
-                onChange={handleAddressChange('country')}
-                placeholder="Country"
-                disabled={isSubmitting}
-              />
-              
-              <Input
-                label="Address line 1"
-                value={addressData.address_line_1}
-                onChange={handleAddressChange('address_line_1')}
-                placeholder="Address line 1"
-                disabled={isSubmitting}
-              />
-              
-              <Input
-                label="Address line 2 (optional)"
-                value={addressData.address_line_2}
-                onChange={handleAddressChange('address_line_2')}
-                placeholder="Address line 2 (optional)"
-                disabled={isSubmitting}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
+            <CardContent className="space-y-6 px-6 pb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="City"
-                  value={addressData.city}
-                  onChange={handleAddressChange('city')}
-                  placeholder="City"
+                  label="Tenant Name"
+                  value={formData.name}
+                  onChange={handleNameChange}
+                  error={validationErrors.name}
+                  placeholder="e.g., Clinic ABC, Hospital XYZ"
+                  helperText="A descriptive name for the tenant organization"
+                  required
                   disabled={isSubmitting}
                 />
-                
-                <Input
-                  label="State/Province"
-                  value={addressData.state}
-                  onChange={handleAddressChange('state')}
-                  placeholder="State/Province"
-                  disabled={isSubmitting}
-                />
+
+                <div className="space-y-1">
+                  <Label htmlFor="description">Description</Label>
+                  <textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange('description')(e as any)}
+                    rows={3}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] ${isSubmitting ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''}`}
+                    placeholder="Optional description of the tenant organization"
+                    disabled={isSubmitting}
+                  />
+                  {validationErrors.description && (
+                    <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
+                  )}
+                  <p className="mt-1 text-sm text-gray-500">
+                    Brief description of the tenant organization (optional)
+                  </p>
+                </div>
               </div>
-              
-              <Input
-                label="Postal code"
-                value={addressData.postal_code}
-                onChange={handleAddressChange('postal_code')}
-                placeholder="Postal code"
-                disabled={isSubmitting}
+            </CardContent>
+          </Card>
+          
+          {/* Addresses Section */}
+          <Card>
+            <CardContent className="p-6">
+              <AddressesRepeater 
+                addresses={addresses}
+                onChange={handleAddressesChange}
+                errors={addressErrors}
+              />
+              {validationErrors.addresses && (
+                <p className="mt-2 text-sm text-red-600">{validationErrors.addresses}</p>
+              )}
+            </CardContent>
+          </Card>
+          
+          {/* Contacts Section */}
+          <Card>
+            <CardContent className="p-6">
+              <ContactsRepeater 
+                contacts={contacts}
+                onChange={handleContactsChange}
+                errors={contactErrors}
               />
             </CardContent>
           </Card>
@@ -352,7 +341,7 @@ export const CreateTenant: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           >
-            Create Tenant
+            {isSubmitting ? 'Creating Tenant...' : 'Create Tenant'}
           </Button>
           
           <Button

@@ -50,8 +50,11 @@ export const Header: React.FC = () => {
     authService.logout()
   }
 
-  const getInitials = (email: string) => {
-    return email?.charAt(0)?.toUpperCase() || 'A'
+  const getInitials = (firstName?: string) => {
+    if (firstName) {
+      return firstName.charAt(0).toUpperCase()
+    }
+    return 'A'
   }
 
   return (
@@ -116,7 +119,9 @@ export const Header: React.FC = () => {
             {/* User Info */}
             <div className="hidden sm:block text-right">
               <div className="text-sm font-medium text-gray-900">
-                {user?.firstName || user?.email?.split('@')[0] || 'Admin'}
+                {user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName}` 
+                  : user?.firstName || user?.email?.split('@')[0] || 'Admin'}
               </div>
               <div className="flex items-center space-x-1 text-xs text-gray-500">
                 <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700 font-medium">
@@ -133,7 +138,7 @@ export const Header: React.FC = () => {
             {/* Avatar */}
             <Avatar className="w-8 h-8">
               <AvatarFallback className="bg-gray-900 text-white text-sm font-medium">
-                {getInitials(user?.email || '')}
+                {getInitials(user?.firstName)}
               </AvatarFallback>
             </Avatar>
             

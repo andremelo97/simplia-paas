@@ -99,6 +99,24 @@ class User {
   }
 
   /**
+   * Find user by ID globally (no tenant context) - for platform admin token validation
+   */
+  static async findByIdGlobal(id) {
+    const query = `
+      SELECT * FROM public.users 
+      WHERE id = $1 AND status != 'deleted'
+    `;
+    
+    const result = await database.query(query, [id]);
+    
+    if (result.rows.length === 0) {
+      throw new UserNotFoundError(`ID: ${id}`);
+    }
+    
+    return new User(result.rows[0]);
+  }
+
+  /**
    * Find all users by tenant
    */
   static async findByTenant(tenantId, options = {}) {

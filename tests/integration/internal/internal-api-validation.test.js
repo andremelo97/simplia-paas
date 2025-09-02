@@ -53,7 +53,7 @@ describe('Internal API Validation', () => {
     // Internal admin token (with platform role)
     internalAdminToken = generateTestToken({
       userId: testUser.id,
-      email: 'admin@simplia.com',
+      email: 'consultoriasimplia@gmail.com',
       role: 'admin',
       tenantId: 'test_clinic',
       schema: 'tenant_test_clinic',

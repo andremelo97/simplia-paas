@@ -18,7 +18,8 @@
       "Bash(timeout:*)",
       "Bash(tree:*)",
       "Bash(taskkill:*)",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

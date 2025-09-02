@@ -1,4 +1,139 @@
-import { AppError, AppErrorKind } from './types'
+import { FeedbackCatalog, AppError, AppErrorKind } from './types'
+
+export const FEEDBACK_CATALOG: FeedbackCatalog = {
+  // Tenant operations
+  TENANT_CREATED: {
+    title: "Tenant Created",
+    message: "Tenant created successfully."
+  },
+  TENANT_UPDATED: {
+    title: "Tenant Updated", 
+    message: "Tenant updated successfully."
+  },
+  TENANT_DELETED: {
+    title: "Tenant Deleted",
+    message: "Tenant deleted successfully."
+  },
+
+  // License operations
+  LICENSE_ACTIVATED: {
+    title: "License Activated",
+    message: "License activated successfully."
+  },
+  LICENSE_ADJUSTED: {
+    title: "License Adjusted",
+    message: "License adjusted successfully."
+  },
+
+  // User operations
+  USER_CREATED: {
+    title: "User Created",
+    message: "User created successfully."
+  },
+  USER_UPDATED: {
+    title: "User Updated",
+    message: "User updated successfully."
+  },
+  USER_DELETED: {
+    title: "User Deleted",
+    message: "User deleted successfully."
+  },
+
+  // Address operations
+  ADDRESS_CREATED: {
+    title: "Address Added",
+    message: "Address added successfully."
+  },
+  ADDRESS_UPDATED: {
+    title: "Address Updated",
+    message: "Address updated successfully."
+  },
+  ADDRESS_DELETED: {
+    title: "Address Removed",
+    message: "Address removed."
+  },
+
+  // Contact operations
+  CONTACT_CREATED: {
+    title: "Contact Added",
+    message: "Contact added successfully."
+  },
+  CONTACT_UPDATED: {
+    title: "Contact Updated",
+    message: "Contact updated successfully."
+  },
+  CONTACT_DELETED: {
+    title: "Contact Removed",
+    message: "Contact removed."
+  },
+
+  // Authentication operations
+  LOGIN_SUCCESS: {
+    title: "Welcome Back",
+    message: "Signed in successfully."
+  },
+  AUTH_INVALID_CREDENTIALS: {
+    title: "Authentication Failed",
+    message: "Incorrect email or password."
+  },
+  AUTH_RATE_LIMITED: {
+    title: "Too Many Attempts",
+    message: "Too many attempts. Please wait and try again."
+  },
+  AUTH_LOCKED: {
+    title: "Account Locked",
+    message: "Your account is locked. Contact the administrator."
+  },
+  AUTH_NETWORK_FAILURE: {
+    title: "Connection Error",
+    message: "Can't reach the server. Check your connection and try again."
+  }
+}
+
+// Fallback messages by method + route
+export const FALLBACK_MESSAGES: Record<string, string> = {
+  'POST /tenants': 'Tenant created successfully.',
+  'PUT /tenants': 'Tenant updated successfully.',
+  'DELETE /tenants': 'Tenant deleted successfully.',
+  'POST /users': 'User created successfully.',
+  'PUT /users': 'User updated successfully.',
+  'DELETE /users': 'User deleted successfully.',
+  'POST /addresses': 'Address added successfully.',
+  'PUT /addresses': 'Address updated successfully.',
+  'DELETE /addresses': 'Address removed.',
+  'POST /contacts': 'Contact added successfully.',
+  'PUT /contacts': 'Contact updated successfully.',
+  'DELETE /contacts': 'Contact removed.'
+}
+
+export function resolveFeedbackMessage(
+  code: string, 
+  fallbackMessage?: string,
+  context?: { method: string; path: string }
+): { title?: string; message: string } {
+  // Primeiro, tentar catálogo por código
+  const catalogEntry = FEEDBACK_CATALOG[code]
+  if (catalogEntry) {
+    return catalogEntry
+  }
+
+  // Segundo, usar fallback fornecido pelo backend
+  if (fallbackMessage) {
+    return { message: fallbackMessage }
+  }
+
+  // Terceiro, usar fallback por método + rota
+  if (context) {
+    const routeKey = `${context.method} ${context.path.split('?')[0]}`
+    const fallback = FALLBACK_MESSAGES[routeKey]
+    if (fallback) {
+      return { message: fallback }
+    }
+  }
+
+  // Last resort
+  return { message: 'Operation completed successfully.' }
+}
 
 // English message catalog for friendly error display
 export const ERROR_MESSAGES = {

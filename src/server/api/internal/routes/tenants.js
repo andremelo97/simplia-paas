@@ -1,9 +1,11 @@
 const express = require('express');
 const { requireAuth } = require('../../../infra/middleware/auth');
 const { requirePlatformRole } = require('../../../infra/middleware/platformRole');
-const { Tenant } = require('../../../infra/models/Tenant');
+const Tenant = require('../../../infra/models/Tenant');
 const { TenantApplication } = require('../../../infra/models/TenantApplication');
-const { User } = require('../../../infra/models/User');
+const User = require('../../../infra/models/User');
+const TenantAddress = require('../../../infra/models/TenantAddress');
+const TenantContact = require('../../../infra/models/TenantContact');
 
 const router = express.Router();
 
@@ -331,8 +333,10 @@ router.post('/', async (req, res) => {
     });
 
     res.status(201).json({
-      success: true,
-      message: 'Tenant created successfully',
+      meta: {
+        code: "TENANT_CREATED",
+        message: "Tenant created successfully."
+      },
       data: {
         tenant: tenant.toJSON()
       }
@@ -520,6 +524,973 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to deactivate tenant'
+    });
+  }
+});
+
+// =============================================
+// TENANT ADDRESS MANAGEMENT
+// =============================================
+
+/**
+ * @openapi
+ * /tenants/{id}/addresses:
+ *   get:
+ *     tags: [Tenant Management]
+ *     summary: List tenant addresses
+ *     description: Get all addresses for a tenant with filtering options
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [HQ, BILLING, SHIPPING, BRANCH, OTHER]
+ *         description: Filter by address type
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *     responses:
+ *       200:
+ *         description: Addresses retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     addresses: 
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer }
+ *                           type: { type: string }
+ *                           label: { type: string }
+ *                           line1: { type: string }
+ *                           line2: { type: string }
+ *                           city: { type: string }
+ *                           state: { type: string }
+ *                           postalCode: { type: string }
+ *                           countryCode: { type: string }
+ *                           isPrimary: { type: boolean }
+ *                           createdAt: { type: string }
+ *                           updatedAt: { type: string }
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: integer }
+ *                         limit: { type: integer }
+ *                         offset: { type: integer }
+ *                         hasMore: { type: boolean }
+ *       404:
+ *         description: Tenant not found
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient platform privileges
+ */
+router.get('/:id/addresses', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type, limit = 20, offset = 0 } = req.query;
+    const tenantId = parseInt(id);
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const options = {
+      type,
+      limit: Math.min(parseInt(limit), 50),
+      offset: parseInt(offset)
+    };
+
+    const addresses = await TenantAddress.findByTenant(tenantId, options);
+    const total = await TenantAddress.count(tenantId, { type });
+
+    res.json({
+      success: true,
+      data: {
+        addresses: addresses.map(addr => addr.toJSON()),
+        pagination: {
+          total,
+          limit: options.limit,
+          offset: options.offset,
+          hasMore: options.offset + addresses.length < total
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching tenant addresses:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch addresses'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/addresses:
+ *   post:
+ *     tags: [Tenant Management]
+ *     summary: Create tenant address
+ *     description: Add a new address to the tenant
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [type, line1, countryCode]
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [HQ, BILLING, SHIPPING, BRANCH, OTHER]
+ *                 example: "HQ"
+ *               label:
+ *                 type: string
+ *                 example: "Headquarters São Paulo"
+ *               line1:
+ *                 type: string
+ *                 example: "Av. Paulista, 1578"
+ *               line2:
+ *                 type: string
+ *                 example: "Andar 15, Sala 1503"
+ *               city:
+ *                 type: string
+ *                 example: "São Paulo"
+ *               state:
+ *                 type: string
+ *                 example: "SP"
+ *               postalCode:
+ *                 type: string
+ *                 example: "01310-200"
+ *               countryCode:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 2
+ *                 example: "BR"
+ *               isPrimary:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: Address created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     address: { type: object }
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Tenant not found
+ *       409:
+ *         description: Primary address conflict
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient platform privileges
+ */
+router.post('/:id/addresses', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tenantId = parseInt(id);
+    const { type, label, line1, line2, city, state, postalCode, countryCode, isPrimary } = req.body;
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const address = await TenantAddress.create({
+      tenantId,
+      type,
+      label,
+      line1,
+      line2,
+      city,
+      state,
+      postalCode,
+      countryCode,
+      isPrimary
+    });
+
+    res.status(201).json({
+      meta: {
+        code: "ADDRESS_CREATED",
+        message: "Address added successfully."
+      },
+      data: {
+        address: address.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Error creating tenant address:', error);
+
+    if (error.message.includes('Missing required fields') || 
+        error.message.includes('Invalid type') ||
+        error.message.includes('countryCode must be')) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: error.message
+      });
+    }
+
+    if (error.message.includes('unique') || 
+        error.message.includes('primary')) {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'Another primary address of this type already exists'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to create address'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/addresses/{addressId}:
+ *   put:
+ *     tags: [Tenant Management]
+ *     summary: Update tenant address
+ *     description: Update an existing address
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: addressId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Address ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [HQ, BILLING, SHIPPING, BRANCH, OTHER]
+ *               label:
+ *                 type: string
+ *               line1:
+ *                 type: string
+ *               line2:
+ *                 type: string
+ *               city:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               postalCode:
+ *                 type: string
+ *               countryCode:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 2
+ *               isPrimary:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Address updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     address: { type: object }
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Tenant or address not found
+ *       409:
+ *         description: Primary address conflict
+ */
+router.put('/:id/addresses/:addressId', async (req, res) => {
+  try {
+    const { id, addressId } = req.params;
+    const tenantId = parseInt(id);
+    const addressIdInt = parseInt(addressId);
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const address = await TenantAddress.update(addressIdInt, tenantId, req.body);
+    
+    if (!address) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Address not found'
+      });
+    }
+
+    res.json({
+      meta: {
+        code: "ADDRESS_UPDATED",
+        message: "Address updated successfully."
+      },
+      data: {
+        address: address.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Error updating tenant address:', error);
+
+    if (error.message.includes('Invalid type') ||
+        error.message.includes('line1 is required') ||
+        error.message.includes('countryCode must be') ||
+        error.message.includes('No fields provided')) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: error.message
+      });
+    }
+
+    if (error.message.includes('unique') || 
+        error.message.includes('primary')) {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'Another primary address of this type already exists'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update address'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/addresses/{addressId}:
+ *   delete:
+ *     tags: [Tenant Management]
+ *     summary: Delete tenant address
+ *     description: Soft delete (deactivate) an address
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: addressId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Address ID
+ *     responses:
+ *       200:
+ *         description: Address deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string }
+ *                     message: { type: string }
+ *       404:
+ *         description: Tenant or address not found
+ */
+router.delete('/:id/addresses/:addressId', async (req, res) => {
+  try {
+    const { id, addressId } = req.params;
+    const tenantId = parseInt(id);
+    const addressIdInt = parseInt(addressId);
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const success = await TenantAddress.softDelete(addressIdInt, tenantId);
+    
+    if (!success) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Address not found'
+      });
+    }
+
+    res.json({
+      meta: {
+        code: "ADDRESS_DELETED",
+        message: "Address removed."
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting tenant address:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to delete address'
+    });
+  }
+});
+
+// =============================================
+// TENANT CONTACT MANAGEMENT
+// =============================================
+
+/**
+ * @openapi
+ * /tenants/{id}/contacts:
+ *   get:
+ *     tags: [Tenant Management]
+ *     summary: List tenant contacts
+ *     description: Get all contacts for a tenant with filtering options
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [ADMIN, BILLING, TECH, LEGAL, OTHER]
+ *         description: Filter by contact type
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 20
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *     responses:
+ *       200:
+ *         description: Contacts retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     contacts:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer }
+ *                           type: { type: string }
+ *                           fullName: { type: string }
+ *                           email: { type: string }
+ *                           phoneE164: { type: string }
+ *                           title: { type: string }
+ *                           notes: { type: string }
+ *                           preferences: { type: object }
+ *                           isPrimary: { type: boolean }
+ *                           createdAt: { type: string }
+ *                           updatedAt: { type: string }
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: integer }
+ *                         limit: { type: integer }
+ *                         offset: { type: integer }
+ *                         hasMore: { type: boolean }
+ *       404:
+ *         description: Tenant not found
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient platform privileges
+ */
+router.get('/:id/contacts', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { type, limit = 20, offset = 0 } = req.query;
+    const tenantId = parseInt(id);
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const options = {
+      type,
+      limit: Math.min(parseInt(limit), 50),
+      offset: parseInt(offset)
+    };
+
+    const contacts = await TenantContact.findByTenant(tenantId, options);
+    const total = await TenantContact.count(tenantId, { type });
+
+    res.json({
+      success: true,
+      data: {
+        contacts: contacts.map(contact => contact.toJSON()),
+        pagination: {
+          total,
+          limit: options.limit,
+          offset: options.offset,
+          hasMore: options.offset + contacts.length < total
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching tenant contacts:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch contacts'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/contacts:
+ *   post:
+ *     tags: [Tenant Management]
+ *     summary: Create tenant contact
+ *     description: Add a new contact person to the tenant
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [type, fullName]
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [ADMIN, BILLING, TECH, LEGAL, OTHER]
+ *                 example: "ADMIN"
+ *               fullName:
+ *                 type: string
+ *                 example: "João Silva"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "joao@clinic.com"
+ *               phoneE164:
+ *                 type: string
+ *                 pattern: '^\\+[1-9]\\d{1,14}$'
+ *                 example: "+5511999887766"
+ *               title:
+ *                 type: string
+ *                 example: "Gerente Administrativo"
+ *               notes:
+ *                 type: string
+ *                 example: "Responsável pela administração"
+ *               preferences:
+ *                 type: object
+ *                 example: {"preferred_contact": "email", "business_hours": "08:00-18:00"}
+ *               isPrimary:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: Contact created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     contact: { type: object }
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Tenant not found
+ *       409:
+ *         description: Primary contact conflict
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient platform privileges
+ */
+router.post('/:id/contacts', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const tenantId = parseInt(id);
+    const { type, fullName, email, phoneE164, title, notes, preferences, isPrimary } = req.body;
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const contact = await TenantContact.create({
+      tenantId,
+      type,
+      fullName,
+      email,
+      phoneE164,
+      title,
+      notes,
+      preferences,
+      isPrimary
+    });
+
+    res.status(201).json({
+      meta: {
+        code: "CONTACT_CREATED",
+        message: "Contact added successfully."
+      },
+      data: {
+        contact: contact.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Error creating tenant contact:', error);
+
+    if (error.message.includes('Missing required fields') || 
+        error.message.includes('Invalid type') ||
+        error.message.includes('Invalid email format') ||
+        error.message.includes('Phone must be in E.164') ||
+        error.message.includes('Preferences must be')) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: error.message
+      });
+    }
+
+    if (error.message.includes('unique') || 
+        error.message.includes('primary')) {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'Another primary contact of this type already exists'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to create contact'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/contacts/{contactId}:
+ *   put:
+ *     tags: [Tenant Management]
+ *     summary: Update tenant contact
+ *     description: Update an existing contact person
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: contactId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Contact ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [ADMIN, BILLING, TECH, LEGAL, OTHER]
+ *               fullName:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phoneE164:
+ *                 type: string
+ *                 pattern: '^\\+[1-9]\\d{1,14}$'
+ *               title:
+ *                 type: string
+ *               notes:
+ *                 type: string
+ *               preferences:
+ *                 type: object
+ *               isPrimary:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Contact updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     contact: { type: object }
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Tenant or contact not found
+ *       409:
+ *         description: Primary contact conflict
+ */
+router.put('/:id/contacts/:contactId', async (req, res) => {
+  try {
+    const { id, contactId } = req.params;
+    const tenantId = parseInt(id);
+    const contactIdInt = parseInt(contactId);
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const contact = await TenantContact.update(contactIdInt, tenantId, req.body);
+    
+    if (!contact) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Contact not found'
+      });
+    }
+
+    res.json({
+      meta: {
+        code: "CONTACT_UPDATED",
+        message: "Contact updated successfully."
+      },
+      data: {
+        contact: contact.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Error updating tenant contact:', error);
+
+    if (error.message.includes('Invalid type') ||
+        error.message.includes('fullName is required') ||
+        error.message.includes('Invalid email format') ||
+        error.message.includes('Phone must be in E.164') ||
+        error.message.includes('Preferences must be') ||
+        error.message.includes('No fields provided')) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: error.message
+      });
+    }
+
+    if (error.message.includes('unique') || 
+        error.message.includes('primary')) {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'Another primary contact of this type already exists'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update contact'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/contacts/{contactId}:
+ *   delete:
+ *     tags: [Tenant Management]
+ *     summary: Delete tenant contact
+ *     description: Soft delete (deactivate) a contact person
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: contactId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Contact ID
+ *     responses:
+ *       200:
+ *         description: Contact deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string }
+ *                     message: { type: string }
+ *       404:
+ *         description: Tenant or contact not found
+ */
+router.delete('/:id/contacts/:contactId', async (req, res) => {
+  try {
+    const { id, contactId } = req.params;
+    const tenantId = parseInt(id);
+    const contactIdInt = parseInt(contactId);
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    const success = await TenantContact.softDelete(contactIdInt, tenantId);
+    
+    if (!success) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Contact not found'
+      });
+    }
+
+    res.json({
+      meta: {
+        code: "CONTACT_DELETED",
+        message: "Contact removed."
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting tenant contact:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to delete contact'
     });
   }
 });

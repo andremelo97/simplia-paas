@@ -155,7 +155,7 @@ router.post('/register', authRateLimit, async (req, res) => {
  *               email:
  *                 type: string
  *                 format: email
- *                 example: admin@simplia.com
+ *                 example: consultoriasimplia@gmail.com
  *               password:
  *                 type: string
  *                 format: password

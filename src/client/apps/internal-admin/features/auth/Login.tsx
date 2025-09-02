@@ -5,8 +5,9 @@ import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
 import { useAuthStore } from '../../store'
 import { Button, Input, Card, CardHeader, CardContent, CardTitle, CardDescription, Alert, AlertDescription } from '@client/common/ui'
 import { cn } from '@client/common/utils/cn'
-import { AppError } from '../../services/errors/types'
-import { shouldShowAsBanner, shouldShowFieldErrors } from '../../services/errors/catalog'
+import { AppError } from '@client/common/feedback'
+import { shouldShowAsBanner, shouldShowFieldErrors } from '@client/common/feedback'
+import { publishFeedback, resolveFeedbackMessage } from '@client/common/feedback'
 
 export const Login: React.FC = () => {
   const [credentials, setCredentials] = useState({
@@ -112,7 +113,7 @@ export const Login: React.FC = () => {
         className="mx-auto w-full max-w-[380px]"
       >
         <Card className="min-h-[540px]">
-          <CardHeader className="text-center space-y-3">
+          <CardHeader className="text-center space-y-3 p-8 pb-4">
             {/* Logo */}
             <div className="flex justify-center mb-2">
               <div className="p-3 bg-stone-50 rounded-xl">

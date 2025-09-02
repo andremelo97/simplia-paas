@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { api } from '@client/config/http'
-import { AppError, isAppError } from '../services/errors/types'
+import { AppError, isAppError } from '@client/common/feedback'
 
 interface User {
   id: number

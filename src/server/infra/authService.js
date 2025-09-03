@@ -119,10 +119,11 @@ class AuthService {
 
     // Create user
     const user = await User.create({
-      tenantId: tenantContext.tenantId,
+      tenantIdFk: tenantContext.id || tenantContext.tenantId,
       email: email.toLowerCase().trim(),
       passwordHash,
-      name: name.trim(),
+      firstName: name.split(' ')[0] || name.trim(),
+      lastName: name.split(' ').slice(1).join(' ') || '',
       role,
       status: 'active'
     });
@@ -225,7 +226,9 @@ class AuthService {
 
     let user;
     try {
-      user = await User.findByEmail(email.toLowerCase().trim(), tenantContext.tenantId);
+      // Use numeric tenant ID for user lookup
+      const tenantIdFk = tenantContext.id || tenantContext.tenantId;
+      user = await User.findByEmail(email.toLowerCase().trim(), tenantIdFk);
     } catch (error) {
       if (error instanceof UserNotFoundError) {
         throw new InvalidCredentialsError();
@@ -270,18 +273,26 @@ class AuthService {
     try {
       const payload = this.verifyToken(oldToken);
       
-      // Verify user still exists and is active
-      const user = await User.findById(payload.userId, payload.tenantId);
+      // For platform admin tokens, use global lookup
+      let user;
+      if (payload.type === 'platform_admin') {
+        user = await User.findByIdGlobal(payload.userId);
+      } else {
+        // Use numeric tenant ID from JWT payload
+        const tenantIdFk = payload.tenantId; // Should be numeric in new tokens
+        user = await User.findById(payload.userId, tenantIdFk);
+      }
+      
       if (user.status !== 'active') {
         throw new Error('User account is no longer active');
       }
 
       // Get fresh user entitlements (they might have changed)
-      const tenantIdFk = payload.tenantIdFk || payload.tenantId;
+      const tenantIdFk = payload.tenantId; // Use numeric ID from JWT
       const { allowedApps, userType } = await this.getUserEntitlements(user, tenantIdFk);
 
       // Create new token with fresh entitlements
-      const tenantContext = { tenantId: payload.tenantId, schema: payload.schema, id: tenantIdFk };
+      const tenantContext = { tenantId: tenantIdFk, schema: payload.schema, id: tenantIdFk };
       const newPayload = createJwtPayload(user, tenantContext, allowedApps, userType);
       
       const newToken = this.generateToken(newPayload);
@@ -378,7 +389,15 @@ class AuthService {
    */
   async getUserFromToken(token) {
     const payload = this.verifyToken(token);
-    const user = await User.findById(payload.userId, payload.tenantId);
+    
+    // Handle platform admin vs regular user tokens
+    let user;
+    if (payload.type === 'platform_admin') {
+      user = await User.findByIdGlobal(payload.userId);
+    } else {
+      // Use numeric tenant ID from JWT
+      user = await User.findById(payload.userId, payload.tenantId);
+    }
     
     if (user.status !== 'active') {
       throw new Error('User account is no longer active');
@@ -386,8 +405,8 @@ class AuthService {
 
     return {
       user: user.getSafeData(),
-      tenant: {
-        tenantId: payload.tenantId,
+      tenant: payload.type === 'platform_admin' ? null : {
+        tenantId: payload.tenantId, // Numeric ID
         schema: payload.schema
       }
     };

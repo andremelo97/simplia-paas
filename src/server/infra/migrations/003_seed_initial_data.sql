@@ -27,9 +27,16 @@ ON CONFLICT (slug) DO NOTHING;
 -- DEFAULT TENANT SETUP
 -- =============================================
 
+-- Create tenant schemas first
+CREATE SCHEMA IF NOT EXISTS tenant_default;
+CREATE SCHEMA IF NOT EXISTS tenant_test_clinic;
+
+COMMENT ON SCHEMA tenant_default IS 'Default tenant schema for development and admin panel testing';
+COMMENT ON SCHEMA tenant_test_clinic IS 'Test clinic schema for automated testing';
+
 -- Insert default tenant for development and testing
 INSERT INTO tenants (name, subdomain, schema_name, status) VALUES
-('Default Clinic', 'default', 'public', 'active'),
+('Default Clinic', 'default', 'tenant_default', 'active'),
 ('Test Clinic', 'test_clinic', 'tenant_test_clinic', 'active')
 ON CONFLICT (subdomain) DO NOTHING;
 
@@ -77,6 +84,7 @@ INSERT INTO users (
   first_name, 
   last_name, 
   tenant_id, 
+  tenant_id_fk,
   role, 
   user_type_id, 
   platform_role,
@@ -87,13 +95,14 @@ SELECT
   '$2b$12$3UpLycjN/Lsx9rGw0q81V.BLIrXONEE8XO3m7aKMnjQhn9Rq5s6la', -- 1234
   'Admin',
   'User', 
-  'default',
+  'default', -- Legacy string reference
+  t.id, -- Primary numeric FK
   'admin',
   ut.id,
   'internal_admin',
   'active'
-FROM user_types ut 
-WHERE ut.slug = 'admin'
+FROM user_types ut, tenants t
+WHERE ut.slug = 'admin' AND t.subdomain = 'default'
 ON CONFLICT (email) DO NOTHING;
 
 -- Sample manager user for testing
@@ -103,6 +112,7 @@ INSERT INTO users (
   first_name,
   last_name,
   tenant_id,
+  tenant_id_fk,
   role,
   user_type_id,
   status
@@ -112,12 +122,13 @@ SELECT
   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiCS.nQkr4vS', -- admin123
   'Test',
   'Manager',
-  'default',
+  'default', -- Legacy string reference
+  t.id, -- Primary numeric FK
   'manager',
   ut.id,
   'active'
-FROM user_types ut
-WHERE ut.slug = 'manager'
+FROM user_types ut, tenants t
+WHERE ut.slug = 'manager' AND t.subdomain = 'default'
 ON CONFLICT (email) DO NOTHING;
 
 -- =============================================
@@ -194,7 +205,8 @@ INSERT INTO tenant_contacts (
   email,
   phone_e164,
   title,
-  preferences,
+  department,
+  notes,
   is_primary
 )
 SELECT 
@@ -204,7 +216,8 @@ SELECT
   'financeiro@simpliaclinic.com.br' as email,
   '+5511988776655' as phone_e164,
   'Coordenadora Financeira' as title,
-  '{"preferred_contact": "email", "business_hours": "08:00-18:00", "timezone": "America/Sao_Paulo"}' as preferences,
+  'Financeiro' as department,
+  'Preferência de contato: email. Horário comercial: 08:00-18:00. Fuso horário: America/Sao_Paulo' as notes,
   true as is_primary
 FROM tenants t
 WHERE t.subdomain = 'default'
@@ -217,8 +230,16 @@ WHERE t.subdomain = 'default'
 -- DATA VALIDATION AND CONSTRAINTS
 -- =============================================
 
--- Note: Data validation can be added later with proper plpgsql blocks
--- For now, seeding is based on INSERT...ON CONFLICT which handles errors gracefully
+-- Populate legacy tenant_id_fk for any existing user_application_access records
+-- (ensures consistency after schema changes)
+UPDATE user_application_access uaa 
+SET tenant_id_fk = t.id 
+FROM tenants t 
+WHERE uaa.tenant_id_fk IS NULL 
+  AND uaa.tenant_id = t.subdomain;
+
+-- Note: Data validation checks will be added in a future migration
+-- For now, the FK constraints ensure referential integrity
 
 -- =============================================
 -- SEED DOCUMENTATION

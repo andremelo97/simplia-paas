@@ -200,6 +200,7 @@ simplia-paas/
 - **`internal/routes/`**: API administrativa interna
   - **`auth.js`**: Login, registro, gestão de sessões
   - **`users.js`**: CRUD administrativo de usuários com bulk operations
+  - **`tenant-users.js`**: **NOVO** - API tenant-scoped para operações de usuários por tenant
   - **`applications.js`**: Catálogo de aplicações e gestão
   - **`entitlements.js`**: Gestão de licenças tenant e acesso de usuários
   - **`audit.js`**: Logs de auditoria e relatórios de compliance
@@ -214,8 +215,8 @@ simplia-paas/
   - **`appAccess.js`**: Autorização enterprise em 5 camadas (License→Seat→User→Role→Audit) com logging detalhado
   - **`platformRole.js`**: Validação de roles de plataforma para APIs internas
 - **`models/`**: Abstrações de banco com CRUD tenant-aware
-  - **`User.js`**: CRUD de usuários com isolamento por tenant, validações, soft delete
-  - **`TenantUser.js`**: Relacionamento many-to-many entre tenants e usuários
+  - **`User.js`**: **ATUALIZADO** - CRUD com `tenant_id_fk` numérico, modelo 1:1, string legacy deprecated
+  - **`TenantUser.js`**: Relacionamento many-to-many entre tenants e usuários (não usado no modelo 1:1)
   - **`Application.js`**: Catálogo de aplicações/produtos disponíveis na plataforma
   - **`Tenant.js`**: Gestão completa de tenants com validação e isolamento de schema
   - **`TenantApplication.js`**: Licenças por tenant com controle de vigência, limites de usuários e assentos
@@ -223,9 +224,9 @@ simplia-paas/
   - **`UserType.js`**: Hierarquia de usuários (operations < manager < admin) com permissões
   - **`AccessLog.js`**: Logs de auditoria com IP, User-Agent, contexto completo para compliance
 - **`migrations/`**: Evolução do schema de banco
-  - **`001_create_core_tables.sql`**: Todas as tabelas core com relacionamentos, campos de auditoria e triggers automáticos
-  - **`002_create_indexes.sql`**: Estratégia completa de indexação organizada por propósito (lookup, performance, audit)
-  - **`003_seed_initial_data.sql`**: Dados essenciais (user types: operations/manager/admin, applications, tenants padrão)
+  - **`001_create_core_tables.sql`**: Todas as tabelas core com relacionamentos, campos de auditoria e modelo 1:1 Users↔Tenants
+  - **`002_create_indexes.sql`**: Estratégia completa de indexação + documentação de consistency constraints
+  - **`003_seed_initial_data.sql`**: Dados essenciais com `tenant_id_fk` populado e schemas de tenant
   - **`_backup/`**: Migrações antigas preservadas
 - **`scripts/`**: Utilitários de banco
   - **`runMigrations.js`**: Executor de migrações SQL em ordem alfabética
@@ -322,17 +323,19 @@ sequenceDiagram
     Resource->>Client: Response
 ```
 
-### Tabelas do Sistema Enterprise (7 tabelas)
+### Tabelas do Sistema Enterprise (9 tabelas)
 
 | Tabela | Colunas | Propósito |
 |--------|---------|-----------|
 | `tenants` | 8 | Registry de tenants com schema mapping e audit fields |
-| `users` | 13 | Usuários com tenant isolation e campos de auditoria |
+| `users` | 14 | Usuários com **1:1 tenant relationship** via `tenant_id_fk` (FK numérica) |
 | `user_types` | 9 | Hierarquia de usuários com pricing (operations < manager < admin) |
 | `applications` | 10 | Catálogo com slugs padronizados (tq, pm, billing, reports) |
 | `tenant_applications` | 14 | Licenças por tenant com vigência, limites e controle de assentos |
-| `user_application_access` | 12 | Acesso granular (qual usuário pode usar qual app) |
+| `user_application_access` | 12 | **Tenant consistency enforced** - `tenant_id_fk` deve = `users.tenant_id_fk` |
 | `application_access_logs` | 13 | Auditoria completa com IP, User-Agent, API path, decision reason |
+| `tenant_addresses` | 13 | Endereços institucionais com constraints primários por tipo |
+| `tenant_contacts` | 13 | Contatos organizacionais com campo `department` e validação E.164 |
 
 **Performance**: 18 índices otimizados • 7 relacionamentos FK • Campos de auditoria completos
 
@@ -638,6 +641,9 @@ O **painel administrativo interno** possui interface moderna e profissional:
 - **Validação das 5 camadas de autorização** com testes críticos end-to-end (todas as 10 validações passando ✅)
 - **Infraestrutura de testes enterprise** com setup/cleanup automático e helpers JWT
 - **Error Handling Profissional** com mensagens amigáveis e acessibilidade completa
+- **🆕 Users ↔ Tenants 1:1**: FK numérica `tenant_id_fk` com consistency enforcement
+- **🆕 Tenant-Scoped User API**: Endpoints específicos por tenant com AppFeedback integrado
+- **🆕 Code Hygiene**: Eliminação de dependências legadas `tenant_id` string
 
 ### 🚀 Próximos Passos
 1. **Expansão do Internal Admin Panel**: Completar páginas de users, applications e entitlements
@@ -656,6 +662,10 @@ O **painel administrativo interno** possui interface moderna e profissional:
 - **✅ Validação Avançada**: Primary constraints, E.164 phone, ISO-2 countries
 - **✅ AppFeedback Integration**: Success/error messaging automático
 - **✅ A11y Compliance**: ARIA completo + navegação por teclado
+- **🆕 Users ↔ Tenants 1:1 Fortalecido**: Modelo 1:1 com FK numérica e consistency enforcement
+- **🆕 Tenant-Scoped User Management**: API e frontend para gestão de usuários por tenant
+- **🆕 Code Cleanup**: Eliminação de dependências legadas `users.tenant_id` string
+- **🆕 Application-Level Validation**: Garantia de consistência de tenants via aplicação
 
 #### Uso dos Novos Componentes
 ```typescript

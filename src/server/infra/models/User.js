@@ -4,7 +4,9 @@ const { UserNotFoundError, DuplicateUserError } = require('../../../shared/types
 class User {
   constructor(data) {
     this.id = data.id;
-    this.tenantId = data.tenant_id;
+    // DEPRECATED: tenantId string field - use tenantIdFk instead
+    // this.tenantId = data.tenant_id; 
+    this.tenantIdFk = data.tenant_id_fk; // Primary numeric FK - source of truth
     this.email = data.email;
     this.passwordHash = data.password_hash;
     this.firstName = data.first_name;
@@ -45,15 +47,15 @@ class User {
   }
 
   /**
-   * Find user by ID and tenant
+   * Find user by ID and tenant (using numeric FK)
    */
-  static async findById(id, tenantId) {
+  static async findById(id, tenantIdFk) {
     const query = `
       SELECT * FROM public.users 
-      WHERE id = $1 AND tenant_id = $2 AND status != 'deleted'
+      WHERE id = $1 AND tenant_id_fk = $2 AND status != 'deleted'
     `;
     
-    const result = await database.query(query, [id, tenantId]);
+    const result = await database.query(query, [id, tenantIdFk]);
     
     if (result.rows.length === 0) {
       throw new UserNotFoundError(`ID: ${id}`);
@@ -63,15 +65,15 @@ class User {
   }
 
   /**
-   * Find user by email and tenant
+   * Find user by email and tenant (using numeric FK)
    */
-  static async findByEmail(email, tenantId) {
+  static async findByEmail(email, tenantIdFk) {
     const query = `
       SELECT * FROM public.users 
-      WHERE email = $1 AND tenant_id = $2 AND status != 'deleted'
+      WHERE email = $1 AND tenant_id_fk = $2 AND status != 'deleted'
     `;
     
-    const result = await database.query(query, [email, tenantId]);
+    const result = await database.query(query, [email, tenantIdFk]);
     
     if (result.rows.length === 0) {
       throw new UserNotFoundError(`email: ${email}`);
@@ -117,20 +119,29 @@ class User {
   }
 
   /**
-   * Find all users by tenant
+   * Find all users globally (for internal admin)
    */
-  static async findByTenant(tenantId, options = {}) {
-    const { limit = 50, offset = 0, role, status = 'active' } = options;
+  static async findAll(options = {}) {
+    const { limit = 50, offset = 0, tenantId, search, status } = options;
     
-    let query = `
-      SELECT * FROM public.users 
-      WHERE tenant_id = $1 AND status = $2
-    `;
-    const params = [tenantId, status];
+    let query = `SELECT * FROM public.users WHERE 1=1`;
+    const params = [];
     
-    if (role) {
-      query += ` AND role = $${params.length + 1}`;
-      params.push(role);
+    if (tenantId) {
+      query += ` AND tenant_id_fk = $${params.length + 1}`;
+      params.push(tenantId);
+    }
+    
+    if (search) {
+      query += ` AND (email ILIKE $${params.length + 1} OR first_name ILIKE $${params.length + 1} OR last_name ILIKE $${params.length + 1})`;
+      params.push(`%${search}%`);
+    }
+    
+    if (status) {
+      query += ` AND status = $${params.length + 1}`;
+      params.push(status);
+    } else {
+      query += ` AND status != 'deleted'`;
     }
     
     query += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
@@ -141,14 +152,52 @@ class User {
   }
 
   /**
-   * Create new user
+   * Find all users by tenant (using numeric FK)
+   */
+  static async findByTenant(tenantIdFk, options = {}) {
+    const { limit = 50, offset = 0, role, status = 'active', search } = options;
+    
+    let query = `
+      SELECT * FROM public.users 
+      WHERE tenant_id_fk = $1 AND status = $2
+    `;
+    const params = [tenantIdFk, status];
+    
+    if (role) {
+      query += ` AND role = $${params.length + 1}`;
+      params.push(role);
+    }
+    
+    if (search) {
+      query += ` AND (email ILIKE $${params.length + 1} OR first_name ILIKE $${params.length + 1} OR last_name ILIKE $${params.length + 1})`;
+      params.push(`%${search}%`);
+    }
+    
+    query += ` ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+    
+    const result = await database.query(query, params);
+    return result.rows.map(row => new User(row));
+  }
+
+  /**
+   * Create new user (using numeric tenant FK)
    */
   static async create(userData) {
-    const { tenantId, email, passwordHash, name, role, status = 'active' } = userData;
+    const { 
+      tenantIdFk, 
+      email, 
+      passwordHash, 
+      firstName, 
+      lastName, 
+      role = 'operations', 
+      status = 'active',
+      userTypeId
+    } = userData;
     
-    // Check if user already exists
+    // Check if user already exists globally (email is unique)
     try {
-      await User.findByEmail(email, tenantId);
+      await User.findByEmailGlobal(email);
       throw new DuplicateUserError(email);
     } catch (error) {
       if (!(error instanceof UserNotFoundError)) {
@@ -156,29 +205,40 @@ class User {
       }
     }
     
+    // Get tenant subdomain for legacy compatibility
+    const tenantQuery = `SELECT subdomain FROM tenants WHERE id = $1`;
+    const tenantResult = await database.query(tenantQuery, [tenantIdFk]);
+    const tenantSubdomain = tenantResult.rows[0]?.subdomain;
+    
     const query = `
-      INSERT INTO public.users (tenant_id, email, password_hash, name, role, status)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO public.users (
+        tenant_id, tenant_id_fk, email, password_hash, 
+        first_name, last_name, role, status, user_type_id
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
     
     const result = await database.query(query, [
-      tenantId, 
+      tenantSubdomain, // Legacy string 
+      tenantIdFk, // Primary numeric FK
       email, 
       passwordHash, 
-      name, 
+      firstName,
+      lastName,
       role, 
-      status
+      status,
+      userTypeId
     ]);
     
     return new User(result.rows[0]);
   }
 
   /**
-   * Update user
+   * Update user (using numeric tenant FK)
    */
   async update(updates) {
-    const allowedUpdates = ['name', 'role', 'status'];
+    const allowedUpdates = ['first_name', 'last_name', 'role', 'status'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -200,14 +260,14 @@ class User {
     const query = `
       UPDATE public.users 
       SET ${updateFields.join(', ')}
-      WHERE id = $${paramIndex} AND tenant_id = $${paramIndex + 1}
+      WHERE id = $${paramIndex} AND tenant_id_fk = $${paramIndex + 1}
       RETURNING *
     `;
     
     const result = await database.query(query, [
       ...updateValues,
       this.id,
-      this.tenantId
+      this.tenantIdFk
     ]);
     
     if (result.rows.length === 0) {
@@ -220,20 +280,20 @@ class User {
   }
 
   /**
-   * Change password
+   * Change password (using numeric tenant FK)
    */
   async updatePassword(newPasswordHash) {
     const query = `
       UPDATE public.users 
       SET password_hash = $1, updated_at = NOW()
-      WHERE id = $2 AND tenant_id = $3
+      WHERE id = $2 AND tenant_id_fk = $3
       RETURNING *
     `;
     
     const result = await database.query(query, [
       newPasswordHash,
       this.id,
-      this.tenantId
+      this.tenantIdFk
     ]);
     
     if (result.rows.length === 0) {
@@ -253,16 +313,16 @@ class User {
   }
 
   /**
-   * Get user count by tenant
+   * Get user count by tenant (using numeric FK)
    */
-  static async countByTenant(tenantId, status = 'active') {
+  static async countByTenant(tenantIdFk, status = 'active') {
     const query = `
       SELECT COUNT(*) as count 
       FROM public.users 
-      WHERE tenant_id = $1 AND status = $2
+      WHERE tenant_id_fk = $1 AND status = $2
     `;
     
-    const result = await database.query(query, [tenantId, status]);
+    const result = await database.query(query, [tenantIdFk, status]);
     return parseInt(result.rows[0].count);
   }
 
@@ -280,11 +340,14 @@ class User {
   getSafeData() {
     return {
       id: this.id,
-      tenantId: this.tenantId,
+      tenantId: this.tenantIdFk, // Use numeric FK for JWT
       email: this.email,
+      firstName: this.firstName,
+      lastName: this.lastName,
       name: this.name,
       role: this.role,
       status: this.status,
+      platformRole: this.platformRole,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

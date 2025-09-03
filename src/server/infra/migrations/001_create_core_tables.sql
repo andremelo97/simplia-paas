@@ -55,14 +55,15 @@ CREATE TABLE IF NOT EXISTS applications (
 COMMENT ON TABLE applications IS 'Product catalog - applications available for licensing';
 COMMENT ON COLUMN applications.slug IS 'Short identifier used in API routes and JWT tokens';
 
--- Users table (cross-tenant authentication)
+-- Users table (1:1 tenant relationship)
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
-    tenant_id VARCHAR(100) NOT NULL, -- References tenants.subdomain
+    tenant_id VARCHAR(100), -- Legacy string reference (for compatibility)
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Primary numeric FK
     role VARCHAR(50) DEFAULT 'operations', -- operations, manager, admin
     status VARCHAR(20) DEFAULT 'active', -- active, inactive, suspended
     user_type_id INTEGER REFERENCES user_types(id),
@@ -73,8 +74,9 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE users IS 'Users table stored in public schema for cross-tenant authentication';
-COMMENT ON COLUMN users.tenant_id IS 'References tenants.subdomain (not FK to avoid circular dependency)';
+COMMENT ON TABLE users IS 'Users table with 1:1 tenant relationship - each user belongs to exactly one tenant';
+COMMENT ON COLUMN users.tenant_id IS 'Legacy string reference to tenants.subdomain (kept for compatibility)';
+COMMENT ON COLUMN users.tenant_id_fk IS 'Primary numeric FK to tenants.id - use this for all new code';
 COMMENT ON COLUMN users.role IS 'Tenant-level role: operations < manager < admin';
 COMMENT ON COLUMN users.platform_role IS 'Platform role for Simplia internal team: internal_admin, support, etc.';
 
@@ -112,7 +114,8 @@ CREATE TABLE IF NOT EXISTS user_application_access (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
-    tenant_id VARCHAR(100) NOT NULL,
+    tenant_id VARCHAR(100), -- Legacy string reference (for compatibility)
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Primary numeric FK
     role_in_app VARCHAR(50) DEFAULT 'user', -- user, admin, viewer
     granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     granted_by INTEGER REFERENCES users(id),
@@ -121,10 +124,12 @@ CREATE TABLE IF NOT EXISTS user_application_access (
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, application_id)
+    UNIQUE(tenant_id_fk, user_id, application_id) -- Unique per tenant (1:1 compatible, NxN ready)
 );
 
-COMMENT ON TABLE user_application_access IS 'Granular user permissions per application';
+COMMENT ON TABLE user_application_access IS 'Granular user permissions per application with tenant context';
+COMMENT ON COLUMN user_application_access.tenant_id IS 'Legacy string reference (kept for compatibility)';
+COMMENT ON COLUMN user_application_access.tenant_id_fk IS 'Primary numeric FK - must match user''s tenant_id_fk';
 COMMENT ON COLUMN user_application_access.role_in_app IS 'Role within specific application context';
 
 -- Access logs for audit trail
@@ -202,6 +207,13 @@ COMMENT ON COLUMN tenant_contacts.phone_e164 IS 'Phone number in E.164 internati
 COMMENT ON COLUMN tenant_contacts.title IS 'Job title or position';
 COMMENT ON COLUMN tenant_contacts.department IS 'Department or business area';
 COMMENT ON COLUMN tenant_contacts.is_primary IS 'Whether this is the primary contact for this type (max 1 per tenant+type)';
+
+-- =============================================
+-- TENANT CONSISTENCY TRIGGERS
+-- =============================================
+
+-- Note: Tenant consistency triggers will be added in a future migration
+-- For now, application-level validation ensures data integrity
 
 -- =============================================
 -- POSTGRESQL TRIGGERS FOR UPDATED_AT (Manual updates for now)

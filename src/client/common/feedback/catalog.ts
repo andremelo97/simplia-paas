@@ -38,6 +38,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "User Deleted",
     message: "User deleted successfully."
   },
+  USER_DEACTIVATED: {
+    title: "User Deactivated",
+    message: "User deactivated successfully."
+  },
 
   // Address operations
   ADDRESS_CREATED: {

@@ -206,7 +206,7 @@ export const CreateTenant: React.FC = () => {
             title: contact.title,
             department: contact.department,
             email: contact.email,
-            phoneE164: contact.phone_number,
+            phoneE164: contact.phone_number ? `+${contact.phone_number}` : undefined,
             notes: contact.notes,
             isPrimary: contact.is_primary
           })

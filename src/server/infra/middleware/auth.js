@@ -47,6 +47,7 @@ async function requireAuth(req, res, next) {
     if (payload.type === 'platform_admin') {
       user = await User.findByIdGlobal(payload.userId);
     } else {
+      // Use numeric tenant ID for user lookup (payload.tenantId should be numeric)
       user = await User.findById(payload.userId, payload.tenantId);
     }
     
@@ -58,6 +59,7 @@ async function requireAuth(req, res, next) {
     }
     
     // Verify tenant matches (security check) - skip for platform admin tokens
+    // Note: payload.tenantId should now be numeric, req.tenant.tenantId should also be numeric
     if (payload.type !== 'platform_admin' && req.tenant && req.tenant.tenantId !== payload.tenantId) {
       return res.status(403).json({
         error: 'Forbidden',
@@ -137,18 +139,30 @@ async function optionalAuth(req, res, next) {
     const payload = authService.verifyToken(token);
     
     // Verify user still exists and is active
-    const user = await User.findById(payload.userId, payload.tenantId);
+    // Handle platform admin vs regular user tokens
+    let user;
+    if (payload.type === 'platform_admin') {
+      user = await User.findByIdGlobal(payload.userId);
+    } else {
+      user = await User.findById(payload.userId, payload.tenantId);
+    }
     
     if (user.status === 'active') {
       // Create user context only if user is active
-      const userContext = createUserContext(user, req.tenant || { 
-        tenantId: payload.tenantId, 
-        schema: payload.schema 
-      });
+      let userContext;
+      if (payload.type === 'platform_admin') {
+        userContext = createUserContext(user, null);
+      } else {
+        userContext = createUserContext(user, req.tenant || { 
+          tenantId: payload.tenantId, 
+          schema: payload.schema 
+        });
+      }
       
       // Add JWT payload data that isn't in the user context
       userContext.allowedApps = payload.allowedApps || [];
       userContext.userType = payload.userType;
+      userContext.platformRole = user.platform_role || payload.platformRole;
       
       // Override role with JWT payload if present (for testing and flexibility)
       if (payload.role) {

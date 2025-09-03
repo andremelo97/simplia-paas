@@ -13,7 +13,8 @@ CREATE INDEX IF NOT EXISTS idx_tenants_status ON tenants(status);
 
 -- User lookup indexes  
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON users(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON users(tenant_id); -- Legacy string index
+CREATE INDEX IF NOT EXISTS idx_users_tenant_id_fk ON users(tenant_id_fk); -- Primary numeric FK index
 CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
 CREATE INDEX IF NOT EXISTS idx_users_user_type_id ON users(user_type_id);
 CREATE INDEX IF NOT EXISTS idx_users_platform_role ON users(platform_role);
@@ -31,9 +32,12 @@ CREATE INDEX IF NOT EXISTS idx_user_types_hierarchy ON user_types(hierarchy_leve
 -- =============================================
 
 -- User authentication and tenant context
-CREATE INDEX IF NOT EXISTS idx_users_email_tenant ON users(email, tenant_id);
-CREATE INDEX IF NOT EXISTS idx_users_tenant_active ON users(tenant_id, active);
-CREATE INDEX IF NOT EXISTS idx_users_tenant_status ON users(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_users_email_tenant ON users(email, tenant_id); -- Legacy composite
+CREATE INDEX IF NOT EXISTS idx_users_email_tenant_fk ON users(email, tenant_id_fk); -- Primary composite
+CREATE INDEX IF NOT EXISTS idx_users_tenant_active ON users(tenant_id, active); -- Legacy composite
+CREATE INDEX IF NOT EXISTS idx_users_tenant_fk_active ON users(tenant_id_fk, active); -- Primary composite
+CREATE INDEX IF NOT EXISTS idx_users_tenant_status ON users(tenant_id, status); -- Legacy composite
+CREATE INDEX IF NOT EXISTS idx_users_tenant_fk_status ON users(tenant_id_fk, status); -- Primary composite
 
 -- Tenant applications performance
 CREATE INDEX IF NOT EXISTS idx_tenant_applications_tenant_id ON tenant_applications(tenant_id);
@@ -44,7 +48,9 @@ CREATE INDEX IF NOT EXISTS idx_tenant_applications_active ON tenant_applications
 
 -- User application access performance
 CREATE INDEX IF NOT EXISTS idx_user_app_access_user_id ON user_application_access(user_id);
-CREATE INDEX IF NOT EXISTS idx_user_app_access_tenant_app ON user_application_access(tenant_id, application_id);
+CREATE INDEX IF NOT EXISTS idx_user_app_access_tenant_app ON user_application_access(tenant_id, application_id); -- Legacy composite
+CREATE INDEX IF NOT EXISTS idx_user_app_access_tenant_fk_app ON user_application_access(tenant_id_fk, application_id); -- Primary composite
+CREATE INDEX IF NOT EXISTS idx_user_app_access_tenant_fk ON user_application_access(tenant_id_fk); -- Primary FK index
 CREATE INDEX IF NOT EXISTS idx_user_app_access_user_app ON user_application_access(user_id, application_id, active);
 CREATE INDEX IF NOT EXISTS idx_user_app_access_active ON user_application_access(active);
 
@@ -88,9 +94,11 @@ CREATE INDEX IF NOT EXISTS idx_analytics_app_usage ON application_access_logs(ap
 -- =============================================
 
 -- Active records only (most common queries)
-CREATE INDEX IF NOT EXISTS idx_users_active_only ON users(tenant_id, email) WHERE active = true;
+CREATE INDEX IF NOT EXISTS idx_users_active_only ON users(tenant_id, email) WHERE active = true; -- Legacy partial
+CREATE INDEX IF NOT EXISTS idx_users_active_fk_only ON users(tenant_id_fk, email) WHERE active = true; -- Primary partial
 CREATE INDEX IF NOT EXISTS idx_tenant_apps_active_only ON tenant_applications(tenant_id_fk, application_id) WHERE active = true;
 CREATE INDEX IF NOT EXISTS idx_user_access_active_only ON user_application_access(user_id, application_id) WHERE active = true AND is_active = true;
+CREATE INDEX IF NOT EXISTS idx_user_access_tenant_fk_active ON user_application_access(tenant_id_fk, user_id, application_id) WHERE active = true AND is_active = true;
 
 -- Failed access attempts (security monitoring)
 CREATE INDEX IF NOT EXISTS idx_access_denied_only ON application_access_logs(tenant_id_fk, created_at DESC, user_id) WHERE decision = 'denied';
@@ -129,7 +137,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_tenant_contacts_primary_per_type
 -- INDEX COMMENTS FOR DOCUMENTATION
 -- =============================================
 
-COMMENT ON INDEX idx_users_email_tenant IS 'Optimizes user authentication queries by email and tenant';
+COMMENT ON INDEX idx_users_email_tenant IS 'Legacy: Optimizes user authentication queries by email and tenant (string)';
+COMMENT ON INDEX idx_users_email_tenant_fk IS 'Primary: Optimizes user authentication queries by email and tenant (numeric FK)';
+COMMENT ON INDEX idx_users_tenant_id_fk IS 'Primary: Fast lookup of users by tenant using numeric FK';
+COMMENT ON INDEX idx_user_app_access_tenant_fk IS 'Primary: Fast lookup of user access by tenant using numeric FK';
 COMMENT ON INDEX idx_tenant_applications_tenant_status IS 'Optimizes license checking queries in authorization middleware';
 COMMENT ON INDEX idx_user_app_access_user_app IS 'Optimizes user permission checks in authorization flow';
 COMMENT ON INDEX idx_access_logs_tenant_date IS 'Optimizes audit log queries for compliance reporting';
@@ -144,3 +155,14 @@ COMMENT ON INDEX uq_tenant_addresses_primary_per_type IS 'Ensures only one prima
 COMMENT ON INDEX idx_tenant_contacts_tenant_active IS 'Fast lookup of active contacts by tenant';
 COMMENT ON INDEX idx_tenant_contacts_email_lookup IS 'Case-insensitive email lookup within tenant context';
 COMMENT ON INDEX uq_tenant_contacts_primary_per_type IS 'Ensures only one primary contact per type per tenant';
+
+-- =============================================
+-- TENANT CONSISTENCY CONSTRAINTS AND TRIGGERS
+-- =============================================
+
+-- Note: Tenant consistency triggers will be added via psql in a separate script
+-- due to migration parser limitations with dollar-quoted strings.
+-- For now, application-level validation ensures tenant consistency in user_application_access
+-- 
+-- Key constraint: user_application_access.tenant_id_fk must match users.tenant_id_fk for the given user_id
+-- This is enforced at the application layer in all user access operations.

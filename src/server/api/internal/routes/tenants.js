@@ -1075,8 +1075,8 @@ router.delete('/:id/addresses/:addressId', async (req, res) => {
  *                           email: { type: string }
  *                           phoneE164: { type: string }
  *                           title: { type: string }
+ *                           department: { type: string }
  *                           notes: { type: string }
- *                           preferences: { type: object }
  *                           isPrimary: { type: boolean }
  *                           createdAt: { type: string }
  *                           updatedAt: { type: string }
@@ -1183,12 +1183,12 @@ router.get('/:id/contacts', async (req, res) => {
  *               title:
  *                 type: string
  *                 example: "Gerente Administrativo"
+ *               department:
+ *                 type: string
+ *                 example: "Administração"
  *               notes:
  *                 type: string
  *                 example: "Responsável pela administração"
- *               preferences:
- *                 type: object
- *                 example: {"preferred_contact": "email", "business_hours": "08:00-18:00"}
  *               isPrimary:
  *                 type: boolean
  *                 example: true
@@ -1224,7 +1224,7 @@ router.post('/:id/contacts', async (req, res) => {
   try {
     const { id } = req.params;
     const tenantId = parseInt(id);
-    const { type, fullName, email, phoneE164, title, notes, preferences, isPrimary } = req.body;
+    const { type, fullName, email, phoneE164, title, department, notes, isPrimary } = req.body;
 
     // Verify tenant exists
     const tenant = await Tenant.findById(tenantId);
@@ -1242,8 +1242,8 @@ router.post('/:id/contacts', async (req, res) => {
       email,
       phoneE164,
       title,
+      department,
       notes,
-      preferences,
       isPrimary
     });
 
@@ -1262,8 +1262,7 @@ router.post('/:id/contacts', async (req, res) => {
     if (error.message.includes('Missing required fields') || 
         error.message.includes('Invalid type') ||
         error.message.includes('Invalid email format') ||
-        error.message.includes('Phone must be in E.164') ||
-        error.message.includes('Preferences must be')) {
+        error.message.includes('Phone must be in E.164')) {
       return res.status(400).json({
         error: 'Validation Error',
         message: error.message
@@ -1327,10 +1326,10 @@ router.post('/:id/contacts', async (req, res) => {
  *                 pattern: '^\\+[1-9]\\d{1,14}$'
  *               title:
  *                 type: string
+ *               department:
+ *                 type: string
  *               notes:
  *                 type: string
- *               preferences:
- *                 type: object
  *               isPrimary:
  *                 type: boolean
  *     responses:
@@ -1397,7 +1396,6 @@ router.put('/:id/contacts/:contactId', async (req, res) => {
         error.message.includes('fullName is required') ||
         error.message.includes('Invalid email format') ||
         error.message.includes('Phone must be in E.164') ||
-        error.message.includes('Preferences must be') ||
         error.message.includes('No fields provided')) {
       return res.status(400).json({
         error: 'Validation Error',

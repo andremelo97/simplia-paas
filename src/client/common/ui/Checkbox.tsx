@@ -24,12 +24,15 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           <div
             className={cn(
               "flex h-4 w-4 shrink-0 rounded-sm border border-gray-300 transition-colors",
-              "focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-1",
+              "focus-within:ring-2 focus-within:ring-[var(--brand-primary)] focus-within:ring-offset-1",
               "hover:border-gray-400",
-              props.checked && "bg-blue-600 border-blue-600",
+              props.checked && "border-[var(--brand-primary)]",
               props.disabled && "opacity-50 cursor-not-allowed",
               className
             )}
+            style={{
+              backgroundColor: props.checked ? 'var(--brand-primary)' : undefined
+            }}
           >
             {props.checked && (
               <Check className="h-3 w-3 text-white m-0.5" strokeWidth={3} />

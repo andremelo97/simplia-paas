@@ -19,7 +19,9 @@
       "Bash(tree:*)",
       "Bash(taskkill:*)",
       "Bash(npx kill-port:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

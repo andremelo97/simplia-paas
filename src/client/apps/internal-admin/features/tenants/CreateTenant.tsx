@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Label } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Label, Textarea } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
 import { addressService } from '../../services/addresses'
@@ -286,23 +286,18 @@ export const CreateTenant: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
-                <div className="space-y-1">
-                  <Label htmlFor="description">Description</Label>
-                  <textarea
+                <div>
+                  <Textarea
                     id="description"
+                    label="Description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description')(e as any)}
                     rows={3}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] ${isSubmitting ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''}`}
                     placeholder="Optional description of the tenant organization"
                     disabled={isSubmitting}
+                    error={validationErrors.description}
+                    helperText="Brief description of the tenant organization (optional)"
                   />
-                  {validationErrors.description && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
-                  )}
-                  <p className="mt-1 text-sm text-gray-500">
-                    Brief description of the tenant organization (optional)
-                  </p>
                 </div>
               </div>
             </CardContent>

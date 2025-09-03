@@ -7,6 +7,9 @@ import { Dashboard } from '../features/dashboard/Dashboard'
 import { TenantsList } from '../features/tenants/TenantsList'
 import { CreateTenant } from '../features/tenants/CreateTenant'
 import { EditTenantPage } from '../features/tenants/EditTenant'
+import { UsersList } from '../features/users/UsersList'
+import { CreateUser } from '../features/users/CreateUser'
+import { EditUser } from '../features/users/EditUser'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -50,7 +53,13 @@ export const AppRoutes: React.FC = () => {
         <Route path="tenants/create" element={<CreateTenant />} />
         <Route path="tenants/:id" element={<TenantViewRedirect />} />
         <Route path="tenants/:id/edit" element={<EditTenantPage />} />
-        <Route path="users" element={<div>Users page (coming soon)</div>} />
+        
+        {/* Users routes */}
+        <Route path="users" element={<UsersList />} />
+        <Route path="users/create" element={<CreateUser />} />
+        <Route path="tenants/:tenantId/users/create" element={<CreateUser />} />
+        <Route path="tenants/:tenantId/users/:userId/edit" element={<EditUser />} />
+        
         <Route path="applications" element={<div>Applications page (coming soon)</div>} />
         <Route path="*" element={<NotFound />} />
       </Route>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Label } from '@client/common/ui'
+import { useNavigate, useParams, Link } from 'react-router-dom'
+import { Card, CardHeader, CardContent, Button, Input, Label, Textarea, Checkbox } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
 import { addressService } from '../../services/addresses'
@@ -12,6 +12,7 @@ import { AddressFormValues, ContactFormValues } from './types'
 interface TenantFormData {
   name: string
   description: string
+  status: 'active' | 'inactive'
 }
 
 interface TenantSnapshot {
@@ -23,7 +24,8 @@ interface TenantSnapshot {
 export const EditTenantPage: React.FC = () => {
   const [formData, setFormData] = useState<TenantFormData>({
     name: '',
-    description: ''
+    description: '',
+    status: 'active'
   })
   const [addresses, setAddresses] = useState<AddressFormValues[]>([])
   const [contacts, setContacts] = useState<ContactFormValues[]>([])
@@ -96,7 +98,8 @@ export const EditTenantPage: React.FC = () => {
         // Initialize form data
         const coreData: TenantFormData = {
           name: tenant.name || '',
-          description: tenant.description || ''
+          description: tenant.description || '',
+          status: (tenant.status === 'active' || tenant.status === 'inactive') ? tenant.status : 'active'
         }
 
         // If no addresses/contacts exist, start with default primary items
@@ -310,7 +313,8 @@ export const EditTenantPage: React.FC = () => {
         console.log('🏢 [EditTenant] Updating core tenant data')
         await tenantsService.updateTenant(diff.tenantId, {
           name: formData.name.trim(),
-          description: formData.description.trim()
+          description: formData.description.trim(),
+          status: formData.status
         })
       }
 
@@ -478,11 +482,20 @@ export const EditTenantPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Tenant</h1>
-        <p className="text-gray-600 mt-1">
-          Update tenant organization information
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Tenant</h1>
+          <p className="text-gray-600 mt-1">
+            Update tenant organization information
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Link to={`/users?tenantId=${id}`}>
+            <Button variant="secondary">
+              Manage Users
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -506,24 +519,29 @@ export const EditTenantPage: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
-                <div className="space-y-1">
-                  <Label htmlFor="description">Description</Label>
-                  <textarea
+                <div>
+                  <Textarea
                     id="description"
+                    label="Description"
                     value={formData.description}
                     onChange={(e) => handleInputChange('description')(e as any)}
                     rows={3}
-                    className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)] ${isSubmitting ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''}`}
                     placeholder="Optional description of the tenant organization"
                     disabled={isSubmitting}
+                    error={validationErrors.description}
+                    helperText="Brief description of the tenant organization (optional)"
                   />
-                  {validationErrors.description && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.description}</p>
-                  )}
-                  <p className="mt-1 text-sm text-gray-500">
-                    Brief description of the tenant organization (optional)
-                  </p>
                 </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <Checkbox
+                  id="tenant-status"
+                  checked={formData.status === 'active'}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.checked ? 'active' : 'inactive' }))}
+                  label="Status"
+                  disabled={isSubmitting}
+                />
               </div>
             </CardContent>
           </Card>

@@ -59,8 +59,8 @@ async function requireAuth(req, res, next) {
     }
     
     // Verify tenant matches (security check) - skip for platform admin tokens
-    // Note: payload.tenantId should now be numeric, req.tenant.tenantId should also be numeric
-    if (payload.type !== 'platform_admin' && req.tenant && req.tenant.tenantId !== payload.tenantId) {
+    // Note: payload.tenantId is numeric, req.tenant.id is also numeric
+    if (payload.type !== 'platform_admin' && req.tenant && req.tenant.id !== payload.tenantId) {
       return res.status(403).json({
         error: 'Forbidden',
         message: 'Token tenant does not match request tenant'

@@ -509,6 +509,63 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - ✅ **Migration Updated**: Seed data includes department values instead of preferences
 - ✅ **UI/UX Complete**: Department field appears in both Create and Edit tenant flows
 
+## Users Management System (Complete Implementation)
+
+### Architecture Overview
+Complete CRUD system for user management following the 1:1 tenant model with flattened component structure:
+
+### Frontend Components Structure
+- **Flattened Architecture**: Components moved from `/components` folder to root level of users feature
+- **src/client/apps/internal-admin/features/users/**:
+  - `UsersList.tsx` - List view with search and pagination
+  - `CreateUser.tsx` - Creation form with tenant selection
+  - `EditUser.tsx` - Edit form with status management
+  - `UserStatusBadge.tsx` - Status display component (active, inactive, suspended)
+  - `UserRoleSelect.tsx` - Role selection using common/ui Select
+  - `types.ts` - TypeScript interfaces and enums
+
+### Key Features Implemented
+- ✅ **Tenant Selection**: CreateUser includes tenant dropdown (moved from URL parameter)
+- ✅ **Common UI Components**: All forms use standardized Input, Select, Textarea from common/ui
+- ✅ **Button Standardization**: Create uses `variant="default"`, Cancel uses `variant="secondary"`
+- ✅ **Component Reuse**: UserRoleSelect and UserStatusBadge simplified using common components
+- ✅ **Route Structure**: `/users/create` for creation, `/users/:id/edit` for editing
+- ✅ **AppFeedback Integration**: Automatic success/error notifications
+
+## Tenant Status Management (New Feature)
+
+### EditTenant Status Toggle
+Implemented functional status toggle in tenant editing:
+
+### Technical Implementation
+- **Database Field**: `tenants.status` supports 'active'/'inactive' (boolean-based)
+- **UI Component**: Checkbox using common/ui with proper event handling
+- **Form Integration**: Status field integrated in TenantFormData interface
+- **Persistence**: Status changes saved via TenantsService.updateTenant()
+- **Badge Updates**: TenantStatusBadge simplified to only show Active/Inactive (removed 'trial')
+
+### User Interface
+- **Checkbox Location**: Tenant Information section in EditTenant form
+- **Label**: "Status" (simplified from "Active Status")
+- **No Description**: Removed helper text for cleaner UI
+- **Event Handling**: `onChange={(e) => ...}` properly handles checkbox events
+- **Type Safety**: Strict TypeScript types for 'active' | 'inactive'
+
+### Code Example
+```typescript
+// Status toggle implementation
+<Checkbox
+  id="tenant-status"
+  checked={formData.status === 'active'}
+  onChange={(e) => setFormData(prev => ({ 
+    ...prev, 
+    status: e.target.checked ? 'active' : 'inactive' 
+  }))}
+  label="Status"
+  disabled={isSubmitting}
+/>
+```
+
 ### Technical Details
 - **Database Schema**: `department TEXT NULL` column in `tenant_contacts` table
 - **Backend Model**: `TenantContact.js` includes department in constructor, create, update, and toJSON methods
@@ -528,10 +585,17 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 - **Global Brand Tokens** (`src/client/index.css`): CSS custom properties for consistent theming
   - `--brand-primary: #B725B7` (purple), `--brand-secondary: #E91E63` (pink)
 - **Component Library** (`src/client/common/ui/`): Reusable UI components with consistent styling
-  - Alert, Button, Input, Card, Table components with variant support
+  - Button, Input, Select, Textarea, Checkbox, Label components with variant support
+  - Card, Alert, Table components with consistent styling
   - FormSection, FieldError, SelectCountry components for complex forms
   - A11y-compliant with proper ARIA attributes
 - **Tailwind Integration**: v3.4.17 with custom component styling and forced heights for consistency
+
+### Recent UI Component Additions
+- **Select.tsx**: Standardized select component with options array support
+- **Textarea.tsx**: Consistent textarea with Input styling patterns
+- **Checkbox.tsx**: Updated to use var(--brand-primary) instead of hardcoded colors
+- **Component Standardization**: All new forms use common/ui components exclusively
 
 ### Form Architecture
 - **Multi-column responsive layouts** for complex forms (tenant creation)

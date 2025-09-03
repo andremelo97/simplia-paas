@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Label, Button, FieldError } from '@client/common/ui';
+import { Input, Label, Button, FieldError, Select } from '@client/common/ui';
 import { Trash2 } from 'lucide-react';
 import { ContactFormValues, ContactType, CONTACT_TYPE_OPTIONS } from './types';
 
@@ -77,27 +77,14 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
           <Label htmlFor={`contact-${index}-type`} className="after:content-['*'] after:ml-0.5 after:text-red-500">
             Type
           </Label>
-          <select
+          <Select
             id={`contact-${index}-type`}
             value={contact.type}
             onChange={(e) => handleFieldChange('type', e.target.value as ContactType)}
-            className={`
-              w-full px-3 py-2 border rounded-md shadow-sm 
-              focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]
-              ${errors.type 
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                : 'border-gray-300'
-              }
-            `}
+            options={CONTACT_TYPE_OPTIONS}
             required
-          >
-            {CONTACT_TYPE_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <FieldError error={errors.type} />
+            error={errors.type}
+          />
         </div>
 
         <div className="space-y-1">

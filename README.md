@@ -26,14 +26,23 @@ simplia-paas/
 │   │   │   │   │   │   └── Login.tsx  # Página de login com AppError
 │   │   │   │   │   ├── 📁 dashboard/  # Dashboard principal
 │   │   │   │   │   │   └── Dashboard.tsx # Dashboard com métricas
-│   │   │   │   │   └── 📁 tenants/    # Gestão de tenants
-│   │   │   │   │       ├── TenantsList.tsx      # Lista de tenants
-│   │   │   │   │       ├── CreateTenant.tsx     # Criação com AppFeedback
-│   │   │   │   │       ├── types.ts             # TypeScript types para addresses/contacts
-│   │   │   │   │       ├── AddressItemForm.tsx  # Form individual de endereço
-│   │   │   │   │       ├── ContactItemForm.tsx  # Form individual de contato
-│   │   │   │   │       ├── AddressesRepeater.tsx # Repeater para endereços
-│   │   │   │   │       └── ContactsRepeater.tsx  # Repeater para contatos
+│   │   │   │   │   ├── 📁 tenants/    # Gestão de tenants
+│   │   │   │   │   │   ├── TenantsList.tsx      # Lista de tenants
+│   │   │   │   │   │   ├── CreateTenant.tsx     # Criação com AppFeedback
+│   │   │   │   │   │   ├── EditTenant.tsx       # Edição com status toggle
+│   │   │   │   │   │   ├── TenantStatusBadge.tsx # Badge active/inactive
+│   │   │   │   │   │   ├── types.ts             # TypeScript types para addresses/contacts
+│   │   │   │   │   │   ├── AddressItemForm.tsx  # Form individual de endereço
+│   │   │   │   │   │   ├── ContactItemForm.tsx  # Form individual de contato
+│   │   │   │   │   │   ├── AddressesRepeater.tsx # Repeater para endereços
+│   │   │   │   │   │   └── ContactsRepeater.tsx  # Repeater para contatos
+│   │   │   │   │   └── 📁 users/       # Gestão de usuários
+│   │   │   │   │       ├── UsersList.tsx        # Lista de usuários
+│   │   │   │   │       ├── CreateUser.tsx       # Criação com seleção de tenant
+│   │   │   │   │       ├── EditUser.tsx         # Edição de usuários
+│   │   │   │   │       ├── UserStatusBadge.tsx  # Badge status usuário
+│   │   │   │   │       ├── UserRoleSelect.tsx   # Seletor de roles
+│   │   │   │   │       └── types.ts             # TypeScript types para usuários
 │   │   │   │   ├── 📁 components/     # Componentes específicos do admin
 │   │   │   │   │   ├── Header.tsx     # Header do layout
 │   │   │   │   │   ├── Sidebar.tsx    # Sidebar de navegação
@@ -68,6 +77,10 @@ simplia-paas/
 │   │   │   ├── 📁 ui/                 # Design system components (Button, Input, Card, etc.)
 │   │   │   │   ├── Button.tsx         # Componente Button com loading states
 │   │   │   │   ├── Input.tsx          # Componente Input com validação
+│   │   │   │   ├── Select.tsx         # Componente Select padronizado
+│   │   │   │   ├── Textarea.tsx       # Componente Textarea consistente
+│   │   │   │   ├── Checkbox.tsx       # Componente Checkbox com brand primary
+│   │   │   │   ├── Label.tsx          # Componente Label acessível
 │   │   │   │   ├── Card.tsx           # Componente Card refatorado
 │   │   │   │   ├── Toast.tsx          # Sistema de toasts
 │   │   │   │   ├── Toaster.tsx        # Host de toasts
@@ -662,10 +675,14 @@ O **painel administrativo interno** possui interface moderna e profissional:
 - **✅ Validação Avançada**: Primary constraints, E.164 phone, ISO-2 countries
 - **✅ AppFeedback Integration**: Success/error messaging automático
 - **✅ A11y Compliance**: ARIA completo + navegação por teclado
-- **🆕 Users ↔ Tenants 1:1 Fortalecido**: Modelo 1:1 com FK numérica e consistency enforcement
-- **🆕 Tenant-Scoped User Management**: API e frontend para gestão de usuários por tenant
-- **🆕 Code Cleanup**: Eliminação de dependências legadas `users.tenant_id` string
-- **🆕 Application-Level Validation**: Garantia de consistência de tenants via aplicação
+- **✅ Users ↔ Tenants 1:1 Fortalecido**: Modelo 1:1 com FK numérica e consistency enforcement
+- **✅ Tenant-Scoped User Management**: API e frontend para gestão de usuários por tenant
+- **✅ Code Cleanup**: Eliminação de dependências legadas `users.tenant_id` string
+- **✅ Application-Level Validation**: Garantia de consistência de tenants via aplicação
+- **✅ Users Management System**: CRUD completo com estrutura de componentes achatada (sem /components)
+- **✅ Design System Expansion**: Select, Textarea, Checkbox padronizados no common/ui
+- **✅ Tenant Status Management**: Toggle active/inactive com persistência no EditTenant
+- **✅ Component Flattening**: Simplificação da estrutura UserStatusBadge, UserRoleSelect, TenantStatusBadge
 
 #### Uso dos Novos Componentes
 ```typescript
@@ -684,8 +701,9 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 ### 📈 Status de Desenvolvimento
 - 🟢 **Backend API**: 100% completo com documentação Swagger + addresses/contacts APIs
 - 🟢 **Frontend Foundation**: Design system e error handling implementados  
-- 🟢 **Tenant Management**: Criação completa com addresses/contacts + repeater components
-- 🟡 **Admin Interface**: Dashboard, tenants prontos - users/applications/entitlements pendentes
+- 🟢 **Tenant Management**: CRUD completo com addresses/contacts + status toggle funcional
+- 🟢 **Users Management**: CRUD completo implementado com common/ui components
+- 🟡 **Admin Interface**: Dashboard, tenants, users prontos - applications/entitlements pendentes
 - 🔴 **Product Apps**: Estrutura criada - desenvolvimento pendente
 - 🔴 **Public APIs**: Aguardando definição de requisitos dos produtos
 

@@ -29,14 +29,16 @@ describe('Internal API Validation', () => {
     const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash('password123', 12);
     const userResult = await global.testDb.query(
-      `INSERT INTO users (tenant_id, email, password_hash, first_name, last_name, role, status, platform_role)
-       VALUES ($1, 'internal-api@test.com', $2, 'Internal', 'User', 'manager', 'active', 'internal_admin')
+      `INSERT INTO users (tenant_id_fk, tenant_id, email, password_hash, first_name, last_name, role, status, platform_role)
+       VALUES ($1, $2, 'internal-api@test.com', $3, 'Internal', 'User', 'manager', 'active', 'internal_admin')
        ON CONFLICT (email) DO UPDATE SET 
+         tenant_id_fk = EXCLUDED.tenant_id_fk,
+         tenant_id = EXCLUDED.tenant_id,
          password_hash = EXCLUDED.password_hash,
          platform_role = EXCLUDED.platform_role,
          updated_at = NOW()
        RETURNING *`,
-      [testTenant.subdomain, hashedPassword]
+      [testTenant.id, testTenant.subdomain, hashedPassword]
     );
     testUser = userResult.rows[0];
 
@@ -45,7 +47,7 @@ describe('Internal API Validation', () => {
       userId: testUser.id,
       email: 'internal-api@test.com',
       role: 'manager',
-      tenantId: 'test_clinic',
+      tenantId: testTenant.id, // Use numeric tenant ID
       schema: 'tenant_test_clinic',
       allowedApps: ['tq']
     });
@@ -55,7 +57,7 @@ describe('Internal API Validation', () => {
       userId: testUser.id,
       email: 'consultoriasimplia@gmail.com',
       role: 'admin',
-      tenantId: 'test_clinic',
+      tenantId: testTenant.id, // Use numeric tenant ID
       schema: 'tenant_test_clinic',
       allowedApps: ['tq'],
       platformRole: 'internal_admin'

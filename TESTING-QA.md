@@ -25,6 +25,12 @@ Simplia PaaS implements a **comprehensive testing system** covering both the **I
 - **Layer 5**: Audit logging and compliance
 - **JWT Role Override**: Flexible testing without database modifications
 
+### ✅ **Frontend Components Testing** (Structure Ready)
+- **Users Management**: Complete CRUD with flattened component structure
+- **Tenant Status**: Toggle functionality with persistence testing
+- **Common UI Components**: Select, Textarea, Checkbox standardized for testing
+- **AppFeedback System**: Success/error notification flow validation
+
 ---
 
 ## 🏗️ Test Architecture

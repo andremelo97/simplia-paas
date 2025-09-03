@@ -36,15 +36,18 @@ describe('Critical Authorization Validation', () => {
     const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash('password123', 12);
     const userResult = await global.testDb.query(
-      `INSERT INTO users (tenant_id, email, password_hash, first_name, last_name, role, status)
-       VALUES ($1, 'critical-manager@test.com', $2, 'Critical', 'Manager', 'manager', 'active')
+      `INSERT INTO users (tenant_id_fk, tenant_id, email, password_hash, first_name, last_name, role, status, platform_role)
+       VALUES ($1, $2, 'critical-manager@test.com', $3, 'Critical', 'Manager', 'manager', 'active', 'internal_admin')
        ON CONFLICT (email) DO UPDATE SET
+         tenant_id_fk = EXCLUDED.tenant_id_fk,
+         tenant_id = EXCLUDED.tenant_id,
          password_hash = EXCLUDED.password_hash,
          role = EXCLUDED.role,
          status = EXCLUDED.status,
+         platform_role = EXCLUDED.platform_role,
          updated_at = NOW()
        RETURNING *`,
-      [tenant.subdomain, hashedPassword]  // Use subdomain instead of id
+      [tenant.id, tenant.subdomain, hashedPassword]  // Use numeric id for FK and subdomain for legacy
     );
     user = userResult.rows[0];
 
@@ -69,11 +72,19 @@ describe('Critical Authorization Validation', () => {
         [tenant.subdomain, tenant.id, tqApplication.id]
       );
 
+      // Seed user application access
+      await global.testDb.query(
+        `INSERT INTO user_application_access (tenant_id_fk, user_id, application_id, is_active, active)
+         VALUES ($1, $2, $3, true, true)`,
+        [tenant.id, user.id, tqApplication.id]
+      );
+
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         allowedApps: ['tq'],
-        role: 'manager'
+        role: 'manager',
+        platformRole: 'internal_admin'
       });
 
       const response = await request(app)
@@ -81,6 +92,9 @@ describe('Critical Authorization Validation', () => {
         .set('Authorization', `Bearer ${token}`)
         .set('x-tenant-id', tenant.subdomain);
 
+      if (response.status !== 200) {
+        console.log('Response body:', JSON.stringify(response.body, null, 2));
+      }
       expect(response.status).toBe(200);
       expect(response.body.message).toContain('Welcome');
     });
@@ -90,9 +104,10 @@ describe('Critical Authorization Validation', () => {
 
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         allowedApps: ['tq'],
-        role: 'manager'
+        role: 'manager',
+        platformRole: 'internal_admin'
       });
 
       const response = await request(app)
@@ -114,9 +129,10 @@ describe('Critical Authorization Validation', () => {
 
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         allowedApps: ['tq'],
-        role: 'manager'
+        role: 'manager',
+        platformRole: 'internal_admin'
       });
 
       const response = await request(app)
@@ -140,9 +156,10 @@ describe('Critical Authorization Validation', () => {
 
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         allowedApps: ['tq'],
-        role: 'manager'
+        role: 'manager',
+        platformRole: 'internal_admin'
       });
 
       const response = await request(app)
@@ -167,7 +184,7 @@ describe('Critical Authorization Validation', () => {
       // Token without 'tq' in allowedApps
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         allowedApps: ['pm'], // only patient management
       });
 
@@ -193,7 +210,7 @@ describe('Critical Authorization Validation', () => {
       // Operations token (not admin)
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         role: 'operations',
         userType: 'operations',
       });
@@ -215,10 +232,17 @@ describe('Critical Authorization Validation', () => {
         [tenant.subdomain, tenant.id, tqApplication.id]
       );
 
+      // Seed user application access
+      await global.testDb.query(
+        `INSERT INTO user_application_access (tenant_id_fk, user_id, application_id, is_active, active)
+         VALUES ($1, $2, $3, true, true)`,
+        [tenant.id, user.id, tqApplication.id]
+      );
+
       // Admin token
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         role: 'admin',
         userType: 'admin',
       });
@@ -249,9 +273,10 @@ describe('Critical Authorization Validation', () => {
     test('should deny access without tenant header', async () => {
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         allowedApps: ['tq'],
-        role: 'manager'
+        role: 'manager',
+        platformRole: 'internal_admin'
       });
 
       const response = await request(app)
@@ -270,9 +295,10 @@ describe('Critical Authorization Validation', () => {
 
       const token = generateTestToken({
         userId: user.id,
-        tenantId: tenant.subdomain,
+        tenantId: tenant.id, // Use numeric tenant ID
         allowedApps: ['tq'],
-        role: 'manager'
+        role: 'manager',
+        platformRole: 'internal_admin'
       });
 
       await request(app)

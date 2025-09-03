@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Label, Button, SelectCountry, FieldError } from '@client/common/ui';
+import { Input, Label, Button, SelectCountry, FieldError, Select } from '@client/common/ui';
 import { Trash2 } from 'lucide-react';
 import { AddressFormValues, AddressType, ADDRESS_TYPE_OPTIONS } from './types';
 
@@ -56,27 +56,14 @@ export const AddressItemForm: React.FC<AddressItemFormProps> = ({
           <Label htmlFor={`address-${index}-type`} className="after:content-['*'] after:ml-0.5 after:text-red-500">
             Type
           </Label>
-          <select
+          <Select
             id={`address-${index}-type`}
             value={address.type}
             onChange={(e) => handleFieldChange('type', e.target.value as AddressType)}
-            className={`
-              w-full px-3 py-2 border rounded-md shadow-sm 
-              focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-[var(--brand-primary)]
-              ${errors.type 
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                : 'border-gray-300'
-              }
-            `}
+            options={ADDRESS_TYPE_OPTIONS}
             required
-          >
-            {ADDRESS_TYPE_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <FieldError error={errors.type} />
+            error={errors.type}
+          />
         </div>
 
         <div className="space-y-1">

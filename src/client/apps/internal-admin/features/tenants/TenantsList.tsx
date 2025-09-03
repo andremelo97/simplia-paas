@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
+import { TenantStatusBadge } from './TenantStatusBadge'
 
 interface Tenant {
   id: number
@@ -151,12 +152,11 @@ export const TenantsList: React.FC = () => {
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">All Tenants</h2>
             <div className="w-64">
-              <input
+              <Input
                 type="text"
                 placeholder="Search tenants..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
@@ -215,15 +215,7 @@ export const TenantsList: React.FC = () => {
                       {tenant.applicationCount}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          tenant.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {tenant.status}
-                      </span>
+                      <TenantStatusBadge status={tenant.status as any} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(tenant.createdAt)}

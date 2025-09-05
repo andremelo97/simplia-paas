@@ -30,7 +30,10 @@ async function requireAuth(req, res, next) {
   try {
     const token = extractToken(req);
     
+    console.log('🔍 [AUTH] Request:', req.method, req.path, '| Token present:', !!token);
+    
     if (!token) {
+      console.log('❌ [AUTH] No token provided');
       return res.status(401).json({
         error: {
           message: 'No authentication token provided'
@@ -39,17 +42,33 @@ async function requireAuth(req, res, next) {
     }
     
     // Verify token
+    console.log('🔑 [AUTH] Verifying JWT token...');
     const payload = authService.verifyToken(token);
+    console.log('✅ [AUTH] Token verified, payload:', {
+      userId: payload.userId,
+      tenantId: payload.tenantId,
+      type: payload.type,
+      platformRole: payload.platformRole,
+      role: payload.role
+    });
     
     // Verify user still exists and is active
     // For platform admin tokens (type: 'platform_admin'), use global lookup
     let user;
+    console.log('👤 [AUTH] Looking up user...');
     if (payload.type === 'platform_admin') {
+      console.log('🌐 [AUTH] Using global lookup for platform admin');
       user = await User.findByIdGlobal(payload.userId);
     } else {
-      // Use numeric tenant ID for user lookup (payload.tenantId should be numeric)
+      console.log('🏢 [AUTH] Using tenant-scoped lookup');
       user = await User.findById(payload.userId, payload.tenantId);
     }
+    console.log('✅ [AUTH] User found:', {
+      id: user.id,
+      email: user.email,
+      status: user.status,
+      platformRole: user.platformRole
+    });
     
     if (user.status !== 'active') {
       return res.status(401).json({

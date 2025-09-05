@@ -94,7 +94,7 @@ internalRouter.use('/audit', auditRoutes);
 const tenantScopedRouter = express.Router();
 tenantScopedRouter.use(tenantMiddleware, requireAuth);
 
-tenantScopedRouter.use('/users', userRoutes);
+tenantScopedRouter.use('/users', userRoutes); // Re-enabled for pricing system grant/revoke functionality
 tenantScopedRouter.use('/entitlements', entitlementsRoutes);
 
 // Example protected TQ routes (will move to separate product APIs later)

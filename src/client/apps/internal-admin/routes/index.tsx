@@ -10,6 +10,8 @@ import { EditTenantPage } from '../features/tenants/EditTenant'
 import { UsersList } from '../features/users/UsersList'
 import { CreateUser } from '../features/users/CreateUser'
 import { EditUser } from '../features/users/EditUser'
+import { ApplicationsList } from '../features/applications/ApplicationsList'
+import { ApplicationPricing } from '../features/applications/pricing/ApplicationPricing'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -57,10 +59,13 @@ export const AppRoutes: React.FC = () => {
         {/* Users routes */}
         <Route path="users" element={<UsersList />} />
         <Route path="users/create" element={<CreateUser />} />
+        <Route path="tenants/:tenantId/users" element={<UsersList />} />
         <Route path="tenants/:tenantId/users/create" element={<CreateUser />} />
         <Route path="tenants/:tenantId/users/:userId/edit" element={<EditUser />} />
         
-        <Route path="applications" element={<div>Applications page (coming soon)</div>} />
+        {/* Applications routes */}
+        <Route path="applications" element={<ApplicationsList />} />
+        <Route path="applications/:applicationId/pricing" element={<ApplicationPricing />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

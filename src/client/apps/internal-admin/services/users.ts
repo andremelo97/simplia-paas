@@ -14,6 +14,50 @@ export interface UserResponse extends UserDto {
   // All fields from UserDto are used directly
 }
 
+export interface GrantAppAccessPayload {
+  applicationSlug: string;
+  roleInApp?: string;
+}
+
+export interface GrantAppAccessResponse {
+  success: boolean;
+  meta: {
+    code: string;
+    message: string;
+  };
+  data: {
+    access: {
+      userId: number;
+      applicationId: number;
+      applicationSlug: string;
+      roleInApp: string;
+      grantedAt: string;
+    };
+    pricing: {
+      price: string;
+      currency: string;
+      billingCycle: string;
+      userTypeSlug: string;
+    };
+    seatsUsed: number;
+  };
+}
+
+export interface RevokeAppAccessPayload {
+  applicationSlug: string;
+}
+
+export interface RevokeAppAccessResponse {
+  success: boolean;
+  meta: {
+    code: string;
+    message: string;
+  };
+  data: {
+    seatsUsed: number;
+  };
+}
+
 export interface CreateUserResponse {
   success: boolean
   meta: {
@@ -144,6 +188,13 @@ export class UsersService {
     }
 
     console.log('👥 [UsersService] Fetching user by ID:', { userId, tenantId, endpoint })
+    console.log('🔗 [UsersService] Full URL will be:', `${window.location.origin}${endpoint}`)
+    console.log('🔍 [UsersService] URL components:', {
+      tenantEndpoint: this.tenantEndpoint,
+      tenantId: tenantId,
+      userId: userId,
+      constructedEndpoint: tenantId ? `${this.tenantEndpoint}/${tenantId}/users/${userId}` : `${this.globalEndpoint}/${userId}`
+    })
 
     try {
       const response = await api.get(endpoint)
@@ -296,6 +347,61 @@ export class UsersService {
       return response
     } catch (error) {
       console.error('❌ [UsersService] Failed to reset user password:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Grant app access to user (captures price snapshot and increments seat count)
+   * @param userId - User ID
+   * @param payload - Grant access payload
+   * @returns Promise with grant response including pricing snapshot
+   */
+  async grantAppAccess(userId: number, payload: GrantAppAccessPayload): Promise<GrantAppAccessResponse> {
+    const endpoint = `${this.globalEndpoint}/${userId}/apps/grant`
+
+    console.log('👥 [UsersService] Granting app access:', { userId, ...payload })
+
+    try {
+      const response = await api.post(endpoint, payload)
+      
+      console.log('✅ [UsersService] App access granted:', {
+        userId,
+        applicationSlug: payload.applicationSlug,
+        price: response.data?.pricing?.price,
+        seatsUsed: response.data?.seatsUsed
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [UsersService] Failed to grant app access:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Revoke app access from user (decrements seat count)
+   * @param userId - User ID
+   * @param payload - Revoke access payload
+   * @returns Promise with revoke response
+   */
+  async revokeAppAccess(userId: number, payload: RevokeAppAccessPayload): Promise<RevokeAppAccessResponse> {
+    const endpoint = `${this.globalEndpoint}/${userId}/apps/revoke`
+
+    console.log('👥 [UsersService] Revoking app access:', { userId, ...payload })
+
+    try {
+      const response = await api.delete(endpoint, { data: payload })
+      
+      console.log('✅ [UsersService] App access revoked:', {
+        userId,
+        applicationSlug: payload.applicationSlug,
+        seatsUsed: response.data?.seatsUsed
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [UsersService] Failed to revoke app access:', error)
       throw error
     }
   }

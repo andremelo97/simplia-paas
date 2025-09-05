@@ -316,4 +316,151 @@ describe('Critical Authorization Validation', () => {
       expect(logResult.rows[0].reason).toBeTruthy();
     });
   });
+
+  describe('Grant/Revoke with Seat Limits and Pricing', () => {
+    let adminToken;
+
+    beforeEach(async () => {
+      adminToken = generateTestToken({
+        userId: user.id,
+        tenantId: tenant.id,
+        allowedApps: ['tq'],
+        role: 'admin',
+        platformRole: 'internal_admin'
+      });
+
+      // Ensure we have pricing data (from migration seeds)
+      const pricingResult = await global.testDb.query(
+        'SELECT COUNT(*) as count FROM application_pricing WHERE application_id = $1',
+        [tqApplication.id]
+      );
+      
+      if (parseInt(pricingResult.rows[0].count) === 0) {
+        // Add test pricing if not exists
+        const userTypesResult = await global.testDb.query(
+          'SELECT * FROM user_types WHERE slug = \'manager\' LIMIT 1'
+        );
+        if (userTypesResult.rows.length > 0) {
+          await global.testDb.query(
+            `INSERT INTO application_pricing (application_id, user_type_id, price, currency, billing_cycle, valid_from)
+             VALUES ($1, $2, 55.00, 'BRL', 'monthly', NOW())`,
+            [tqApplication.id, userTypesResult.rows[0].id]
+          );
+        }
+      }
+    });
+
+    test('should grant access and increment seat count', async () => {
+      // Seed license with available seats
+      await global.testDb.query(
+        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, user_limit, seats_used, active)
+         VALUES ($1, $2, $3, 'active', 5, 2, true)
+         ON CONFLICT (tenant_id_fk, application_id) DO UPDATE SET
+           user_limit = 5, seats_used = 2, status = 'active', active = true`,
+        [tenant.subdomain, tenant.id, tqApplication.id]
+      );
+
+      const response = await request(app)
+        .post(`${INTERNAL_API}/users/${user.id}/apps/grant`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', tenant.subdomain)
+        .send({
+          applicationSlug: 'tq'
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.meta.code).toBe('USER_APP_ACCESS_GRANTED');
+      expect(response.body.data.seatsUsed).toBe(3); // 2 + 1
+
+      // Verify pricing snapshot was captured
+      expect(response.body.data.pricing).toBeDefined();
+      expect(response.body.data.pricing.price).toBeGreaterThan(0);
+      expect(response.body.data.pricing.currency).toBe('BRL');
+
+      // Verify database state
+      const accessResult = await global.testDb.query(
+        'SELECT * FROM user_application_access WHERE user_id = $1 AND application_id = $2',
+        [user.id, tqApplication.id]
+      );
+      
+      expect(accessResult.rows.length).toBe(1);
+      expect(accessResult.rows[0].price_snapshot).toBeTruthy();
+      expect(accessResult.rows[0].currency_snapshot).toBe('BRL');
+      expect(accessResult.rows[0].user_type_id_snapshot).toBeTruthy();
+    });
+
+    test('should deny grant when seat limit would be exceeded', async () => {
+      // Seed license with limit almost reached
+      await global.testDb.query(
+        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, user_limit, seats_used, active)
+         VALUES ($1, $2, $3, 'active', 2, 2, true)
+         ON CONFLICT (tenant_id_fk, application_id) DO UPDATE SET
+           user_limit = 2, seats_used = 2, status = 'active', active = true`,
+        [tenant.subdomain, tenant.id, tqApplication.id]
+      );
+
+      const response = await request(app)
+        .post(`${INTERNAL_API}/users/${user.id}/apps/grant`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', tenant.subdomain)
+        .send({
+          applicationSlug: 'tq'
+        });
+
+      expect(response.status).toBe(403);
+      expect(response.body.error).toBe('Seat Limit Exceeded');
+      expect(response.body.message).toContain('seat limit of 2 reached');
+
+      // Verify no access was created
+      const accessResult = await global.testDb.query(
+        'SELECT * FROM user_application_access WHERE user_id = $1 AND application_id = $2 AND is_active = true',
+        [user.id, tqApplication.id]
+      );
+      expect(accessResult.rows.length).toBe(0);
+    });
+
+    test('should revoke access and decrement seat count', async () => {
+      // First grant access
+      await global.testDb.query(
+        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, user_limit, seats_used, active)
+         VALUES ($1, $2, $3, 'active', 5, 3, true)
+         ON CONFLICT (tenant_id_fk, application_id) DO UPDATE SET
+           user_limit = 5, seats_used = 3, status = 'active', active = true`,
+        [tenant.subdomain, tenant.id, tqApplication.id]
+      );
+
+      await global.testDb.query(
+        `INSERT INTO user_application_access (user_id, application_id, tenant_id_fk, tenant_id, is_active, active, price_snapshot, currency_snapshot)
+         VALUES ($1, $2, $3, $4, true, true, 55.00, 'BRL')
+         ON CONFLICT (tenant_id_fk, user_id, application_id) DO UPDATE SET
+           is_active = true, active = true`,
+        [user.id, tqApplication.id, tenant.id, tenant.subdomain]
+      );
+
+      const response = await request(app)
+        .delete(`${INTERNAL_API}/users/${user.id}/apps/revoke`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', tenant.subdomain)
+        .send({
+          applicationSlug: 'tq'
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.meta.code).toBe('USER_APP_ACCESS_REVOKED');
+
+      // Verify seat count decremented
+      const seatResult = await global.testDb.query(
+        'SELECT seats_used FROM tenant_applications WHERE tenant_id_fk = $1 AND application_id = $2',
+        [tenant.id, tqApplication.id]
+      );
+      expect(seatResult.rows[0].seats_used).toBe(2); // 3 - 1
+
+      // Verify access is revoked
+      const accessResult = await global.testDb.query(
+        'SELECT * FROM user_application_access WHERE user_id = $1 AND application_id = $2',
+        [user.id, tqApplication.id]
+      );
+      expect(accessResult.rows[0].is_active).toBe(false);
+    });
+  });
 });

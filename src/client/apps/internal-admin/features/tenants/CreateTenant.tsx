@@ -170,8 +170,7 @@ export const CreateTenant: React.FC = () => {
       // Step 1: Create the tenant
       const tenantResponse = await tenantsService.create({
         name: formData.name.trim(),
-        subdomain,
-        status: 'trial'
+        subdomain
       })
       
       const tenant = tenantResponse.data.tenant

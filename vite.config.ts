@@ -15,6 +15,18 @@ export default defineConfig({
     }
   },
   server: {
-    port: 3002
+    port: 3002,
+    proxy: {
+      '/internal/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false
+      },
+      '/health': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   }
 })

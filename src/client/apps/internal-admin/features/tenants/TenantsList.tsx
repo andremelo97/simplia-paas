@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input } from '@client/common/ui'
+import { Link, useNavigate } from 'react-router-dom'
+import { Card, CardHeader, CardContent, Button, Input, Select } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
 import { TenantStatusBadge } from './TenantStatusBadge'
@@ -21,10 +21,12 @@ export const TenantsList: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   
   const { addNotification } = useUIStore()
+  const navigate = useNavigate()
   const tenantsPerPage = 10
 
   const fetchTenants = async () => {
@@ -35,7 +37,8 @@ export const TenantsList: React.FC = () => {
       const params = {
         page: currentPage,
         limit: tenantsPerPage,
-        search: searchTerm || undefined
+        search: searchTerm || undefined,
+        status: statusFilter !== 'all' ? statusFilter : undefined
       }
       console.log('📋 [TenantsList] Request params:', params)
       
@@ -105,7 +108,7 @@ export const TenantsList: React.FC = () => {
 
   useEffect(() => {
     fetchTenants()
-  }, [currentPage, searchTerm])
+  }, [currentPage, searchTerm, statusFilter])
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -118,6 +121,15 @@ export const TenantsList: React.FC = () => {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
     setCurrentPage(1)
+  }
+
+  const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')
+    setCurrentPage(1)
+  }
+
+  const handleManageUsers = (tenantId: number) => {
+    navigate(`/users?tenantId=${tenantId}`)
   }
 
   if (loading) {
@@ -151,13 +163,28 @@ export const TenantsList: React.FC = () => {
         <CardHeader className="p-6 pb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">All Tenants</h2>
-            <div className="w-64">
-              <Input
-                type="text"
-                placeholder="Search tenants..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
+            <div className="flex items-center space-x-4">
+              {/* Status Filter */}
+              <div className="w-40">
+                <Select
+                  value={statusFilter}
+                  onChange={handleStatusFilterChange}
+                  options={[
+                    { value: 'all', label: 'All' },
+                    { value: 'active', label: 'Active' },
+                    { value: 'inactive', label: 'Inactive' }
+                  ]}
+                />
+              </div>
+              {/* Search Input */}
+              <div className="w-64">
+                <Input
+                  type="text"
+                  placeholder="Search tenants..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -221,13 +248,22 @@ export const TenantsList: React.FC = () => {
                       {formatDate(tenant.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        to={`/tenants/${tenant.id}/edit`}
-                        className="text-indigo-600 hover:text-indigo-900 font-medium"
-                        aria-label={`Edit tenant ${tenant.name}`}
-                      >
-                        Edit
-                      </Link>
+                      <div className="flex items-center justify-end space-x-3">
+                        <button
+                          onClick={() => handleManageUsers(tenant.id)}
+                          className="text-blue-600 hover:text-blue-900 font-medium"
+                          aria-label={`Manage users for ${tenant.name}`}
+                        >
+                          Manage Users
+                        </button>
+                        <Link
+                          to={`/tenants/${tenant.id}/edit`}
+                          className="text-indigo-600 hover:text-indigo-900 font-medium"
+                          aria-label={`Edit tenant ${tenant.name}`}
+                        >
+                          Edit
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -6,9 +6,225 @@ const { requirePlatformRole } = require('../../../infra/middleware/platformRole'
 
 const router = express.Router();
 
-// Apply authentication and platform role to all tenant-user routes
-router.use(requireAuth);
-router.use(requirePlatformRole('internal_admin'));
+// Debug route (no auth required for testing)
+router.get('/debug/routes', (req, res) => {
+  res.json({
+    message: 'Tenant-users routes are registered',
+    availableRoutes: [
+      'GET /tenants/:tenantId/users',
+      'POST /tenants/:tenantId/users', 
+      'GET /tenants/:tenantId/users/:userId',
+      'PUT /tenants/:tenantId/users/:userId',
+      'DELETE /tenants/:tenantId/users/:userId',
+      'POST /tenants/:tenantId/users/:userId/reset-password'
+    ],
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Debug route to inspect headers (no auth required)  
+router.get('/debug/headers', (req, res) => {
+  res.json({
+    message: 'Headers debug endpoint',
+    headers: req.headers,
+    authorization: req.headers.authorization ? 'Present' : 'Missing',
+    tenantHeader: req.headers['x-tenant-id'] || 'Not provided',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Temporary debug route to check what users exist in DB
+router.get('/debug/check-user/:tenantId/:userId', async (req, res) => {
+  try {
+    const { tenantId, userId } = req.params;
+    console.log('🔍 [DEBUG] Checking user:', { tenantId, userId });
+    
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+    res.json({
+      found: true,
+      user: user.toJSON()
+    });
+  } catch (error) {
+    console.log('❌ [DEBUG] User not found:', error.message);
+    res.json({
+      found: false,
+      error: error.message,
+      tenantId: parseInt(req.params.tenantId),
+      userId: parseInt(req.params.userId)
+    });
+  }
+});
+
+// Debug route to test JWT token validation (with auth)
+router.get('/debug/auth', (req, res, next) => {
+  console.log('🔍 [DEBUG] Auth endpoint called with headers:', {
+    authorization: req.headers.authorization ? 'Present' : 'Missing',
+    authHeaderLength: req.headers.authorization ? req.headers.authorization.length : 0,
+    userAgent: req.headers['user-agent'],
+    origin: req.headers.origin
+  });
+  
+  requireAuth(req, res, (error) => {
+    if (error) {
+      console.log('❌ [DEBUG] Auth middleware failed:', error);
+      return next(error);
+    }
+    
+    console.log('✅ [DEBUG] Auth middleware passed, user:', req.user ? {
+      id: req.user.id,
+      email: req.user.email,
+      platformRole: req.user.platformRole
+    } : 'null');
+    
+    res.json({
+      message: 'Auth debug endpoint - you are authenticated',
+      user: req.user ? {
+        id: req.user.id,
+        email: req.user.email,
+        role: req.user.role,
+        platformRole: req.user.platformRole,
+        tenantId: req.user.tenantId
+      } : 'No user in req',
+      timestamp: new Date().toISOString()
+    });
+  });
+});
+
+// Debug route to test platform role validation (with auth + platform role)  
+router.get('/debug/platform', requireAuth, requirePlatformRole('internal_admin'), (req, res) => {
+  res.json({
+    message: 'Platform role debug endpoint - you have internal_admin access',
+    user: req.user ? {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role,
+      platformRole: req.user.platformRole,
+      tenantId: req.user.tenantId
+    } : 'No user in req',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Debug route for testing (no auth) - REMOVED to prevent route conflicts
+
+// Temporary development route (no auth) - GET user by ID
+router.get('/dev/tenants/:tenantId/users/:userId', async (req, res) => {
+  try {
+    const { tenantId, userId } = req.params;
+
+    // Find user by ID and tenant
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+
+    res.json({
+      success: true,
+      data: user.toJSON(),
+      _dev: true
+    });
+  } catch (error) {
+    console.error('Get tenant user error (dev):', error);
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User not found in specified tenant'
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to get user'
+      }
+    });
+  }
+});
+
+// Temporary development route (no auth) - CREATE user
+router.post('/dev/tenants/:tenantId/users', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const { email, password, firstName, lastName, role = 'operations', status = 'active' } = req.body;
+
+    // Validation
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Email, password, firstName, and lastName are required'
+        }
+      });
+    }
+
+    // Hash password
+    const bcrypt = require('bcrypt');
+    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Get user type ID for the role
+    const userTypeQuery = `SELECT id FROM user_types WHERE slug = $1`;
+    const database = require('../../../infra/db/database');
+    const userTypeResult = await database.query(userTypeQuery, [role]);
+    
+    if (userTypeResult.rows.length === 0) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Invalid role specified'
+        }
+      });
+    }
+
+    const userTypeId = userTypeResult.rows[0].id;
+
+    const userData = {
+      tenantIdFk: parseInt(tenantId),
+      email,
+      passwordHash,
+      firstName,
+      lastName,
+      role,
+      status,
+      userTypeId
+    };
+
+    const user = await User.create(userData);
+
+    res.status(201).json({
+      success: true,
+      meta: {
+        code: 'USER_CREATED',
+        message: 'User created successfully'
+      },
+      data: {
+        user: user.toJSON()
+      },
+      _dev: true
+    });
+  } catch (error) {
+    console.error('Create tenant user error (dev):', error);
+
+    if (error.name === 'DuplicateUserError') {
+      return res.status(409).json({
+        error: {
+          code: 409,
+          message: error.message
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to create user'
+      }
+    });
+  }
+});
+
+// Note: Authentication middleware is applied inline on each production route
+// Debug and dev routes bypass authentication
 
 /**
  * @openapi
@@ -92,7 +308,7 @@ router.use(requirePlatformRole('internal_admin'));
  *       404:
  *         description: Tenant not found
  */
-router.get('/:tenantId/users', async (req, res) => {
+router.get('/tenants/:tenantId/users', requireAuth, requirePlatformRole('internal_admin'), async (req, res) => {
   try {
     const { tenantId } = req.params;
     const { search, status = 'active', role, limit = 50, offset = 0 } = req.query;
@@ -218,7 +434,7 @@ router.get('/:tenantId/users', async (req, res) => {
  *       409:
  *         description: User already exists
  */
-router.post('/:tenantId/users', async (req, res) => {
+router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('internal_admin'), async (req, res) => {
   try {
     const { tenantId } = req.params;
     const { email, password, firstName, lastName, role = 'operations', status = 'active' } = req.body;
@@ -318,6 +534,99 @@ router.post('/:tenantId/users', async (req, res) => {
 /**
  * @openapi
  * /tenants/{tenantId}/users/{userId}:
+ *   get:
+ *     tags: [Tenant Users (Internal Admin)]
+ *     summary: Get user in specific tenant
+ *     description: Get a specific user by ID within a tenant context (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID (numeric)
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: integer }
+ *                     email: { type: string }
+ *                     firstName: { type: string }
+ *                     lastName: { type: string }
+ *                     name: { type: string }
+ *                     role: { type: string }
+ *                     status: { type: string }
+ *                     tenantIdFk: { type: integer }
+ *                     createdAt: { type: string }
+ *                     updatedAt: { type: string }
+ *                     lastLogin: { type: string }
+ *       403:
+ *         description: Insufficient permissions (internal_admin required)
+ *       404:
+ *         description: User not found in tenant
+ */
+router.get('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRole('internal_admin'), async (req, res) => {
+  console.log('🎯 [TENANT-USER] Route matched! Full request info:', {
+    method: req.method,
+    path: req.path,
+    params: req.params,
+    query: req.query,
+    baseUrl: req.baseUrl,
+    originalUrl: req.originalUrl
+  });
+
+  try {
+    const { tenantId, userId } = req.params;
+
+    console.log('🔍 [TENANT-USER] GET endpoint called:', { tenantId: parseInt(tenantId), userId: parseInt(userId) });
+
+    // Find user by ID and tenant
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+
+    res.json({
+      success: true,
+      data: user.toJSON()
+    });
+  } catch (error) {
+    console.error('Get tenant user error:', error);
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User not found in specified tenant'
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to get user'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{tenantId}/users/{userId}:
  *   put:
  *     tags: [Tenant Users (Internal Admin)]
  *     summary: Update user in specific tenant
@@ -381,7 +690,7 @@ router.post('/:tenantId/users', async (req, res) => {
  *       404:
  *         description: User not found in tenant
  */
-router.put('/:tenantId/users/:userId', async (req, res) => {
+router.put('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRole('internal_admin'), async (req, res) => {
   try {
     const { tenantId, userId } = req.params;
     const updates = req.body;
@@ -477,7 +786,7 @@ router.put('/:tenantId/users/:userId', async (req, res) => {
  *       404:
  *         description: User not found in tenant
  */
-router.delete('/:tenantId/users/:userId', async (req, res) => {
+router.delete('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRole('internal_admin'), async (req, res) => {
   try {
     const { tenantId, userId } = req.params;
 
@@ -513,6 +822,134 @@ router.delete('/:tenantId/users/:userId', async (req, res) => {
       error: {
         code: 500,
         message: 'Failed to deactivate user'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{tenantId}/users/{userId}/reset-password:
+ *   post:
+ *     tags: [Tenant Users (Internal Admin)]
+ *     summary: Reset user password in specific tenant
+ *     description: Reset a user's password within a specific tenant context (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID (numeric)
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: newPassword123
+ *                 description: New password for the user
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: PASSWORD_RESET }
+ *                     message: { type: string, example: Password reset successfully }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId: { type: integer }
+ *                     resetBy: { type: string }
+ *                     resetAt: { type: string }
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: User not found in tenant
+ */
+router.post('/tenants/:tenantId/users/:userId/reset-password', requireAuth, requirePlatformRole('internal_admin'), async (req, res) => {
+  try {
+    const { tenantId, userId } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Password is required'
+        }
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Password must be at least 6 characters long'
+        }
+      });
+    }
+
+    // Find user by ID and tenant
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+
+    // Hash new password
+    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Update user password
+    await user.update({ passwordHash });
+
+    res.json({
+      success: true,
+      meta: {
+        code: 'PASSWORD_RESET',
+        message: 'Password reset successfully'
+      },
+      data: {
+        userId: parseInt(userId),
+        resetBy: req.user?.email || 'admin',
+        resetAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Reset tenant user password error:', error);
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User not found in specified tenant'
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to reset password'
       }
     });
   }

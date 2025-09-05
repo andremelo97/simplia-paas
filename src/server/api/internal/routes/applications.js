@@ -5,6 +5,7 @@ const { requireAnyAppAccess } = require('../../../infra/middleware/appAccess');
 const { Application, ApplicationNotFoundError } = require('../../../infra/models/Application');
 const { TenantApplication } = require('../../../infra/models/TenantApplication');
 const { UserApplicationAccess } = require('../../../infra/models/UserApplicationAccess');
+const ApplicationPricing = require('../../../infra/models/ApplicationPricing');
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.use(requireAuth, requirePlatformRole('internal_admin'));
  * @openapi
  * /applications:
  *   get:
- *     tags: [Applications (Platform)]
+ *     tags: [Applications - Platform]
  *     summary: List application catalog
  *     description: Get all applications in the system with filtering and pagination
  *     security:
@@ -120,7 +121,7 @@ router.get('/', async (req, res) => {
  * @openapi
  * /applications/{id}:
  *   get:
- *     tags: [Applications (Platform)]
+ *     tags: [Applications - Platform]
  *     summary: Get application by ID
  *     description: Get specific application details by ID
  *     security:
@@ -193,7 +194,7 @@ router.get('/:id', async (req, res) => {
  * @openapi
  * /applications/slug/{slug}:
  *   get:
- *     tags: [Applications (Platform)]
+ *     tags: [Applications - Platform]
  *     summary: Get application by slug
  *     description: Get specific application details by slug identifier
  *     security:
@@ -329,7 +330,7 @@ router.get('/user/accessible', requireAuth, requireAnyAppAccess, async (req, res
  * @openapi
  * /applications:
  *   post:
- *     tags: [Applications (Platform)]
+ *     tags: [Applications - Platform]
  *     summary: Create new application
  *     description: Create a new application in the system catalog
  *     security:
@@ -538,7 +539,7 @@ router.delete('/:id', async (req, res) => {
  * @openapi
  * /applications/{id}/tenants:
  *   get:
- *     tags: [Applications (Platform)]
+ *     tags: [Applications - Platform]
  *     summary: List licensed tenants for application
  *     description: Get all tenants that have licenses for a specific application
  *     security:
@@ -694,6 +695,352 @@ router.get('/:id/tenants', async (req, res) => {
         code: 500,
         message: 'Failed to fetch application tenants'
       }
+    });
+  }
+});
+
+// =============================================
+// APPLICATION PRICING ENDPOINTS
+// =============================================
+
+/**
+ * @openapi
+ * /applications/{id}/pricing:
+ *   get:
+ *     tags: [Applications - Platform]
+ *     summary: Get application pricing matrix
+ *     description: Get pricing for all user types for a specific application
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Application ID
+ *       - in: query
+ *         name: current
+ *         schema:
+ *           type: boolean
+ *           default: true
+ *         description: Return only current pricing (true) or full history (false)
+ *     responses:
+ *       200:
+ *         description: Pricing matrix retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     applicationId: { type: integer }
+ *                     pricing:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer }
+ *                           userTypeId: { type: integer }
+ *                           userTypeName: { type: string }
+ *                           userTypeSlug: { type: string }
+ *                           price: { type: number }
+ *                           currency: { type: string }
+ *                           billingCycle: { type: string }
+ *                           validFrom: { type: string }
+ *                           validTo: { type: string }
+ *       404:
+ *         description: Application not found
+ */
+router.get('/:id/pricing', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { current = 'true' } = req.query;
+    const applicationId = parseInt(id);
+
+    // Verify application exists
+    const app = await Application.findById(applicationId);
+    if (!app) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Application not found'
+      });
+    }
+
+    const pricing = await ApplicationPricing.getByApplication(
+      applicationId, 
+      current === 'true'
+    );
+
+    res.json({
+      success: true,
+      data: {
+        applicationId,
+        pricing: pricing
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching application pricing:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch pricing matrix'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /applications/{id}/pricing:
+ *   post:
+ *     tags: [Applications - Platform]
+ *     summary: Create or schedule application pricing
+ *     description: Create new pricing for application and user type combination
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Application ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userTypeId, price]
+ *             properties:
+ *               userTypeId:
+ *                 type: integer
+ *                 example: 1
+ *               price:
+ *                 type: number
+ *                 minimum: 0
+ *                 example: 49.90
+ *               currency:
+ *                 type: string
+ *                 enum: [BRL, USD, EUR]
+ *                 default: BRL
+ *                 example: "BRL"
+ *               billingCycle:
+ *                 type: string
+ *                 enum: [monthly, yearly]
+ *                 default: monthly
+ *                 example: "monthly"
+ *               validFrom:
+ *                 type: string
+ *                 format: date-time
+ *                 description: "When this price becomes effective, defaults to now"
+ *                 example: "2025-01-01T00:00:00Z"
+ *               validTo:
+ *                 type: string
+ *                 format: date-time
+ *                 description: When this price expires - optional
+ *                 example: "2025-12-31T23:59:59Z"
+ *     responses:
+ *       201:
+ *         description: Pricing created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     pricing: { type: object }
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Application not found
+ */
+router.post('/:id/pricing', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userTypeId, price, currency, billingCycle, validFrom, validTo } = req.body;
+    const applicationId = parseInt(id);
+
+    // Verify application exists
+    const app = await Application.findById(applicationId);
+    if (!app) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Application not found'
+      });
+    }
+
+    // Determine if this is immediate or scheduled pricing
+    const effectiveDate = validFrom ? new Date(validFrom) : new Date();
+    const isScheduled = effectiveDate > new Date();
+
+    let pricing;
+    if (isScheduled) {
+      // Use schedule method for future pricing
+      pricing = await ApplicationPricing.schedulePrice(
+        applicationId,
+        userTypeId,
+        price,
+        effectiveDate,
+        { currency, billingCycle, validTo: validTo ? new Date(validTo) : null }
+      );
+    } else {
+      // Create immediate pricing
+      pricing = await ApplicationPricing.create({
+        applicationId,
+        userTypeId,
+        price,
+        currency,
+        billingCycle,
+        validFrom: effectiveDate,
+        validTo: validTo ? new Date(validTo) : null
+      });
+    }
+
+    res.status(201).json({
+      meta: {
+        code: "PRICING_CREATED",
+        message: isScheduled ? "Pricing scheduled successfully." : "Pricing created successfully."
+      },
+      data: {
+        pricing: pricing.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Error creating application pricing:', error);
+
+    if (error.message.includes('required') || 
+        error.message.includes('negative') ||
+        error.message.includes('monthly or yearly')) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: error.message
+      });
+    }
+
+    if (error.message.includes('duplicate') || 
+        error.message.includes('unique')) {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'Pricing for this combination already exists'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to create pricing'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /applications/{id}/pricing/{pricingId}:
+ *   put:
+ *     tags: [Applications - Platform]
+ *     summary: Update application pricing
+ *     description: Update existing pricing entry
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Application ID
+ *       - in: path
+ *         name: pricingId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pricing ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               price:
+ *                 type: number
+ *                 minimum: 0
+ *               currency:
+ *                 type: string
+ *                 enum: [BRL, USD, EUR]
+ *               billingCycle:
+ *                 type: string
+ *                 enum: [monthly, yearly]
+ *               validTo:
+ *                 type: string
+ *                 format: date-time
+ *               active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Pricing updated successfully
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Application or pricing not found
+ */
+router.put('/:id/pricing/:pricingId', async (req, res) => {
+  try {
+    const { id, pricingId } = req.params;
+    const applicationId = parseInt(id);
+    const pricingIdInt = parseInt(pricingId);
+
+    // Verify application exists
+    const app = await Application.findById(applicationId);
+    if (!app) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Application not found'
+      });
+    }
+
+    const pricing = await ApplicationPricing.update(pricingIdInt, req.body);
+    
+    if (!pricing) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Pricing entry not found'
+      });
+    }
+
+    res.json({
+      meta: {
+        code: "PRICING_UPDATED",
+        message: "Pricing updated successfully."
+      },
+      data: {
+        pricing: pricing.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Error updating application pricing:', error);
+
+    if (error.message.includes('negative') ||
+        error.message.includes('monthly or yearly') ||
+        error.message.includes('No valid fields')) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update pricing'
     });
   }
 });

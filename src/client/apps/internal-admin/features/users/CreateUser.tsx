@@ -39,7 +39,7 @@ export const CreateUser: React.FC = () => {
     const fetchTenants = async () => {
       try {
         setLoadingTenants(true)
-        const response = await tenantsService.list({ status: 'active' })
+        const response = await tenantsService.list({})
         const tenantOptions: TenantOption[] = response.data.tenants.map(tenant => ({
           value: tenant.id.toString(),
           label: `${tenant.name} (${tenant.subdomain})`

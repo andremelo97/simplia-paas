@@ -14,6 +14,7 @@ export interface UserDto {
   lastName: string;
   name: string; // computed full name
   tenantId: number; // numeric FK
+  tenantName?: string; // denormalized tenant name for display
   role: UserRole;
   status: UserStatus;
   userTypeId?: number;

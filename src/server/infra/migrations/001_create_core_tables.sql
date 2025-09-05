@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS users (
     last_name VARCHAR(100),
     tenant_id VARCHAR(100), -- Legacy string reference (for compatibility)
     tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Primary numeric FK
+    tenant_name VARCHAR(255), -- Denormalized tenant name for query performance
     role VARCHAR(50) DEFAULT 'operations', -- operations, manager, admin
     status VARCHAR(20) DEFAULT 'active', -- active, inactive, suspended
     user_type_id INTEGER REFERENCES user_types(id),
@@ -77,6 +78,7 @@ CREATE TABLE IF NOT EXISTS users (
 COMMENT ON TABLE users IS 'Users table with 1:1 tenant relationship - each user belongs to exactly one tenant';
 COMMENT ON COLUMN users.tenant_id IS 'Legacy string reference to tenants.subdomain (kept for compatibility)';
 COMMENT ON COLUMN users.tenant_id_fk IS 'Primary numeric FK to tenants.id - use this for all new code';
+COMMENT ON COLUMN users.tenant_name IS 'Denormalized tenant name for query performance';
 COMMENT ON COLUMN users.role IS 'Tenant-level role: operations < manager < admin';
 COMMENT ON COLUMN users.platform_role IS 'Platform role for Simplia internal team: internal_admin, support, etc.';
 
@@ -122,6 +124,11 @@ CREATE TABLE IF NOT EXISTS user_application_access (
     expires_at TIMESTAMP, -- NULL for permanent access
     is_active BOOLEAN DEFAULT true,
     active BOOLEAN NOT NULL DEFAULT true,
+    -- Pricing snapshots (captured at grant time for billing consistency)
+    price_snapshot NUMERIC(10,2),
+    currency_snapshot CHAR(3),
+    user_type_id_snapshot INTEGER REFERENCES user_types(id),
+    granted_cycle TEXT CHECK (granted_cycle IN ('monthly','yearly')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(tenant_id_fk, user_id, application_id) -- Unique per tenant (1:1 compatible, NxN ready)
@@ -131,6 +138,10 @@ COMMENT ON TABLE user_application_access IS 'Granular user permissions per appli
 COMMENT ON COLUMN user_application_access.tenant_id IS 'Legacy string reference (kept for compatibility)';
 COMMENT ON COLUMN user_application_access.tenant_id_fk IS 'Primary numeric FK - must match user''s tenant_id_fk';
 COMMENT ON COLUMN user_application_access.role_in_app IS 'Role within specific application context';
+COMMENT ON COLUMN user_application_access.price_snapshot IS 'Price captured at grant time for billing consistency';
+COMMENT ON COLUMN user_application_access.currency_snapshot IS 'Currency captured at grant time';
+COMMENT ON COLUMN user_application_access.user_type_id_snapshot IS 'User type captured at grant time';
+COMMENT ON COLUMN user_application_access.granted_cycle IS 'Billing cycle captured at grant time';
 
 -- Access logs for audit trail
 CREATE TABLE IF NOT EXISTS application_access_logs (
@@ -207,6 +218,50 @@ COMMENT ON COLUMN tenant_contacts.phone_e164 IS 'Phone number in E.164 internati
 COMMENT ON COLUMN tenant_contacts.title IS 'Job title or position';
 COMMENT ON COLUMN tenant_contacts.department IS 'Department or business area';
 COMMENT ON COLUMN tenant_contacts.is_primary IS 'Whether this is the primary contact for this type (max 1 per tenant+type)';
+
+-- =============================================
+-- APPLICATION PRICING MATRIX
+-- =============================================
+
+-- Application pricing matrix (App × UserType with versioning)
+CREATE TABLE IF NOT EXISTS application_pricing (
+  id BIGSERIAL PRIMARY KEY,
+  application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+  user_type_id INTEGER NOT NULL REFERENCES user_types(id),
+  price NUMERIC(10,2) NOT NULL CHECK (price >= 0),
+  currency CHAR(3) NOT NULL DEFAULT 'BRL',
+  billing_cycle TEXT NOT NULL CHECK (billing_cycle IN ('monthly','yearly')) DEFAULT 'monthly',
+  valid_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  valid_to TIMESTAMPTZ NULL,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (application_id, user_type_id, valid_from)
+);
+
+COMMENT ON TABLE application_pricing IS 'Pricing matrix for App × UserType with versioning support';
+COMMENT ON COLUMN application_pricing.valid_from IS 'When this price becomes effective';
+COMMENT ON COLUMN application_pricing.valid_to IS 'When this price expires (NULL = indefinite)';
+COMMENT ON COLUMN application_pricing.billing_cycle IS 'monthly or yearly billing cycle';
+
+-- =============================================
+-- VIEWS FOR SEAT AGGREGATION
+-- =============================================
+
+-- View to count seats by tenant, application, and user type
+CREATE OR REPLACE VIEW v_tenant_app_seats_by_type AS
+SELECT
+  uaa.tenant_id_fk,
+  uaa.application_id,
+  COALESCE(uaa.user_type_id_snapshot, u.user_type_id) AS user_type_id,
+  COUNT(*)::INT AS seats_count,
+  SUM(COALESCE(uaa.price_snapshot, 0))::NUMERIC(10,2) AS total_price
+FROM user_application_access uaa
+JOIN users u ON u.id = uaa.user_id
+WHERE uaa.is_active = TRUE
+GROUP BY 1,2,3;
+
+COMMENT ON VIEW v_tenant_app_seats_by_type IS 'Aggregates active seats by tenant, app and user type with pricing';
 
 -- =============================================
 -- TENANT CONSISTENCY TRIGGERS

@@ -85,6 +85,7 @@ INSERT INTO users (
   last_name, 
   tenant_id, 
   tenant_id_fk,
+  tenant_name,
   role, 
   user_type_id, 
   platform_role,
@@ -97,6 +98,7 @@ SELECT
   'User', 
   'default', -- Legacy string reference
   t.id, -- Primary numeric FK
+  t.name, -- Denormalized tenant name
   'admin',
   ut.id,
   'internal_admin',
@@ -113,6 +115,7 @@ INSERT INTO users (
   last_name,
   tenant_id,
   tenant_id_fk,
+  tenant_name,
   role,
   user_type_id,
   status
@@ -124,6 +127,7 @@ SELECT
   'Manager',
   'default', -- Legacy string reference
   t.id, -- Primary numeric FK
+  t.name, -- Denormalized tenant name
   'manager',
   ut.id,
   'active'
@@ -242,12 +246,50 @@ WHERE uaa.tenant_id_fk IS NULL
 -- For now, the FK constraints ensure referential integrity
 
 -- =============================================
+-- APPLICATION PRICING MATRIX SEED
+-- =============================================
+
+-- Insert default pricing for each application × user type combination
+INSERT INTO application_pricing (application_id, user_type_id, price, currency, billing_cycle, valid_from)
+SELECT 
+  a.id as application_id,
+  ut.id as user_type_id,
+  CASE 
+    WHEN a.slug = 'tq' AND ut.slug = 'operations' THEN 35.00
+    WHEN a.slug = 'tq' AND ut.slug = 'manager' THEN 55.00
+    WHEN a.slug = 'tq' AND ut.slug = 'admin' THEN 80.00
+    WHEN a.slug = 'pm' AND ut.slug = 'operations' THEN 25.00
+    WHEN a.slug = 'pm' AND ut.slug = 'manager' THEN 40.00
+    WHEN a.slug = 'pm' AND ut.slug = 'admin' THEN 60.00
+    WHEN a.slug = 'billing' AND ut.slug = 'operations' THEN 30.00
+    WHEN a.slug = 'billing' AND ut.slug = 'manager' THEN 50.00
+    WHEN a.slug = 'billing' AND ut.slug = 'admin' THEN 70.00
+    WHEN a.slug = 'reports' AND ut.slug = 'operations' THEN 20.00
+    WHEN a.slug = 'reports' AND ut.slug = 'manager' THEN 35.00
+    WHEN a.slug = 'reports' AND ut.slug = 'admin' THEN 50.00
+    ELSE 30.00
+  END as price,
+  'BRL' as currency,
+  'monthly' as billing_cycle,
+  NOW() as valid_from
+FROM applications a
+CROSS JOIN user_types ut
+WHERE a.active = TRUE 
+  AND ut.active = TRUE
+ON CONFLICT (application_id, user_type_id, valid_from) DO NOTHING;
+
+-- Backfill existing grants with pricing snapshots
+-- (Skip backfill for now since there are no existing grants in fresh DB)
+-- This will be handled by the grant process going forward
+
+-- =============================================
 -- SEED DOCUMENTATION
 -- =============================================
 
 COMMENT ON TABLE tenants IS 'Seeded with default and test_clinic tenants for development';
 COMMENT ON TABLE user_types IS 'Seeded with operations/manager/admin hierarchy';
 COMMENT ON TABLE applications IS 'Seeded with tq/pm/billing/reports product catalog';
+COMMENT ON TABLE application_pricing IS 'Seeded with pricing matrix for all app × user_type combinations';
 COMMENT ON TABLE tenant_applications IS 'Seeded with initial TQ licenses for development tenants';
 COMMENT ON TABLE tenant_addresses IS 'Seeded with sample HQ address for default tenant development';
 COMMENT ON TABLE tenant_contacts IS 'Seeded with sample admin and billing contacts for default tenant development';

@@ -10,6 +10,8 @@ const {
 } = require('../../../infra/middleware/auth');
 const { UserApplicationAccess } = require('../../../infra/models/UserApplicationAccess');
 const { Application } = require('../../../infra/models/Application');
+const ApplicationPricing = require('../../../infra/models/ApplicationPricing');
+const { TenantApplication } = require('../../../infra/models/TenantApplication');
 
 const router = express.Router();
 
@@ -302,7 +304,7 @@ router.get('/:userId', requireSelfOrAdmin('userId'), async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await userService.getUserById(req.tenant, req.user, userId);
+    const user = await userService.getUserById(req.tenant.id, req.user, userId);
 
     res.json({
       success: true,
@@ -658,7 +660,7 @@ router.get('/:userId/apps', requireManagerOrAdmin, async (req, res) => {
     const { tenantId } = req.tenant;
     
     // Verify user exists in tenant
-    const user = await userService.getUserById(req.tenant, req.user, userId);
+    const user = await userService.getUserById(req.tenant.id, req.user, userId);
     
     // Get user's app access
     const userAccess = await UserApplicationAccess.findByUser(
@@ -801,24 +803,63 @@ router.post('/:userId/apps/grant', requireAdmin, async (req, res) => {
     }
     
     // Verify user exists in tenant
-    const user = await userService.getUserById(req.tenant, req.user, userId);
+    const user = await userService.getUserById(req.tenant.id, req.user, userId);
     
     // Get application
     const application = await Application.findBySlug(applicationSlug);
     
-    // Grant access
+    // STEP 1: Verify tenant has active license for application
+    const tenantApp = await TenantApplication.findByTenantAndApplication(req.tenant.id, application.id);
+    if (!tenantApp || !tenantApp.active || tenantApp.status !== 'active') {
+      return res.status(403).json({
+        error: 'License Required',
+        message: 'Tenant does not have an active license for this application'
+      });
+    }
+    
+    // STEP 2: Check global seat limit (if configured)
+    if (tenantApp.userLimit !== null) {
+      if (tenantApp.seatsUsed >= tenantApp.userLimit) {
+        return res.status(403).json({
+          error: 'Seat Limit Exceeded',
+          message: `Cannot grant access: seat limit of ${tenantApp.userLimit} reached`
+        });
+      }
+    }
+    
+    // STEP 3: Get current pricing for user type
+    const currentPricing = await ApplicationPricing.getCurrentPrice(application.id, user.userTypeId);
+    if (!currentPricing) {
+      return res.status(422).json({
+        error: 'Pricing Not Configured',
+        message: `No pricing configured for ${application.name} and user type ${user.userType}`
+      });
+    }
+    
+    // STEP 4: Grant access with pricing snapshot
     const access = await UserApplicationAccess.grantAccess({
       userId: parseInt(userId),
       applicationId: application.id,
       tenantId,
+      tenantIdFk: req.tenant.id,
       roleInApp,
       grantedBy,
-      expiresAt: expiresAt ? new Date(expiresAt) : null
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      // Pricing snapshots
+      priceSnapshot: currentPricing.price,
+      currencySnapshot: currentPricing.currency,
+      userTypeIdSnapshot: user.userTypeId,
+      grantedCycle: currentPricing.billingCycle
     });
     
+    // STEP 5: Increment seat count
+    await TenantApplication.incrementSeat(req.tenant.id, application.id);
+    
     res.status(201).json({
-      success: true,
-      message: `Access to ${applicationSlug} granted successfully`,
+      meta: {
+        code: "USER_APP_ACCESS_GRANTED",
+        message: `Access to ${applicationSlug} granted successfully.`
+      },
       data: {
         userId: parseInt(userId),
         userName: user.name,
@@ -827,13 +868,19 @@ router.post('/:userId/apps/grant', requireAdmin, async (req, res) => {
         roleInApp,
         grantedAt: access.grantedAt,
         grantedBy,
-        expiresAt: access.expiresAt
+        expiresAt: access.expiresAt,
+        pricing: {
+          price: currentPricing.price,
+          currency: currentPricing.currency,
+          billingCycle: currentPricing.billingCycle
+        },
+        seatsUsed: tenantApp.seatsUsed + 1
       }
     });
   } catch (error) {
     console.error('Grant app access error:', error);
     
-    if (error.name === 'UserNotFoundError' || error instanceof ApplicationNotFoundError) {
+    if (error.name === 'UserNotFoundError' || error.message?.includes('not found')) {
       return res.status(404).json({
         error: {
           code: 404,
@@ -945,7 +992,7 @@ router.delete('/:userId/apps/revoke', requireAdmin, async (req, res) => {
     }
     
     // Verify user exists in tenant
-    const user = await userService.getUserById(req.tenant, req.user, userId);
+    const user = await userService.getUserById(req.tenant.id, req.user, userId);
     
     // Get application
     const application = await Application.findBySlug(applicationSlug);
@@ -966,12 +1013,17 @@ router.delete('/:userId/apps/revoke', requireAdmin, async (req, res) => {
       });
     }
     
-    // Revoke access
+    // Revoke access and decrement seat count
     await userAccess[0].revoke(revokedBy);
     
+    // Decrement seat count
+    await TenantApplication.decrementSeat(req.tenant.id, application.id);
+    
     res.json({
-      success: true,
-      message: `Access to ${applicationSlug} revoked successfully`,
+      meta: {
+        code: "USER_APP_ACCESS_REVOKED",
+        message: `Access to ${applicationSlug} revoked successfully.`
+      },
       data: {
         userId: parseInt(userId),
         userName: user.name,
@@ -984,7 +1036,7 @@ router.delete('/:userId/apps/revoke', requireAdmin, async (req, res) => {
   } catch (error) {
     console.error('Revoke app access error:', error);
     
-    if (error.name === 'UserNotFoundError' || error instanceof ApplicationNotFoundError) {
+    if (error.name === 'UserNotFoundError' || error.message?.includes('not found')) {
       return res.status(404).json({
         error: {
           code: 404,

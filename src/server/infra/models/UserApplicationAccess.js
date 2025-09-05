@@ -140,7 +140,20 @@ class UserApplicationAccess {
    * Grant user access to application
    */
   static async grantAccess(accessData) {
-    const { userId, applicationId, tenantId, roleInApp = 'user', grantedBy, expiresAt = null } = accessData;
+    const { 
+      userId, 
+      applicationId, 
+      tenantId, 
+      tenantIdFk,
+      roleInApp = 'user', 
+      grantedBy, 
+      expiresAt = null,
+      // Pricing snapshots
+      priceSnapshot,
+      currencySnapshot,
+      userTypeIdSnapshot,
+      grantedCycle
+    } = accessData;
     
     // Verify application exists
     await Application.findById(applicationId);
@@ -168,8 +181,9 @@ class UserApplicationAccess {
     
     const query = `
       INSERT INTO public.user_application_access 
-      (user_id, application_id, tenant_id, role_in_app, granted_by, expires_at)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      (user_id, application_id, tenant_id, tenant_id_fk, role_in_app, granted_by, expires_at,
+       price_snapshot, currency_snapshot, user_type_id_snapshot, granted_cycle, granted_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
       RETURNING *
     `;
     
@@ -177,9 +191,14 @@ class UserApplicationAccess {
       userId, 
       applicationId, 
       tenantId, 
+      tenantIdFk,
       roleInApp, 
       grantedBy, 
-      expiresAt
+      expiresAt,
+      priceSnapshot,
+      currencySnapshot, 
+      userTypeIdSnapshot,
+      grantedCycle
     ]);
     
     // Log the access grant

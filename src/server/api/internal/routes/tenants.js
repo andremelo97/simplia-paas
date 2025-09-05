@@ -274,8 +274,8 @@ router.get('/:id', async (req, res) => {
  *               status:
  *                 type: string
  *                 enum: [active, trial, inactive]
- *                 default: trial
- *                 example: "trial"
+ *                 default: active
+ *                 example: "active"
  *     responses:
  *       201:
  *         description: Tenant created successfully
@@ -301,7 +301,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, subdomain, status = 'trial' } = req.body;
+    const { name, subdomain, status = 'active' } = req.body;
 
     // Basic validation
     if (!name || !subdomain) {

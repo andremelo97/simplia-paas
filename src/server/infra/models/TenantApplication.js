@@ -386,6 +386,61 @@ class TenantApplication {
       ...(this.application && { application: this.application })
     };
   }
+
+  /**
+   * Increment seat count for a tenant application
+   * @param {number} tenantId - Tenant ID
+   * @param {number} applicationId - Application ID
+   * @returns {boolean} Success
+   */
+  static async incrementSeat(tenantId, applicationId) {
+    const query = `
+      UPDATE tenant_applications 
+      SET seats_used = COALESCE(seats_used, 0) + 1,
+          updated_at = NOW()
+      WHERE tenant_id_fk = $1 AND application_id = $2 AND active = TRUE
+      RETURNING seats_used
+    `;
+    
+    const result = await database.query(query, [tenantId, applicationId]);
+    return result.rows.length > 0;
+  }
+
+  /**
+   * Decrement seat count for a tenant application
+   * @param {number} tenantId - Tenant ID  
+   * @param {number} applicationId - Application ID
+   * @returns {boolean} Success
+   */
+  static async decrementSeat(tenantId, applicationId) {
+    const query = `
+      UPDATE tenant_applications 
+      SET seats_used = GREATEST(COALESCE(seats_used, 0) - 1, 0),
+          updated_at = NOW()
+      WHERE tenant_id_fk = $1 AND application_id = $2 AND active = TRUE
+      RETURNING seats_used
+    `;
+    
+    const result = await database.query(query, [tenantId, applicationId]);
+    return result.rows.length > 0;
+  }
+
+  /**
+   * Find tenant application by tenant and application
+   * @param {number} tenantId - Tenant ID
+   * @param {number} applicationId - Application ID  
+   * @returns {TenantApplication|null}
+   */
+  static async findByTenantAndApplication(tenantId, applicationId) {
+    const query = `
+      SELECT * FROM tenant_applications
+      WHERE tenant_id_fk = $1 AND application_id = $2
+      LIMIT 1
+    `;
+    
+    const result = await database.query(query, [tenantId, applicationId]);
+    return result.rows.length > 0 ? new TenantApplication(result.rows[0]) : null;
+  }
 }
 
 module.exports = { TenantApplication, TenantApplicationNotFoundError };

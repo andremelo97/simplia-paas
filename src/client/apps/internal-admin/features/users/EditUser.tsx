@@ -44,6 +44,8 @@ export const EditUser: React.FC = () => {
       try {
         setIsLoading(true)
         console.log('🔄 [EditUser] Loading user data for ID:', numericUserId)
+        console.log('🔍 [EditUser] URL params:', { tenantId, userId, numericTenantId, numericUserId })
+        console.log('🔍 [EditUser] Route location:', window.location.pathname)
 
         // Load user data
         const userResponse = await usersService.getUser(numericUserId, numericTenantId)
@@ -142,40 +144,7 @@ export const EditUser: React.FC = () => {
     }
   }
 
-  const handleDeactivate = async () => {
-    if (!numericTenantId || !numericUserId || !user) return
-    
-    const confirmed = window.confirm(
-      `Are you sure you want to deactivate ${user.name}? They will no longer be able to access the system.`
-    )
-    if (!confirmed) return
-
-    setIsSubmitting(true)
-    
-    try {
-      await usersService.deactivate(numericTenantId, numericUserId)
-      navigate(`/users?tenantId=${numericTenantId}`)
-    } catch (error) {
-      console.error('Failed to deactivate user:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleActivate = async () => {
-    if (!numericTenantId || !numericUserId) return
-
-    setIsSubmitting(true)
-    
-    try {
-      await usersService.activate(numericTenantId, numericUserId)
-      navigate(`/users?tenantId=${numericTenantId}`)
-    } catch (error) {
-      console.error('Failed to activate user:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  // Removed handleDeactivate and handleActivate - status is now managed via checkbox only
 
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
@@ -236,7 +205,7 @@ export const EditUser: React.FC = () => {
         <div className="text-center">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">Unable to Load User</h2>
           <p className="text-gray-600 mb-4">{loadError || 'User not found'}</p>
-          <Button onClick={() => navigate('/users')}>
+          <Button variant="secondary" onClick={() => navigate('/users')}>
             Back to Users
           </Button>
         </div>
@@ -255,28 +224,7 @@ export const EditUser: React.FC = () => {
             </p>
           )}
         </div>
-        <div className="flex items-center space-x-3">
-          <UserStatusBadge status={user.status} />
-          {user.status === 'active' ? (
-            <Button
-              variant="secondary"
-              onClick={handleDeactivate}
-              disabled={isSubmitting}
-              className="text-red-600 border-red-300 hover:bg-red-50"
-            >
-              Deactivate User
-            </Button>
-          ) : (
-            <Button
-              variant="secondary"
-              onClick={handleActivate}
-              disabled={isSubmitting}
-              className="text-green-600 border-green-300 hover:bg-green-50"
-            >
-              Activate User
-            </Button>
-          )}
-        </div>
+        <UserStatusBadge status={user.status} />
       </div>
 
       {/* User Info Card */}
@@ -446,6 +394,7 @@ export const EditUser: React.FC = () => {
               </Button>
               <Button
                 type="submit"
+                variant="default"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Saving Changes...' : 'Save Changes'}

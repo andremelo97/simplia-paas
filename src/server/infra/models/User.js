@@ -7,6 +7,7 @@ class User {
     // DEPRECATED: tenantId string field - use tenantIdFk instead
     // this.tenantId = data.tenant_id; 
     this.tenantIdFk = data.tenant_id_fk; // Primary numeric FK - source of truth
+    this.tenantName = data.tenant_name; // Denormalized tenant name for performance
     this.email = data.email;
     this.passwordHash = data.password_hash;
     this.firstName = data.first_name;
@@ -205,23 +206,25 @@ class User {
       }
     }
     
-    // Get tenant subdomain for legacy compatibility
-    const tenantQuery = `SELECT subdomain FROM tenants WHERE id = $1`;
+    // Get tenant subdomain and name for legacy compatibility and denormalization
+    const tenantQuery = `SELECT subdomain, name FROM tenants WHERE id = $1`;
     const tenantResult = await database.query(tenantQuery, [tenantIdFk]);
     const tenantSubdomain = tenantResult.rows[0]?.subdomain;
+    const tenantName = tenantResult.rows[0]?.name;
     
     const query = `
       INSERT INTO public.users (
-        tenant_id, tenant_id_fk, email, password_hash, 
+        tenant_id, tenant_id_fk, tenant_name, email, password_hash, 
         first_name, last_name, role, status, user_type_id
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
     
     const result = await database.query(query, [
       tenantSubdomain, // Legacy string 
       tenantIdFk, // Primary numeric FK
+      tenantName, // Denormalized tenant name
       email, 
       passwordHash, 
       firstName,
@@ -341,6 +344,7 @@ class User {
     return {
       id: this.id,
       tenantId: this.tenantIdFk, // Use numeric FK for JWT
+      tenantName: this.tenantName, // Denormalized tenant name
       email: this.email,
       firstName: this.firstName,
       lastName: this.lastName,

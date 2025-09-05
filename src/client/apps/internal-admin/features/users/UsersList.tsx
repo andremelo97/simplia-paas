@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Select } from '@client/common/ui'
+import { Link, useSearchParams, useParams } from 'react-router-dom'
+import { Card, CardHeader, CardContent, Button, Input, Select, Modal, Checkbox } from '@client/common/ui'
 import { UserStatusBadge } from './UserStatusBadge'
 import { usersService } from '../../services/users'
+import { ApplicationsService, Application } from '../../services/applications'
+import { publishFeedback } from '@client/common/feedback/store'
 import { UserDto, UserStatus, USER_STATUS_FILTER_OPTIONS, USER_ROLE_LABELS } from './types'
 
 // Debounce hook for search input
@@ -22,6 +24,14 @@ const useDebounce = (value: string, delay: number) => {
   return debouncedValue
 }
 
+interface UserAppAccess {
+  applicationSlug: string
+  applicationName: string
+  hasAccess: boolean
+  roleInApp?: string
+  grantedAt?: string
+}
+
 export const UsersList: React.FC = () => {
   const [users, setUsers] = useState<UserDto[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,11 +41,24 @@ export const UsersList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [totalUsers, setTotalUsers] = useState(0)
   
+  // Manage Apps Dialog State
+  const [isManageAppsOpen, setIsManageAppsOpen] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<UserDto | null>(null)
+  const [applications, setApplications] = useState<Application[]>([])
+  const [userApps, setUserApps] = useState<UserAppAccess[]>([])
+  const [loadingApps, setLoadingApps] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  
   const [searchParams, setSearchParams] = useSearchParams()
+  const { tenantId: routeTenantId } = useParams<{ tenantId: string }>()
   const usersPerPage = 10
 
-  // Get tenantId from URL search params
-  const tenantId = searchParams.get('tenantId') ? parseInt(searchParams.get('tenantId')!) : undefined
+  // Get tenantId from route parameter first, then search params
+  const tenantId = routeTenantId 
+    ? parseInt(routeTenantId) 
+    : searchParams.get('tenantId') 
+      ? parseInt(searchParams.get('tenantId')!) 
+      : undefined
 
   // Debounce search term to avoid excessive API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
@@ -83,6 +106,7 @@ export const UsersList: React.FC = () => {
           lastName: 'Silva',
           name: 'João Silva',
           tenantId: 1,
+          tenantName: 'Default Clinic',
           role: 'admin',
           status: 'active',
           active: true,
@@ -97,6 +121,7 @@ export const UsersList: React.FC = () => {
           lastName: 'Santos',
           name: 'Maria Santos',
           tenantId: 1,
+          tenantName: 'Default Clinic',
           role: 'manager',
           status: 'active',
           active: true,
@@ -111,6 +136,7 @@ export const UsersList: React.FC = () => {
           lastName: 'Oliveira',
           name: 'Carlos Oliveira',
           tenantId: 1,
+          tenantName: 'Default Clinic',
           role: 'operations',
           status: 'inactive',
           active: false,
@@ -162,32 +188,97 @@ export const UsersList: React.FC = () => {
     setCurrentPage(1) // Reset to first page when filtering
   }
 
-  const handleDeactivateUser = async (userId: number, userName: string) => {
-    if (!tenantId) return
+  const handleManageApps = async (user: UserDto) => {
+    setSelectedUser(user)
+    setIsManageAppsOpen(true)
+    setLoadingApps(true)
     
-    const confirmed = window.confirm(`Are you sure you want to deactivate ${userName}? They will no longer be able to access the system.`)
-    if (!confirmed) return
-
     try {
-      await usersService.deactivate(tenantId, userId)
-      // Refetch users to update the list
-      fetchUsers()
+      // Load all applications
+      const allApps = await ApplicationsService.getApplications()
+      setApplications(allApps)
+      
+      // Mock user app access (would come from backend in real implementation)
+      const mockUserApps: UserAppAccess[] = allApps.map(app => ({
+        applicationSlug: app.slug,
+        applicationName: app.name,
+        hasAccess: Math.random() > 0.6, // Random for demo
+        roleInApp: 'user',
+        grantedAt: '2024-09-01T10:00:00Z'
+      }))
+      
+      setUserApps(mockUserApps)
+      
     } catch (error) {
-      console.error('Failed to deactivate user:', error)
+      console.error('❌ [UsersList] Failed to load user applications:', error)
+      publishFeedback({
+        kind: 'error',
+        message: 'Failed to load user application access'
+      })
+    } finally {
+      setLoadingApps(false)
     }
   }
 
-  const handleActivateUser = async (userId: number, userName: string) => {
-    if (!tenantId) return
+  const handleToggleAppAccess = async (applicationSlug: string, hasAccess: boolean) => {
+    if (!selectedUser) return
+    
+    setSubmitting(true)
     
     try {
-      await usersService.activate(tenantId, userId)
-      // Refetch users to update the list  
-      fetchUsers()
-    } catch (error) {
-      console.error('Failed to activate user:', error)
+      if (hasAccess) {
+        // Grant access
+        await usersService.grantAppAccess(selectedUser.id, {
+          applicationSlug,
+          roleInApp: 'user'
+        })
+        publishFeedback({
+          kind: 'success',
+          message: `Access granted to ${applicationSlug.toUpperCase()}`
+        })
+      } else {
+        // Revoke access
+        await usersService.revokeAppAccess(selectedUser.id, {
+          applicationSlug
+        })
+        publishFeedback({
+          kind: 'success',
+          message: `Access revoked from ${applicationSlug.toUpperCase()}`
+        })
+      }
+      
+      // Update local state
+      setUserApps(prev => prev.map(app => 
+        app.applicationSlug === applicationSlug 
+          ? { ...app, hasAccess, grantedAt: hasAccess ? new Date().toISOString() : undefined }
+          : app
+      ))
+      
+    } catch (error: any) {
+      console.error('❌ [UsersList] Failed to toggle app access:', error)
+      
+      // Handle specific error cases
+      if (error.status === 403 && error.message?.includes('seat limit')) {
+        publishFeedback({
+          kind: 'error',
+          message: 'Cannot grant access: Seat limit reached for this application'
+        })
+      } else if (error.status === 422 && error.message?.includes('pricing')) {
+        publishFeedback({
+          kind: 'error',
+          message: 'Cannot grant access: No pricing configured for this application'
+        })
+      } else {
+        publishFeedback({
+          kind: 'error',
+          message: hasAccess ? 'Failed to grant application access' : 'Failed to revoke application access'
+        })
+      }
+    } finally {
+      setSubmitting(false)
     }
   }
+
 
   if (loading) {
     return (
@@ -199,17 +290,16 @@ export const UsersList: React.FC = () => {
 
   const getPageTitle = () => {
     if (tenantId) {
-      return `Tenant Users (${totalUsers})`
+      return `Tenant Users`
     }
-    return `All Users (${totalUsers})`
+    return `All Users`
   }
 
 
-  const getEditUserPath = (userId: number) => {
-    if (tenantId) {
-      return `/tenants/${tenantId}/users/${userId}/edit`
-    }
-    return `/users/${userId}/edit`
+  const getEditUserPath = (user: UserDto) => {
+    // Always use tenant-scoped route - get tenantId from route param, query param, or user data
+    const userTenantId = tenantId || user.tenantId || user.tenantIdFk
+    return `/tenants/${userTenantId}/users/${user.id}/edit`
   }
 
   return (
@@ -286,6 +376,9 @@ export const UsersList: React.FC = () => {
                       Email
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tenant
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Role
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -304,12 +397,9 @@ export const UsersList: React.FC = () => {
                     <tr key={user.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <Link
-                            to={getEditUserPath(user.id)}
-                            className="text-sm font-medium text-gray-900 hover:text-blue-600 cursor-pointer"
-                          >
+                          <div className="text-sm font-medium text-gray-900">
                             {user.name}
-                          </Link>
+                          </div>
                           <div className="text-sm text-gray-500">
                             Last login: {formatRelativeTime(user.lastLogin)}
                           </div>
@@ -317,6 +407,11 @@ export const UsersList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900">{user.email}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900">
+                          {user.tenantName || `Tenant ${user.tenantId}`}
+                        </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900">
@@ -331,32 +426,20 @@ export const UsersList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-3">
+                          <button
+                            onClick={() => handleManageApps(user)}
+                            className="text-blue-600 hover:text-blue-900 font-medium"
+                            aria-label={`Manage applications for ${user.name}`}
+                          >
+                            Manage Apps
+                          </button>
                           <Link
-                            to={getEditUserPath(user.id)}
+                            to={getEditUserPath(user)}
                             className="text-indigo-600 hover:text-indigo-900 font-medium"
                             aria-label={`Edit user ${user.name}`}
                           >
                             Edit
                           </Link>
-                          {tenantId && (
-                            user.status === 'active' ? (
-                              <button
-                                onClick={() => handleDeactivateUser(user.id, user.name)}
-                                className="text-red-600 hover:text-red-900 font-medium"
-                                aria-label={`Deactivate user ${user.name}`}
-                              >
-                                Deactivate
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleActivateUser(user.id, user.name)}
-                                className="text-green-600 hover:text-green-900 font-medium"
-                                aria-label={`Activate user ${user.name}`}
-                              >
-                                Activate
-                              </button>
-                            )
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -419,6 +502,74 @@ export const UsersList: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Manage Apps Modal */}
+      <Modal 
+        open={isManageAppsOpen} 
+        onClose={() => setIsManageAppsOpen(false)}
+        title={`Manage Applications - ${selectedUser?.name}`}
+        description="Grant or revoke access to applications"
+        size="xl"
+        showCloseButton={false}
+      >
+        <div className="px-6 py-4">
+            {loadingApps ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                <span className="ml-2 text-gray-600">Loading applications...</span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userApps.map((userApp) => (
+                  <div key={userApp.applicationSlug} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium text-gray-900">
+                            {userApp.applicationName}
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            Slug: {userApp.applicationSlug}
+                          </p>
+                          {userApp.hasAccess && userApp.grantedAt && (
+                            <p className="text-xs text-green-600">
+                              Granted on {new Date(userApp.grantedAt).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`app-${userApp.applicationSlug}`}
+                        checked={userApp.hasAccess}
+                        onChange={(e) => handleToggleAppAccess(userApp.applicationSlug, e.target.checked)}
+                        disabled={submitting}
+                        label={userApp.hasAccess ? 'Access Granted' : 'Grant Access'}
+                      />
+                    </div>
+                  </div>
+                ))}
+                
+                {userApps.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>No applications available</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+            <Button
+              variant="secondary"
+              onClick={() => setIsManageAppsOpen(false)}
+              disabled={submitting}
+            >
+              Close
+            </Button>
+          </div>
+      </Modal>
     </div>
   )
 }

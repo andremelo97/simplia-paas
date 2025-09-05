@@ -57,10 +57,14 @@ simplia-paas/
 │   │   │   │   │       ├── ContactItemForm.tsx  # Form individual de contato
 │   │   │   │   │       ├── AddressesRepeater.tsx # Repeater para endereços
 │   │   │   │   │       ├── ContactsRepeater.tsx  # Repeater para contatos
-│   │   │   │   │       └── 📁 licenses/         # **NOVO**: Gestão de licenças por tenant
-│   │   │   │   │           ├── TenantLicensesPage.tsx # Página de licenças com tabs de navegação
-│   │   │   │   │           ├── LicenseRow.tsx   # Row com ações Adjust/Suspend/Resume
-│   │   │   │   │           └── types.ts         # TypeScript types para licenças e entitlements
+│   │   │   │   │       └── 📁 detail/           # Sistema de navegação com tabs
+│   │   │   │   │           ├── TenantDetailLayout.tsx # Layout principal com tabs (Overview | Users | Licenses | Addresses | Contacts)
+│   │   │   │   │           └── 📁 tabs/         # Componentes individuais de cada tab
+│   │   │   │   │               ├── TenantOverviewTab.tsx # Tab Overview com informações gerais
+│   │   │   │   │               ├── TenantUsersTab.tsx    # Tab Users com listagem e ações
+│   │   │   │   │               ├── TenantLicensesTab.tsx # Tab Licenses com gestão de entitlements
+│   │   │   │   │               ├── TenantAddressesTab.tsx # Tab Addresses (futuro)
+│   │   │   │   │               └── TenantContactsTab.tsx  # Tab Contacts (futuro)
 │   │   │   │   ├── 📁 components/     # Componentes específicos do admin
 │   │   │   │   │   ├── Header.tsx     # Header do layout
 │   │   │   │   │   ├── Sidebar.tsx    # Sidebar de navegação
@@ -102,6 +106,8 @@ simplia-paas/
 │   │   │   │   ├── Textarea.tsx       # Componente Textarea consistente
 │   │   │   │   ├── Checkbox.tsx       # Componente Checkbox com brand primary
 │   │   │   │   ├── Label.tsx          # Componente Label acessível
+│   │   │   │   ├── Badge.tsx          # Componente Badge com variants da marca (tertiary, success, etc.)
+│   │   │   │   ├── StatusBadge.tsx    # Componente StatusBadge para status tipados (active/inactive/suspended)
 │   │   │   │   ├── Card.tsx           # Componente Card refatorado
 │   │   │   │   ├── Toast.tsx          # Sistema de toasts
 │   │   │   │   ├── Toaster.tsx        # Host de toasts
@@ -132,7 +138,7 @@ simplia-paas/
 │   │   ├── 📁 styles/                 # Estilos globais
 │   │   │   └── globals.css            # Estilos CSS globais
 │   │   │
-│   │   ├── index.css                  # Estilos principais com tokens de design
+│   │   ├── index.css                  # Estilos principais com tokens de design (--brand-tertiary, --brand-tertiary-bg)
 │   │   ├── index.html                 # Template HTML
 │   │   └── main.tsx                   # Entry point React
 │   │

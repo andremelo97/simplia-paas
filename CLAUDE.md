@@ -753,3 +753,17 @@ POST /internal/api/v1/tenants/:tenantId/users     // Create user in specific ten
 - **Automatic Timestamps**: PostgreSQL triggers automatically update `updated_at` on any record modification
 - **Friendly Error Handling**: User-facing error messages with proper accessibility and telemetry
 - **Tenant Consistency**: Application-level validation prevents cross-tenant data corruption in user access tables
+
+---
+
+## 📖 Documentação Adicional
+
+**Para contexto técnico detalhado, implementações específicas, e histórico completo de desenvolvimento, consulte [CLAUDE2.md](./CLAUDE2.md).**
+
+Este arquivo contém:
+- Detalhamento completo de pastas e arquivos
+- Esquemas de banco de dados e migrations
+- Sistema de pricing e billing detalhado
+- Fluxos de autorização enterprise
+- Exemplos de código e configurações
+- Histórico de implementações e deprecações

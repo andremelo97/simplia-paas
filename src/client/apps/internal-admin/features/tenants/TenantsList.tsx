@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Select } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Select, StatusBadge, Status } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
-import { TenantStatusBadge } from './TenantStatusBadge'
 
 interface Tenant {
   id: number
@@ -132,6 +131,10 @@ export const TenantsList: React.FC = () => {
     navigate(`/users?tenantId=${tenantId}`)
   }
 
+  const handleManageLicenses = (tenantId: number) => {
+    navigate(`/tenants/${tenantId}/licenses`)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -242,7 +245,7 @@ export const TenantsList: React.FC = () => {
                       {tenant.applicationCount}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <TenantStatusBadge status={tenant.status as any} />
+                      <StatusBadge status={tenant.status as Status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {formatDate(tenant.createdAt)}
@@ -251,14 +254,21 @@ export const TenantsList: React.FC = () => {
                       <div className="flex items-center justify-end space-x-3">
                         <button
                           onClick={() => handleManageUsers(tenant.id)}
-                          className="text-blue-600 hover:text-blue-900 font-medium"
+                          className="action-link"
                           aria-label={`Manage users for ${tenant.name}`}
                         >
                           Manage Users
                         </button>
+                        <button
+                          onClick={() => handleManageLicenses(tenant.id)}
+                          className="action-link"
+                          aria-label={`Manage licenses for ${tenant.name}`}
+                        >
+                          Manage Licenses
+                        </button>
                         <Link
                           to={`/tenants/${tenant.id}/edit`}
-                          className="text-indigo-600 hover:text-indigo-900 font-medium"
+                          className="action-link"
                           aria-label={`Edit tenant ${tenant.name}`}
                         >
                           Edit

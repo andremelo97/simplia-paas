@@ -80,7 +80,8 @@
       "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\server\\api\\internal\\routes/**)",
       "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\server\\api\\internal\\routes/**)",
       "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\client\\common\\ui/**)",
-      "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\client\\common\\ui/**)"
+      "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\client\\common\\ui/**)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

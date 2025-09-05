@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams, useParams } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Select, Modal, Checkbox } from '@client/common/ui'
-import { UserStatusBadge } from './UserStatusBadge'
+import { Card, CardHeader, CardContent, Button, Input, Select, Modal, Checkbox, StatusBadge, Status } from '@client/common/ui'
 import { usersService } from '../../services/users'
 import { ApplicationsService, Application } from '../../services/applications'
 import { publishFeedback } from '@client/common/feedback/store'
-import { UserDto, UserStatus, USER_STATUS_FILTER_OPTIONS, USER_ROLE_LABELS } from './types'
+import { UserDto, UserStatus, USER_STATUS_FILTER_OPTIONS, getDisplayRole } from './types'
 
 // Debounce hook for search input
 const useDebounce = (value: string, delay: number) => {
@@ -415,11 +414,11 @@ export const UsersList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-900">
-                          {USER_ROLE_LABELS[user.role]}
+                          {getDisplayRole(user)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <UserStatusBadge status={user.status} />
+                        <StatusBadge status={user.status as Status} />
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(user.createdAt)}
@@ -428,14 +427,14 @@ export const UsersList: React.FC = () => {
                         <div className="flex items-center justify-end space-x-3">
                           <button
                             onClick={() => handleManageApps(user)}
-                            className="text-blue-600 hover:text-blue-900 font-medium"
+                            className="action-link"
                             aria-label={`Manage applications for ${user.name}`}
                           >
                             Manage Apps
                           </button>
                           <Link
                             to={getEditUserPath(user)}
-                            className="text-indigo-600 hover:text-indigo-900 font-medium"
+                            className="action-link"
                             aria-label={`Edit user ${user.name}`}
                           >
                             Edit

@@ -40,13 +40,27 @@ simplia-paas/
 │   │   │   │   │   │   ├── ApplicationsList.tsx # Lista com ação "Manage Pricing"
 │   │   │   │   │   │   └── 📁 pricing/          # Gestão de pricing matrix
 │   │   │   │   │   │       └── ApplicationPricing.tsx # Tabela + modal Schedule Price + End Current
-│   │   │   │   │   └── 📁 users/       # Gestão de usuários
-│   │   │   │   │       ├── UsersList.tsx        # Lista + modal Grant/Revoke com preview de preços
-│   │   │   │   │       ├── CreateUser.tsx       # Criação com seleção de tenant
-│   │   │   │   │       ├── EditUser.tsx         # Edição de usuários
-│   │   │   │   │       ├── UserStatusBadge.tsx  # Badge status usuário
-│   │   │   │   │       ├── UserRoleSelect.tsx   # Seletor de roles
-│   │   │   │   │       └── types.ts             # TypeScript types para usuários
+│   │   │   │   │   ├── 📁 users/       # Gestão de usuários
+│   │   │   │   │   │   ├── UsersList.tsx        # Lista + modal Grant/Revoke com preview de preços
+│   │   │   │   │   │   ├── CreateUser.tsx       # Criação com seleção de tenant
+│   │   │   │   │   │   ├── EditUser.tsx         # Edição de usuários
+│   │   │   │   │   │   ├── UserStatusBadge.tsx  # Badge de status de usuário
+│   │   │   │   │   │   ├── UserRoleSelect.tsx   # Seletor de roles
+│   │   │   │   │   │   └── types.ts             # TypeScript types para usuários
+│   │   │   │   │   └── 📁 tenants/    # Gestão completa de tenants (ATUALIZADO)
+│   │   │   │   │       ├── TenantsList.tsx      # Lista de tenants com "Manage Licenses"
+│   │   │   │   │       ├── CreateTenant.tsx     # Criação com AppFeedback
+│   │   │   │   │       ├── EditTenant.tsx       # Edição com status toggle
+│   │   │   │   │       ├── ApplicationsCard.tsx # Card de aplicações licenciadas
+│   │   │   │   │       ├── types.ts             # TypeScript types para addresses/contacts
+│   │   │   │   │       ├── AddressItemForm.tsx  # Form individual de endereço
+│   │   │   │   │       ├── ContactItemForm.tsx  # Form individual de contato
+│   │   │   │   │       ├── AddressesRepeater.tsx # Repeater para endereços
+│   │   │   │   │       ├── ContactsRepeater.tsx  # Repeater para contatos
+│   │   │   │   │       └── 📁 licenses/         # **NOVO**: Gestão de licenças por tenant
+│   │   │   │   │           ├── TenantLicensesPage.tsx # Página de licenças com tabs de navegação
+│   │   │   │   │           ├── LicenseRow.tsx   # Row com ações Adjust/Suspend/Resume
+│   │   │   │   │           └── types.ts         # TypeScript types para licenças e entitlements
 │   │   │   │   ├── 📁 components/     # Componentes específicos do admin
 │   │   │   │   │   ├── Header.tsx     # Header do layout
 │   │   │   │   │   ├── Sidebar.tsx    # Sidebar de navegação
@@ -58,6 +72,7 @@ simplia-paas/
 │   │   │   │   │   ├── tenants.ts     # Serviço de tenants
 │   │   │   │   │   ├── users.ts       # Serviço de usuários com Grant/Revoke
 │   │   │   │   │   ├── applications.ts # Serviço de aplicações e pricing matrix
+│   │   │   │   │   ├── entitlements.ts # **NOVO**: Serviço de entitlements com conversão tenant ID
 │   │   │   │   │   ├── addresses.ts   # Serviço de endereços
 │   │   │   │   │   └── contacts.ts    # Serviço de contatos
 │   │   │   │   ├── 📁 store/          # Estado global Zustand
@@ -944,6 +959,13 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 9. **Production Deployment**: Configurar CI/CD e ambientes
 
 ### ✨ Implementações Recentes (Janeiro 2025)
+- **✅ 📋 Página de Licenças por Tenant**: Interface completa de gestão de entitlements
+  - **TenantLicensesPage**: Página com tabs Overview | Users | **Licenses** | Addresses | Contacts
+  - **LicenseRow**: Component com ações Adjust License, Suspend/Resume, Open Pricing, Open Users
+  - **EntitlementsService**: Serviço com conversão automática numeric→string tenant ID via subdomain
+  - **StatusBadge Unificado**: Component único para status (active/inactive/suspended) substituindo TenantStatusBadge e UserStatusBadge
+  - **Route Integration**: `/tenants/:tenantId/licenses` integrada com breadcrumbs e navegação
+  - **API Integration**: Chamadas para `/internal/api/v1/entitlements` com header `x-tenant-id`
 - **✅ 💵 Sistema de Pricing por Seat (App × UserType)**: Implementação completa do modelo de negócio
   - **Matriz de Preços com Versionamento**: Tabela `application_pricing` com vigências `valid_from`/`valid_to`
   - **Snapshots Automáticos**: Captura de preço no grant (`price_snapshot`, `currency_snapshot`, `user_type_id_snapshot`) 
@@ -997,11 +1019,12 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 ### 📈 Status de Desenvolvimento
 - 🟢 **Backend API**: 100% completo com documentação Swagger + pricing system + grant/revoke APIs
 - 🟢 **Frontend Foundation**: Design system e error handling implementados  
-- 🟢 **Tenant Management**: CRUD completo com addresses/contacts + status toggle + seat management visual
+- 🟢 **Tenant Management**: CRUD completo com addresses/contacts + status toggle + **página de licenças** + seat management visual
 - 🟢 **Users Management**: CRUD completo + modal Grant/Revoke com preview de preços
 - 🟢 **Applications Management**: Lista + interface completa de pricing matrix (tabela/modal/versionamento)
 - 🟢 **Pricing & Billing System**: Matriz App × UserType + snapshots + seat limits globais - 100% implementado
-- 🟡 **Admin Interface**: Dashboard, tenants, users, applications prontos - entitlements pendentes
+- 🟢 **License Management**: Página completa de licenças por tenant com ações Adjust/Suspend/Resume
+- 🟢 **Admin Interface**: Dashboard, tenants, users, applications, **entitlements** - 100% completo
 - 🔴 **Product Apps**: Estrutura criada - desenvolvimento pendente
 - 🔴 **Public APIs**: Aguardando definição de requisitos dos produtos
 

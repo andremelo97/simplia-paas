@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Label, FieldError, Checkbox } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Label, FieldError, Checkbox, StatusBadge, Status } from '@client/common/ui'
 import { UserRoleSelect } from './UserRoleSelect'
-import { UserStatusBadge } from './UserStatusBadge'
 import { usersService } from '../../services/users'
 import { tenantsService } from '../../services/tenants'
 import { UpdateUserDto, UserDto, UserRole, UserStatus } from './types'
@@ -224,7 +223,7 @@ export const EditUser: React.FC = () => {
             </p>
           )}
         </div>
-        <UserStatusBadge status={user.status} />
+        <StatusBadge status={user.status as Status} />
       </div>
 
       {/* User Info Card */}

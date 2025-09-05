@@ -72,3 +72,15 @@ button[data-variant="secondary"] {
 .alert-destructive svg {
   color: #dc2626 !important; /* red-600 */
 }
+
+/* Secondary action links - consistent pink color */
+.action-link {
+  color: var(--brand-primary) !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+.action-link:hover {
+  color: var(--brand-primary-hover) !important;
+}

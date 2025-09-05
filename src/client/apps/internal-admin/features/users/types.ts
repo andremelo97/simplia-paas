@@ -97,3 +97,11 @@ export const USER_STATUS_FILTER_OPTIONS = [
   { value: 'all' as const, label: 'All' },
   ...USER_STATUS_OPTIONS
 ];
+
+// Helper function to get display role (prioritizes platform role)
+export const getDisplayRole = (user: UserDto): string => {
+  if (user.platformRole === 'internal_admin') {
+    return 'Internal Admin';
+  }
+  return USER_ROLE_LABELS[user.role];
+};

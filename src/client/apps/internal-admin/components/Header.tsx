@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { LogOut, Bell, Search } from 'lucide-react'
 import { useAuthStore, useUIStore } from '../store'
 import { authService } from '../services/auth'
+import { getDisplayRole } from '../features/users/types'
 import { 
   Button, 
   Avatar, 
@@ -40,6 +41,7 @@ const getBreadcrumbs = (pathname: string) => {
       case 'users': return 'Users'
       case 'applications': return 'Applications'
       case 'entitlements': return 'Entitlements'
+      case 'licenses': return 'Licenses'
       case 'audit': return 'Audit'
       case 'create': return 'Create'
       case 'edit': return 'Edit'
@@ -67,6 +69,16 @@ const getBreadcrumbs = (pathname: string) => {
     if (segments[0] === 'tenants' && segments[2] === 'edit') {
       if (index === 0) {
         breadcrumbs.push({ label: 'Tenants', href: '/tenants' })
+      }
+      return
+    }
+
+    // For tenant licenses routes: /tenants/:id/licenses -> Dashboard > Tenants > Licenses
+    if (segments[0] === 'tenants' && segments[2] === 'licenses') {
+      if (index === 0) {
+        breadcrumbs.push({ label: 'Tenants', href: '/tenants' })
+      } else if (index === 2) {
+        breadcrumbs.push({ label: 'Licenses', href: '#' })
       }
       return
     }
@@ -177,14 +189,13 @@ export const Header: React.FC = () => {
                   : user?.firstName || user?.email?.split('@')[0] || 'Admin'}
               </div>
               <div className="flex items-center space-x-1 text-xs text-gray-500">
-                <span className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700 font-medium">
-                  {user?.role}
+                <span className={`px-1.5 py-0.5 rounded font-medium ${
+                  user?.platformRole === 'internal_admin' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {user && getDisplayRole(user)}
                 </span>
-                {user?.platformRole && (
-                  <span className="px-1.5 py-0.5 bg-black text-white rounded font-medium">
-                    {user.platformRole}
-                  </span>
-                )}
               </div>
             </div>
             

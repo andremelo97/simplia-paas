@@ -225,7 +225,7 @@ export const ApplicationsList: React.FC = () => {
                         <div className="flex items-center justify-end space-x-3">
                           <Link
                             to={`/applications/${application.id}/pricing`}
-                            className="text-indigo-600 hover:text-indigo-900 font-medium"
+                            className="action-link"
                             aria-label={`Manage pricing for ${application.name}`}
                           >
                             Manage Pricing

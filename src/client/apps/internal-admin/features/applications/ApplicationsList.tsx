@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Select } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Select, Badge } from '@client/common/ui'
 import { ApplicationsService, Application } from '../../services/applications'
 import { publishFeedback } from '@client/common/feedback/store'
 
@@ -106,7 +106,7 @@ export const ApplicationsList: React.FC = () => {
     
     switch (status) {
       case 'active':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full" style={{color: 'var(--brand-tertiary)', backgroundColor: 'var(--brand-tertiary-bg)', fontFamily: 'Montserrat, sans-serif'}}>Active</span>
       case 'deprecated':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Deprecated</span>
       default:
@@ -208,9 +208,9 @@ export const ApplicationsList: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-mono text-purple-600 bg-purple-50 px-2 py-1 rounded">
+                        <Badge variant="tertiary">
                           {application.slug}
-                        </span>
+                        </Badge>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {application.version}

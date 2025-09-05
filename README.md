@@ -699,6 +699,15 @@ VITE_AUT_API_BASE_URL=/api/v1/automation
 - **Search Path Switching**: `SET search_path TO tenant_schema, public`
 - **Header-based**: Identificação via `x-tenant-id` header
 
+### Convention: Tenant Identification
+- **Source of Truth**: `req.tenant.id` (numeric) - SEMPRE usar para operações de DB e FKs
+- **Friendly ID**: `req.tenant.slug` - subdomain para URLs e UX
+- **Header Support**: `x-tenant-id` aceita ambos formatos com normalização automática:
+  - `x-tenant-id: 1` (preferido) → resolve por ID, sem warning
+  - `x-tenant-id: default` (deprecated) → resolve por slug, emite deprecation warning
+- **Path Parameters**: Sempre usar IDs numéricos (`/tenants/:tenantId/licenses`)
+- **Frontend Services**: Enviar `String(tenantId)` em headers, não slugs
+
 ### Autenticação e Autorização
 - **JWT Enhanced**: Tokens incluem `allowedApps[]` (slugs) e `userType` para performance
 - **5-Layer Authorization**: Tenant License → Seat Check → User Access → Role → Audit
@@ -770,8 +779,12 @@ A **API Interna** para o painel `internal.simplia.com` está **completa e operac
 O **painel administrativo interno** possui interface moderna e profissional:
 
 #### **Sistema de Design Consistente**
-- ✅ **Design Tokens** globais com CSS custom properties (`--brand-primary`, `--brand-secondary`)
+- ✅ **Design Tokens** globais com CSS custom properties (`--brand-primary`, `--brand-secondary`, `--brand-tertiary`)
+- ✅ **Brand Background Token** (`--brand-tertiary-bg`) para elementos terciários com contraste otimizado
+- ✅ **Badge System** completo com variants: default, primary, secondary, **tertiary**, success, warning, error, info
+- ✅ **StatusBadge Component** para status tipados (active/inactive/suspended) com cor da marca
 - ✅ **Componentes A11y** com ARIA attributes e acessibilidade completa
+- ✅ **Montserrat Font**: Font family aplicada consistentemente em elementos da marca
 - ✅ **Tailwind v3.4.17** integrado com sistema customizado de componentes
 - ✅ **Responsividade** com layouts adaptativos e multi-coluna
 
@@ -966,6 +979,16 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
   - **StatusBadge Unificado**: Component único para status (active/inactive/suspended) substituindo TenantStatusBadge e UserStatusBadge
   - **Route Integration**: `/tenants/:tenantId/licenses` integrada com breadcrumbs e navegação
   - **API Integration**: Chamadas para `/internal/api/v1/entitlements` com header `x-tenant-id`
+- ✅ **🎨 Sistema de Cores da Marca Unificado**: Padronização visual completa
+  - **Cor Terciária Centralizada**: `--brand-tertiary: #5ED6CE` (teal da marca)
+  - **Background Terciário**: `--brand-tertiary-bg: rgba(94, 214, 206, 0.1)` para contraste otimizado
+  - **Substituição de Verdes**: Todos elementos verdes agora usam as cores da marca
+  - **Badge Tertiary**: Slug em applications com visual da marca (texto teal + fundo claro)
+  - **StatusBadge Active**: Status ativos com padrão visual consistente
+  - **Feedback System**: Toasts de sucesso com cores da marca
+  - **ApplicationsList**: Status "Active" padronizado com nova cor
+  - **ApplicationsCard**: Seat usage e status com cores da marca
+  - **Botão Manage Licenses**: Funcional com redirecionamento para `/tenants/:id/licenses`
 - **✅ 💵 Sistema de Pricing por Seat (App × UserType)**: Implementação completa do modelo de negócio
   - **Matriz de Preços com Versionamento**: Tabela `application_pricing` com vigências `valid_from`/`valid_to`
   - **Snapshots Automáticos**: Captura de preço no grant (`price_snapshot`, `currency_snapshot`, `user_type_id_snapshot`) 

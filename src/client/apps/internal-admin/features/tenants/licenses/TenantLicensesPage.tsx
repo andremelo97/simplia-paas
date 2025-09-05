@@ -71,7 +71,7 @@ export const TenantLicensesPage: React.FC = () => {
     ]
 
     return (
-      <div className="bg-white border-b border-gray-200 mb-6">
+      <Card className="mb-6">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -90,7 +90,7 @@ export const TenantLicensesPage: React.FC = () => {
                 to={tab.path}
                 className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   tab.active
-                    ? 'border-indigo-500 text-indigo-600'
+                    ? 'border-[var(--brand-primary)] text-[var(--brand-primary)]'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
@@ -99,7 +99,7 @@ export const TenantLicensesPage: React.FC = () => {
             ))}
           </nav>
         </div>
-      </div>
+      </Card>
     )
   }
 
@@ -107,7 +107,7 @@ export const TenantLicensesPage: React.FC = () => {
     return (
       <div className="space-y-6">
         {/* Header skeleton */}
-        <div className="bg-white border-b border-gray-200">
+        <Card className="mb-6">
           <div className="px-6 py-4">
             <Skeleton className="h-8 w-64 mb-2" />
             <Skeleton className="h-4 w-96 mb-4" />
@@ -117,23 +117,21 @@ export const TenantLicensesPage: React.FC = () => {
               ))}
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Content skeleton */}
-        <div className="px-6">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-48" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-16 w-full" />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -142,18 +140,16 @@ export const TenantLicensesPage: React.FC = () => {
     return (
       <div className="space-y-6">
         {renderTenantHeader()}
-        <div className="px-6">
-          <Card>
-            <CardContent className="py-8">
-              <div className="text-center">
-                <p className="text-red-600 mb-4">{error}</p>
-                <Button onClick={fetchLicenses}>
-                  Try Again
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardContent className="py-8">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={fetchLicenses}>
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -162,16 +158,15 @@ export const TenantLicensesPage: React.FC = () => {
     <div className="space-y-6">
       {renderTenantHeader()}
 
-      <div className="px-6">
-        <Card>
-          <CardHeader className="p-6 pb-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Application Licenses</h2>
-              <div className="text-sm text-gray-500">
-                {licenses.length} {licenses.length === 1 ? 'license' : 'licenses'}
-              </div>
+      <Card>
+        <CardHeader className="p-6 pb-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-900">Application Licenses</h2>
+            <div className="text-sm text-gray-500">
+              {licenses.length} {licenses.length === 1 ? 'license' : 'licenses'}
             </div>
-          </CardHeader>
+          </div>
+        </CardHeader>
 
           <CardContent className="p-0">
             {licenses.length === 0 ? (
@@ -228,9 +223,8 @@ export const TenantLicensesPage: React.FC = () => {
                 </table>
               </div>
             )}
-          </CardContent>
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

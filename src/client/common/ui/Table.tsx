@@ -5,10 +5,13 @@ const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  <div className="overflow-x-auto">
     <table
       ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
+      className={cn(
+        "min-w-full divide-y divide-gray-200",
+        className
+      )}
       {...props}
     />
   </div>
@@ -19,7 +22,14 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={cn("[&_tr]:border-b", className)} {...props} />
+  <thead
+    ref={ref}
+    className={cn(
+      "bg-gray-50",
+      className
+    )}
+    {...props}
+  />
 ))
 TableHeader.displayName = "TableHeader"
 
@@ -29,7 +39,10 @@ const TableBody = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tbody
     ref={ref}
-    className={cn("[&_tr:last-child]:border-0", className)}
+    className={cn(
+      "bg-white divide-y divide-gray-200",
+      className
+    )}
     {...props}
   />
 ))
@@ -57,7 +70,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-gray-50/50 data-[state=selected]:bg-gray-50",
+      "hover:bg-gray-50 border-b border-gray-200 last:border-b-0 transition-colors duration-200",
       className
     )}
     {...props}
@@ -72,7 +85,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-12 px-4 text-left align-middle font-medium text-gray-500 [&:has([role=checkbox])]:pr-0",
+      "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
       className
     )}
     {...props}
@@ -86,7 +99,10 @@ const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
+    className={cn(
+      "px-6 py-4 whitespace-nowrap",
+      className
+    )}
     {...props}
   />
 ))
@@ -103,6 +119,58 @@ const TableCaption = React.forwardRef<
   />
 ))
 TableCaption.displayName = "TableCaption"
+
+const TableActionsCell = React.forwardRef<
+  HTMLTableCellElement,
+  React.TdHTMLAttributes<HTMLTableCellElement>
+>(({ className, ...props }, ref) => (
+  <td
+    ref={ref}
+    className={cn(
+      "px-6 py-4 whitespace-nowrap text-right text-sm font-medium",
+      className
+    )}
+    {...props}
+  />
+))
+TableActionsCell.displayName = "TableActionsCell"
+
+const TableEmptyState = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement> & {
+    title?: string
+    description?: string
+    icon?: React.ReactNode
+    action?: React.ReactNode
+  }
+>(({ className, title, description, icon, action, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(
+      "text-center py-12",
+      className
+    )}
+    {...props}
+  >
+    {icon && (
+      <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+        {icon}
+      </div>
+    )}
+    {title && (
+      <h3 className="text-lg font-medium text-gray-900 mb-2">
+        {title}
+      </h3>
+    )}
+    {description && (
+      <p className="text-gray-500 mb-4">
+        {description}
+      </p>
+    )}
+    {action}
+  </div>
+))
+TableEmptyState.displayName = "TableEmptyState"
 
 export {
   Table,

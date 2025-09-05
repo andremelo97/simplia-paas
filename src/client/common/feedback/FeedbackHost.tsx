@@ -23,7 +23,7 @@ const Toast: React.FC<ToastProps> = ({ feedback, onClose }) => {
     
     switch (feedback.kind) {
       case 'success':
-        return cn(baseStyles, "border-green-200 bg-green-50")
+        return cn(baseStyles, "border-opacity-30")
       case 'info':
         return cn(baseStyles, "border-blue-200 bg-blue-50")
       case 'warning':
@@ -34,10 +34,21 @@ const Toast: React.FC<ToastProps> = ({ feedback, onClose }) => {
         return cn(baseStyles, "border-gray-200")
     }
   }
+  
+  const getToastStyle = () => {
+    if (feedback.kind === 'success') {
+      return {
+        backgroundColor: 'var(--brand-tertiary-bg)',
+        borderColor: 'var(--brand-tertiary)',
+        color: 'var(--brand-tertiary)'
+      }
+    }
+    return undefined
+  }
 
   const getIconColor = () => {
     switch (feedback.kind) {
-      case 'success': return 'text-green-600'
+      case 'success': return ''
       case 'info': return 'text-blue-600'
       case 'warning': return 'text-yellow-600'
       case 'error': return 'text-red-600'
@@ -80,12 +91,13 @@ const Toast: React.FC<ToastProps> = ({ feedback, onClose }) => {
     <div
       ref={toastRef}
       className={getToastStyles()}
+      style={getToastStyle()}
       role={feedback.kind === 'error' ? 'alert' : 'status'}
       aria-live={feedback.kind === 'error' ? 'assertive' : 'polite'}
       tabIndex={feedback.kind === 'error' ? -1 : undefined}
     >
       <div className="flex items-start">
-        <div className={cn("flex-shrink-0", getIconColor())}>
+        <div className={cn("flex-shrink-0", getIconColor())} style={feedback.kind === 'success' ? {color: 'var(--brand-tertiary)'} : undefined}>
           {getIcon()}
         </div>
         <div className="ml-3 w-0 flex-1">
@@ -101,7 +113,7 @@ const Toast: React.FC<ToastProps> = ({ feedback, onClose }) => {
         <div className="ml-4 flex-shrink-0 flex">
           <button
             type="button"
-            className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--brand-primary)]"
             onClick={onClose}
           >
             <span className="sr-only">Close</span>

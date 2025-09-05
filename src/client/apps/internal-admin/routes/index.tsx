@@ -13,6 +13,12 @@ import { EditUser } from '../features/users/EditUser'
 import { ApplicationsList } from '../features/applications/ApplicationsList'
 import { ApplicationPricing } from '../features/applications/pricing/ApplicationPricing'
 import { TenantLicensesPage } from '../features/tenants/licenses/TenantLicensesPage'
+import { TenantDetailLayout } from '../features/tenants/detail/TenantDetailLayout'
+import { TenantOverviewTab } from '../features/tenants/detail/tabs/TenantOverviewTab'
+import { TenantUsersTab } from '../features/tenants/detail/tabs/TenantUsersTab'
+import { TenantLicensesTab } from '../features/tenants/detail/tabs/TenantLicensesTab'
+import { TenantAddressesTab } from '../features/tenants/detail/tabs/TenantAddressesTab'
+import { TenantContactsTab } from '../features/tenants/detail/tabs/TenantContactsTab'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -34,7 +40,7 @@ const Unauthorized: React.FC = () => (
 
 const TenantViewRedirect: React.FC = () => {
   const { id } = useParams<{ id: string }>()
-  return <Navigate to={`/tenants/${id}/edit`} replace />
+  return <Navigate to={`/tenants/${id}/overview`} replace />
 }
 
 export const AppRoutes: React.FC = () => {
@@ -55,8 +61,18 @@ export const AppRoutes: React.FC = () => {
         <Route path="tenants" element={<TenantsList />} />
         <Route path="tenants/create" element={<CreateTenant />} />
         <Route path="tenants/:id" element={<TenantViewRedirect />} />
+        
+        {/* Tenant Detail Routes with Tabs */}
+        <Route path="tenants/:tenantId" element={<TenantDetailLayout />}>
+          <Route path="overview" element={<TenantOverviewTab />} />
+          <Route path="users" element={<TenantUsersTab />} />
+          <Route path="licenses" element={<TenantLicensesTab />} />
+          <Route path="addresses" element={<TenantAddressesTab />} />
+          <Route path="contacts" element={<TenantContactsTab />} />
+        </Route>
+        
+        {/* Single tenant routes */}
         <Route path="tenants/:id/edit" element={<EditTenantPage />} />
-        <Route path="tenants/:tenantId/licenses" element={<TenantLicensesPage />} />
         
         {/* Users routes */}
         <Route path="users" element={<UsersList />} />

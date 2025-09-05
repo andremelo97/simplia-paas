@@ -102,6 +102,19 @@ npx jest tests/critical-validation.test.js # Run specific test file
 - **Database**: Single PostgreSQL database with multiple schemas (tenant_abc, tenant_xyz, etc.)
 - **Middleware**: Automatic tenant context injection in Express requests (`req.tenant`)
 
+## Convention: Tenant Identification
+
+**ID numérico = fonte da verdade; slug = friendly; header aceita ambos (deprecar slug)**
+
+- **Source of Truth**: `req.tenant.id` (numeric) - ALWAYS use for database operations and FKs
+- **Friendly Identifier**: `req.tenant.slug` - subdomain for URLs and UX  
+- **Header Support**: `x-tenant-id` accepts both formats with automatic normalization:
+  - `x-tenant-id: 1` (preferred) → resolves by ID, no warning
+  - `x-tenant-id: default` (deprecated) → resolves by slug, emits deprecation warning
+- **Path Parameters**: Always use numeric IDs (`/tenants/:tenantId/licenses`)
+- **Frontend Services**: Send `String(tenantId)` in headers, not slugs
+- **Deprecation Policy**: Slug support in headers will be removed in future version
+
 ## User Management & Authentication
 
 - **User Storage**: `public.users` table with **1:1 tenant relationship** via `tenant_id_fk` (numeric FK)
@@ -676,9 +689,12 @@ Implemented functional status toggle in tenant editing:
 
 ### Design System
 - **Global Brand Tokens** (`src/client/index.css`): CSS custom properties for consistent theming
-  - `--brand-primary: #B725B7` (purple), `--brand-secondary: #E91E63` (pink)
+  - `--brand-primary: #B725B7` (purple), `--brand-secondary: #E91E63` (pink), `--brand-tertiary: #5ED6CE` (teal)
+  - `--brand-tertiary-bg: rgba(94, 214, 206, 0.1)` - Light background for tertiary elements with proper contrast
 - **Component Library** (`src/client/common/ui/`): Reusable UI components with consistent styling
   - Button, Input, Select, Textarea, Checkbox, Label components with variant support
+  - Badge component with variants: 'default', 'primary', 'secondary', 'tertiary', 'success', 'warning', 'error', 'info'
+  - StatusBadge component for typed status values ('active' | 'inactive' | 'suspended')
   - Card, Alert, Table components with consistent styling
   - FormSection, FieldError, SelectCountry components for complex forms
   - A11y-compliant with proper ARIA attributes
@@ -688,6 +704,9 @@ Implemented functional status toggle in tenant editing:
 - **Select.tsx**: Standardized select component with options array support
 - **Textarea.tsx**: Consistent textarea with Input styling patterns
 - **Checkbox.tsx**: Updated to use var(--brand-primary) instead of hardcoded colors
+- **Badge.tsx**: Comprehensive badge component with brand-consistent variants
+  - Tertiary and Success variants use `--brand-tertiary` text with `--brand-tertiary-bg` background
+  - Montserrat font applied to brand-specific variants for consistency
 - **Component Standardization**: All new forms use common/ui components exclusively
 
 ### Form Architecture

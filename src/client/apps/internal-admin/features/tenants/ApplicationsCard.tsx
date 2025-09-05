@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardContent, Button } from '@client/common/ui'
 import { ApplicationsService, Application } from '../../services/applications'
 import { publishFeedback } from '@client/common/feedback/store'
@@ -19,6 +20,7 @@ interface ApplicationsCardProps {
 export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) => {
   const [tenantApps, setTenantApps] = useState<TenantApplication[]>([])
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
   
   useEffect(() => {
     loadTenantApplications()
@@ -67,7 +69,7 @@ export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Active</span>
+        return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full" style={{color: 'var(--brand-tertiary)', backgroundColor: 'var(--brand-tertiary-bg)', fontFamily: 'Montserrat, sans-serif'}}>Active</span>
       case 'inactive':
         return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inactive</span>
       default:
@@ -79,7 +81,14 @@ export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) 
     const percentage = (used / limit) * 100
     if (percentage >= 100) return 'text-red-600'
     if (percentage >= 80) return 'text-yellow-600'
-    return 'text-green-600'
+    return 'text-white'
+  }
+  
+  const getSeatUsageStyle = (used: number, limit: number) => {
+    const percentage = (used / limit) * 100
+    if (percentage >= 100) return {}
+    if (percentage >= 80) return {}
+    return { color: 'var(--brand-tertiary)' }
   }
 
   const formatDate = (dateStr: string) => {
@@ -116,7 +125,11 @@ export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) 
               Applications licensed for this tenant with seat usage
             </p>
           </div>
-          <Button variant="secondary" size="sm">
+          <Button 
+            variant="secondary" 
+            size="sm"
+            onClick={() => navigate(`/tenants/${tenantId}/licenses`)}
+          >
             Manage Licenses
           </Button>
         </div>
@@ -179,7 +192,7 @@ export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) 
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm">
-                        <span className={`font-medium ${getSeatUsageColor(tenantApp.seatsUsed, tenantApp.userLimit)}`}>
+                        <span className={`font-medium ${getSeatUsageColor(tenantApp.seatsUsed, tenantApp.userLimit)}`} style={getSeatUsageStyle(tenantApp.seatsUsed, tenantApp.userLimit)}>
                           {tenantApp.seatsUsed}/{tenantApp.userLimit}
                         </span>
                         <span className="text-gray-500 ml-1">seats</span>

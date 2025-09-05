@@ -531,7 +531,7 @@ export const UsersList: React.FC = () => {
                             Slug: {userApp.applicationSlug}
                           </p>
                           {userApp.hasAccess && userApp.grantedAt && (
-                            <p className="text-xs text-green-600">
+                            <p className="text-xs" style={{color: 'var(--brand-tertiary)'}}>
                               Granted on {new Date(userApp.grantedAt).toLocaleDateString()}
                             </p>
                           )}

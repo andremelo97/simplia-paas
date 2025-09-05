@@ -112,6 +112,7 @@ class HttpClient {
     return ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())
   }
 
+
   private createAppErrorFromResponse(response: Response, endpoint: string, errorData?: any): AppError {
     const status = response.status
     const backendCode = errorData?.error?.code || errorData?.code
@@ -151,19 +152,17 @@ class HttpClient {
   }
 
   async get(endpoint: string, headers?: Record<string, string>) {
+    // GET requests handle tenant headers explicitly per endpoint
+    // Platform-scoped endpoints (applications) don't need tenant headers
+    // Tenant-scoped endpoints (entitlements, users) pass headers explicitly
     return this.request(endpoint, { method: 'GET', headers })
   }
 
   async post(endpoint: string, data?: any, headers?: Record<string, string>) {
-    // Don't send tenant header for platform auth endpoints
-    const finalHeaders = endpoint.includes('/platform-auth/') 
-      ? (headers || {})
-      : { 'x-tenant-id': 'default', ...(headers || {}) }
-    
     return this.request(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
-      headers: finalHeaders,
+      headers,
     })
   }
 

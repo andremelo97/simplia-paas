@@ -8,6 +8,9 @@
   --brand-primary-hover: #9c1e9c;
   --brand-secondary: #E91E63;
   --brand-secondary-hover: #c2185b;
+  --brand-tertiary: #5ED6CE;
+  --brand-tertiary-hover: #4BB3AC;
+  --brand-tertiary-bg: rgba(94, 214, 206, 0.1);
 }
 
 *,

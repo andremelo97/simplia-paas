@@ -29,7 +29,9 @@ router.use(requireAuth);
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: query
  *         name: includeExpired
  *         schema:
@@ -104,7 +106,7 @@ router.use(requireAuth);
  */
 router.get('/', requireManagerOrAdmin, async (req, res) => {
   try {
-    const { tenantId } = req.tenant;
+    const tenantId = req.tenant.id; // Use numeric ID
     const { includeExpired = false, status, limit = 50, offset = 0 } = req.query;
     
     const options = {
@@ -160,7 +162,9 @@ router.get('/', requireManagerOrAdmin, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: path
  *         name: applicationSlug
  *         required: true
@@ -211,7 +215,7 @@ router.get('/', requireManagerOrAdmin, async (req, res) => {
  */
 router.get('/:applicationSlug', requireManagerOrAdmin, async (req, res) => {
   try {
-    const { tenantId } = req.tenant;
+    const tenantId = req.tenant.id; // Use numeric ID
     const { applicationSlug } = req.params;
     
     const licenseInfo = await TenantApplication.getLicenseInfo(tenantId, applicationSlug);
@@ -264,7 +268,7 @@ router.get('/:applicationSlug', requireManagerOrAdmin, async (req, res) => {
  */
 router.get('/users', requireAuth, requireManagerOrAdmin, async (req, res) => {
   try {
-    const { tenantId } = req.user;
+    const tenantId = req.tenant.id; // Use numeric ID
     const { applicationSlug, userId, roleInApp, limit = 50, offset = 0 } = req.query;
     
     let userAccess;
@@ -335,7 +339,8 @@ router.get('/users', requireAuth, requireManagerOrAdmin, async (req, res) => {
 router.post('/users/:userId/grant', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
-    const { tenantId, userId: grantedBy } = req.user;
+    const tenantId = req.tenant.id; // Use numeric ID
+    const { userId: grantedBy } = req.user;
     const { applicationSlug, roleInApp = 'user', expiresAt } = req.body;
     
     if (!applicationSlug) {
@@ -394,7 +399,8 @@ router.post('/users/:userId/grant', requireAuth, requireAdmin, async (req, res) 
 router.put('/users/:userId/revoke', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
-    const { tenantId, userId: revokedBy } = req.user;
+    const tenantId = req.tenant.id; // Use numeric ID
+    const { userId: revokedBy } = req.user;
     const { applicationSlug } = req.body;
     
     if (!applicationSlug) {
@@ -450,7 +456,8 @@ router.put('/users/:userId/revoke', requireAuth, requireAdmin, async (req, res) 
 router.get('/users/:userId/applications', requireAuth, async (req, res) => {
   try {
     const { userId } = req.params;
-    const { tenantId, userId: currentUserId, role } = req.user;
+    const tenantId = req.tenant.id; // Use numeric ID
+    const { userId: currentUserId, role } = req.user;
     
     // Check if user can access this information
     if (parseInt(userId) !== currentUserId && !['admin', 'manager'].includes(role)) {
@@ -496,7 +503,9 @@ router.get('/users/:userId/applications', requireAuth, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: path
  *         name: applicationSlug
  *         required: true
@@ -563,7 +572,7 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
   try {
     const { applicationSlug } = req.params;
     const { userLimit, expiryDate, status = 'active' } = req.body;
-    const { tenantId } = req.tenant;
+    const tenantId = req.tenant.id; // Use numeric ID
     
     // Get application
     const application = await Application.findBySlug(applicationSlug);
@@ -637,7 +646,9 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: path
  *         name: applicationSlug
  *         required: true
@@ -714,7 +725,7 @@ router.put('/:applicationSlug/adjust', requireAdmin, async (req, res) => {
   try {
     const { applicationSlug } = req.params;
     const { userLimit, expiryDate, status } = req.body;
-    const { tenantId } = req.tenant;
+    const tenantId = req.tenant.id; // Use numeric ID
     
     // Get application
     const application = await Application.findBySlug(applicationSlug);
@@ -779,7 +790,7 @@ router.put('/:applicationSlug/adjust', requireAdmin, async (req, res) => {
  */
 router.get('/logs', async (req, res) => {
   try {
-    const { tenantId } = req.user;
+    const tenantId = req.tenant.id; // Use numeric ID
     const { userId, applicationSlug, days = 7, limit = 100, offset = 0 } = req.query;
     
     let applicationId = null;

@@ -47,7 +47,7 @@ function createUser({ tenantId, email, passwordHash, name, role, status = USER_S
 function createJwtPayload(user, tenant, allowedApps = [], userType = null) {
   return {
     userId: user.id,
-    tenantId: user.tenantId || tenant.tenantId,
+    tenantId: user.tenantIdFk || tenant.id || tenant.tenantId, // Prefer numeric tenant.id
     email: user.email,
     name: user.name,
     role: user.role,

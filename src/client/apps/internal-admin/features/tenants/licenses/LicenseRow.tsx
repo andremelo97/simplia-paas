@@ -176,7 +176,7 @@ export const LicenseRow: React.FC<LicenseRowProps> = ({ license, onLicenseUpdate
               id="adjust-status"
               value={adjustFormData.status}
               onChange={(e) => setAdjustFormData(prev => ({ ...prev, status: e.target.value as LicenseStatus }))}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[var(--brand-primary)] focus:ring-[var(--brand-primary)] sm:text-sm"
               disabled={isSubmitting}
             >
               <option value="active">Active</option>

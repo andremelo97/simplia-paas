@@ -75,6 +75,25 @@ describe('Pricing System Integration Tests', () => {
     );
   });
 
+  beforeEach(async () => {
+    // Reset seat counts and clean any residual user access data
+    await global.testDb.query(
+      'DELETE FROM user_application_access WHERE user_id IN ($1, $2)',
+      [user.id, adminUser.id]
+    );
+    
+    // Reset seat counts to expected values
+    await global.testDb.query(
+      'UPDATE tenant_applications SET seats_used = 0 WHERE tenant_id_fk = $1 AND application_id = $2',
+      [tenant.id, tqApplication.id]
+    );
+    
+    await global.testDb.query(
+      'UPDATE tenant_applications SET seats_used = 2 WHERE tenant_id_fk = $1 AND application_id = $2',
+      [tenant.id, pmApplication.id]
+    );
+  });
+
   afterAll(async () => {
     // Clean up test data
     await global.testDb.query('DELETE FROM application_pricing WHERE application_id IN (SELECT id FROM applications WHERE slug IN (\'tq\', \'pm\'))');
@@ -299,11 +318,14 @@ describe('Pricing System Integration Tests', () => {
     });
 
     test('should reject grant when no pricing configured', async () => {
-      // Create a new application without pricing
+      // Create a new application without pricing using unique timestamp
+      const timestamp = Date.now();
+      const uniqueSlug = `test_app_${timestamp}`;
       const newAppResult = await global.testDb.query(
         `INSERT INTO applications (name, slug, description, status, active)
-         VALUES ('Test App', 'test_app', 'Test application without pricing', 'active', true)
-         RETURNING *`
+         VALUES ($1, $2, 'Test application without pricing', 'active', true)
+         RETURNING *`,
+        [`Test App ${timestamp}`, uniqueSlug]
       );
       const newApp = newAppResult.rows[0];
 
@@ -319,7 +341,7 @@ describe('Pricing System Integration Tests', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .set('x-tenant-id', tenant.subdomain)
         .send({
-          applicationSlug: 'test_app'
+          applicationSlug: uniqueSlug
         });
 
       expect(response.status).toBe(422);
@@ -331,13 +353,25 @@ describe('Pricing System Integration Tests', () => {
     });
 
     test('should revoke access and decrement seat count', async () => {
-      // First verify TQ access exists
+      // First grant access to TQ for the user
+      const grantResponse = await request(app)
+        .post(`${INTERNAL_API}/users/${user.id}/apps/grant`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .set('x-tenant-id', tenant.subdomain)
+        .send({
+          applicationSlug: 'tq'
+        });
+      expect(grantResponse.status).toBe(201);
+
+      // Get seat count after grant
       const beforeResult = await global.testDb.query(
         'SELECT seats_used FROM tenant_applications WHERE tenant_id_fk = $1 AND application_id = $2',
         [tenant.id, tqApplication.id]
       );
       const seatsBefore = beforeResult.rows[0].seats_used;
+      expect(seatsBefore).toBe(1); // Should be 1 after the grant
 
+      // Now revoke the access
       const response = await request(app)
         .delete(`${INTERNAL_API}/users/${user.id}/apps/revoke`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -355,7 +389,7 @@ describe('Pricing System Integration Tests', () => {
         [tenant.id, tqApplication.id]
       );
       const seatsAfter = afterResult.rows[0].seats_used;
-      expect(seatsAfter).toBe(seatsBefore - 1);
+      expect(seatsAfter).toBe(0); // Should be 0 after revoking the single access
 
       // Verify access is revoked in database
       const accessResult = await global.testDb.query(

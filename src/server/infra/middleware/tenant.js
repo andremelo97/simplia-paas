@@ -22,31 +22,76 @@ class TenantMiddleware {
       enableSubdomainResolution: options.enableSubdomainResolution ?? true,
       enablePathResolution: options.enablePathResolution ?? false,
       validateSchema: options.validateSchema ?? true,
+      // Compatibility flag for slug fallback (default: disabled)
+      compatSlugFallback: options.compatSlugFallback ?? (process.env.COMPAT_TENANT_SLUG_FALLBACK === 'true'),
     };
+  }
+
+  /**
+   * Check if route is tenant-scoped (requires x-tenant-id header)
+   */
+  isTenantScopedRoute(req) {
+    const path = req.path;
+    
+    // Tenant-scoped routes that REQUIRE x-tenant-id header
+    const tenantScopedPaths = [
+      '/internal/api/v1/users',
+      '/internal/api/v1/entitlements',
+      '/internal/api/v1/tenants/:id/users', // tenant-users routes
+    ];
+    
+    // Platform-scoped routes (no tenant header required)
+    const platformScopedPaths = [
+      '/internal/api/v1/applications',
+      '/internal/api/v1/platform-auth',
+      '/internal/api/v1/tenants', // tenant management is platform-scoped
+      '/internal/api/v1/audit',
+      '/health',
+      '/docs',
+    ];
+    
+    // Check platform-scoped first (more specific)
+    for (const platformPath of platformScopedPaths) {
+      if (path.startsWith(platformPath)) {
+        return false;
+      }
+    }
+    
+    // Check tenant-scoped patterns
+    for (const tenantPath of tenantScopedPaths) {
+      if (path.startsWith(tenantPath.replace('/:id', '')) || path.includes('/users') || path.includes('/entitlements')) {
+        return true;
+      }
+    }
+    
+    // Default: API routes are tenant-scoped unless explicitly platform-scoped
+    return path.startsWith('/internal/api/') || path.startsWith('/api/');
   }
 
   /**
    * Extract tenant ID from request using various resolution methods
    */
   extractTenantId(req) {
+    const isTenantScoped = this.isTenantScopedRoute(req);
+    
     // Method 1: Header-based resolution (priority)
     const headerTenantId = req.get(this.options.headerName);
     if (headerTenantId) {
-      return headerTenantId;
+      return { identifier: headerTenantId, source: 'header' };
     }
 
-    // For API routes, require explicit tenant header
-    if (req.path.startsWith('/internal/api/') || req.path.startsWith('/api/')) {
-      throw new InvalidTenantError('Tenant ID header required for API access');
+    // For tenant-scoped routes, header is MANDATORY
+    if (isTenantScoped) {
+      throw new InvalidTenantError(`${this.options.headerName} header is required for tenant-scoped API access`);
     }
 
-    // Method 2: Subdomain-based resolution
-    if (this.options.enableSubdomainResolution) {
+    // Method 2: Subdomain-based resolution (only for non-API routes or with compat flag)
+    if (this.options.enableSubdomainResolution && (this.options.compatSlugFallback || !req.path.startsWith('/internal/api/'))) {
       const host = req.get('host');
       if (host) {
         const subdomain = this.extractSubdomain(host);
         if (subdomain) {
-          return subdomain;
+          return { identifier: subdomain, source: 'subdomain' };
         }
       }
     }
@@ -55,12 +100,16 @@ class TenantMiddleware {
     if (this.options.enablePathResolution) {
       const pathTenantId = this.extractTenantFromPath(req.path);
       if (pathTenantId) {
-        return pathTenantId;
+        return { identifier: pathTenantId, source: 'path' };
       }
     }
 
-    // Fallback to default tenant
-    return this.options.defaultTenant;
+    // Fallback to default tenant (only if compat flag enabled)
+    if (this.options.compatSlugFallback) {
+      return { identifier: this.options.defaultTenant, source: 'fallback' };
+    }
+
+    throw new InvalidTenantError('No tenant identifier found and compatibility fallback is disabled');
   }
 
   /**
@@ -99,19 +148,75 @@ class TenantMiddleware {
   }
 
   /**
-   * Validate tenant ID format
+   * Validate tenant identifier format (accepts numeric ID or slug)
    */
-  validateTenantId(tenantId) {
-    // Basic validation - alphanumeric, underscore, hyphen
-    const validTenantRegex = /^[a-zA-Z0-9_-]+$/;
-    if (!validTenantRegex.test(tenantId)) {
-      throw new InvalidTenantError(`Invalid tenant ID format: ${tenantId}`);
+  validateTenantIdentifier(identifier) {
+    if (!identifier) {
+      throw new InvalidTenantError('Tenant identifier is required');
     }
 
-    // Length validation
-    if (tenantId.length < 2 || tenantId.length > 50) {
-      throw new InvalidTenantError(`Tenant ID length must be between 2-50 characters: ${tenantId}`);
+    // Allow numeric IDs (preferred)
+    if (/^\d+$/.test(identifier)) {
+      const numericId = parseInt(identifier, 10);
+      if (numericId <= 0) {
+        throw new InvalidTenantError(`Invalid numeric tenant ID: ${identifier}`);
+      }
+      return;
     }
+
+    // Allow string slugs (deprecated but supported for compatibility)
+    const validSlugRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!validSlugRegex.test(identifier)) {
+      throw new InvalidTenantError(`Invalid tenant identifier format: ${identifier}`);
+    }
+
+    // Length validation for slugs only
+    if (identifier.length < 2 || identifier.length > 50) {
+      throw new InvalidTenantError(`Tenant slug length must be between 2-50 characters: ${identifier}`);
+    }
+  }
+
+  /**
+   * Resolve tenant from database using dual resolution (numeric ID or slug)
+   */
+  async resolveTenant(identifier, source, userAgent = 'unknown') {
+    const inputFormat = /^\d+$/.test(identifier) ? 'numeric' : 'slug';
+    
+    // Check if identifier is numeric (preferred)
+    if (inputFormat === 'numeric') {
+      const numericId = parseInt(identifier, 10);
+      const query = 'SELECT * FROM tenants WHERE id = $1 AND active = true';
+      const result = await database.query(query, [numericId]);
+      
+      if (result.rows.length === 0) {
+        throw new TenantNotFoundError(`Tenant not found by ID: ${numericId}`);
+      }
+      
+      return { tenant: result.rows[0], inputFormat, source };
+    }
+    
+    // String identifier (slug/subdomain)
+    // Only allow if compatibility flag is enabled
+    if (!this.options.compatSlugFallback) {
+      throw new InvalidTenantError(`Slug-based tenant resolution is disabled. Use numeric tenant ID instead of '${identifier}'`);
+    }
+    
+    // Emit controlled deprecation warning (filter out curl requests)
+    const isCurl = userAgent.toLowerCase().includes('curl/');
+    if (source === 'header' && !isCurl) {
+      console.warn(`[DEPRECATION] x-tenant-id should be numeric. Received slug: ${identifier} (UA: ${userAgent.substring(0, 50)})`);
+    } else if (isCurl) {
+      console.info(`[COMPAT] Curl request using slug: ${identifier} - consider updating to numeric ID`);
+    }
+    
+    const query = 'SELECT * FROM tenants WHERE subdomain = $1 AND active = true';
+    const result = await database.query(query, [identifier]);
+    
+    if (result.rows.length === 0) {
+      throw new TenantNotFoundError(`Tenant not found by slug: ${identifier}`);
+    }
+    
+    return { tenant: result.rows[0], inputFormat, source };
   }
 
   /**
@@ -139,36 +244,35 @@ class TenantMiddleware {
    */
   middleware = async (req, res, next) => {
     try {
-      // Extract tenant ID from request
-      const tenantId = this.extractTenantId(req);
+      // Extract tenant identifier from request
+      const { identifier: rawIdentifier, source } = this.extractTenantId(req);
+      const userAgent = req.get('user-agent') || 'unknown';
       
-      // Validate tenant ID format
-      this.validateTenantId(tenantId);
+      // Validate identifier format (accepts both numeric and slug)
+      this.validateTenantIdentifier(rawIdentifier);
       
-      // Convert to schema name
-      const schema = this.tenantIdToSchema(tenantId);
+      // Resolve tenant using dual resolution (numeric ID or slug)
+      const { tenant, inputFormat } = await this.resolveTenant(rawIdentifier, source, userAgent);
+      
+      // Always use tenant's subdomain for schema (consistent)
+      const schema = this.tenantIdToSchema(tenant.subdomain);
       
       // Validate schema exists
       await this.validateSchema(schema);
       
-      // Get tenant record from database to get the integer ID
-      const tenantQuery = `SELECT * FROM tenants WHERE subdomain = $1 AND active = true`;
-      const tenantResult = await database.query(tenantQuery, [tenantId]);
-      
-      if (tenantResult.rows.length === 0) {
-        throw new TenantNotFoundError(`Tenant not found in database: ${tenantId}`);
-      }
-      
-      const tenant = tenantResult.rows[0];
-      
-      // Create tenant context with both string subdomain and integer ID
+      // Create normalized tenant context - ID ALWAYS numeric
       const tenantContext = {
-        id: tenant.id,           // INTEGER for database foreign keys
-        tenantId,                // STRING subdomain for backwards compatibility  
+        id: tenant.id,           // ALWAYS INTEGER (source of truth)
+        slug: tenant.subdomain,  // Friendly identifier
         schema,
         name: tenant.name,
-        subdomain: tenant.subdomain,
-        status: tenant.status
+        subdomain: tenant.subdomain, // Backward compatibility
+        status: tenant.status,
+        // Legacy field for backward compatibility
+        tenantId: tenant.subdomain,
+        // Resolution metadata
+        source,
+        inputFormat
       };
       
       // Attach to request
@@ -177,13 +281,20 @@ class TenantMiddleware {
       // Initialize user context placeholder
       req.user = null;
       
-      // Log tenant resolution
-      console.log('Tenant resolved:', {
-        tenantId,
+      // Enhanced telemetry logging
+      const isCurl = userAgent.toLowerCase().includes('curl/');
+      const logLevel = (inputFormat === 'slug' && !isCurl) ? 'warn' : 'log';
+      
+      console[logLevel]('Tenant resolved:', {
+        id: tenant.id,
+        slug: tenant.subdomain,
         schema,
-        method: req.get(this.options.headerName) ? 'header' : 'subdomain',
-        userAgent: req.get('user-agent'),
+        inputFormat,
+        method: source,
+        userAgent: isCurl ? 'curl' : userAgent.substring(0, 50),
         ip: req.ip,
+        path: req.path,
+        compatMode: this.options.compatSlugFallback
       });
       
       next();
@@ -191,26 +302,34 @@ class TenantMiddleware {
       console.error('Tenant resolution error:', error);
       
       if (error instanceof TenantNotFoundError || error instanceof InvalidTenantError) {
-        // More specific error based on the message
-        if (error.message.includes('header required')) {
-          return res.status(400).json({
-            error: {
-              message: error.message
-            }
-          });
+        // Enhanced error responses with helpful guidance
+        const errorResponse = {
+          error: 'TENANT_RESOLUTION_FAILED',
+          message: error.message,
+          code: error instanceof TenantNotFoundError ? 'TENANT_NOT_FOUND' : 'INVALID_TENANT_ID'
+        };
+        
+        // Add helpful guidance for common errors
+        if (error.message.includes('header is required')) {
+          errorResponse.guidance = `Include numeric tenant ID in ${this.options.headerName} header (e.g., '${this.options.headerName}: 1')`;
+          errorResponse.examples = {
+            curl: `curl -H '${this.options.headerName}: 1' ${req.protocol}://${req.get('host')}${req.path}`,
+            javascript: `fetch(url, { headers: { '${this.options.headerName}': '1' } })`
+          };
         }
         
-        return res.status(400).json({
-          error: {
-            message: error.message
-          }
-        });
+        if (error.message.includes('Slug-based tenant resolution is disabled')) {
+          errorResponse.guidance = 'Use numeric tenant ID instead of slug. Enable COMPAT_TENANT_SLUG_FALLBACK=true for temporary compatibility.';
+        }
+        
+        return res.status(error.message.includes('header is required') ? 422 : 400).json(errorResponse);
       }
       
       // Generic server error
       return res.status(500).json({
-        error: 'Internal server error',
+        error: 'TENANT_RESOLUTION_ERROR',
         message: 'Failed to resolve tenant',
+        code: 'INTERNAL_ERROR'
       });
     }
   };

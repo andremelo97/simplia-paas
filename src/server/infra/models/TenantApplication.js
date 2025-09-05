@@ -89,6 +89,33 @@ class TenantApplication {
   }
 
   /**
+   * Count tenant applications by tenant ID
+   */
+  static async count(tenantId, options = {}) {
+    const { status, includeExpired = false } = options;
+    
+    let query = `
+      SELECT COUNT(*) as count
+      FROM public.tenant_applications ta
+      INNER JOIN public.applications a ON ta.application_id = a.id
+      WHERE ta.tenant_id_fk = $1 AND ta.active = true
+    `;
+    const params = [tenantId];
+    
+    if (status) {
+      query += ` AND ta.status = $${params.length + 1}`;
+      params.push(status);
+    }
+    
+    if (!includeExpired) {
+      query += ` AND (ta.expires_at IS NULL OR ta.expires_at > NOW())`;
+    }
+    
+    const result = await database.query(query, params);
+    return parseInt(result.rows[0].count);
+  }
+
+  /**
    * Find specific tenant application by tenant and application
    */
   static async findByTenantAndApplication(tenantId, applicationId) {

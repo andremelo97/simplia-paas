@@ -18,7 +18,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   const getStatusStyles = (status: Status) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-800'
+        return ''
       case 'inactive':
         return 'bg-red-100 text-red-800'
       case 'suspended':
@@ -49,6 +49,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       role="status"
       aria-label={ariaLabel || `Status: ${getStatusLabel(status)}`}
       aria-live="polite"
+      style={status === 'active' ? { 
+        color: 'var(--brand-tertiary)',
+        backgroundColor: 'var(--brand-tertiary-bg)',
+        fontFamily: 'Montserrat, sans-serif' 
+      } : undefined}
     >
       {getStatusLabel(status)}
     </span>

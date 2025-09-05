@@ -40,7 +40,9 @@ router.use(userRateLimit);
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: query
  *         name: page
  *         schema:
@@ -616,7 +618,9 @@ router.put('/me/profile', async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: path
  *         name: userId
  *         required: true
@@ -657,7 +661,7 @@ router.put('/me/profile', async (req, res) => {
 router.get('/:userId/apps', requireManagerOrAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
-    const { tenantId } = req.tenant;
+    const tenantId = req.tenant.id; // Use numeric ID
     
     // Verify user exists in tenant
     const user = await userService.getUserById(req.tenant.id, req.user, userId);
@@ -730,7 +734,9 @@ router.get('/:userId/apps', requireManagerOrAdmin, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: path
  *         name: userId
  *         required: true
@@ -790,7 +796,7 @@ router.post('/:userId/apps/grant', requireAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     const { applicationSlug, roleInApp = 'user', expiresAt } = req.body;
-    const { tenantId } = req.tenant;
+    const tenantId = req.tenant.id; // Use numeric ID
     const { userId: grantedBy } = req.user;
     
     if (!applicationSlug) {
@@ -931,7 +937,9 @@ router.post('/:userId/apps/grant', requireAdmin, async (req, res) => {
  *         required: true
  *         schema:
  *           type: string
- *         description: Tenant identifier
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier (e.g., "1")
+ *         example: "1"
  *       - in: path
  *         name: userId
  *         required: true
@@ -979,7 +987,7 @@ router.delete('/:userId/apps/revoke', requireAdmin, async (req, res) => {
   try {
     const { userId } = req.params;
     const { applicationSlug } = req.body;
-    const { tenantId } = req.tenant;
+    const tenantId = req.tenant.id; // Use numeric ID
     const { userId: revokedBy } = req.user;
     
     if (!applicationSlug) {

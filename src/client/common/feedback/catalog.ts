@@ -71,6 +71,20 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Contact removed."
   },
 
+  // Pricing operations
+  PRICING_CREATED: {
+    title: "Pricing Created",
+    message: "Pricing created successfully."
+  },
+  PRICING_UPDATED: {
+    title: "Pricing Updated", 
+    message: "Pricing updated successfully."
+  },
+  PRICING_ENDED: {
+    title: "Period Ended",
+    message: "Pricing period ended successfully."
+  },
+
   // Authentication operations
   LOGIN_SUCCESS: {
     title: "Welcome Back",

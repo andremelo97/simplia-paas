@@ -1,4 +1,5 @@
 const database = require('../db/database');
+const { overlaps, normalizeToUTCSeconds, formatDateRange } = require('../utils/datetime');
 
 /**
  * ApplicationPricing Model
@@ -106,6 +107,57 @@ class ApplicationPricing {
   }
 
   /**
+   * Check for overlapping pricing periods
+   * @param {number} applicationId 
+   * @param {number} userTypeId 
+   * @param {Date} validFrom 
+   * @param {Date|null} validTo 
+   * @param {string} billingCycle 
+   * @param {string} currency 
+   * @param {number|null} excludeId - ID to exclude from check (for updates)
+   * @returns {Object|null} Conflict details or null if no overlap
+   */
+  static async checkOverlap(applicationId, userTypeId, validFrom, validTo, billingCycle = 'monthly', currency = 'BRL', excludeId = null) {
+    const validFromNorm = normalizeToUTCSeconds(validFrom);
+    const validToNorm = validTo ? normalizeToUTCSeconds(validTo) : null;
+    
+    // Query for existing pricing that might overlap
+    let query = `
+      SELECT id, valid_from, valid_to, price, active
+      FROM application_pricing 
+      WHERE application_id = $1 
+        AND user_type_id = $2
+        AND billing_cycle = $3
+        AND currency = $4
+        AND active = TRUE
+    `;
+    
+    const params = [applicationId, userTypeId, billingCycle, currency];
+    
+    if (excludeId) {
+      query += ` AND id != $${params.length + 1}`;
+      params.push(excludeId);
+    }
+    
+    const result = await database.query(query, params);
+    
+    // Check each existing period for overlap using our utility function
+    for (const existing of result.rows) {
+      if (overlaps(validFromNorm, validToNorm, existing.valid_from, existing.valid_to)) {
+        return {
+          conflict: true,
+          existingRange: formatDateRange(existing.valid_from, existing.valid_to),
+          newRange: formatDateRange(validFromNorm, validToNorm),
+          conflictingId: existing.id,
+          existingPrice: existing.price
+        };
+      }
+    }
+    
+    return null; // No overlap found
+  }
+
+  /**
    * Create new pricing entry
    * @param {Object} data - Pricing data
    * @returns {ApplicationPricing}
@@ -125,6 +177,34 @@ class ApplicationPricing {
     }
 
     const validFrom = data.validFrom || new Date();
+    const billingCycle = data.billingCycle || 'monthly';
+    const currency = data.currency || 'BRL';
+
+    // Check for overlapping periods before insertion
+    const overlap = await this.checkOverlap(
+      data.applicationId,
+      data.userTypeId, 
+      validFrom,
+      data.validTo || null,
+      billingCycle,
+      currency
+    );
+    
+    if (overlap) {
+      const error = new Error('Pricing period overlaps with existing pricing');
+      error.code = 'PRICING_OVERLAP';
+      error.status = 422;
+      error.details = {
+        conflict: overlap,
+        businessKey: {
+          applicationId: data.applicationId,
+          userTypeId: data.userTypeId,
+          billingCycle,
+          currency
+        }
+      };
+      throw error;
+    }
 
     const query = `
       INSERT INTO application_pricing 
@@ -137,8 +217,8 @@ class ApplicationPricing {
       data.applicationId,
       data.userTypeId,
       data.price,
-      data.currency || 'BRL',
-      data.billingCycle || 'monthly',
+      currency,
+      billingCycle,
       validFrom,
       data.validTo || null,
       data.active !== undefined ? data.active : true
@@ -158,6 +238,45 @@ class ApplicationPricing {
     const updates = [];
     const values = [];
     let paramIndex = 1;
+
+    // Get current record for overlap checking
+    const currentQuery = `SELECT * FROM application_pricing WHERE id = $1`;
+    const currentResult = await database.query(currentQuery, [id]);
+    
+    if (currentResult.rows.length === 0) {
+      throw new Error('Pricing entry not found');
+    }
+    
+    const current = currentResult.rows[0];
+    
+    // If updating validTo, check for overlaps with the new period
+    if (data.validTo !== undefined) {
+      const overlap = await this.checkOverlap(
+        current.application_id,
+        current.user_type_id,
+        current.valid_from,
+        data.validTo,
+        current.billing_cycle,
+        current.currency,
+        id // Exclude current record
+      );
+      
+      if (overlap) {
+        const error = new Error('Updated pricing period overlaps with existing pricing');
+        error.code = 'PRICING_OVERLAP';
+        error.status = 422;
+        error.details = {
+          conflict: overlap,
+          businessKey: {
+            applicationId: current.application_id,
+            userTypeId: current.user_type_id,
+            billingCycle: current.billing_cycle,
+            currency: current.currency
+          }
+        };
+        throw error;
+      }
+    }
 
     // Build dynamic update query
     for (const [key, value] of Object.entries(data)) {

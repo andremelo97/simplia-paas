@@ -172,8 +172,11 @@ simplia-paas/
 │   │   │   │   ├── TenantApplication.js # Licenças por tenant com controle de assentos
 │   │   │   │   ├── UserApplicationAccess.js # Acesso granular usuário-aplicação com snapshots
 │   │   │   │   ├── UserType.js        # Tipos de usuário com hierarquia
-│   │   │   │   ├── ApplicationPricing.js # Pricing matrix App × UserType com versionamento
+│   │   │   │   ├── ApplicationPricing.js # Pricing matrix App × UserType com overlap prevention
 │   │   │   │   └── AccessLog.js       # Auditoria detalhada para compliance
+│   │   │   │
+│   │   │   ├── 📁 utils/
+│   │   │   │   └── datetime.js        # **NOVO**: Utilidades de overlap detection com semântica [start, end)
 │   │   │   │
 │   │   │   ├── 📁 migrations/
 │   │   │   │   ├── 001_create_core_tables.sql # Todas tabelas core + relacionamentos + auditoria
@@ -181,6 +184,7 @@ simplia-paas/
 │   │   │   │   ├── 003_seed_initial_data.sql  # Dados essenciais + tenants padrão
 │   │   │   │   ├── 004_fix_default_tenant.sql # Correções do tenant padrão
 │   │   │   │   ├── 005_fix_admin_password.sql # Correção da senha do admin
+│   │   │   │   ├── 006_pricing_range.sql     # **NOVO**: Range types e exclusion constraints para overlap prevention
 │   │   │   │   └── 📁 _backup/         # Migrações antigas (backup)
 │   │   │   │
 │   │   │   ├── 📁 scripts/
@@ -542,6 +546,7 @@ Requer autenticação + `platform_role: internal_admin`
 GET    /internal/api/v1/applications/:id/pricing
 POST   /internal/api/v1/applications/:id/pricing  
 PUT    /internal/api/v1/applications/:id/pricing/:pricingId
+POST   /internal/api/v1/applications/:id/pricing/:pricingId/end
 ```
 
 **Exemplos:**
@@ -559,7 +564,10 @@ POST /internal/api/v1/applications/1/pricing
   "validFrom": "2025-02-01T00:00:00Z"
 }
 
-# Encerrar preço vigente (definir valid_to)
+# Encerrar preço vigente (rota dedicada)
+POST /internal/api/v1/applications/1/pricing/123/end
+
+# Atualizar preço vigente (uso genérico - evitar para overlap prevention)
 PUT /internal/api/v1/applications/1/pricing/123
 {
   "validTo": "2025-01-31T23:59:59Z"
@@ -978,6 +986,17 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 9. **Production Deployment**: Configurar CI/CD e ambientes
 
 ### ✨ Implementações Recentes (Janeiro 2025)
+
+- **✅ 🚫 Sistema de Overlap Prevention**: Prevenção completa de sobreposição de períodos de pricing
+  - **Database Migration**: PostgreSQL range types com exclusion constraints para prevenção nativa
+  - **Utilities Layer**: `datetime.js` com funções de overlap usando semântica [start, end) - inclusive start, exclusive end
+  - **API Validation**: Validação prévia via `ApplicationPricing.checkOverlap()` antes de INSERT
+  - **Structured 422 Errors**: Retorno de `PRICING_OVERLAP` com detalhes de conflito (existingRange, newRange, ids)
+  - **Frontend Modal Handling**: Modais permanecem abertos em erro 422 com feedback inline vermelho acessível
+  - **Rota Dedicada End**: `POST /applications/:id/pricing/:pricingId/end` para operação semântica clara
+  - **FieldError Component**: Corrigido para aceitar prop `message` - fix que habilitou todo o sistema de validação frontend
+  - **User Experience**: Sistema não faz ajustes automáticos - usuário deve resolver conflitos manualmente
+  - **AppFeedback Integration**: Código `PRICING_ENDED` integrado ao sistema de feedback global
 - **✅ 📋 Página de Licenças por Tenant**: Interface completa de gestão de entitlements
   - **TenantLicensesPage**: Página com tabs Overview | Users | **Licenses** | Addresses | Contacts
   - **LicenseRow**: Component com ações Adjust License, Suspend/Resume, Open Pricing, Open Users

@@ -772,7 +772,7 @@ router.get('/:id/pricing', async (req, res) => {
 
     const pricing = await ApplicationPricing.getByApplication(
       applicationId, 
-      current === 'true'
+      current !== 'false' // Only false if explicitly set to 'false'
     );
 
     res.json({
@@ -918,6 +918,16 @@ router.post('/:id/pricing', async (req, res) => {
   } catch (error) {
     console.error('Error creating application pricing:', error);
 
+    // Handle structured overlap errors (422)
+    if (error.code === 'PRICING_OVERLAP' && error.status === 422) {
+      return res.status(422).json({
+        error: 'Semantic Error',
+        code: error.code,
+        message: error.message,
+        details: error.details
+      });
+    }
+
     if (error.message.includes('required') || 
         error.message.includes('negative') ||
         error.message.includes('monthly or yearly')) {
@@ -1029,6 +1039,16 @@ router.put('/:id/pricing/:pricingId', async (req, res) => {
   } catch (error) {
     console.error('Error updating application pricing:', error);
 
+    // Handle structured overlap errors (422)
+    if (error.code === 'PRICING_OVERLAP' && error.status === 422) {
+      return res.status(422).json({
+        error: 'Semantic Error',
+        code: error.code,
+        message: error.message,
+        details: error.details
+      });
+    }
+
     if (error.message.includes('negative') ||
         error.message.includes('monthly or yearly') ||
         error.message.includes('No valid fields')) {
@@ -1041,6 +1061,121 @@ router.put('/:id/pricing/:pricingId', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to update pricing'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /applications/{id}/pricing/{pricingId}/end:
+ *   post:
+ *     tags: [Applications - Platform]
+ *     summary: End pricing period
+ *     description: End an active pricing period by setting validTo to current timestamp and active to false
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Application ID
+ *       - in: path
+ *         name: pricingId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Pricing entry ID
+ *     responses:
+ *       200:
+ *         description: Pricing period ended successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: 
+ *                       type: string
+ *                       example: PRICING_ENDED
+ *                     message:
+ *                       type: string
+ *                       example: Pricing period ended successfully.
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     pricing:
+ *                       type: object
+ *                       properties:
+ *                         id: { type: integer }
+ *                         applicationId: { type: integer }
+ *                         userTypeId: { type: integer }
+ *                         price: { type: number }
+ *                         currency: { type: string }
+ *                         billingCycle: { type: string }
+ *                         validFrom: { type: string, format: date-time }
+ *                         validTo: { type: string, format: date-time }
+ *                         active: { type: boolean, example: false }
+ *                         createdAt: { type: string, format: date-time }
+ *                         updatedAt: { type: string, format: date-time }
+ *       400:
+ *         description: Invalid request parameters
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Insufficient platform privileges
+ *       404:
+ *         description: Application or pricing entry not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/:id/pricing/:pricingId/end', async (req, res) => {
+  try {
+    const { id, pricingId } = req.params;
+    const applicationId = parseInt(id);
+    const pricingIdInt = parseInt(pricingId);
+
+    // Verify application exists
+    const app = await Application.findById(applicationId);
+    if (!app) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Application not found'
+      });
+    }
+
+    // End the pricing period by setting validTo to now and active to false
+    const now = new Date();
+    const pricing = await ApplicationPricing.update(pricingIdInt, {
+      validTo: now,
+      active: false
+    });
+    
+    if (!pricing) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Pricing entry not found'
+      });
+    }
+
+    res.json({
+      meta: {
+        code: "PRICING_ENDED",
+        message: "Pricing period ended successfully."
+      },
+      data: {
+        pricing: pricing.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Error ending application pricing:', error);
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to end pricing period'
     });
   }
 });

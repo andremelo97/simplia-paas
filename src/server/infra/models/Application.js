@@ -23,6 +23,7 @@ class Application {
     this.pricePerUser = parseFloat(data.price_per_user || 0);
     this.status = data.status;
     this.version = data.version;
+    this.active = data.active;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
@@ -91,7 +92,7 @@ class Application {
    * Create new application
    */
   static async create(appData) {
-    const { name, slug, description, pricePerUser = 0, status = 'active', version = '1.0.0' } = appData;
+    const { name, slug, description, pricePerUser = 0, status = 'active', version = '1.0.0', active = true } = appData;
     
     // Check if application already exists
     try {
@@ -104,8 +105,8 @@ class Application {
     }
     
     const query = `
-      INSERT INTO public.applications (name, slug, description, price_per_user, status, version)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO public.applications (name, slug, description, price_per_user, status, version, active)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
     
@@ -115,7 +116,8 @@ class Application {
       description, 
       pricePerUser, 
       status, 
-      version
+      version,
+      active
     ]);
     
     return new Application(result.rows[0]);
@@ -125,7 +127,7 @@ class Application {
    * Update application
    */
   async update(updates) {
-    const allowedUpdates = ['name', 'description', 'price_per_user', 'status', 'version'];
+    const allowedUpdates = ['name', 'description', 'price_per_user', 'status', 'version', 'active'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -234,6 +236,7 @@ class Application {
       pricePerUser: this.pricePerUser,
       status: this.status,
       version: this.version,
+      active: this.active,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       ...(this.tenantStatus && {

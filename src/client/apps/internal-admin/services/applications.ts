@@ -123,7 +123,7 @@ export const ApplicationsService = {
    * Get pricing matrix for an application
    */
   async getPricing(applicationId: number, current?: boolean): Promise<ApplicationPricing[]> {
-    const params = current ? '?current=true' : '';
+    const params = current === false ? '?current=false' : current === true ? '?current=true' : '';
     console.log('🔍 [ApplicationsService] Making pricing API call:', `/internal/api/v1/applications/${applicationId}/pricing${params}`);
     const response = await api.get<PricingResponse>(
       `/internal/api/v1/applications/${applicationId}/pricing${params}`
@@ -155,11 +155,29 @@ export const ApplicationsService = {
    * Create new pricing entry
    */
   async createPricing(applicationId: number, payload: CreatePricingPayload): Promise<ApplicationPricing> {
+    console.log('🔍 [ApplicationsService] Creating pricing:', { applicationId, payload });
     const response = await api.post<CreatePricingResponse>(
       `/internal/api/v1/applications/${applicationId}/pricing`,
       payload
     );
-    return response.data.data.pricing;
+    console.log('📡 [ApplicationsService] Create pricing API Response:', response);
+    
+    // Defensive check for response structure
+    if (!response || !response.data) {
+      throw new Error('Invalid create pricing API response structure');
+    }
+    
+    // Handle different possible response structures
+    if (response.data.pricing) {
+      // Direct structure: { data: { pricing: {...} } }
+      return response.data.pricing;
+    } else if (response.data.data?.pricing) {
+      // Nested structure: { data: { data: { pricing: {...} } } }
+      return response.data.data.pricing;
+    } else {
+      console.error('❌ [ApplicationsService] Unexpected create pricing response structure:', response);
+      throw new Error('Pricing data not found in create response');
+    }
   },
 
   /**
@@ -170,10 +188,56 @@ export const ApplicationsService = {
     pricingId: string, 
     payload: UpdatePricingPayload
   ): Promise<ApplicationPricing> {
+    console.log('🔍 [ApplicationsService] Updating pricing:', { applicationId, pricingId, payload });
     const response = await api.put<CreatePricingResponse>(
       `/internal/api/v1/applications/${applicationId}/pricing/${pricingId}`,
       payload
     );
-    return response.data.data.pricing;
+    console.log('📡 [ApplicationsService] Update pricing API Response:', response);
+    
+    // Defensive check for response structure
+    if (!response || !response.data) {
+      throw new Error('Invalid update pricing API response structure');
+    }
+    
+    // Handle different possible response structures
+    if (response.data.pricing) {
+      // Direct structure: { data: { pricing: {...} } }
+      return response.data.pricing;
+    } else if (response.data.data?.pricing) {
+      // Nested structure: { data: { data: { pricing: {...} } } }
+      return response.data.data.pricing;
+    } else {
+      console.error('❌ [ApplicationsService] Unexpected update pricing response structure:', response);
+      throw new Error('Pricing data not found in update response');
+    }
+  },
+
+  /**
+   * End pricing period
+   */
+  async endPricing(applicationId: number, pricingId: string): Promise<ApplicationPricing> {
+    console.log('🔍 [ApplicationsService] Ending pricing period:', { applicationId, pricingId });
+    const response = await api.post<CreatePricingResponse>(
+      `/internal/api/v1/applications/${applicationId}/pricing/${pricingId}/end`
+    );
+    console.log('📡 [ApplicationsService] End pricing API Response:', response);
+    
+    // Defensive check for response structure
+    if (!response || !response.data) {
+      throw new Error('Invalid end pricing API response structure');
+    }
+    
+    // Handle different possible response structures
+    if (response.data.pricing) {
+      // Direct structure: { data: { pricing: {...} } }
+      return response.data.pricing;
+    } else if (response.data.data?.pricing) {
+      // Nested structure: { data: { data: { pricing: {...} } } }
+      return response.data.data.pricing;
+    } else {
+      console.error('❌ [ApplicationsService] Unexpected end pricing response structure:', response);
+      throw new Error('Pricing data not found in end response');
+    }
   }
 };

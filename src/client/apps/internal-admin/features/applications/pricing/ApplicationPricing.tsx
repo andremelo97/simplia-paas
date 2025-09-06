@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardContent, Button, Input, Select, Label, FieldError, Modal } from '@client/common/ui';
+import { Card, CardHeader, CardContent, Button, Input, Select, Label, FieldError, Modal, Badge } from '@client/common/ui';
 import { ApplicationsService, ApplicationPricing as PricingType } from '../../../services/applications';
 import { Application } from '../../../services/applications';
 import { publishFeedback } from '@client/common/feedback/store';
@@ -31,12 +31,20 @@ const billingCycleOptions = [
   { value: 'yearly', label: 'Yearly' }
 ];
 
+const statusFilterOptions = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Inactive' }
+];
+
 export function ApplicationPricing() {
   const { applicationId } = useParams<{ applicationId: string }>();
   const navigate = useNavigate();
   
   const [application, setApplication] = useState<Application | null>(null);
   const [pricing, setPricing] = useState<PricingType[]>([]);
+  const [filteredPricing, setFilteredPricing] = useState<PricingType[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -51,10 +59,27 @@ export function ApplicationPricing() {
   });
   
   const [errors, setErrors] = useState<Partial<PricingFormData>>({});
+  const [overlapError, setOverlapError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
   }, [applicationId]);
+
+  useEffect(() => {
+    filterPricing();
+  }, [pricing, statusFilter]);
+
+  const filterPricing = () => {
+    let filtered = [...pricing];
+    
+    if (statusFilter === 'active') {
+      filtered = filtered.filter(item => item.active === true);
+    } else if (statusFilter === 'inactive') {
+      filtered = filtered.filter(item => item.active === false);
+    }
+    
+    setFilteredPricing(filtered);
+  };
 
   const loadData = async () => {
     if (!applicationId) {
@@ -66,8 +91,9 @@ export function ApplicationPricing() {
       setLoading(true);
       const [appData, pricingData] = await Promise.all([
         ApplicationsService.getApplication(Number(applicationId)),
-        ApplicationsService.getPricing(Number(applicationId))
+        ApplicationsService.getPricing(Number(applicationId), false) // false = load all pricing history, not just current
       ]);
+      
       
       setApplication(appData);
       setPricing(pricingData);
@@ -102,27 +128,69 @@ export function ApplicationPricing() {
     const newValidFrom = new Date(formData.validFrom);
     const newValidTo = formData.validTo ? new Date(formData.validTo) : null;
     
+    console.log('🔍 [Validation] Checking overlap for:', {
+      selectedUserType,
+      newValidFrom,
+      newValidTo,
+      existingPricingForUserType: pricing.filter(p => p.userTypeId === selectedUserType).map(p => ({
+        id: p.id,
+        active: p.active,
+        validFrom: p.validFrom,
+        validTo: p.validTo
+      }))
+    });
+    
     const hasOverlap = pricing.some(p => {
       if (p.userTypeId !== selectedUserType) return false;
+      if (!p.active) {
+        console.log('⏭️ [Validation] Skipping inactive pricing:', { id: p.id, active: p.active });
+        return false; // Skip inactive pricing entries
+      }
       
       const existingFrom = new Date(p.validFrom);
       const existingTo = p.validTo ? new Date(p.validTo) : null;
       
-      // Check if periods overlap
+      console.log('🔍 [Validation] Checking overlap with active pricing:', {
+        id: p.id,
+        existingFrom,
+        existingTo,
+        newValidFrom,
+        newValidTo
+      });
+      
+      let overlaps = false;
+      
+      // Check if periods overlap using proper interval logic
       if (newValidTo && existingTo) {
-        return newValidFrom < existingTo && newValidTo > existingFrom;
+        // Both have end dates: overlap if new starts before existing ends AND new ends after existing starts
+        overlaps = newValidFrom < existingTo && newValidTo > existingFrom;
+        console.log('📅 [Validation] Both have end dates:', { overlaps });
       } else if (newValidTo && !existingTo) {
-        return newValidFrom < existingFrom || newValidTo > existingFrom;
+        // New has end, existing is open: overlap if new ends after existing starts
+        overlaps = newValidTo > existingFrom;
+        console.log('📅 [Validation] New has end, existing is open:', { overlaps });
       } else if (!newValidTo && existingTo) {
-        return newValidFrom < existingTo;
+        // New is open, existing has end: overlap if new starts before existing ends
+        overlaps = newValidFrom < existingTo;
+        console.log('📅 [Validation] New is open, existing has end:', { overlaps });
       } else {
-        return true; // Both open-ended, always overlap
+        // Both are open-ended: always overlap
+        overlaps = true;
+        console.log('📅 [Validation] Both are open-ended:', { overlaps });
       }
+      
+      return overlaps;
     });
     
     if (hasOverlap) {
       newErrors.validFrom = 'Price period overlaps with existing pricing for this user type';
+      console.log('⚠️ [Validation] Overlap detected - adding error to newErrors:', newErrors);
     }
+    
+    console.log('📋 [Validation] Final validation result:', { 
+      hasErrors: Object.keys(newErrors).length > 0, 
+      errors: newErrors 
+    });
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -130,10 +198,18 @@ export function ApplicationPricing() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔧 [ApplicationPricing] Form submitted with data:', formData);
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      console.log('❌ [ApplicationPricing] Form validation failed');
+      return;
+    }
+    
+    // Clear any previous overlap errors
+    setOverlapError(null);
     
     try {
+      console.log('⚡ [ApplicationPricing] Starting pricing creation...');
       setSubmitting(true);
       
       await ApplicationsService.createPricing(Number(applicationId), {
@@ -155,39 +231,45 @@ export function ApplicationPricing() {
         validTo: ''
       });
       setErrors({});
+      setOverlapError(null);
       
       // Reload pricing data
       await loadData();
       
-      publishFeedback({
-        kind: 'success',
-        message: 'Pricing created successfully'
-      });
+      // Note: success feedback will be handled automatically by HTTP interceptor
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create pricing:', error);
+      
+      // Handle 422 overlap errors - keep modal open with inline feedback
+      if (error.code === 'PRICING_OVERLAP' && error.httpStatus === 422 && error.details?.conflict) {
+        const conflict = error.details.conflict;
+        setOverlapError(
+          `Pricing period overlaps with existing period ${conflict.existingRange}. ` +
+          `Please adjust your dates to avoid the conflict.`
+        );
+        // Don't close modal, don't show global feedback
+        return;
+      }
+      
+      // For other errors, show global feedback and close modal
       publishFeedback({
         kind: 'error',
-        message: 'Failed to create pricing entry'
+        message: error.message || 'Failed to create pricing entry'
       });
+      setIsModalOpen(false);
     } finally {
+      console.log('🏁 [ApplicationPricing] Pricing creation finished, setting submitting to false');
       setSubmitting(false);
     }
   };
 
   const handleEndPricing = async (pricingId: string) => {
     try {
-      const now = new Date().toISOString();
-      await ApplicationsService.updatePricing(Number(applicationId), pricingId, {
-        validTo: now
-      });
-      
+      await ApplicationsService.endPricing(Number(applicationId), pricingId);
       await loadData();
       
-      publishFeedback({
-        kind: 'success',
-        message: 'Pricing period ended successfully'
-      });
+      // Note: success feedback will be handled automatically by HTTP interceptor
       
     } catch (error) {
       console.error('Failed to end pricing:', error);
@@ -211,6 +293,14 @@ export function ApplicationPricing() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const getStatusBadge = (active: boolean) => {
+    if (active) {
+      return <Badge variant="tertiary">Active</Badge>;
+    } else {
+      return <Badge variant="default">Inactive</Badge>;
+    }
   };
 
   if (loading) {
@@ -237,13 +327,23 @@ export function ApplicationPricing() {
       <Card>
         <CardHeader className="p-6 pb-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Current Pricing</h2>
-            <Button 
-              variant="default"
-              onClick={() => setIsModalOpen(true)}
-            >
-              Schedule New Price
-            </Button>
+            <h2 className="text-lg font-semibold text-gray-900">Pricing Matrix</h2>
+            <div className="flex items-center space-x-4">
+              {/* Status Filter */}
+              <div className="w-40">
+                <Select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  options={statusFilterOptions}
+                />
+              </div>
+              <Button 
+                variant="default"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Schedule New Price
+              </Button>
+            </div>
           </div>
         </CardHeader>
         
@@ -270,20 +370,26 @@ export function ApplicationPricing() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Valid To
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
                   <th className="relative px-6 py-3">
                     <span className="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {pricing.length === 0 ? (
+                {filteredPricing.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                      No pricing configured. Click "Schedule New Price" to get started.
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
+                      {pricing.length === 0 
+                        ? 'No pricing configured. Click "Schedule New Price" to get started.'
+                        : `No pricing found matching your filters.`
+                      }
                     </td>
                   </tr>
                 ) : (
-                  pricing.map((item) => (
+                  filteredPricing.map((item) => (
                     <tr key={item.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-900">
@@ -299,8 +405,11 @@ export function ApplicationPricing() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {item.validTo ? formatDate(item.validTo) : 'Open-ended'}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(item.active)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {!item.validTo && (
+                        {!item.validTo && item.active && (
                           <Button
                             onClick={() => handleEndPricing(item.id)}
                             variant="secondary"
@@ -321,12 +430,23 @@ export function ApplicationPricing() {
 
       <Modal 
         open={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setOverlapError(null);
+          setErrors({});
+        }}
         title="Schedule New Price"
         description="Create a new pricing entry for this application"
         size="lg"
       >
         <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
+          {overlapError && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-4" role="alert" aria-live="assertive">
+              <div className="text-sm text-red-800">
+                <strong>Period Overlap:</strong> {overlapError}
+              </div>
+            </div>
+          )}
             <div>
               <Label htmlFor="userTypeId">User Type</Label>
               <Select

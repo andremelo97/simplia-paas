@@ -2,14 +2,17 @@ import React from 'react';
 
 interface FieldErrorProps {
   error?: string;
+  message?: string;
   className?: string;
 }
 
 export const FieldError: React.FC<FieldErrorProps> = ({ 
   error, 
+  message,
   className = '' 
 }) => {
-  if (!error) return null;
+  const displayMessage = error || message;
+  if (!displayMessage) return null;
 
   return (
     <p 
@@ -17,7 +20,7 @@ export const FieldError: React.FC<FieldErrorProps> = ({
       role="alert"
       aria-live="assertive"
     >
-      {error}
+      {displayMessage}
     </p>
   );
 };

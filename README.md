@@ -373,7 +373,7 @@ sequenceDiagram
 | Tabela | Colunas | Propósito |
 |--------|---------|-----------|
 | `tenants` | 8 | Registry de tenants com schema mapping e audit fields |
-| `users` | 14 | Usuários com **1:1 tenant relationship** via `tenant_id_fk` (FK numérica) |
+| `users` | 14 | Usuários com **1:1 tenant relationship** via `tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)` |
 | `user_types` | 9 | Hierarquia de usuários com pricing (operations < manager < admin) |
 | `applications` | 10 | Catálogo com slugs padronizados (tq, pm, billing, reports) |
 | **`application_pricing`** | **10** | **🆕 Matriz App × UserType com versionamento e vigências** |
@@ -399,8 +399,8 @@ O preço de cada seat é definido por uma **matriz Aplicativo × UserType** (adm
 ```sql
 CREATE TABLE application_pricing (
   id BIGSERIAL PRIMARY KEY,
-  application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
-  user_type_id  INTEGER NOT NULL REFERENCES user_types(id),
+  application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+  user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id),
   price NUMERIC(10,2) NOT NULL,
   currency CHAR(3) NOT NULL DEFAULT 'BRL',
   billing_cycle TEXT NOT NULL CHECK (billing_cycle IN ('monthly','yearly')) DEFAULT 'monthly',
@@ -409,7 +409,7 @@ CREATE TABLE application_pricing (
   active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (application_id, user_type_id, valid_from)
+  UNIQUE (application_id_fk, user_type_id_fk, valid_from)
 );
 ```
 
@@ -418,7 +418,7 @@ CREATE TABLE application_pricing (
 ALTER TABLE user_application_access
   ADD COLUMN price_snapshot NUMERIC(10,2),
   ADD COLUMN currency_snapshot CHAR(3),
-  ADD COLUMN user_type_id_snapshot INTEGER REFERENCES user_types(id),
+  ADD COLUMN user_type_id_fk_snapshot INTEGER REFERENCES user_types(id),
   ADD COLUMN granted_cycle TEXT CHECK (granted_cycle IN ('monthly','yearly'));
 ```
 
@@ -427,12 +427,12 @@ ALTER TABLE user_application_access
 CREATE OR REPLACE VIEW v_tenant_app_seats_by_type AS
 SELECT
   uaa.tenant_id_fk,
-  uaa.application_id,
-  COALESCE(uaa.user_type_id_snapshot, u.user_type_id) AS user_type_id,
+  uaa.application_id_fk,
+  COALESCE(uaa.user_type_id_fk_snapshot, u.user_type_id_fk) AS user_type_id_fk,
   COUNT(*)::INT AS seats_count,
   SUM(COALESCE(uaa.price_snapshot, 0))::NUMERIC(10,2) AS total_price
 FROM user_application_access uaa
-JOIN users u ON u.id = uaa.user_id
+JOIN users u ON u.id = uaa.user_id_fk
 WHERE uaa.is_active = TRUE
 GROUP BY 1,2,3;
 ```
@@ -537,87 +537,19 @@ npm run dev:server
 # http://localhost:3001/docs/internal
 ```
 
-## 🔗 Endpoints de Pricing e Grant/Revoke - Implementados
+## 🔗 API Reference
 
-### Pricing (Applications) - Platform Scoped
-Requer autenticação + `platform_role: internal_admin`
+Para documentação completa da **Internal Admin API** incluindo todos os endpoints, exemplos de uso, autenticação, autorização e especificações técnicas, consulte:
 
-```http
-GET    /internal/api/v1/applications/:id/pricing
-POST   /internal/api/v1/applications/:id/pricing  
-PUT    /internal/api/v1/applications/:id/pricing/:pricingId
-POST   /internal/api/v1/applications/:id/pricing/:pricingId/end
-```
+**[📚 INTERNAL-API.md](./INTERNAL-API.md)**
 
-**Exemplos:**
-```bash
-# Listar pricing vigente para aplicação TQ
-GET /internal/api/v1/applications/1/pricing?current=true
-
-# Agendar novo preço (versionamento)
-POST /internal/api/v1/applications/1/pricing
-{
-  "userTypeId": 2,
-  "price": 65.00,
-  "currency": "BRL", 
-  "billingCycle": "monthly",
-  "validFrom": "2025-02-01T00:00:00Z"
-}
-
-# Encerrar preço vigente (rota dedicada)
-POST /internal/api/v1/applications/1/pricing/123/end
-
-# Atualizar preço vigente (uso genérico - evitar para overlap prevention)
-PUT /internal/api/v1/applications/1/pricing/123
-{
-  "validTo": "2025-01-31T23:59:59Z"
-}
-```
-
-### Grant/Revoke (Users) - Tenant Scoped
-Requer autenticação + header `x-tenant-id` + role `admin`
-
-```http
-POST   /internal/api/v1/users/:userId/apps/grant
-DELETE /internal/api/v1/users/:userId/apps/revoke
-```
-
-**Fluxo Grant com Snapshot:**
-```bash
-POST /internal/api/v1/users/456/apps/grant
-Headers: x-tenant-id: tenant_default
-{
-  "applicationSlug": "tq",
-  "roleInApp": "user"
-}
-
-# Sistema automaticamente:
-# 1. Valida tenant_applications.user_limit vs seats_used  
-# 2. Busca pricing vigente (App × UserType do usuário)
-# 3. Captura snapshot: price_snapshot, currency_snapshot, user_type_id_snapshot
-# 4. Incrementa seats_used += 1
-# 5. Log de auditoria com contexto completo
-```
-
-**Fluxo Revoke:**
-```bash
-DELETE /internal/api/v1/users/456/apps/revoke  
-Headers: x-tenant-id: tenant_default
-{
-  "applicationSlug": "tq"
-}
-
-# Sistema automaticamente:
-# 1. Inativa registro: is_active = false
-# 2. Decrementa seats_used -= 1  
-# 3. Log de auditoria da revogação
-```
-
-### Regras de Negócio Implementadas
-- **Seat Limit Global**: `tenant_applications.user_limit=NULL` → ilimitado; caso contrário, `seats_used < user_limit` obrigatório
-- **Pricing Obrigatório**: Falta de pricing vigente para App × UserType → **HTTP 422** "pricing not configured"
-- **Auditoria Completa**: Todos grants/revokes registram IP, User-Agent, `api_path`, e `reason` detalhado
-- **Snapshots**: Preços capturados no grant garantem consistência de faturamento mesmo com mudanças futuras
+A API Internal oferece:
+- 85+ endpoints para administração completa da plataforma
+- Sistema de autorização enterprise em 5 camadas
+- Documentação Swagger interativa em `/docs/internal`
+- Pricing matrix (App × UserType) com snapshots automáticos
+- Grant/Revoke de acessos com controle de seats global
+- Auditoria completa com logs detalhados
 
 ## ⚙️ Configuração de Ambiente
 
@@ -713,14 +645,20 @@ VITE_AUT_API_BASE_URL=/api/v1/automation
 - **Search Path Switching**: `SET search_path TO tenant_schema, public`
 - **Header-based**: Identificação via `x-tenant-id` header
 
-### Convention: Tenant Identification
+### CRÍTICO: Política Numeric-Only ID
+**QUALQUER ID (PK/FK/header/JWT/param) é SEMPRE numérico — sem exceções**
+
 - **Source of Truth**: `req.tenant.id` (numeric) - SEMPRE usar para operações de DB e FKs
-- **Friendly ID**: `req.tenant.slug` - subdomain para URLs e UX
-- **Header Support**: `x-tenant-id` aceita ambos formatos com normalização automática:
-  - `x-tenant-id: 1` (preferido) → resolve por ID, sem warning
-  - `x-tenant-id: default` (deprecated) → resolve por slug, emite deprecation warning
-- **Path Parameters**: Sempre usar IDs numéricos (`/tenants/:tenantId/licenses`)
-- **Frontend Services**: Enviar `String(tenantId)` em headers, não slugs
+- **Friendly ID**: `req.tenant.slug` - subdomain para URLs e UX apenas
+- **Header Support**: `x-tenant-id` aceita APENAS valores numéricos:
+  - `x-tenant-id: 1` (correto) → resolve por ID numérico
+  - `x-tenant-id: default` (DEPRECATED) → suporte legacy será removido
+- **Path Parameters**: SEMPRE usar IDs numéricos (`/tenants/:tenantId/users`, `/applications/:id/pricing`)
+- **Frontend Services**: Enviar `String(tenantId)` em headers (numérico como string)
+- **JWT Tokens**: Contém APENAS IDs numéricos de tenant (`tenantId: 123`, nunca strings)
+- **Foreign Key Fields**: TODOS os campos FK usam sufixo `_fk` (`tenant_id_fk`, `user_id_fk`, `application_id_fk`)
+- **Constraints de Database**: TODOS os FKs são `INTEGER NOT NULL REFERENCES` com constraints apropriados
+- **Deprecação Legacy**: Campos string-based `tenant_id` deprecated, mantidos apenas para compatibilidade
 
 ### Autenticação e Autorização
 - **JWT Enhanced**: Tokens incluem `allowedApps[]` (slugs) e `userType` para performance
@@ -754,40 +692,9 @@ app.get('/internal/api/v1/tq/admin',
 
 ## 🎯 Status Atual: Sistema Enterprise Completo ✅
 
-### ✅ **Internal Admin API - 100% Implementada**
-A **API Interna** para o painel `internal.simplia.com` está **completa e operacional**:
+### ✅ **Internal Admin API - Completamente Implementada**
 
-#### **Applications (Escopo Plataforma)**
-- ✅ **Listagem** com filtros e paginação (`GET /applications`)
-- ✅ **Consulta** por ID (`GET /applications/:id`) e slug (`GET /applications/slug/:slug`)
-- ✅ **CRUD completo** (POST, PUT, DELETE com soft-delete)
-- ✅ **Tenants licenciados** (`GET /applications/:id/tenants`)
-- ✅ **Proteção** com `platform_role: internal_admin`
-- ✅ **Swagger** com documentação completa e exemplos
-
-#### **Users (Escopo Tenant)**
-- ✅ **CRUD completo** com validação de permissões e filtros
-- ✅ **Grant/Revoke** de acesso a aplicações (`POST /users/:id/apps/grant`, `DELETE /users/:id/apps/revoke`)
-- ✅ **Bulk operations** e reset de senha
-- ✅ **Header** `x-tenant-id` obrigatório
-- ✅ **Swagger** com documentação completa e exemplos
-
-#### **Entitlements (Escopo Tenant)**  
-- ✅ **Listar licenças** do tenant (`GET /entitlements`)
-- ✅ **Ativar licença** (`POST /entitlements/:slug/activate`)
-- ✅ **Ajustar licença** (`PUT /entitlements/:slug/adjust`) - controle de limites/status/vigência
-- ✅ **Gestão de assentos** automática com tracking
-- ✅ **Header** `x-tenant-id` obrigatório
-- ✅ **Swagger** com documentação completa e exemplos
-
-#### **Infraestrutura Enterprise**
-- ✅ **Prefixo versionado** `/internal/api/v1` com roteamento organizado
-- ✅ **CORS restrito** ao domínio do admin panel para segurança
-- ✅ **Documentação Swagger** protegida (`/docs/internal`) - apenas `internal_admin`
-- ✅ **Platform roles** para controle da equipe Simplia vs. roles de tenant
-- ✅ **Padronização de erros** consistente com códigos e mensagens
-- ✅ **Testes de integração** completos incluindo cenários de erro
-- ✅ **Auditoria automática** em negações de acesso
+A **API Interna** para o painel `internal.simplia.com` está **100% operacional** com arquitetura enterprise completa. Para documentação detalhada de todos os endpoints, autenticação, autorização e exemplos de uso, consulte **[INTERNAL-API.md](./INTERNAL-API.md)**.
 
 ### ✅ **Frontend Enterprise UI - Implementado**
 O **painel administrativo interno** possui interface moderna e profissional:
@@ -1075,6 +982,14 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 - 🟢 **Admin Interface**: Dashboard, tenants, users, applications, **entitlements** - 100% completo
 - 🔴 **Product Apps**: Estrutura criada - desenvolvimento pendente
 - 🔴 **Public APIs**: Aguardando definição de requisitos dos produtos
+
+## 📖 Documentação Adicional
+
+**Para contexto técnico detalhado, implementações específicas, e documentação completa da API, consulte:**
+
+- **[📚 INTERNAL-API.md](./INTERNAL-API.md)** - Documentação completa da Internal Admin API
+- **[🔧 CLAUDE.md](./CLAUDE.md)** - Orientações técnicas para desenvolvimento
+- **[🧪 TESTING-QA.md](./TESTING-QA.md)** - Documentação de testes e QA
 
 ## 📄 Licença
 

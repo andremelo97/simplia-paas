@@ -3,10 +3,10 @@ const database = require('../db/database');
 class AccessLog {
   constructor(data) {
     this.id = data.id;
-    this.userId = data.user_id;
-    this.tenantId = data.tenant_id;
+    this.userId = data.user_id_fk;
+    this.tenantId = data.tenant_id_fk;
     this.tenantIdFk = data.tenant_id_fk;
-    this.applicationId = data.application_id;
+    this.applicationId = data.application_id_fk;
     this.decision = data.decision;
     this.reason = data.reason;
     this.apiPath = data.api_path;
@@ -36,16 +36,15 @@ class AccessLog {
 
     const query = `
       INSERT INTO application_access_logs (
-        user_id, tenant_id, tenant_id_fk, application_id, decision, 
+        user_id_fk, tenant_id_fk, application_id_fk, decision, 
         reason, api_path, ip_address, user_agent, endpoint
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
 
     const result = await database.query(query, [
       userId,
-      tenantId,
       tenantIdFk,
       applicationId,
       decision,
@@ -68,8 +67,8 @@ class AccessLog {
     let query = `
       SELECT al.*, u.email as user_email, a.name as app_name, a.slug as app_slug
       FROM application_access_logs al
-      LEFT JOIN users u ON al.user_id = u.id
-      LEFT JOIN applications a ON al.application_id = a.id
+      LEFT JOIN users u ON al.user_id_fk = u.id
+      LEFT JOIN applications a ON al.application_id_fk = a.id
       WHERE al.tenant_id_fk = $1
     `;
     const params = [tenantIdFk];
@@ -80,12 +79,12 @@ class AccessLog {
     }
 
     if (userId) {
-      query += ` AND al.user_id = $${params.length + 1}`;
+      query += ` AND al.user_id_fk = $${params.length + 1}`;
       params.push(userId);
     }
 
     if (applicationId) {
-      query += ` AND al.application_id = $${params.length + 1}`;
+      query += ` AND al.application_id_fk = $${params.length + 1}`;
       params.push(applicationId);
     }
 
@@ -122,8 +121,8 @@ class AccessLog {
       SELECT 
         decision,
         COUNT(*) as count,
-        COUNT(DISTINCT user_id) as unique_users,
-        COUNT(DISTINCT application_id) as unique_apps
+        COUNT(DISTINCT user_id_fk) as unique_users,
+        COUNT(DISTINCT application_id_fk) as unique_apps
       FROM application_access_logs
       WHERE tenant_id_fk = $1
     `;
@@ -140,7 +139,7 @@ class AccessLog {
     }
 
     if (applicationId) {
-      query += ` AND application_id = $${params.length + 1}`;
+      query += ` AND application_id_fk = $${params.length + 1}`;
       params.push(applicationId);
     }
 
@@ -160,7 +159,7 @@ class AccessLog {
       SELECT 
         reason,
         COUNT(*) as count,
-        COUNT(DISTINCT user_id) as affected_users
+        COUNT(DISTINCT user_id_fk) as affected_users
       FROM application_access_logs
       WHERE tenant_id_fk = $1 AND decision = 'denied' AND reason IS NOT NULL
     `;
@@ -259,9 +258,9 @@ class AccessLog {
         a.slug as application_slug,
         a.name as application_name
       FROM application_access_logs al
-      LEFT JOIN users u ON al.user_id = u.id
+      LEFT JOIN users u ON al.user_id_fk = u.id
       LEFT JOIN tenants t ON al.tenant_id_fk = t.id
-      LEFT JOIN applications a ON al.application_id = a.id
+      LEFT JOIN applications a ON al.application_id_fk = a.id
       WHERE 1=1
     `;
     const params = [];
@@ -282,7 +281,7 @@ class AccessLog {
     }
 
     if (userId) {
-      query += ` AND al.user_id = $${params.length + 1}`;
+      query += ` AND al.user_id_fk = $${params.length + 1}`;
       params.push(userId);
     }
 
@@ -339,7 +338,7 @@ class AccessLog {
     let query = `
       SELECT COUNT(*) as count
       FROM application_access_logs al
-      LEFT JOIN applications a ON al.application_id = a.id
+      LEFT JOIN applications a ON al.application_id_fk = a.id
       WHERE 1=1
     `;
     const params = [];
@@ -360,7 +359,7 @@ class AccessLog {
     }
 
     if (userId) {
-      query += ` AND al.user_id = $${params.length + 1}`;
+      query += ` AND al.user_id_fk = $${params.length + 1}`;
       params.push(userId);
     }
 
@@ -402,7 +401,7 @@ class AccessLog {
         COUNT(DISTINCT al.user_id) as unique_users,
         COUNT(DISTINCT al.tenant_id_fk) as unique_tenants
       FROM application_access_logs al
-      LEFT JOIN applications a ON al.application_id = a.id
+      LEFT JOIN applications a ON al.application_id_fk = a.id
       WHERE 1=1
     `;
     const params = [];
@@ -469,7 +468,7 @@ class AccessLog {
         COUNT(CASE WHEN al.decision = 'granted' THEN 1 END) as granted,
         COUNT(CASE WHEN al.decision = 'denied' THEN 1 END) as denied
       FROM application_access_logs al
-      LEFT JOIN applications a ON al.application_id = a.id
+      LEFT JOIN applications a ON al.application_id_fk = a.id
       WHERE 1=1
     `;
     const params = [];
@@ -640,7 +639,7 @@ class AccessLog {
         'medium' as severity,
         'Repeated Access Failures' as title,
         'Multiple failed access attempts from same IP/user' as description,
-        al.user_id as userId,
+        al.user_id_fk as userId,
         al.ip_address as ipAddress,
         COUNT(*) as count,
         MIN(al.created_at) as firstSeen,
@@ -648,7 +647,7 @@ class AccessLog {
       FROM application_access_logs al
       WHERE al.decision = 'denied' 
         AND al.created_at >= NOW() - INTERVAL '${hours} hours'
-      GROUP BY al.user_id, al.ip_address
+      GROUP BY al.user_id_fk, al.ip_address
       HAVING COUNT(*) >= 3
     `;
 

@@ -7,7 +7,7 @@ const database = require('../db/database');
 class TenantContact {
   constructor(data) {
     this.id = data.id;
-    this.tenantId = data.tenant_id;
+    this.tenantId = data.tenant_id_fk;
     this.type = data.type;
     this.fullName = data.full_name;
     this.email = data.email;
@@ -26,7 +26,7 @@ class TenantContact {
     
     let query = `
       SELECT * FROM tenant_contacts 
-      WHERE tenant_id = $1
+      WHERE tenant_id_fk = $1
     `;
     const params = [tenantId];
     let paramIndex = 2;
@@ -62,7 +62,7 @@ class TenantContact {
 
   static async findById(id, tenantId) {
     const result = await database.query(
-      'SELECT * FROM tenant_contacts WHERE id = $1 AND tenant_id = $2',
+      'SELECT * FROM tenant_contacts WHERE id = $1 AND tenant_id_fk = $2',
       [id, tenantId]
     );
     
@@ -115,14 +115,14 @@ class TenantContact {
     // If setting as primary, unset other primaries of same type first
     if (isPrimary) {
       await database.query(
-        'UPDATE tenant_contacts SET is_primary = false WHERE tenant_id = $1 AND type = $2 AND active = true',
+        'UPDATE tenant_contacts SET is_primary = false WHERE tenant_id_fk = $1 AND type = $2 AND active = true',
         [tenantId, type]
       );
     }
 
     const query = `
       INSERT INTO tenant_contacts (
-        tenant_id, type, full_name, email, phone_e164, title, department,
+        tenant_id_fk, type, full_name, email, phone_e164, title, department,
         notes, is_primary, active
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
@@ -233,7 +233,7 @@ class TenantContact {
         const current = await TenantContact.findById(id, tenantId);
         if (current) {
           await database.query(
-            'UPDATE tenant_contacts SET is_primary = false WHERE tenant_id = $1 AND type = $2 AND active = true AND id != $3',
+            'UPDATE tenant_contacts SET is_primary = false WHERE tenant_id_fk = $1 AND type = $2 AND active = true AND id != $3',
             [tenantId, current.type, id]
           );
         }
@@ -252,7 +252,7 @@ class TenantContact {
     const query = `
       UPDATE tenant_contacts 
       SET ${updates.join(', ')} 
-      WHERE id = $1 AND tenant_id = $2 AND active = true
+      WHERE id = $1 AND tenant_id_fk = $2 AND active = true
       RETURNING *
     `;
 
@@ -263,7 +263,7 @@ class TenantContact {
 
   static async softDelete(id, tenantId) {
     const result = await database.query(
-      'UPDATE tenant_contacts SET active = false, updated_at = NOW() WHERE id = $1 AND tenant_id = $2 AND active = true RETURNING *',
+      'UPDATE tenant_contacts SET active = false, updated_at = NOW() WHERE id = $1 AND tenant_id_fk = $2 AND active = true RETURNING *',
       [id, tenantId]
     );
     
@@ -273,7 +273,7 @@ class TenantContact {
   static async count(tenantId, options = {}) {
     const { type, active = true } = options;
     
-    let query = 'SELECT COUNT(*) FROM tenant_contacts WHERE tenant_id = $1';
+    let query = 'SELECT COUNT(*) FROM tenant_contacts WHERE tenant_id_fk = $1';
     const params = [tenantId];
     let paramIndex = 2;
 

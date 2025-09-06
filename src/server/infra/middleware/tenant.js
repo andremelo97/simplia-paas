@@ -195,20 +195,8 @@ class TenantMiddleware {
       return { tenant: result.rows[0], inputFormat, source };
     }
     
-    // String identifier (slug/subdomain)
-    // Only allow if compatibility flag is enabled
-    if (!this.options.compatSlugFallback) {
-      throw new InvalidTenantError(`Slug-based tenant resolution is disabled. Use numeric tenant ID instead of '${identifier}'`);
-    }
-    
-    // Emit controlled deprecation warning (filter out curl requests)
-    const isCurl = userAgent.toLowerCase().includes('curl/');
-    if (source === 'header' && !isCurl) {
-      console.warn(`[DEPRECATION] x-tenant-id should be numeric. Received slug: ${identifier} (UA: ${userAgent.substring(0, 50)})`);
-    } else if (isCurl) {
-      console.info(`[COMPAT] Curl request using slug: ${identifier} - consider updating to numeric ID`);
-    }
-    
+    // String identifier (slug/subdomain) - resolve to numeric ID
+    // Always resolve slug to ID via query for compatibility, no warnings
     const query = 'SELECT * FROM tenants WHERE subdomain = $1 AND active = true';
     const result = await database.query(query, [identifier]);
     
@@ -220,11 +208,11 @@ class TenantMiddleware {
   }
 
   /**
-   * Convert tenant ID to schema name
+   * Convert numeric tenant ID to schema name
    */
-  tenantIdToSchema(tenantId) {
-    // For security, prefix all tenant schemas
-    return `tenant_${tenantId}`;
+  tenantIdToSchema(numericTenantId) {
+    // Always use numeric ID for schema name for consistency
+    return `tenant_${numericTenantId}`;
   }
 
   /**
@@ -254,23 +242,20 @@ class TenantMiddleware {
       // Resolve tenant using dual resolution (numeric ID or slug)
       const { tenant, inputFormat } = await this.resolveTenant(rawIdentifier, source, userAgent);
       
-      // Always use tenant's subdomain for schema (consistent)
-      const schema = this.tenantIdToSchema(tenant.subdomain);
+      // Always use tenant's numeric ID for schema (consistent and secure)
+      const schema = this.tenantIdToSchema(tenant.id);
       
       // Validate schema exists
       await this.validateSchema(schema);
       
-      // Create normalized tenant context - ID ALWAYS numeric
+      // Create normalized tenant context - ID ALWAYS numeric, no string persistence
       const tenantContext = {
         id: tenant.id,           // ALWAYS INTEGER (source of truth)
-        slug: tenant.subdomain,  // Friendly identifier
+        slug: tenant.subdomain,  // Read-only display/URL-friendly identifier
         schema,
         name: tenant.name,
-        subdomain: tenant.subdomain, // Backward compatibility
         status: tenant.status,
-        // Legacy field for backward compatibility
-        tenantId: tenant.subdomain,
-        // Resolution metadata
+        // Resolution metadata (for logging only)
         source,
         inputFormat
       };

@@ -1,6 +1,55 @@
+/**
+ * CRITICAL AUTHORIZATION VALIDATION TEST SUITE
+ * 
+ * Este test suite valida o sistema de autorização de 5 camadas enterprise da Simplia PaaS.
+ * Garante que todas as verificações de segurança estão funcionando corretamente.
+ * 
+ * COBERTURA DE TESTES:
+ * 
+ * ✅ Layer 1: Tenant License Check
+ * - Verificação de licença ativa para o tenant
+ * - Bloqueio de acesso sem licença
+ * - Bloqueio de acesso com licença expirada
+ * 
+ * ✅ Layer 2: Seat Limit Check  
+ * - Verificação de limites de assentos por tenant
+ * - Bloqueio quando limite excedido
+ * 
+ * ✅ Layer 3: User Access Check
+ * - Verificação de permissão individual do usuário
+ * - Bloqueio de usuários sem acesso explícito
+ * 
+ * ✅ Layer 4: Role Validation
+ * - Verificação de hierarquia de roles (operations < manager < admin)
+ * - Bloqueio por role insuficiente
+ * 
+ * ✅ Layer 5: Audit Logging
+ * - Registro completo de todas as tentativas (granted/denied)
+ * - Rastreamento de IP, User-Agent, razão da decisão
+ * 
+ * CENÁRIOS TESTADOS:
+ * - Acesso permitido com todas as condições válidas
+ * - Bloqueios por cada camada individualmente
+ * - Logging de auditoria para compliance
+ * - Tokens expirados e inválidos
+ * 
+ * STATUS: 51 testes falhando (problemas de field naming _fk)
+ * PRIORIDADE: CRÍTICO - Validação de segurança enterprise
+ */
+
 const request = require('supertest');
 const app = require('@server/app');
 const { generateTestToken, generateExpiredToken } = require('../../auth-helper');
+const { 
+  createTestTenant,
+  createTestUser, 
+  createTestApplication,
+  createTestPricing,
+  createTestLicense,
+  createTestUserAccess,
+  cleanupTestTenant,
+  cleanupTestApplications
+} = require('../../test-data-helper');
 
 const TEST_TENANT_SCHEMA = process.env.TEST_TENANT_SCHEMA || 'tenant_test_clinic';
 
@@ -13,8 +62,8 @@ describe('Critical Authorization Validation', () => {
   beforeEach(async () => {
     // Clean up only critical test data (not all test data)
     await global.testDb.query('DELETE FROM tenant_applications WHERE tenant_id_fk IN (SELECT id FROM tenants WHERE subdomain = \'critical_test_clinic\')');
-    await global.testDb.query('DELETE FROM user_application_access WHERE user_id IN (SELECT id FROM users WHERE email = \'critical-manager@test.com\')');
-    await global.testDb.query('DELETE FROM application_access_logs WHERE user_id IN (SELECT id FROM users WHERE email = \'critical-manager@test.com\')');
+    await global.testDb.query('DELETE FROM user_application_access WHERE user_id_fk IN (SELECT id FROM users WHERE email = \'critical-manager@test.com\')');
+    await global.testDb.query('DELETE FROM application_access_logs WHERE user_id_fk IN (SELECT id FROM users WHERE email = \'critical-manager@test.com\')');
 
     // Create the tenant schema
     await global.testDb.query('CREATE SCHEMA IF NOT EXISTS tenant_critical_test_clinic');
@@ -36,18 +85,18 @@ describe('Critical Authorization Validation', () => {
     const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash('password123', 12);
     const userResult = await global.testDb.query(
-      `INSERT INTO users (tenant_id_fk, tenant_id, email, password_hash, first_name, last_name, role, status, platform_role)
-       VALUES ($1, $2, 'critical-manager@test.com', $3, 'Critical', 'Manager', 'manager', 'active', 'internal_admin')
+      `INSERT INTO users (tenant_id_fk, tenant_name, email, password_hash, first_name, last_name, role, status, platform_role, user_type_id_fk)
+       VALUES ($1, $2, 'critical-manager@test.com', $3, 'Critical', 'Manager', 'manager', 'active', 'internal_admin', 2)
        ON CONFLICT (email) DO UPDATE SET
          tenant_id_fk = EXCLUDED.tenant_id_fk,
-         tenant_id = EXCLUDED.tenant_id,
+         tenant_name = EXCLUDED.tenant_name,
          password_hash = EXCLUDED.password_hash,
          role = EXCLUDED.role,
          status = EXCLUDED.status,
          platform_role = EXCLUDED.platform_role,
          updated_at = NOW()
        RETURNING *`,
-      [tenant.id, tenant.subdomain, hashedPassword]  // Use numeric id for FK and subdomain for legacy
+      [tenant.id, tenant.name, hashedPassword]  // Use numeric id for FK and tenant name
     );
     user = userResult.rows[0];
 
@@ -67,14 +116,14 @@ describe('Critical Authorization Validation', () => {
     test('should allow access with active license', async () => {
       // Seed active license
       await global.testDb.query(
-        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, active)
-         VALUES ($1, $2, $3, 'active', true)`,
-        [tenant.subdomain, tenant.id, tqApplication.id]
+        `INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, active)
+         VALUES ($1, $2, 'active', true)`,
+        [tenant.id, tqApplication.id]
       );
 
       // Seed user application access
       await global.testDb.query(
-        `INSERT INTO user_application_access (tenant_id_fk, user_id, application_id, is_active, active)
+        `INSERT INTO user_application_access (tenant_id_fk, user_id_fk, application_id_fk, is_active, active)
          VALUES ($1, $2, $3, true, true)`,
         [tenant.id, user.id, tqApplication.id]
       );
@@ -122,9 +171,9 @@ describe('Critical Authorization Validation', () => {
     test('should deny access with expired license', async () => {
       // Seed expired license
       await global.testDb.query(
-        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, expiry_date, active)
-         VALUES ($1, $2, $3, 'expired', '2023-01-01', false)`,
-        [tenant.subdomain, tenant.id, tqApplication.id]
+        `INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, expiry_date, active)
+         VALUES ($1, $2, 'expired', '2023-01-01', false)`,
+        [tenant.id, tqApplication.id]
       );
 
       const token = generateTestToken({
@@ -149,9 +198,9 @@ describe('Critical Authorization Validation', () => {
     test('should deny access when seat limit exceeded', async () => {
       // Seed license with limit reached
       await global.testDb.query(
-        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, user_limit, seats_used, active)
-         VALUES ($1, $2, $3, 'active', 1, 1, true)`,
-        [tenant.subdomain, tenant.id, tqApplication.id]
+        `INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, user_limit, seats_used, active)
+         VALUES ($1, $2, 'active', 1, 1, true)`,
+        [tenant.id, tqApplication.id]
       );
 
       const token = generateTestToken({
@@ -176,9 +225,9 @@ describe('Critical Authorization Validation', () => {
     test('should deny access when app not in allowedApps', async () => {
       // Seed active license
       await global.testDb.query(
-        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, active)
-         VALUES ($1, $2, $3, 'active', true)`,
-        [tenant.subdomain, tenant.id, tqApplication.id]
+        `INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, active)
+         VALUES ($1, $2, 'active', true)`,
+        [tenant.id, tqApplication.id]
       );
 
       // Token without 'tq' in allowedApps
@@ -202,9 +251,9 @@ describe('Critical Authorization Validation', () => {
     test('should deny operations access to admin endpoints', async () => {
       // Seed active license
       await global.testDb.query(
-        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, active)
-         VALUES ($1, $2, $3, 'active', true)`,
-        [tenant.subdomain, tenant.id, tqApplication.id]
+        `INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, active)
+         VALUES ($1, $2, 'active', true)`,
+        [tenant.id, tqApplication.id]
       );
 
       // Operations token (not admin)
@@ -227,14 +276,14 @@ describe('Critical Authorization Validation', () => {
     test('should allow admin access to admin endpoints', async () => {
       // Seed active license
       await global.testDb.query(
-        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, active)
-         VALUES ($1, $2, $3, 'active', true)`,
-        [tenant.subdomain, tenant.id, tqApplication.id]
+        `INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, active)
+         VALUES ($1, $2, 'active', true)`,
+        [tenant.id, tqApplication.id]
       );
 
       // Seed user application access
       await global.testDb.query(
-        `INSERT INTO user_application_access (tenant_id_fk, user_id, application_id, is_active, active)
+        `INSERT INTO user_application_access (tenant_id_fk, user_id_fk, application_id_fk, is_active, active)
          VALUES ($1, $2, $3, true, true)`,
         [tenant.id, user.id, tqApplication.id]
       );
@@ -422,19 +471,19 @@ describe('Critical Authorization Validation', () => {
     test('should revoke access and decrement seat count', async () => {
       // First grant access
       await global.testDb.query(
-        `INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, user_limit, seats_used, active)
-         VALUES ($1, $2, $3, 'active', 5, 3, true)
-         ON CONFLICT (tenant_id_fk, application_id) DO UPDATE SET
+        `INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, user_limit, seats_used, active)
+         VALUES ($1, $2, 'active', 5, 3, true)
+         ON CONFLICT (tenant_id_fk, application_id_fk) DO UPDATE SET
            user_limit = 5, seats_used = 3, status = 'active', active = true`,
-        [tenant.subdomain, tenant.id, tqApplication.id]
+        [tenant.id, tqApplication.id]
       );
 
       await global.testDb.query(
-        `INSERT INTO user_application_access (user_id, application_id, tenant_id_fk, tenant_id, is_active, active, price_snapshot, currency_snapshot)
-         VALUES ($1, $2, $3, $4, true, true, 55.00, 'BRL')
-         ON CONFLICT (tenant_id_fk, user_id, application_id) DO UPDATE SET
+        `INSERT INTO user_application_access (user_id_fk, application_id_fk, tenant_id_fk, is_active, active, price_snapshot, currency_snapshot)
+         VALUES ($1, $2, $3, true, true, 55.00, 'BRL')
+         ON CONFLICT (tenant_id_fk, user_id_fk, application_id_fk) DO UPDATE SET
            is_active = true, active = true`,
-        [user.id, tqApplication.id, tenant.id, tenant.subdomain]
+        [user.id, tqApplication.id, tenant.id]
       );
 
       const response = await request(app)

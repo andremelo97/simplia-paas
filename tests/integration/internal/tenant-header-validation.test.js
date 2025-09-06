@@ -1,8 +1,40 @@
 /**
- * Integration Tests: Tenant Header Validation
+ * TENANT HEADER VALIDATION TEST SUITE
  * 
- * Tests the hard-require functionality for x-tenant-id header on tenant-scoped routes
- * Validates that slug-based fallback is blocked by default and only enabled via flag
+ * Este test suite valida o sistema de multi-tenancy e headers obrigatórios.
+ * Testa isolamento de tenants, resolução de IDs e validação de contexto.
+ * 
+ * COBERTURA DE TESTES:
+ * 
+ * ✅ x-tenant-id Header Validation
+ * - Header obrigatório em rotas tenant-scoped
+ * - Aceitação de IDs numéricos (preferencial)  
+ * - Bloqueio de slugs por padrão (segurança)
+ * - Validação de tenants inexistentes
+ * 
+ * ✅ Tenant Context Resolution
+ * - Schema switching automático
+ * - Validação de tenant ativo/inativo
+ * - Isolamento entre tenants
+ * 
+ * ✅ Security & Access Control
+ * - Bloqueio de cross-tenant access
+ * - Validação de permissões por tenant
+ * - Error handling padronizado
+ * 
+ * ✅ User Agent Filtering
+ * - Tratamento de diferentes clients (curl, browser)
+ * - Rate limiting por IP + user
+ * 
+ * CENÁRIOS TESTADOS:
+ * - Headers válidos vs inválidos
+ * - IDs numéricos vs slugs deprecados
+ * - Tenants ativos vs inativos
+ * - Cross-tenant security validation
+ * - Error messages padronizadas
+ * 
+ * STATUS: Auto-suficiente (cria e deleta próprios dados)
+ * PRIORIDADE: ALTA - Validação de segurança multi-tenant
  */
 
 const request = require('supertest');

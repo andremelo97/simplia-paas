@@ -1,16 +1,40 @@
-export type LicenseStatus = 'active' | 'suspended' | 'expired'
+export type LicenseStatus = 'active' | 'suspended' | 'expired' | 'trial'
+
+export interface Application {
+  id: number
+  name: string
+  slug: string
+  description?: string
+}
+
+export interface PricingSnapshot {
+  price: number
+  currency: string
+  billingCycle: string
+  validFrom: string
+  validTo: string | null
+}
+
+export interface SeatsByUserType {
+  userTypeId: number
+  userType: string
+  used: number
+  total: number | null
+  available: number | null
+  hierarchyLevel: number
+  pricing: PricingSnapshot
+}
 
 export interface TenantLicense {
   id: number
-  tenantId: number
-  applicationId: number
-  applicationName: string
-  applicationSlug: string
+  application: Application
   status: LicenseStatus
-  seatsUsed: number
-  userLimit: number
+  pricingSnapshot: PricingSnapshot | null
+  seatsByUserType: SeatsByUserType[]
+  expiryDate: string | null
   activatedAt: string
-  expiresAt: string | null
+  userLimit: number | null
+  totalSeatsUsed: number
   createdAt: string
   updatedAt: string
 }
@@ -18,8 +42,13 @@ export interface TenantLicense {
 export interface AdjustLicensePayload {
   status?: LicenseStatus
   userLimit?: number
-  activatedAt?: string
-  expiresAt?: string | null
+  expiryDate?: string | null
+}
+
+export interface ActivateLicensePayload {
+  userLimit?: number
+  expiryDate?: string | null
+  status?: LicenseStatus
 }
 
 export interface TenantLicensesResponse {
@@ -34,5 +63,16 @@ export interface TenantLicensesResponse {
       offset: number
       hasMore: boolean
     }
+  }
+}
+
+export interface ActivateLicenseResponse {
+  success: boolean
+  meta: {
+    code: string
+    message: string
+  }
+  data: {
+    license: TenantLicense
   }
 }

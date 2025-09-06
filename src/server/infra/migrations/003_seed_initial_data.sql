@@ -45,32 +45,30 @@ ON CONFLICT (subdomain) DO NOTHING;
 -- =============================================
 
 -- License TQ (Transcription Quote) for default tenant
-INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, user_limit, seats_used)
+INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, user_limit, seats_used)
 SELECT 
-  'default' as tenant_id,
   t.id as tenant_id_fk,
-  a.id as application_id,
+  a.id as application_id_fk,
   'active' as status,
   999999 as user_limit,
   0 as seats_used
 FROM tenants t, applications a
 WHERE t.subdomain = 'default' 
   AND a.slug = 'tq'
-ON CONFLICT (tenant_id, application_id) DO NOTHING;
+ON CONFLICT (tenant_id_fk, application_id_fk) DO NOTHING;
 
 -- License TQ for test clinic (used in automated tests)
-INSERT INTO tenant_applications (tenant_id, tenant_id_fk, application_id, status, user_limit, seats_used)
-SELECT 
-  'test_clinic' as tenant_id,
+INSERT INTO tenant_applications (tenant_id_fk, application_id_fk, status, user_limit, seats_used)
+SELECT
   t.id as tenant_id_fk,
-  a.id as application_id,
+  a.id as application_id_fk,
   'active' as status,
   999999 as user_limit,
   0 as seats_used
 FROM tenants t, applications a
 WHERE t.subdomain = 'test_clinic' 
   AND a.slug = 'tq'
-ON CONFLICT (tenant_id, application_id) DO NOTHING;
+ON CONFLICT (tenant_id_fk, application_id_fk) DO NOTHING;
 
 -- =============================================
 -- SAMPLE ADMIN USER (Development only)
@@ -83,11 +81,10 @@ INSERT INTO users (
   password_hash, 
   first_name, 
   last_name, 
-  tenant_id, 
   tenant_id_fk,
   tenant_name,
   role, 
-  user_type_id, 
+  user_type_id_fk, 
   platform_role,
   status
 )
@@ -96,7 +93,6 @@ SELECT
   '$2b$12$3UpLycjN/Lsx9rGw0q81V.BLIrXONEE8XO3m7aKMnjQhn9Rq5s6la', -- 1234
   'Admin',
   'User', 
-  'default', -- Legacy string reference
   t.id, -- Primary numeric FK
   t.name, -- Denormalized tenant name
   'admin',
@@ -113,11 +109,10 @@ INSERT INTO users (
   password_hash,
   first_name,
   last_name,
-  tenant_id,
   tenant_id_fk,
   tenant_name,
   role,
-  user_type_id,
+  user_type_id_fk,
   status
 )
 SELECT 
@@ -125,7 +120,6 @@ SELECT
   '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiCS.nQkr4vS', -- admin123
   'Test',
   'Manager',
-  'default', -- Legacy string reference
   t.id, -- Primary numeric FK
   t.name, -- Denormalized tenant name
   'manager',
@@ -141,7 +135,7 @@ ON CONFLICT (email) DO NOTHING;
 
 -- Insert HQ address for default tenant (idempotent)
 INSERT INTO tenant_addresses (
-  tenant_id,
+  tenant_id_fk,
   type,
   label,
   line1,
@@ -153,7 +147,7 @@ INSERT INTO tenant_addresses (
   is_primary
 )
 SELECT 
-  t.id as tenant_id,
+  t.id as tenant_id_fk,
   'HQ' as type,
   'Headquarters São Paulo' as label,
   'Av. Paulista, 1578' as line1,
@@ -167,7 +161,7 @@ FROM tenants t
 WHERE t.subdomain = 'default'
   AND NOT EXISTS (
     SELECT 1 FROM tenant_addresses ta 
-    WHERE ta.tenant_id = t.id AND ta.type = 'HQ'
+    WHERE ta.tenant_id_fk = t.id AND ta.type = 'HQ'
   );
 
 -- =============================================
@@ -176,7 +170,7 @@ WHERE t.subdomain = 'default'
 
 -- Insert admin contact for default tenant (idempotent)
 INSERT INTO tenant_contacts (
-  tenant_id,
+  tenant_id_fk,
   type,
   full_name,
   email,
@@ -186,7 +180,7 @@ INSERT INTO tenant_contacts (
   is_primary
 )
 SELECT 
-  t.id as tenant_id,
+  t.id as tenant_id_fk,
   'ADMIN' as type,
   'João Silva' as full_name,
   'admin@simpliaclinic.com.br' as email,
@@ -198,12 +192,12 @@ FROM tenants t
 WHERE t.subdomain = 'default'
   AND NOT EXISTS (
     SELECT 1 FROM tenant_contacts tc 
-    WHERE tc.tenant_id = t.id AND tc.type = 'ADMIN'
+    WHERE tc.tenant_id_fk = t.id AND tc.type = 'ADMIN'
   );
 
 -- Insert billing contact for default tenant (idempotent)
 INSERT INTO tenant_contacts (
-  tenant_id,
+  tenant_id_fk,
   type,
   full_name,
   email,
@@ -214,7 +208,7 @@ INSERT INTO tenant_contacts (
   is_primary
 )
 SELECT 
-  t.id as tenant_id,
+  t.id as tenant_id_fk,
   'BILLING' as type,
   'Maria Santos' as full_name,
   'financeiro@simpliaclinic.com.br' as email,
@@ -227,20 +221,15 @@ FROM tenants t
 WHERE t.subdomain = 'default'
   AND NOT EXISTS (
     SELECT 1 FROM tenant_contacts tc 
-    WHERE tc.tenant_id = t.id AND tc.type = 'BILLING'
+    WHERE tc.tenant_id_fk = t.id AND tc.type = 'BILLING'
   );
 
 -- =============================================
 -- DATA VALIDATION AND CONSTRAINTS
 -- =============================================
 
--- Populate legacy tenant_id_fk for any existing user_application_access records
--- (ensures consistency after schema changes)
-UPDATE user_application_access uaa 
-SET tenant_id_fk = t.id 
-FROM tenants t 
-WHERE uaa.tenant_id_fk IS NULL 
-  AND uaa.tenant_id = t.subdomain;
+-- Legacy tenant_id_fk population removed (numeric-only policy)
+-- All tenant references now use numeric tenant_id_fk exclusively
 
 -- Note: Data validation checks will be added in a future migration
 -- For now, the FK constraints ensure referential integrity
@@ -250,10 +239,10 @@ WHERE uaa.tenant_id_fk IS NULL
 -- =============================================
 
 -- Insert default pricing for each application × user type combination
-INSERT INTO application_pricing (application_id, user_type_id, price, currency, billing_cycle, valid_from)
+INSERT INTO application_pricing (application_id_fk, user_type_id_fk, price, currency, billing_cycle, valid_from)
 SELECT 
-  a.id as application_id,
-  ut.id as user_type_id,
+  a.id as application_id_fk,
+  ut.id as user_type_id_fk,
   CASE 
     WHEN a.slug = 'tq' AND ut.slug = 'operations' THEN 35.00
     WHEN a.slug = 'tq' AND ut.slug = 'manager' THEN 55.00
@@ -276,7 +265,7 @@ FROM applications a
 CROSS JOIN user_types ut
 WHERE a.active = TRUE 
   AND ut.active = TRUE
-ON CONFLICT (application_id, user_type_id, valid_from) DO NOTHING;
+ON CONFLICT (application_id_fk, user_type_id_fk, valid_from) DO NOTHING;
 
 -- Backfill existing grants with pricing snapshots
 -- (Skip backfill for now since there are no existing grants in fresh DB)

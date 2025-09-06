@@ -62,12 +62,11 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     first_name VARCHAR(100),
     last_name VARCHAR(100),
-    tenant_id VARCHAR(100), -- Legacy string reference (for compatibility)
-    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Primary numeric FK
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Numeric FK to tenants
     tenant_name VARCHAR(255), -- Denormalized tenant name for query performance
     role VARCHAR(50) DEFAULT 'operations', -- operations, manager, admin
     status VARCHAR(20) DEFAULT 'active', -- active, inactive, suspended
-    user_type_id INTEGER REFERENCES user_types(id),
+    user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id),
     platform_role VARCHAR(50) NULL, -- internal_admin for Simplia team
     last_login TIMESTAMP,
     active BOOLEAN NOT NULL DEFAULT true,
@@ -76,8 +75,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 COMMENT ON TABLE users IS 'Users table with 1:1 tenant relationship - each user belongs to exactly one tenant';
-COMMENT ON COLUMN users.tenant_id IS 'Legacy string reference to tenants.subdomain (kept for compatibility)';
-COMMENT ON COLUMN users.tenant_id_fk IS 'Primary numeric FK to tenants.id - use this for all new code';
+COMMENT ON COLUMN users.tenant_id_fk IS 'Numeric FK to tenants.id - all tenant references use this field';
 COMMENT ON COLUMN users.tenant_name IS 'Denormalized tenant name for query performance';
 COMMENT ON COLUMN users.role IS 'Tenant-level role: operations < manager < admin';
 COMMENT ON COLUMN users.platform_role IS 'Platform role for Simplia internal team: internal_admin, support, etc.';
@@ -89,9 +87,8 @@ COMMENT ON COLUMN users.platform_role IS 'Platform role for Simplia internal tea
 -- Tenant applications (which apps each tenant has licensed)
 CREATE TABLE IF NOT EXISTS tenant_applications (
     id SERIAL PRIMARY KEY,
-    tenant_id VARCHAR(100) NOT NULL, -- References tenants.subdomain
-    tenant_id_fk INTEGER REFERENCES tenants(id), -- Proper FK reference
-    application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Numeric FK to tenants
+    application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
     status VARCHAR(20) DEFAULT 'active', -- active, suspended, expired
     activated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP, -- NULL for perpetual licenses
@@ -102,54 +99,50 @@ CREATE TABLE IF NOT EXISTS tenant_applications (
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(tenant_id, application_id)
+    UNIQUE(tenant_id_fk, application_id_fk)
 );
 
 COMMENT ON TABLE tenant_applications IS 'Licensing - which applications each tenant has licensed';
-COMMENT ON COLUMN tenant_applications.tenant_id IS 'String reference to tenants.subdomain (legacy)';
-COMMENT ON COLUMN tenant_applications.tenant_id_fk IS 'Proper FK reference to tenants.id';
+COMMENT ON COLUMN tenant_applications.tenant_id_fk IS 'Numeric FK to tenants.id - primary tenant reference';
 COMMENT ON COLUMN tenant_applications.user_limit IS 'Maximum concurrent users for this app';
 COMMENT ON COLUMN tenant_applications.seats_used IS 'Currently used seats (tracked by system)';
 
 -- User application access (granular permissions per user per app)
 CREATE TABLE IF NOT EXISTS user_application_access (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
-    tenant_id VARCHAR(100), -- Legacy string reference (for compatibility)
-    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Primary numeric FK
+    user_id_fk INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Numeric FK to tenants
     role_in_app VARCHAR(50) DEFAULT 'user', -- user, admin, viewer
     granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    granted_by INTEGER REFERENCES users(id),
+    granted_by_fk INTEGER REFERENCES users(id),
     expires_at TIMESTAMP, -- NULL for permanent access
     is_active BOOLEAN DEFAULT true,
     active BOOLEAN NOT NULL DEFAULT true,
     -- Pricing snapshots (captured at grant time for billing consistency)
     price_snapshot NUMERIC(10,2),
     currency_snapshot CHAR(3),
-    user_type_id_snapshot INTEGER REFERENCES user_types(id),
+    user_type_id_snapshot_fk INTEGER REFERENCES user_types(id),
     granted_cycle TEXT CHECK (granted_cycle IN ('monthly','yearly')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(tenant_id_fk, user_id, application_id) -- Unique per tenant (1:1 compatible, NxN ready)
+    UNIQUE(tenant_id_fk, user_id_fk, application_id_fk) -- Unique per tenant (1:1 compatible, NxN ready)
 );
 
 COMMENT ON TABLE user_application_access IS 'Granular user permissions per application with tenant context';
-COMMENT ON COLUMN user_application_access.tenant_id IS 'Legacy string reference (kept for compatibility)';
-COMMENT ON COLUMN user_application_access.tenant_id_fk IS 'Primary numeric FK - must match user''s tenant_id_fk';
+COMMENT ON COLUMN user_application_access.tenant_id_fk IS 'Numeric FK to tenants.id - must match user''s tenant_id_fk';
 COMMENT ON COLUMN user_application_access.role_in_app IS 'Role within specific application context';
 COMMENT ON COLUMN user_application_access.price_snapshot IS 'Price captured at grant time for billing consistency';
 COMMENT ON COLUMN user_application_access.currency_snapshot IS 'Currency captured at grant time';
-COMMENT ON COLUMN user_application_access.user_type_id_snapshot IS 'User type captured at grant time';
+COMMENT ON COLUMN user_application_access.user_type_id_snapshot_fk IS 'User type captured at grant time';
 COMMENT ON COLUMN user_application_access.granted_cycle IS 'Billing cycle captured at grant time';
 
 -- Access logs for audit trail
 CREATE TABLE IF NOT EXISTS application_access_logs (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    tenant_id VARCHAR(100), -- References tenants.subdomain
-    tenant_id_fk INTEGER REFERENCES tenants(id), -- Proper FK reference
-    application_id INTEGER REFERENCES applications(id),
+    user_id_fk INTEGER REFERENCES users(id),
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id), -- Numeric FK to tenants
+    application_id_fk INTEGER REFERENCES applications(id),
     access_type VARCHAR(50), -- granted, denied, revoked (legacy field)
     decision VARCHAR(20) NOT NULL DEFAULT 'granted', -- granted, denied
     reason VARCHAR(255), -- why access was denied
@@ -161,6 +154,7 @@ CREATE TABLE IF NOT EXISTS application_access_logs (
 );
 
 COMMENT ON TABLE application_access_logs IS 'Comprehensive audit trail for all access attempts';
+COMMENT ON COLUMN application_access_logs.tenant_id_fk IS 'Numeric FK to tenants.id - tenant context for audit';
 COMMENT ON COLUMN application_access_logs.decision IS 'granted or denied - primary access decision';
 COMMENT ON COLUMN application_access_logs.reason IS 'Detailed reason for denied access';
 COMMENT ON COLUMN application_access_logs.api_path IS 'Full API path for access tracking';
@@ -168,7 +162,7 @@ COMMENT ON COLUMN application_access_logs.api_path IS 'Full API path for access 
 -- Tenant addresses (institutional addresses)
 CREATE TABLE IF NOT EXISTS tenant_addresses (
     id BIGSERIAL PRIMARY KEY,
-    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('HQ','BILLING','SHIPPING','BRANCH','OTHER')),
     label TEXT NULL, -- free label (e.g., 'Headquarters São Paulo')
     line1 TEXT NOT NULL,
@@ -184,7 +178,7 @@ CREATE TABLE IF NOT EXISTS tenant_addresses (
 );
 
 COMMENT ON TABLE tenant_addresses IS 'Institutional addresses for tenants (HQ, billing, shipping, branch offices, etc.)';
-COMMENT ON COLUMN tenant_addresses.tenant_id IS 'Foreign key reference to tenants table';
+COMMENT ON COLUMN tenant_addresses.tenant_id_fk IS 'Foreign key reference to tenants table';
 COMMENT ON COLUMN tenant_addresses.type IS 'Address type: HQ=headquarters, BILLING=billing address, SHIPPING=shipping, BRANCH=branch office, OTHER=custom';
 COMMENT ON COLUMN tenant_addresses.label IS 'Optional custom label for the address (e.g., "Main Office Downtown")';
 COMMENT ON COLUMN tenant_addresses.line1 IS 'Primary address line (street, number)';
@@ -195,7 +189,7 @@ COMMENT ON COLUMN tenant_addresses.is_primary IS 'Whether this is the primary ad
 -- Tenant contacts (contact persons)
 CREATE TABLE IF NOT EXISTS tenant_contacts (
     id BIGSERIAL PRIMARY KEY,
-    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('ADMIN','BILLING','TECH','LEGAL','OTHER')),
     full_name TEXT NOT NULL,
     email TEXT NULL, -- normalize to lower-case in application
@@ -210,7 +204,7 @@ CREATE TABLE IF NOT EXISTS tenant_contacts (
 );
 
 COMMENT ON TABLE tenant_contacts IS 'Contact persons for tenants (admin, billing, technical, legal contacts, etc.)';
-COMMENT ON COLUMN tenant_contacts.tenant_id IS 'Foreign key reference to tenants table';
+COMMENT ON COLUMN tenant_contacts.tenant_id_fk IS 'Foreign key reference to tenants table';
 COMMENT ON COLUMN tenant_contacts.type IS 'Contact type: ADMIN=administrative, BILLING=billing contact, TECH=technical, LEGAL=legal contact, OTHER=custom';
 COMMENT ON COLUMN tenant_contacts.full_name IS 'Full name of the contact person';
 COMMENT ON COLUMN tenant_contacts.email IS 'Email address (normalized to lowercase in application layer)';
@@ -226,8 +220,8 @@ COMMENT ON COLUMN tenant_contacts.is_primary IS 'Whether this is the primary con
 -- Application pricing matrix (App × UserType with versioning)
 CREATE TABLE IF NOT EXISTS application_pricing (
   id BIGSERIAL PRIMARY KEY,
-  application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
-  user_type_id INTEGER NOT NULL REFERENCES user_types(id),
+  application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+  user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id),
   price NUMERIC(10,2) NOT NULL CHECK (price >= 0),
   currency CHAR(3) NOT NULL DEFAULT 'BRL',
   billing_cycle TEXT NOT NULL CHECK (billing_cycle IN ('monthly','yearly')) DEFAULT 'monthly',
@@ -236,7 +230,7 @@ CREATE TABLE IF NOT EXISTS application_pricing (
   active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (application_id, user_type_id, valid_from)
+  UNIQUE (application_id_fk, user_type_id_fk, valid_from)
 );
 
 COMMENT ON TABLE application_pricing IS 'Pricing matrix for App × UserType with versioning support';
@@ -252,12 +246,12 @@ COMMENT ON COLUMN application_pricing.billing_cycle IS 'monthly or yearly billin
 CREATE OR REPLACE VIEW v_tenant_app_seats_by_type AS
 SELECT
   uaa.tenant_id_fk,
-  uaa.application_id,
-  COALESCE(uaa.user_type_id_snapshot, u.user_type_id) AS user_type_id,
+  uaa.application_id_fk,
+  COALESCE(uaa.user_type_id_snapshot_fk, u.user_type_id_fk) AS user_type_id,
   COUNT(*)::INT AS seats_count,
   SUM(COALESCE(uaa.price_snapshot, 0))::NUMERIC(10,2) AS total_price
 FROM user_application_access uaa
-JOIN users u ON u.id = uaa.user_id
+JOIN users u ON u.id = uaa.user_id_fk
 WHERE uaa.is_active = TRUE
 GROUP BY 1,2,3;
 

@@ -15,7 +15,7 @@ const USER_STATUS = {
 /**
  * Create a new user object
  * @param {Object} params - User parameters
- * @param {string} params.tenantId - Tenant ID
+ * @param {number} params.tenantId - Tenant ID (numeric _fk)
  * @param {string} params.email - User email
  * @param {string} params.passwordHash - Hashed password
  * @param {string} params.name - Full name
@@ -45,9 +45,15 @@ function createUser({ tenantId, email, passwordHash, name, role, status = USER_S
  * @returns {Object} JWT payload
  */
 function createJwtPayload(user, tenant, allowedApps = [], userType = null) {
+  // ALWAYS use numeric tenant ID (_fk) - no legacy string support
+  const numericTenantId = user.tenantIdFk || tenant.id;
+  if (!numericTenantId || typeof numericTenantId !== 'number') {
+    throw new Error(`JWT payload requires numeric tenant ID, got: ${numericTenantId}`);
+  }
+
   return {
     userId: user.id,
-    tenantId: user.tenantIdFk || tenant.id || tenant.tenantId, // Prefer numeric tenant.id
+    tenantId: numericTenantId, // ALWAYS numeric tenant ID (_fk)
     email: user.email,
     name: user.name,
     role: user.role,
@@ -70,9 +76,15 @@ function createJwtPayload(user, tenant, allowedApps = [], userType = null) {
  * @returns {Object} User context
  */
 function createUserContext(user, tenant) {
+  // ALWAYS use numeric tenant ID (_fk) - no legacy string support
+  const numericTenantId = user.tenantIdFk || tenant.id;
+  if (!numericTenantId || typeof numericTenantId !== 'number') {
+    throw new Error(`User context requires numeric tenant ID, got: ${numericTenantId}`);
+  }
+
   return {
     userId: user.id,
-    tenantId: user.tenantId,
+    tenantId: numericTenantId, // ALWAYS numeric tenant ID (_fk)
     email: user.email,
     name: user.name,
     role: user.role,

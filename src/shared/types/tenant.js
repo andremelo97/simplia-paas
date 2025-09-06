@@ -29,7 +29,7 @@ const DEFAULT_TENANT_CONFIG = {
 /**
  * Create a new tenant object
  * @param {Object} params - Tenant parameters
- * @param {string} params.id - Tenant ID
+ * @param {number} params.id - Tenant ID (numeric)
  * @param {string} params.name - Tenant name
  * @param {string} params.schema - Database schema name
  * @param {string} [params.subdomain] - Optional subdomain
@@ -50,7 +50,7 @@ function createTenant({ id, name, schema, subdomain = null, active = true }) {
 
 /**
  * Create a new tenant context
- * @param {string} tenantId - Tenant ID
+ * @param {number} tenantId - Tenant ID (numeric)
  * @param {string} schema - Database schema name
  * @returns {Object} Tenant context object
  */
@@ -63,12 +63,25 @@ function createTenantContext(tenantId, schema) {
 
 /**
  * Validate tenant ID format
- * @param {string} tenantId - Tenant ID to validate
+ * @param {number|string} tenantId - Tenant ID to validate (accepts numeric or string for backward compatibility)
  * @throws {InvalidTenantError} If tenant ID is invalid
  */
 function validateTenantId(tenantId) {
-  if (!tenantId || typeof tenantId !== 'string') {
-    throw new InvalidTenantError('Tenant ID is required and must be a string');
+  if (!tenantId) {
+    throw new InvalidTenantError('Tenant ID is required');
+  }
+
+  // Prefer numeric IDs, but allow string slugs for backward compatibility
+  if (typeof tenantId === 'number') {
+    if (tenantId <= 0 || !Number.isInteger(tenantId)) {
+      throw new InvalidTenantError(`Tenant ID must be a positive integer: ${tenantId}`);
+    }
+    return; // Valid numeric ID
+  }
+
+  // Legacy string validation (for backward compatibility)
+  if (typeof tenantId !== 'string') {
+    throw new InvalidTenantError('Tenant ID must be a number or string');
   }
 
   // Basic validation - alphanumeric, underscore, hyphen
@@ -85,7 +98,7 @@ function validateTenantId(tenantId) {
 
 /**
  * Convert tenant ID to schema name with security prefix
- * @param {string} tenantId - Tenant ID
+ * @param {number|string} tenantId - Tenant ID (numeric preferred, string for backward compatibility)
  * @returns {string} Schema name
  */
 function tenantIdToSchema(tenantId) {

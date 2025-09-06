@@ -177,7 +177,7 @@ class Application {
       SELECT a.*, ta.status as tenant_status, ta.activated_at, ta.expires_at, ta.max_users
       FROM public.applications a
       INNER JOIN public.tenant_applications ta ON a.id = ta.application_id
-      WHERE ta.tenant_id = $1 AND ta.status = $2
+      WHERE ta.tenant_id_fk = $1 AND ta.status = $2
       ORDER BY a.name ASC 
       LIMIT $3 OFFSET $4
     `;
@@ -202,7 +202,7 @@ class Application {
       SELECT ta.*, a.name, a.slug
       FROM public.tenant_applications ta
       INNER JOIN public.applications a ON ta.application_id = a.id
-      WHERE ta.tenant_id = $1 AND a.slug = $2 AND ta.status = 'active'
+      WHERE ta.tenant_id_fk = $1 AND a.slug = $2 AND ta.status = 'active'
         AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
     `;
     

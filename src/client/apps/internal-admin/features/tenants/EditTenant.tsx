@@ -7,7 +7,6 @@ import { addressService } from '../../services/addresses'
 import { contactService } from '../../services/contacts'
 import { AddressesRepeater } from './AddressesRepeater'
 import { ContactsRepeater } from './ContactsRepeater'
-import { ApplicationsCard } from './ApplicationsCard'
 import { AddressFormValues, ContactFormValues } from './types'
 
 interface TenantFormData {
@@ -572,8 +571,6 @@ export const EditTenantPage: React.FC = () => {
             </CardContent>
           </Card>
           
-          {/* Applications Section */}
-          {id && <ApplicationsCard tenantId={parseInt(id)} />}
         </div>
 
         

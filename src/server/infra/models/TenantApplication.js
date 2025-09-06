@@ -11,9 +11,9 @@ class TenantApplicationNotFoundError extends Error {
 class TenantApplication {
   constructor(data) {
     this.id = data.id;
-    this.tenantId = data.tenant_id;
+    this.tenantId = data.tenant_id_fk;
     this.tenantIdFk = data.tenant_id_fk;
-    this.applicationId = data.application_id;
+    this.applicationId = data.application_id_fk;
     this.status = data.status;
     this.activatedAt = data.activated_at;
     this.expiresAt = data.expires_at || data.expiry_date;
@@ -26,7 +26,7 @@ class TenantApplication {
     // Application data if joined
     if (data.app_name) {
       this.application = {
-        id: data.application_id,
+        id: data.application_id_fk,
         name: data.app_name,
         slug: data.app_slug,
         description: data.app_description,
@@ -44,7 +44,7 @@ class TenantApplication {
       SELECT ta.*, a.name as app_name, a.slug as app_slug, a.description as app_description,
              a.price_per_user as app_price_per_user, a.version as app_version
       FROM public.tenant_applications ta
-      INNER JOIN public.applications a ON ta.application_id = a.id
+      INNER JOIN public.applications a ON ta.application_id_fk = a.id
       WHERE ta.id = $1
     `;
     
@@ -67,7 +67,7 @@ class TenantApplication {
       SELECT ta.*, a.name as app_name, a.slug as app_slug, a.description as app_description,
              a.price_per_user as app_price_per_user, a.version as app_version
       FROM public.tenant_applications ta
-      INNER JOIN public.applications a ON ta.application_id = a.id
+      INNER JOIN public.applications a ON ta.application_id_fk = a.id
       WHERE ta.tenant_id_fk = $1 AND ta.active = true
     `;
     const params = [tenantId];
@@ -97,7 +97,7 @@ class TenantApplication {
     let query = `
       SELECT COUNT(*) as count
       FROM public.tenant_applications ta
-      INNER JOIN public.applications a ON ta.application_id = a.id
+      INNER JOIN public.applications a ON ta.application_id_fk = a.id
       WHERE ta.tenant_id_fk = $1 AND ta.active = true
     `;
     const params = [tenantId];
@@ -116,15 +116,15 @@ class TenantApplication {
   }
 
   /**
-   * Find specific tenant application by tenant and application
+   * Find specific tenant application by tenant and application (with app data)
    */
-  static async findByTenantAndApplication(tenantId, applicationId) {
+  static async findByTenantAndApplicationWithAppData(tenantId, applicationId) {
     const query = `
       SELECT ta.*, a.name as app_name, a.slug as app_slug, a.description as app_description,
              a.price_per_user as app_price_per_user, a.version as app_version
       FROM public.tenant_applications ta
-      INNER JOIN public.applications a ON ta.application_id = a.id
-      WHERE ta.tenant_id = $1 AND ta.application_id = $2
+      INNER JOIN public.applications a ON ta.application_id_fk = a.id
+      WHERE ta.tenant_id_fk = $1 AND ta.application_id_fk = $2
     `;
     
     const result = await database.query(query, [tenantId, applicationId]);
@@ -140,36 +140,45 @@ class TenantApplication {
    * Grant application license to tenant
    */
   static async grantLicense(licenseData) {
-    const { tenantId, applicationId, maxUsers = null, expiresAt = null, status = 'active' } = licenseData;
+    const { tenantId, applicationId, userLimit = null, expiryDate = null, status = 'active' } = licenseData;
+    
+    console.log('🔄 [TenantApplication.grantLicense] Starting license creation:', { tenantId, applicationId, userLimit, expiryDate, status });
     
     // Verify application exists
     await Application.findById(applicationId);
+    console.log('✅ [TenantApplication.grantLicense] Application verified');
     
     // Check if license already exists
-    try {
-      const existing = await TenantApplication.findByTenantAndApplication(tenantId, applicationId);
+    const existing = await TenantApplication.findByTenantAndApplication(tenantId, applicationId);
+    console.log('🔍 [TenantApplication.grantLicense] Existing check result:', existing);
+    if (existing && existing.id) {
+      console.log('❌ [TenantApplication.grantLicense] License already exists:', existing.id);
       throw new Error(`License already exists for tenant ${tenantId} and application ${applicationId}`);
-    } catch (error) {
-      if (!(error instanceof TenantApplicationNotFoundError)) {
-        throw error;
-      }
     }
+    console.log('✅ [TenantApplication.grantLicense] No existing license found, proceeding with creation');
     
+    console.log('🔄 [TenantApplication.grantLicense] Inserting new license...');
     const query = `
-      INSERT INTO public.tenant_applications (tenant_id, application_id, status, expires_at, max_users)
+      INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, user_limit)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
     
-    const result = await database.query(query, [
-      tenantId, 
-      applicationId, 
-      status, 
-      expiresAt, 
-      maxUsers
-    ]);
-    
-    return await TenantApplication.findById(result.rows[0].id);
+    try {
+      const result = await database.query(query, [
+        tenantId, 
+        applicationId, 
+        status, 
+        expiryDate, 
+        userLimit
+      ]);
+      
+      console.log('✅ [TenantApplication.grantLicense] License inserted successfully:', result.rows[0].id);
+      return await TenantApplication.findById(result.rows[0].id);
+    } catch (insertError) {
+      console.log('❌ [TenantApplication.grantLicense] Insert failed:', insertError.message);
+      throw insertError;
+    }
   }
 
   /**
@@ -224,7 +233,7 @@ class TenantApplication {
     const query = `
       SELECT COUNT(*) as count
       FROM public.tenant_applications ta
-      JOIN public.applications a ON ta.application_id = a.id
+      JOIN public.applications a ON ta.application_id_fk = a.id
       WHERE ta.tenant_id_fk = $1 
       AND ta.active = true 
       AND ta.status = 'active'
@@ -241,8 +250,8 @@ class TenantApplication {
     const query = `
       SELECT ta.*, a.slug
       FROM public.tenant_applications ta
-      INNER JOIN public.applications a ON ta.application_id = a.id
-      WHERE ta.tenant_id = $1 AND a.slug = $2 AND ta.status = 'active'
+      INNER JOIN public.applications a ON ta.application_id_fk = a.id
+      WHERE ta.tenant_id_fk = $1 AND a.slug = $2 AND ta.status = 'active'
         AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
     `;
     
@@ -257,8 +266,8 @@ class TenantApplication {
     const query = `
       SELECT ta.*, a.name, a.slug, a.description, a.price_per_user
       FROM public.tenant_applications ta
-      INNER JOIN public.applications a ON ta.application_id = a.id
-      WHERE ta.tenant_id = $1 AND a.slug = $2
+      INNER JOIN public.applications a ON ta.application_id_fk = a.id
+      WHERE ta.tenant_id_fk = $1 AND a.slug = $2
     `;
     
     const result = await database.query(query, [tenantId, applicationSlug]);
@@ -308,7 +317,7 @@ class TenantApplication {
     const query = `
       SELECT COUNT(*) as count
       FROM public.user_application_access uaa
-      WHERE uaa.application_id = $1 AND uaa.tenant_id = $2 AND uaa.is_active = true
+      WHERE uaa.application_id_fk = $1 AND uaa.tenant_id_fk = $2 AND uaa.is_active = true
     `;
     
     const result = await database.query(query, [this.applicationId, this.tenantId]);
@@ -334,7 +343,7 @@ class TenantApplication {
     const query = `
       SELECT ta.*, a.slug, a.name, a.id as app_id
       FROM tenant_applications ta
-      JOIN applications a ON ta.application_id = a.id  
+      JOIN applications a ON ta.application_id_fk = a.id  
       WHERE ta.tenant_id_fk = $1 AND a.slug = $2 
       AND ta.active = true 
       AND ta.status = 'active'
@@ -352,7 +361,7 @@ class TenantApplication {
       SELECT user_limit, seats_used,
              (user_limit - seats_used) as seats_available
       FROM tenant_applications 
-      WHERE tenant_id_fk = $1 AND application_id = $2 AND active = true
+      WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = true
     `;
     const result = await database.query(query, [tenantId, applicationId]);
     return result.rows.length > 0 ? result.rows[0] : null;
@@ -381,7 +390,7 @@ class TenantApplication {
     const query = `
       SELECT DISTINCT a.slug
       FROM tenant_applications ta
-      JOIN applications a ON ta.application_id = a.id
+      JOIN applications a ON ta.application_id_fk = a.id
       WHERE ta.tenant_id_fk = $1
       AND ta.active = true
       AND ta.status = 'active'
@@ -425,7 +434,7 @@ class TenantApplication {
       UPDATE tenant_applications 
       SET seats_used = COALESCE(seats_used, 0) + 1,
           updated_at = NOW()
-      WHERE tenant_id_fk = $1 AND application_id = $2 AND active = TRUE
+      WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = TRUE
       RETURNING seats_used
     `;
     
@@ -444,7 +453,7 @@ class TenantApplication {
       UPDATE tenant_applications 
       SET seats_used = GREATEST(COALESCE(seats_used, 0) - 1, 0),
           updated_at = NOW()
-      WHERE tenant_id_fk = $1 AND application_id = $2 AND active = TRUE
+      WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = TRUE
       RETURNING seats_used
     `;
     
@@ -461,7 +470,7 @@ class TenantApplication {
   static async findByTenantAndApplication(tenantId, applicationId) {
     const query = `
       SELECT * FROM tenant_applications
-      WHERE tenant_id_fk = $1 AND application_id = $2
+      WHERE tenant_id_fk = $1 AND application_id_fk = $2
       LIMIT 1
     `;
     

@@ -102,24 +102,80 @@ npx jest tests/critical-validation.test.js # Run specific test file
 - **Database**: Single PostgreSQL database with multiple schemas (tenant_abc, tenant_xyz, etc.)
 - **Middleware**: Automatic tenant context injection in Express requests (`req.tenant`)
 
-## Convention: Tenant Identification
+## CRITICAL: Numeric-Only ID Policy
 
-**ID numérico = fonte da verdade; slug = friendly; header aceita ambos (deprecar slug)**
+**QUALQUER ID (PK/FK/header/JWT/param) é SEMPRE numérico — sem exceções**
 
 - **Source of Truth**: `req.tenant.id` (numeric) - ALWAYS use for database operations and FKs
-- **Friendly Identifier**: `req.tenant.slug` - subdomain for URLs and UX  
-- **Header Support**: `x-tenant-id` accepts both formats with automatic normalization:
-  - `x-tenant-id: 1` (preferred) → resolves by ID, no warning
-  - `x-tenant-id: default` (deprecated) → resolves by slug, emits deprecation warning
-- **Path Parameters**: Always use numeric IDs (`/tenants/:tenantId/licenses`)
-- **Frontend Services**: Send `String(tenantId)` in headers, not slugs
-- **Deprecation Policy**: Slug support in headers will be removed in future version
+- **Friendly Identifier**: `req.tenant.slug` - subdomain for URLs and UX only
+- **Header Support**: `x-tenant-id` accepts numeric values only:
+  - `x-tenant-id: 1` (correct) → resolves by numeric ID
+  - `x-tenant-id: default` (DEPRECATED) → legacy slug support, will be removed
+- **Path Parameters**: ALWAYS use numeric IDs (`/tenants/:tenantId/users`, `/applications/:id/pricing`)
+- **Frontend Services**: Send `String(tenantId)` in headers (numeric as string)
+- **JWT Tokens**: Contain ONLY numeric tenant IDs (`tenantId: 123`, never strings)
+- **Foreign Key Fields**: ALL FK fields use `_fk` suffix (`tenant_id_fk`, `user_id_fk`, `application_id_fk`)
+- **Database Constraints**: ALL FKs are `INTEGER NOT NULL REFERENCES` with proper constraints
+- **Legacy Deprecation**: String-based `tenant_id` fields deprecated, kept only for backward compatibility
+
+## Foreign Key Naming Conventions & Constraints ✅
+
+**CRITICAL**: ALL foreign key fields MUST follow these strict standards:
+
+### Naming Convention
+- **Suffix Requirement**: ALL FK fields use `_fk` suffix (`tenant_id_fk`, `user_id_fk`, `application_id_fk`)
+- **Type Consistency**: ALL FKs are `INTEGER NOT NULL` (no nullable FKs, no string FKs)
+- **Reference Integrity**: ALL FKs include `REFERENCES parent_table(id)` constraint
+
+### Implemented FK Fields
+```sql
+-- Users table
+users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
+users.user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id)
+
+-- User Application Access table
+user_application_access.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
+user_application_access.user_id_fk INTEGER NOT NULL REFERENCES users(id)
+user_application_access.application_id_fk INTEGER NOT NULL REFERENCES applications(id)
+user_application_access.user_type_id_fk_snapshot INTEGER NOT NULL REFERENCES user_types(id)
+user_application_access.granted_by_fk INTEGER NOT NULL REFERENCES users(id)
+
+-- Tenant Applications table
+tenant_applications.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
+tenant_applications.application_id_fk INTEGER NOT NULL REFERENCES applications(id)
+
+-- Application Pricing table
+application_pricing.application_id_fk INTEGER NOT NULL REFERENCES applications(id)
+application_pricing.user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id)
+
+-- Access Logs table
+application_access_logs.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
+application_access_logs.user_id_fk INTEGER NOT NULL REFERENCES users(id)
+application_access_logs.application_id_fk INTEGER NOT NULL REFERENCES applications(id)
+
+-- Tenant Extensions
+tenant_addresses.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
+tenant_contacts.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
+```
+
+### Unique Constraints
+- **Composite PKs**: Use FK field names in composite primary keys
+- **Business Rules**: `UNIQUE(tenant_id_fk, user_id_fk, application_id_fk)` prevents duplicate access
+- **Type Constraints**: `UNIQUE(tenant_id_fk, type, is_primary)` where `is_primary=true` for addresses/contacts
+
+### Index Optimization
+All indexes use FK field names with `_fk` suffix for optimal performance on joins and lookups.
 
 ## User Management & Authentication
 
-- **User Storage**: `public.users` table with **1:1 tenant relationship** via `tenant_id_fk` (numeric FK)
-- **Legacy Compatibility**: `tenant_id` string field deprecated but kept for compatibility
-- **Authentication**: JWT tokens with tenant + user context + app entitlements (`{userId, tenantId, role, schema, allowedApps[], userType}`)
+- **User Storage**: `public.users` table with **1:1 tenant relationship** via `tenant_id_fk` (numeric FK, NOT NULL)
+- **FK Naming Convention**: ALL foreign keys use `_fk` suffix with proper constraints:
+  - `users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)`
+  - `user_application_access.user_id_fk INTEGER NOT NULL REFERENCES users(id)`
+  - `user_application_access.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)`
+  - `user_application_access.application_id_fk INTEGER NOT NULL REFERENCES applications(id)`
+- **Legacy Compatibility**: `tenant_id` string fields deprecated, kept only for transition period
+- **Authentication**: JWT tokens with NUMERIC tenant + user context (`{userId: 123, tenantId: 456, role, schema, allowedApps[], userType}`)
 - **Tenant Consistency**: Application-level validation ensures `user_application_access.tenant_id_fk` matches `users.tenant_id_fk`
 - **Role Hierarchy**: `operations < manager < admin` with permission-based access control
 - **Middleware Chain**: `tenant → auth → appAccess → routes` for automatic context injection
@@ -219,14 +275,15 @@ Complete seat-based pricing implementation with App × UserType matrix and price
 ### Database Schema
 ```sql
 application_pricing:
-- application_id, user_type_id (composite primary key)
+- application_id_fk, user_type_id_fk (composite primary key with _fk suffix)
 - price, currency, billing_cycle
 - valid_from, valid_to (versioning)
 - active, created_at, updated_at
 
 user_application_access (enhanced):
+- tenant_id_fk, user_id_fk, application_id_fk (all with _fk suffix and NOT NULL constraints)
 - price_snapshot, currency_snapshot (captured at grant time)
-- user_type_id_snapshot, granted_cycle
+- user_type_id_fk_snapshot, granted_cycle (FK snapshots also use _fk suffix)
 - billing consistency preserved even if pricing changes
 ```
 
@@ -262,80 +319,25 @@ DELETE /internal/api/v1/users/:id/apps/revoke          # Revoke and decrement se
 - ✅ **Scheduled Pricing**: Future price changes with effective dates
 - ✅ **Comprehensive Tests**: 75% test coverage (6/8 core tests passing)
 
-## Internal Admin API - Complete Implementation ✅
+## Internal Admin API
 
-The **Internal Admin API** for `internal.simplia.com` panel is **100% complete and operational**:
+The Internal Admin API provides complete administrative functionality for the `internal.simplia.com` panel. It includes platform-scoped application management, tenant-scoped user management, entitlements, and audit logging capabilities.
 
-### Applications (Platform-scoped - No tenant header required)
-```
-GET    /internal/api/v1/applications                    # List applications with filters & pagination
-GET    /internal/api/v1/applications/:id                # Get application by ID  
-GET    /internal/api/v1/applications/slug/:slug         # Get application by slug
-POST   /internal/api/v1/applications                    # Create new application
-PUT    /internal/api/v1/applications/:id                # Update application
-DELETE /internal/api/v1/applications/:id                # Soft-delete (deprecate) application
-GET    /internal/api/v1/applications/:id/tenants        # List tenants licensed for application
-GET    /internal/api/v1/applications/:id/pricing        # Get pricing matrix for application (NEW)
-POST   /internal/api/v1/applications/:id/pricing        # Create new pricing entry (NEW)
-PUT    /internal/api/v1/applications/:id/pricing/:pricingId  # Update pricing entry (NEW)
-```
-**Access Control**: Requires authentication + `platform_role: internal_admin`
+**For detailed API endpoint documentation, request/response schemas, and usage examples, see [INTERNAL-API.md](./INTERNAL-API.md).**
 
-### Users (Tenant-scoped - Requires x-tenant-id header)
-```
-GET    /internal/api/v1/users                           # List users with filters & pagination
-POST   /internal/api/v1/users                           # Create new user  
-GET    /internal/api/v1/users/:id                       # Get user by ID
-PUT    /internal/api/v1/users/:id                       # Update user
-DELETE /internal/api/v1/users/:id                       # Soft-delete (deactivate) user
-GET    /internal/api/v1/users/:id/apps                  # Get user's application access
-POST   /internal/api/v1/users/:id/apps/grant            # Grant user access to application
-DELETE /internal/api/v1/users/:id/apps/revoke           # Revoke user access from application
-POST   /internal/api/v1/users/:id/reset-password        # Reset user password (admin)
-PUT    /internal/api/v1/users/bulk-update                # Bulk update multiple users
-```
-**Access Control**: Requires authentication + `x-tenant-id` header + appropriate tenant permissions
+### Middleware Usage Patterns
+```javascript
+// Protect routes by application (versioned internal API)
+app.get('/internal/api/v1/tq/*', requireTranscriptionQuoteAccess(), handler);
 
-### Tenant-Scoped Users API (NEW - 1:1 Model)
-```
-GET    /internal/api/v1/tenants/:tenantId/users         # List users in specific tenant
-POST   /internal/api/v1/tenants/:tenantId/users         # Create user directly assigned to tenant
-PUT    /internal/api/v1/tenants/:tenantId/users/:userId # Update user within tenant context
-DELETE /internal/api/v1/tenants/:tenantId/users/:userId # Deactivate user within tenant
-GET    /internal/api/v1/users?tenantId=                 # Global list with tenant filtering
-```
-**Access Control**: Requires authentication + `platform_role: internal_admin` + numeric tenant ID in path
-**AppFeedback**: Automatic success messaging with `USER_CREATED`, `USER_UPDATED`, `USER_DEACTIVATED` codes
+// Require specific role within app
+app.get('/internal/api/v1/tq/admin', requireTranscriptionQuoteAccess('admin'), handler);
 
-### Entitlements (Tenant-scoped - Requires x-tenant-id header)  
-```
-GET    /internal/api/v1/entitlements                    # List tenant licenses with filters
-GET    /internal/api/v1/entitlements/:slug              # Get specific license details
-POST   /internal/api/v1/entitlements/:slug/activate     # Activate license for application
-PUT    /internal/api/v1/entitlements/:slug/adjust       # Adjust license settings (limits/status/expiry)
-```
-**Access Control**: Requires authentication + `x-tenant-id` header + admin permissions
-
-### Other Platform Services
-```
-GET    /health                                          # Public health check (monitoring)
-POST   /internal/api/v1/auth/login                      # Authentication 
-GET    /internal/api/v1/auth/me                         # User profile
-GET    /internal/api/v1/audit/access-logs               # Platform audit logs (internal_admin only)
-GET    /internal/api/v1/audit/access-summary            # Platform audit summary (internal_admin only)  
-GET    /docs/internal                                   # Swagger documentation (internal_admin only)
+// Check any app access for general features  
+app.get('/internal/api/v1/dashboard', requireAnyAppAccess, handler);
 ```
 
-### Environment Configuration
-```bash
-INTERNAL_API_PREFIX=/internal/api/v1    # Configurable API prefix
-ENABLE_INTERNAL_DOCS=true               # Enable Swagger documentation
-INTERNAL_DOCS_PATH=/docs/internal       # Swagger endpoint path
-ADMIN_PANEL_ORIGIN=http://localhost:3002  # CORS allowed origin
-ENABLE_HELMET=true                      # Security headers
-```
-
-### Security Features
+### Security & Access Control
 - **CORS Restriction**: Limited to admin panel origin + test environments
 - **Platform Roles**: `platform_role` field for Simplia internal team (`internal_admin`)
 - **Protected Documentation**: Swagger requires `internal_admin` platform role
@@ -412,19 +414,24 @@ The migration system has been reorganized from 5 fragmented files into 3 well-or
 #### **001_create_core_tables.sql** - Foundation
 - **All 10 core tables**: tenants, users, user_types, applications, tenant_applications, user_application_access, application_access_logs, application_pricing, tenant_addresses, tenant_contacts
 - **Users ↔ Tenants 1:1**: `users.tenant_id_fk` numeric FK + `user_application_access.tenant_id_fk`
-- **Pricing System**: `application_pricing` table with App × UserType matrix and price snapshots in `user_application_access`
-- **Complete relationships**: All foreign keys and constraints with numeric FKs
-- **Legacy Compatibility**: `tenant_id` string fields deprecated but kept for compatibility
-- **Audit fields**: `active`, `created_at`, `updated_at` on all tables  
-- **Comprehensive comments**: Full documentation on tables and columns
-- **Tenant Extensions**: Address and contact management with type-based primary constraints
+- **FK Naming Standard**: ALL foreign keys use `_fk` suffix with `INTEGER NOT NULL REFERENCES` constraints:
+  - `tenant_id_fk`, `user_id_fk`, `application_id_fk`, `user_type_id_fk`, `granted_by_fk`
+- **Pricing System**: `application_pricing` with `application_id_fk` + `user_type_id_fk` composite PK
+- **Complete relationships**: All foreign keys properly constrained with numeric IDs only
+- **Legacy Removal**: ALL legacy string columns (`tenant_id VARCHAR`) removed from schema
+- **Audit fields**: `active`, `created_at`, `updated_at` on all tables with PostgreSQL triggers
+- **Comprehensive comments**: Full documentation on tables, columns, and FK relationships
+- **Tenant Extensions**: Address and contact management with `tenant_id_fk` numeric FKs
 
 #### **002_create_indexes.sql** - Performance
 - **Organized by purpose**: Primary lookup, performance, audit, business logic
-- **20+ optimized indexes**: Including composite and partial indexes for numeric FKs
-- **Authorization optimization**: Specific indexes for 5-layer auth flow with `tenant_id_fk`
-- **Tenant Consistency**: Documentation for application-level validation constraints
-- **Audit performance**: Indexes for compliance and security queries
+- **20+ optimized indexes**: All using `_fk` suffix fields (`tenant_id_fk`, `user_id_fk`, etc.)
+- **Authorization optimization**: Specific indexes for 5-layer auth flow with numeric FKs:
+  - `idx_user_app_access_tenant_fk_app ON user_application_access(tenant_id_fk, application_id_fk)`
+  - `idx_users_tenant_fk ON users(tenant_id_fk)`
+  - `idx_tenant_apps_tenant_fk ON tenant_applications(tenant_id_fk)`
+- **FK Performance**: Indexes on all foreign key fields for optimal join performance
+- **Audit performance**: Indexes for compliance and security queries on numeric FKs
 
 #### **003_seed_initial_data.sql** - Essential Data
 - **User types hierarchy**: operations (0) < manager (1) < admin (2)  
@@ -717,18 +724,19 @@ Implemented functional status toggle in tenant editing:
 - **Primary Constraints**: Type-based primary selection with business rule enforcement
 - **useRepeater Hook**: Generic state management for list operations with analytics tracking
 
-## Users ↔ Tenants 1:1 Model (Latest Implementation)
+## Users ↔ Tenants 1:1 Model (Production Ready) ✅
 
-### Key Changes
-- **Numeric FK Primary**: `users.tenant_id_fk` references `tenants(id)` - eliminates fragile string coupling
-- **Legacy Compatibility**: `users.tenant_id` string field deprecated but kept for transition
-- **Application-Level Validation**: Code ensures `user_application_access.tenant_id_fk` matches user's tenant
-- **Unique Constraints**: `UNIQUE(tenant_id_fk, user_id, application_id)` in user_application_access
-- **Performance**: Indexes optimized for numeric FK lookups instead of string comparisons
+### Implemented Features
+- **Numeric FK Primary**: `users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)` - eliminates fragile string coupling
+- **FK Naming Standard**: ALL foreign keys use `_fk` suffix with proper `INTEGER NOT NULL REFERENCES` constraints
+- **Legacy Cleanup**: ALL legacy string columns (`tenant_id VARCHAR`) removed from database schema
+- **Application-Level Validation**: Code ensures `user_application_access.tenant_id_fk` matches `users.tenant_id_fk`
+- **Unique Constraints**: `UNIQUE(tenant_id_fk, user_id_fk, application_id_fk)` in user_application_access
+- **Performance**: All indexes optimized for numeric FK lookups with `_fk` suffix fields
 
 ### Usage in Code
 ```javascript
-// User Model - Use numeric FK
+// User Model - Use numeric FK with _fk suffix
 const user = await User.findById(userId, tenantIdFk); // tenantIdFk is numeric
 
 // User Creation - Always populate numeric FK
@@ -737,23 +745,24 @@ const newUser = await User.create({
   email, firstName, lastName, role
 });
 
-// JWT Context - Contains numeric tenant ID
+// JWT Context - Contains ONLY numeric tenant ID
 const userContext = {
   userId: user.id,
-  tenantId: user.tenantIdFk, // Numeric in JWT payload
+  tenantId: user.tenantIdFk, // ALWAYS numeric in JWT payload
   allowedApps: ['tq', 'pm'], 
   role: user.role
 };
 
-// API Endpoints - Tenant-scoped operations
-GET /internal/api/v1/tenants/:tenantId/users      // tenantId is numeric
+// API Endpoints - Tenant-scoped operations (numeric only)
+GET /internal/api/v1/tenants/:tenantId/users      // tenantId is ALWAYS numeric
 POST /internal/api/v1/tenants/:tenantId/users     // Create user in specific tenant
 ```
 
-### Migration Notes
-- **3 Consolidated Migrations**: 001 (tables + 1:1 FK), 002 (indexes), 003 (seed data)
-- **Backward Compatible**: Existing `tenant_id` string fields preserved during transition
-- **Application Enforcement**: Consistency validated at application layer (trigger removed due to parser limitations)
+### Migration Implementation ✅
+- **5 Consolidated Migrations**: 001 (core tables), 002 (indexes), 003 (seed data), 004 (schema fix), 005 (admin fix)
+- **Legacy Removed**: ALL `tenant_id VARCHAR` fields removed from database schema
+- **FK Standardization**: ALL foreign keys use `_fk` suffix with proper constraints
+- **Production Ready**: All tables, indexes, and constraints follow numeric-only policy
 
 ### Benefits
 - **Referential Integrity**: Proper FK constraints prevent orphaned records
@@ -777,9 +786,12 @@ POST /internal/api/v1/tenants/:tenantId/users     // Create user in specific ten
 
 ## 📖 Documentação Adicional
 
-**Para contexto técnico detalhado, implementações específicas, e histórico completo de desenvolvimento, consulte [CLAUDE2.md](./CLAUDE2.md).**
+**Para contexto técnico detalhado, implementações específicas, e histórico completo de desenvolvimento, consulte:**
+- **[INTERNAL-API.md](./INTERNAL-API.md)** - Documentação completa da Internal Admin API com endpoints, schemas e exemplos
+- **[CLAUDE2.md](./CLAUDE2.md)** - Detalhamento técnico completo da arquitetura e implementações
 
-Este arquivo contém:
+Estes arquivos contêm:
+- Documentação completa de endpoints da API interna
 - Detalhamento completo de pastas e arquivos
 - Esquemas de banco de dados e migrations
 - Sistema de pricing e billing detalhado

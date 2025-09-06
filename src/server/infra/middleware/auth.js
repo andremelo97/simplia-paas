@@ -284,7 +284,7 @@ function requireTenantMatch(req, res, next) {
     });
   }
   
-  if (req.user.tenantId !== req.tenant.tenantId) {
+  if (req.user.tenantId !== req.tenant.id) {
     return res.status(403).json({
       error: 'Forbidden',
       message: 'User does not belong to this tenant'

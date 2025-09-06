@@ -8,8 +8,8 @@ const { overlaps, normalizeToUTCSeconds, formatDateRange } = require('../utils/d
 class ApplicationPricing {
   constructor(data = {}) {
     this.id = data.id || null;
-    this.applicationId = data.applicationId || data.application_id;
-    this.userTypeId = data.userTypeId || data.user_type_id;
+    this.applicationId = data.applicationId || data.application_id_fk;
+    this.userTypeId = data.userTypeId || data.user_type_id_fk;
     this.price = data.price;
     this.currency = data.currency || 'BRL';
     this.billingCycle = data.billingCycle || data.billing_cycle || 'monthly';
@@ -31,8 +31,8 @@ class ApplicationPricing {
     const query = `
       SELECT *
       FROM application_pricing 
-      WHERE application_id = $1 
-        AND user_type_id = $2
+      WHERE application_id_fk = $1 
+        AND user_type_id_fk = $2
         AND active = TRUE
         AND valid_from <= $3
         AND (valid_to IS NULL OR valid_to > $3)
@@ -54,7 +54,7 @@ class ApplicationPricing {
     const query = `
       SELECT *
       FROM application_pricing 
-      WHERE application_id = $1 AND user_type_id = $2
+      WHERE application_id_fk = $1 AND user_type_id_fk = $2
       ORDER BY valid_from DESC
     `;
     
@@ -72,8 +72,8 @@ class ApplicationPricing {
     let query = `
       SELECT ap.*, ut.name as user_type_name, ut.slug as user_type_slug
       FROM application_pricing ap
-      JOIN user_types ut ON ut.id = ap.user_type_id
-      WHERE ap.application_id = $1
+      JOIN user_types ut ON ut.id = ap.user_type_id_fk
+      WHERE ap.application_id_fk = $1
     `;
     
     const params = [applicationId];
@@ -91,8 +91,8 @@ class ApplicationPricing {
     const result = await database.query(query, params);
     return result.rows.map(row => ({
       id: row.id,
-      applicationId: row.application_id,
-      userTypeId: row.user_type_id,
+      applicationId: row.application_id_fk,
+      userTypeId: row.user_type_id_fk,
       userTypeName: row.user_type_name,
       userTypeSlug: row.user_type_slug,
       price: row.price,
@@ -125,8 +125,8 @@ class ApplicationPricing {
     let query = `
       SELECT id, valid_from, valid_to, price, active
       FROM application_pricing 
-      WHERE application_id = $1 
-        AND user_type_id = $2
+      WHERE application_id_fk = $1 
+        AND user_type_id_fk = $2
         AND billing_cycle = $3
         AND currency = $4
         AND active = TRUE
@@ -208,7 +208,7 @@ class ApplicationPricing {
 
     const query = `
       INSERT INTO application_pricing 
-        (application_id, user_type_id, price, currency, billing_cycle, valid_from, valid_to, active)
+        (application_id_fk, user_type_id_fk, price, currency, billing_cycle, valid_from, valid_to, active)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
@@ -252,8 +252,8 @@ class ApplicationPricing {
     // If updating validTo, check for overlaps with the new period
     if (data.validTo !== undefined) {
       const overlap = await this.checkOverlap(
-        current.application_id,
-        current.user_type_id,
+        current.application_id_fk,
+        current.user_type_id_fk,
         current.valid_from,
         data.validTo,
         current.billing_cycle,
@@ -268,8 +268,8 @@ class ApplicationPricing {
         error.details = {
           conflict: overlap,
           businessKey: {
-            applicationId: current.application_id,
-            userTypeId: current.user_type_id,
+            applicationId: current.application_id_fk,
+            userTypeId: current.user_type_id_fk,
             billingCycle: current.billing_cycle,
             currency: current.currency
           }
@@ -366,11 +366,11 @@ class ApplicationPricing {
         SUM(COALESCE(uaa.price_snapshot, ap.price, 0)) as total_amount,
         uaa.currency_snapshot as currency
       FROM user_application_access uaa
-      JOIN applications a ON a.id = uaa.application_id
-      JOIN users u ON u.id = uaa.user_id
+      JOIN applications a ON a.id = uaa.application_id_fk
+      JOIN users u ON u.id = uaa.user_id_fk
       LEFT JOIN application_pricing ap ON (
-        ap.application_id = uaa.application_id 
-        AND ap.user_type_id = COALESCE(uaa.user_type_id_snapshot, u.user_type_id)
+        ap.application_id_fk = uaa.application_id_fk 
+        AND ap.user_type_id_fk = COALESCE(uaa.user_type_id_fk_snapshot, u.user_type_id_fk)
         AND ap.active = TRUE 
         AND ap.valid_from <= $2
         AND (ap.valid_to IS NULL OR ap.valid_to > $2)

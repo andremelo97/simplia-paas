@@ -15,7 +15,7 @@ class User {
     this.name = `${data.first_name || ''} ${data.last_name || ''}`.trim();
     this.role = data.role;
     this.status = data.status;
-    this.userTypeId = data.user_type_id;
+    this.userTypeId = data.user_type_id_fk;
     this.platformRole = data.platform_role;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;

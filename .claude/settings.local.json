@@ -81,7 +81,14 @@
       "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\server\\api\\internal\\routes/**)",
       "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\client\\common\\ui/**)",
       "Read(/C:\\Program Files\\workspace\\simplia-paas\\src\\client\\common\\ui/**)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(sed:*)",
+      "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas -c \"SELECT ap.id, a.name as app_name, a.slug, ut.name as user_type, ap.price, ap.valid_from, ap.valid_to, ap.active FROM application_pricing ap JOIN applications a ON ap.application_id = a.id JOIN user_types ut ON ap.user_type_id = ut.id ORDER BY a.slug, ut.hierarchy_level;\")",
+      "Bash(PGPASSWORD=postgres dropdb -U postgres simplia_paas)",
+      "Bash(PGPASSWORD=postgres createdb -U postgres simplia_paas)",
+      "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas -c \"\\d application_pricing\")",
+      "Bash(PGPASSWORD=1234 psql -U simplia -d simplia_paas_test -c \"\\d application_pricing\")",
+      "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas_test -c \"\\d users\")"
     ],
     "deny": [],
     "ask": []

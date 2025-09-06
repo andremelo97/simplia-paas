@@ -1,3 +1,59 @@
+/**
+ * PRICING SYSTEM INTEGRATION TEST SUITE
+ * 
+ * Este test suite valida o sistema completo de pricing seat-based da Simplia PaaS.
+ * Testa matriz de preços, snapshots, seat management e billing integration.
+ * 
+ * COBERTURA DE TESTES:
+ * 
+ * ✅ ApplicationPricing Model Tests
+ * - Criação de pricing matrix (App × UserType)
+ * - Validação de preços por user type
+ * - Versionamento com valid_from/valid_to
+ * - Scheduling de mudanças futuras de preço
+ * - Overlap prevention entre períodos
+ * 
+ * ✅ Application Pricing API Endpoints
+ * - GET /applications/:id/pricing (matriz completa)
+ * - POST /applications/:id/pricing (criar entrada)
+ * - PUT /applications/:id/pricing/:id (atualizar entrada)
+ * - Filtros current=true/false para versionamento
+ * 
+ * ✅ Grant/Revoke with Pricing Snapshots
+ * - Captura de price snapshot no grant
+ * - Snapshot de user_type, currency, billing_cycle
+ * - Incremento automático de seats_used
+ * - Decremento automático no revoke
+ * - Validação de seat limits por tenant
+ * 
+ * ✅ Seat Management Integration
+ * - Controle de user_limit vs seats_used
+ * - Bloqueio quando limite excedido
+ * - Tracking preciso de seats por aplicação
+ * 
+ * ✅ Billing Summary Integration
+ * - Cálculo de billing baseado em snapshots
+ * - Agregação por aplicação e user type
+ * - Preservação de consistência mesmo com mudança de preços
+ * 
+ * ✅ Pricing Matrix Validation
+ * - TQ: operations($35), manager($55), admin($80)
+ * - PM: operations($25), manager($40), admin($60)
+ * - Billing: operations($30), manager($50), admin($70)
+ * - Reports: operations($20), manager($35), admin($50)
+ * 
+ * CENÁRIOS TESTADOS:
+ * - Criação de pricing para múltiplas aplicações
+ * - Grant com snapshot automático de preço
+ * - Revoke com liberação de seat
+ * - Cálculos de billing com snapshots
+ * - Validação de limites de assentos
+ * - Versionamento de preços com vigências
+ * 
+ * STATUS: 6/8 testes passando (75% cobertura) - problemas com field naming
+ * PRIORIDADE: CRÍTICO - Sistema de revenue da plataforma
+ */
+
 const request = require('supertest');
 const app = require('@server/app');
 const { generateTestToken } = require('../../auth-helper');
@@ -10,9 +66,9 @@ describe('Pricing System Integration Tests', () => {
 
   beforeAll(async () => {
     // Clean up test data
-    await global.testDb.query('DELETE FROM application_pricing WHERE application_id IN (SELECT id FROM applications WHERE slug IN (\'tq\', \'pm\'))');
+    await global.testDb.query('DELETE FROM application_pricing WHERE application_id_fk IN (SELECT id FROM applications WHERE slug IN (\'tq\', \'pm\'))');
     await global.testDb.query('DELETE FROM tenant_applications WHERE tenant_id_fk IN (SELECT id FROM tenants WHERE subdomain = \'pricing_test_clinic\')');
-    await global.testDb.query('DELETE FROM user_application_access WHERE user_id IN (SELECT id FROM users WHERE email IN (\'pricing-user@test.com\', \'pricing-admin@test.com\'))');
+    await global.testDb.query('DELETE FROM user_application_access WHERE user_id_fk IN (SELECT id FROM users WHERE email IN (\'pricing-user@test.com\', \'pricing-admin@test.com\'))');
     await global.testDb.query('DELETE FROM users WHERE email IN (\'pricing-user@test.com\', \'pricing-admin@test.com\')');
     await global.testDb.query('DELETE FROM tenants WHERE subdomain = \'pricing_test_clinic\'');
 
@@ -78,7 +134,7 @@ describe('Pricing System Integration Tests', () => {
   beforeEach(async () => {
     // Reset seat counts and clean any residual user access data
     await global.testDb.query(
-      'DELETE FROM user_application_access WHERE user_id IN ($1, $2)',
+      'DELETE FROM user_application_access WHERE user_id_fk IN ($1, $2)',
       [user.id, adminUser.id]
     );
     
@@ -96,9 +152,9 @@ describe('Pricing System Integration Tests', () => {
 
   afterAll(async () => {
     // Clean up test data
-    await global.testDb.query('DELETE FROM application_pricing WHERE application_id IN (SELECT id FROM applications WHERE slug IN (\'tq\', \'pm\'))');
+    await global.testDb.query('DELETE FROM application_pricing WHERE application_id_fk IN (SELECT id FROM applications WHERE slug IN (\'tq\', \'pm\'))');
     await global.testDb.query('DELETE FROM tenant_applications WHERE tenant_id_fk = $1', [tenant.id]);
-    await global.testDb.query('DELETE FROM user_application_access WHERE user_id IN ($1, $2)', [user.id, adminUser.id]);
+    await global.testDb.query('DELETE FROM user_application_access WHERE user_id_fk IN ($1, $2)', [user.id, adminUser.id]);
     await global.testDb.query('DELETE FROM users WHERE id IN ($1, $2)', [user.id, adminUser.id]);
     await global.testDb.query('DELETE FROM tenants WHERE id = $1', [tenant.id]);
     await global.testDb.query('DROP SCHEMA IF EXISTS tenant_pricing_test_clinic CASCADE');

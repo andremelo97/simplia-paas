@@ -5,6 +5,7 @@ const { TenantApplication, TenantApplicationNotFoundError } = require('../../../
 const { UserApplicationAccess, UserApplicationAccessNotFoundError } = require('../../../infra/models/UserApplicationAccess');
 const { Application, ApplicationNotFoundError } = require('../../../infra/models/Application');
 const User = require('../../../infra/models/User');
+const database = require('../../../infra/db/database');
 
 const router = express.Router();
 
@@ -19,8 +20,8 @@ router.use(requireAuth);
  * /entitlements:
  *   get:
  *     tags: [Entitlements (Tenant-scoped)]
- *     summary: List tenant licenses
- *     description: Get all application licenses for the current tenant
+ *     summary: List tenant licenses with enhanced data
+ *     description: Get all application licenses for the current tenant with pricing snapshots and seats per user type
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -79,13 +80,30 @@ router.use(requireAuth);
  *                         type: object
  *                         properties:
  *                           id: { type: integer }
- *                           applicationId: { type: integer }
- *                           applicationSlug: { type: string }
- *                           applicationName: { type: string }
+ *                           application:
+ *                             type: object
+ *                             properties:
+ *                               id: { type: integer }
+ *                               name: { type: string }
+ *                               slug: { type: string }
  *                           status: { type: string }
- *                           userLimit: { type: integer }
- *                           seatsUsed: { type: integer }
- *                           seatsAvailable: { type: integer }
+ *                           pricingSnapshot:
+ *                             type: object
+ *                             properties:
+ *                               price: { type: number }
+ *                               currency: { type: string }
+ *                               validFrom: { type: string }
+ *                               validTo: { type: string }
+ *                           seatsByUserType:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 userTypeId: { type: integer }
+ *                                 userType: { type: string }
+ *                                 total: { type: integer }
+ *                                 used: { type: integer }
+ *                                 available: { type: integer }
  *                           expiryDate: { type: string }
  *                           activatedAt: { type: string }
  *                           createdAt: { type: string }
@@ -116,7 +134,8 @@ router.get('/', requireManagerOrAdmin, async (req, res) => {
       offset: parseInt(offset)
     };
     
-    const licenses = await TenantApplication.findByTenant(tenantId, options);
+    // Get enhanced licenses with pricing data and seat breakdown
+    const enhancedLicenses = await getEnhancedLicenses(tenantId, options);
     const totalLicenses = await TenantApplication.count(tenantId, { status, includeExpired: options.includeExpired });
     
     res.json({
@@ -124,15 +143,12 @@ router.get('/', requireManagerOrAdmin, async (req, res) => {
       data: {
         tenantId,
         tenantName: req.tenant.name,
-        licenses: licenses.map(license => ({
-          ...license.toJSON(),
-          seatsAvailable: license.user_limit - license.seats_used
-        })),
+        licenses: enhancedLicenses,
         pagination: {
           total: totalLicenses,
           limit: parseInt(limit),
           offset: parseInt(offset),
-          hasMore: parseInt(offset) + licenses.length < totalLicenses
+          hasMore: parseInt(offset) + enhancedLicenses.length < totalLicenses
         }
       }
     });
@@ -146,6 +162,158 @@ router.get('/', requireManagerOrAdmin, async (req, res) => {
     });
   }
 });
+
+/**
+ * Helper function to get enhanced license data with pricing snapshots and seats by user type
+ */
+async function getEnhancedLicenses(tenantId, options = {}) {
+  const { status, limit = 50, offset = 0, includeExpired = false } = options;
+  
+  // Complex query to get licenses with aggregated seat data by user type
+  let query = `
+    WITH license_seats AS (
+      SELECT 
+        ta.id as license_id,
+        uaa.application_id,
+        COALESCE(uaa.user_type_id_snapshot, u.user_type_id) as user_type_id,
+        ut.name as user_type_name,
+        ut.hierarchy_level,
+        COUNT(*) as seats_used,
+        -- Get representative pricing snapshot (most common price for this user type)
+        MODE() WITHIN GROUP (ORDER BY uaa.price_snapshot) as modal_price,
+        MODE() WITHIN GROUP (ORDER BY uaa.currency_snapshot) as modal_currency
+      FROM public.tenant_applications ta
+      LEFT JOIN public.user_application_access uaa 
+        ON ta.application_id = uaa.application_id 
+        AND ta.tenant_id_fk = uaa.tenant_id_fk 
+        AND uaa.is_active = true
+      LEFT JOIN public.users u ON uaa.user_id = u.id
+      LEFT JOIN public.user_types ut ON COALESCE(uaa.user_type_id_snapshot, u.user_type_id) = ut.id
+      WHERE ta.tenant_id_fk = $1 AND ta.active = true
+      GROUP BY 1,2,3,4,5
+    ),
+    current_pricing AS (
+      SELECT DISTINCT
+        ap.application_id,
+        ap.user_type_id,
+        ap.price,
+        ap.currency,
+        ap.billing_cycle,
+        ap.valid_from,
+        ap.valid_to
+      FROM public.application_pricing ap
+      WHERE ap.active = true
+        AND ap.valid_from <= NOW()
+        AND (ap.valid_to IS NULL OR ap.valid_to > NOW())
+    )
+    SELECT 
+      ta.id,
+      ta.tenant_id_fk,
+      ta.application_id,
+      ta.status,
+      ta.activated_at,
+      ta.expires_at,
+      ta.user_limit,
+      ta.seats_used as total_seats_used,
+      ta.active,
+      ta.created_at,
+      ta.updated_at,
+      -- Application data
+      a.name as app_name,
+      a.slug as app_slug,
+      a.description as app_description,
+      -- Aggregated seat data by user type
+      COALESCE(
+        JSON_AGG(
+          JSON_BUILD_OBJECT(
+            'userTypeId', ls.user_type_id,
+            'userType', ls.user_type_name,
+            'used', COALESCE(ls.seats_used, 0),
+            'total', ta.user_limit,
+            'available', CASE 
+              WHEN ta.user_limit IS NULL THEN NULL
+              ELSE GREATEST(0, ta.user_limit - COALESCE(ls.seats_used, 0))
+            END,
+            'hierarchyLevel', ls.hierarchy_level,
+            'pricing', JSON_BUILD_OBJECT(
+              'price', COALESCE(ls.modal_price, cp.price),
+              'currency', COALESCE(ls.modal_currency, cp.currency),
+              'billingCycle', cp.billing_cycle,
+              'validFrom', cp.valid_from,
+              'validTo', cp.valid_to
+            )
+          )
+          ORDER BY ls.hierarchy_level NULLS LAST, ls.user_type_name
+        ) FILTER (WHERE ls.user_type_id IS NOT NULL),
+        '[]'::json
+      ) as seats_by_user_type
+    FROM public.tenant_applications ta
+    INNER JOIN public.applications a ON ta.application_id = a.id
+    LEFT JOIN license_seats ls ON ta.id = ls.license_id
+    LEFT JOIN current_pricing cp ON a.id = cp.application_id AND ls.user_type_id = cp.user_type_id
+    WHERE ta.tenant_id_fk = $1 AND ta.active = true
+  `;
+  
+  const params = [tenantId];
+  
+  if (status) {
+    query += ` AND ta.status = $${params.length + 1}`;
+    params.push(status);
+  }
+  
+  if (!includeExpired) {
+    query += ` AND (ta.expires_at IS NULL OR ta.expires_at > NOW())`;
+  }
+  
+  query += `
+    GROUP BY ta.id, ta.tenant_id_fk, ta.application_id, ta.status, ta.activated_at, 
+             ta.expires_at, ta.user_limit, ta.seats_used, ta.active, ta.created_at, 
+             ta.updated_at, a.name, a.slug, a.description
+    ORDER BY ta.activated_at DESC
+    LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+  `;
+  params.push(limit, offset);
+  
+  const result = await database.query(query, params);
+  
+  return result.rows.map(row => ({
+    id: row.id,
+    application: {
+      id: row.application_id,
+      name: row.app_name,
+      slug: row.app_slug,
+      description: row.app_description
+    },
+    status: row.status,
+    pricingSnapshot: getPricingSnapshot(row.seats_by_user_type),
+    seatsByUserType: row.seats_by_user_type || [],
+    expiryDate: row.expires_at,
+    activatedAt: row.activated_at,
+    userLimit: row.user_limit,
+    totalSeatsUsed: row.total_seats_used || 0,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }));
+}
+
+/**
+ * Extract representative pricing snapshot from seats data
+ */
+function getPricingSnapshot(seatsByUserType) {
+  if (!seatsByUserType || seatsByUserType.length === 0) {
+    return null;
+  }
+  
+  // Find the user type with the most seats or the highest hierarchy level
+  const representative = seatsByUserType.reduce((prev, current) => {
+    if (!prev) return current;
+    if (current.used > prev.used) return current;
+    if (current.used === prev.used && current.hierarchyLevel < prev.hierarchyLevel) return current;
+    return prev;
+  }, null);
+  
+  return representative ? representative.pricing : null;
+}
 
 /**
  * @openapi
@@ -296,14 +464,13 @@ router.get('/users', requireAuth, requireManagerOrAdmin, async (req, res) => {
       );
     } else {
       // Get all user access for tenant (this could be expensive, consider pagination)
-      const database = require('../../../infra/db/database');
       const query = `
         SELECT uaa.*, u.name as user_name, u.email as user_email, u.role as user_role,
                a.name as app_name, a.slug as app_slug, a.description as app_description
         FROM public.user_application_access uaa
         INNER JOIN public.users u ON uaa.user_id = u.id
         INNER JOIN public.applications a ON uaa.application_id = a.id
-        WHERE uaa.tenant_id = $1 AND uaa.is_active = true
+        WHERE uaa.tenant_id_fk = $1 AND uaa.is_active = true
           AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
         ORDER BY uaa.granted_at DESC
         LIMIT $2 OFFSET $3
@@ -569,13 +736,27 @@ router.get('/users/:userId/applications', requireAuth, async (req, res) => {
  *         description: Insufficient permissions
  */
 router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
+  const { applicationSlug } = req.params; // Move outside try block for catch block access
   try {
-    const { applicationSlug } = req.params;
     const { userLimit, expiryDate, status = 'active' } = req.body;
     const tenantId = req.tenant.id; // Use numeric ID
     
-    // Get application
+    // Get application and check if it's active
     const application = await Application.findBySlug(applicationSlug);
+    
+    if (!application.active) {
+      return res.status(422).json({
+        error: {
+          code: 422,
+          message: 'Cannot activate license for inactive application',
+          details: {
+            applicationSlug,
+            applicationName: application.name,
+            reason: 'APP_INACTIVE'
+          }
+        }
+      });
+    }
     
     // Check if license already exists
     const existingLicense = await TenantApplication.findByTenantAndApplication(tenantId, application.id)
@@ -585,29 +766,75 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
       return res.status(409).json({
         error: {
           code: 409,
-          message: `License for ${applicationSlug} is already active`
+          message: `License for ${applicationSlug} is already active`,
+          details: {
+            applicationSlug,
+            applicationName: application.name,
+            reason: 'ALREADY_LICENSED',
+            existingLicense: {
+              id: existingLicense.id,
+              activatedAt: existingLicense.activated_at,
+              expiresAt: existingLicense.expires_at,
+              userLimit: existingLicense.user_limit
+            }
+          }
         }
       });
     }
     
     // Create or reactivate license
-    const license = await TenantApplication.grantLicense({
+    const licenseData = {
       tenantId,
       applicationId: application.id,
       userLimit: userLimit ? parseInt(userLimit) : null,
       expiryDate: expiryDate ? new Date(expiryDate) : null,
       status
+    };
+    
+    let license;
+    if (existingLicense) {
+      // Reactivate existing license
+      license = await existingLicense.update({
+        status,
+        user_limit: licenseData.userLimit,
+        expires_at: licenseData.expiryDate,
+        activated_at: new Date()
+      });
+    } else {
+      // Create new license
+      console.log('🔄 [EntitlementsRoute] About to call grantLicense with:', licenseData);
+      license = await TenantApplication.grantLicense(licenseData);
+      console.log('✅ [EntitlementsRoute] License granted successfully:', license?.id);
+    }
+    
+    // Get enhanced license data for response
+    const enhancedLicenses = await getEnhancedLicenses(tenantId, { 
+      status: 'active',
+      limit: 100 
     });
+    const activatedLicense = enhancedLicenses.find(l => l.application.slug === applicationSlug);
     
     res.status(201).json({
       success: true,
-      message: `License for ${applicationSlug} activated successfully`,
+      meta: {
+        code: 'LICENSE_ACTIVATED',
+        message: `License for ${application.name} activated successfully`
+      },
       data: {
-        license: {
-          ...license.toJSON(),
-          applicationSlug,
-          applicationName: application.name,
-          seatsAvailable: (license.user_limit || 0) - (license.seats_used || 0)
+        license: activatedLicense || {
+          id: license.id,
+          application: {
+            id: application.id,
+            name: application.name,
+            slug: applicationSlug
+          },
+          status: license.status,
+          userLimit: license.user_limit,
+          totalSeatsUsed: license.seats_used || 0,
+          activatedAt: license.activated_at,
+          expiryDate: license.expires_at,
+          createdAt: license.created_at,
+          updatedAt: license.updated_at
         }
       }
     });
@@ -616,7 +843,24 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
       return res.status(404).json({
         error: {
           code: 404,
-          message: error.message
+          message: `Application not found: ${applicationSlug}`,
+          details: {
+            applicationSlug,
+            reason: 'APP_NOT_FOUND'
+          }
+        }
+      });
+    }
+    
+    if (error.message && error.message.includes('already exists')) {
+      return res.status(409).json({
+        error: {
+          code: 409,
+          message: `License for ${applicationSlug} already exists`,
+          details: {
+            applicationSlug,
+            reason: 'ALREADY_LICENSED'
+          }
         }
       });
     }

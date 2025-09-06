@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button } from '@client/common/ui'
-import { LicenseRow } from '../../licenses/LicenseRow'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { Skeleton, EmptyState, Alert, Button } from '@client/common/ui'
 import { TenantLicense, TenantLicensesResponse } from '../../licenses/types'
+import { TenantLicenseCard } from '../components/TenantLicenseCard'
+import { TenantLicensedApplicationsCard } from '../components/TenantLicensedApplicationsCard'
+import { ActivateApplicationButton } from '../components/ActivateApplicationButton'
 import { entitlementsService } from '../../../../services/entitlements'
-import { publishFeedback } from '@client/common/feedback/store'
 
 export const TenantLicensesTab: React.FC = () => {
   const [licenses, setLicenses] = useState<TenantLicense[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { tenantId } = useParams<{ tenantId: string }>()
+  const [searchParams] = useSearchParams()
   const numericTenantId = tenantId ? parseInt(tenantId) : undefined
 
   useEffect(() => {
@@ -22,6 +24,22 @@ export const TenantLicensesTab: React.FC = () => {
 
     fetchLicenses()
   }, [numericTenantId])
+
+  useEffect(() => {
+    // Handle deep-link to specific app
+    const appSlug = searchParams.get('app')
+    if (appSlug && licenses.length > 0) {
+      setTimeout(() => {
+        const cardElement = document.getElementById(`app-${appSlug}`)
+        if (cardElement) {
+          cardElement.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          })
+        }
+      }, 100)
+    }
+  }, [searchParams, licenses])
 
   const fetchLicenses = async () => {
     if (!numericTenantId) return
@@ -45,113 +63,122 @@ export const TenantLicensesTab: React.FC = () => {
     }
   }
 
-  const handleLicenseUpdate = (updatedLicense: TenantLicense) => {
-    setLicenses(prev => prev.map(license => 
-      license.id === updatedLicense.id ? updatedLicense : license
-    ))
+  const handleLicenseActivated = (newLicense: TenantLicense) => {
+    setLicenses(prev => [...prev, newLicense])
+  }
+
+  const handleViewDetails = (appSlug: string) => {
+    const cardElement = document.getElementById(`app-${appSlug}`)
+    if (cardElement) {
+      cardElement.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      })
+      // Add temporary highlight
+      cardElement.classList.add('ring-2', 'ring-blue-500')
+      setTimeout(() => {
+        cardElement.classList.remove('ring-2', 'ring-blue-500')
+      }, 2000)
+    }
+  }
+
+  const handleAdjustSeats = (license: TenantLicense) => {
+    // TODO: Implement seat adjustment modal
+    console.log('Adjust seats for:', license.application.name)
+  }
+
+  const handleManageUsers = (license: TenantLicense) => {
+    // TODO: Navigate to user management for this application
+    console.log('Manage users for:', license.application.name)
+  }
+
+  const handleViewPricing = (license: TenantLicense) => {
+    // TODO: Open pricing details modal
+    console.log('View pricing for:', license.application.name)
   }
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader className="p-6 pb-4">
-          <div className="animate-pulse">
-            <div className="h-6 bg-gray-200 rounded w-1/4"></div>
+      <div className="space-y-6">
+        {/* Section A - License Cards Skeleton */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-10 w-40" />
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="space-y-4 p-6">
+          <div className="space-y-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="animate-pulse h-16 bg-gray-200 rounded"></div>
+              <Skeleton key={i} className="h-64 w-full" />
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     )
   }
 
   if (error) {
     return (
-      <Card>
-        <CardContent className="py-8">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button variant="default" onClick={fetchLicenses}>
-              Try Again
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Alert variant="error">
+        <div className="flex items-center justify-between">
+          <span>{error}</span>
+          <Button variant="secondary" onClick={fetchLicenses} size="sm">
+            Try Again
+          </Button>
+        </div>
+      </Alert>
     )
   }
 
   return (
-    <Card>
-      <CardHeader className="p-6 pb-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Application Licenses</h2>
-          <div className="text-sm text-gray-500">
-            {licenses.length} {licenses.length === 1 ? 'license' : 'licenses'}
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="p-0">
-        {licenses.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012 2v2M7 7h10" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No licenses yet</h3>
-            <p className="text-gray-500 mb-4">
-              Activate an application to start using seats.
+    <div className="space-y-8">
+      {/* Section A: Application Licenses */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">Application Licenses</h2>
+            <p className="text-sm text-gray-600 mt-1">
+              Manage licenses and seats for each application
             </p>
-            <Link to="/applications">
-              <Button variant="default">
-                Browse Applications
-              </Button>
-            </Link>
           </div>
+          {numericTenantId && (
+            <ActivateApplicationButton
+              tenantId={numericTenantId}
+              existingLicenses={licenses}
+              onActivated={handleLicenseActivated}
+            />
+          )}
+        </div>
+
+        {licenses.length === 0 ? (
+          <EmptyState
+            title="No licenses yet"
+            description="Activate an application to start managing seats and users."
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Application
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Seats (used/limit)
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Activated At
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Expires At
-                  </th>
-                  <th className="relative px-6 py-3">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {licenses.map((license) => (
-                  <LicenseRow
-                    key={license.id}
-                    license={license}
-                    onLicenseUpdate={handleLicenseUpdate}
-                  />
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-6">
+            {licenses.map((license) => (
+              <TenantLicenseCard
+                key={license.id}
+                license={license}
+                onAdjustSeats={handleAdjustSeats}
+                onManageUsers={handleManageUsers}
+                onViewPricing={handleViewPricing}
+              />
+            ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Section B: Licensed Applications Summary */}
+      {licenses.length > 0 && (
+        <div>
+          <TenantLicensedApplicationsCard
+            licenses={licenses}
+            onViewDetails={handleViewDetails}
+            onViewPricing={handleViewPricing}
+          />
+        </div>
+      )}
+    </div>
   )
 }

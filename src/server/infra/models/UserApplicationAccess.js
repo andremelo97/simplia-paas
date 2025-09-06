@@ -12,9 +12,9 @@ class UserApplicationAccessNotFoundError extends Error {
 class UserApplicationAccess {
   constructor(data) {
     this.id = data.id;
-    this.userId = data.user_id;
-    this.applicationId = data.application_id;
-    this.tenantId = data.tenant_id;
+    this.userId = data.user_id_fk;
+    this.applicationId = data.application_id_fk;
+    this.tenantId = data.tenant_id_fk;
     this.roleInApp = data.role_in_app;
     this.grantedAt = data.granted_at;
     this.grantedBy = data.granted_by;
@@ -26,7 +26,7 @@ class UserApplicationAccess {
     // User data if joined
     if (data.user_name) {
       this.user = {
-        id: data.user_id,
+        id: data.user_id_fk,
         name: data.user_name,
         email: data.user_email,
         role: data.user_role
@@ -36,7 +36,7 @@ class UserApplicationAccess {
     // Application data if joined
     if (data.app_name) {
       this.application = {
-        id: data.application_id,
+        id: data.application_id_fk,
         name: data.app_name,
         slug: data.app_slug,
         description: data.app_description
@@ -52,8 +52,8 @@ class UserApplicationAccess {
       SELECT uaa.*, u.name as user_name, u.email as user_email, u.role as user_role,
              a.name as app_name, a.slug as app_slug, a.description as app_description
       FROM public.user_application_access uaa
-      INNER JOIN public.users u ON uaa.user_id = u.id
-      INNER JOIN public.applications a ON uaa.application_id = a.id
+      INNER JOIN public.users u ON uaa.user_id_fk = u.id
+      INNER JOIN public.applications a ON uaa.application_id_fk = a.id
       WHERE uaa.id = $1
     `;
     
@@ -75,13 +75,13 @@ class UserApplicationAccess {
     let query = `
       SELECT uaa.*, a.name as app_name, a.slug as app_slug, a.description as app_description
       FROM public.user_application_access uaa
-      INNER JOIN public.applications a ON uaa.application_id = a.id
-      WHERE uaa.user_id = $1 AND uaa.tenant_id = $2
+      INNER JOIN public.applications a ON uaa.application_id_fk = a.id
+      WHERE uaa.user_id_fk = $1 AND uaa.tenant_id_fk = $2
     `;
     const params = [userId, tenantId];
     
     if (applicationId) {
-      query += ` AND uaa.application_id = $${params.length + 1}`;
+      query += ` AND uaa.application_id_fk = $${params.length + 1}`;
       params.push(applicationId);
     }
     
@@ -110,9 +110,9 @@ class UserApplicationAccess {
       SELECT uaa.*, u.name as user_name, u.email as user_email, u.role as user_role,
              a.name as app_name, a.slug as app_slug
       FROM public.user_application_access uaa
-      INNER JOIN public.users u ON uaa.user_id = u.id
-      INNER JOIN public.applications a ON uaa.application_id = a.id
-      WHERE uaa.application_id = $1 AND uaa.tenant_id = $2
+      INNER JOIN public.users u ON uaa.user_id_fk = u.id
+      INNER JOIN public.applications a ON uaa.application_id_fk = a.id
+      WHERE uaa.application_id_fk = $1 AND uaa.tenant_id_fk = $2
     `;
     const params = [applicationId, tenantId];
     
@@ -181,16 +181,15 @@ class UserApplicationAccess {
     
     const query = `
       INSERT INTO public.user_application_access 
-      (user_id, application_id, tenant_id, tenant_id_fk, role_in_app, granted_by, expires_at,
-       price_snapshot, currency_snapshot, user_type_id_snapshot, granted_cycle, granted_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+      (user_id_fk, application_id_fk, tenant_id_fk, role_in_app, granted_by_fk, expires_at,
+       price_snapshot, currency_snapshot, user_type_id_snapshot_fk, granted_cycle, granted_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
       RETURNING *
     `;
     
     const result = await database.query(query, [
       userId, 
       applicationId, 
-      tenantId, 
       tenantIdFk,
       roleInApp, 
       grantedBy, 
@@ -220,8 +219,8 @@ class UserApplicationAccess {
     const query = `
       SELECT uaa.*, a.slug
       FROM public.user_application_access uaa
-      INNER JOIN public.applications a ON uaa.application_id = a.id
-      WHERE uaa.user_id = $1 AND uaa.tenant_id = $2 AND a.slug = $3 
+      INNER JOIN public.applications a ON uaa.application_id_fk = a.id
+      WHERE uaa.user_id_fk = $1 AND uaa.tenant_id_fk = $2 AND a.slug = $3 
         AND uaa.is_active = true
         AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
     `;
@@ -237,9 +236,9 @@ class UserApplicationAccess {
     const query = `
       SELECT DISTINCT a.slug, a.name, uaa.role_in_app
       FROM public.user_application_access uaa
-      INNER JOIN public.applications a ON uaa.application_id = a.id
-      INNER JOIN public.tenant_applications ta ON (ta.application_id = a.id AND ta.tenant_id = uaa.tenant_id)
-      WHERE uaa.user_id = $1 AND uaa.tenant_id = $2 AND uaa.is_active = true
+      INNER JOIN public.applications a ON uaa.application_id_fk = a.id
+      INNER JOIN public.tenant_applications ta ON (ta.application_id_fk = a.id AND ta.tenant_id_fk = uaa.tenant_id_fk)
+      WHERE uaa.user_id_fk = $1 AND uaa.tenant_id_fk = $2 AND uaa.is_active = true
         AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
         AND ta.status = 'active'
         AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
@@ -324,7 +323,7 @@ class UserApplicationAccess {
     
     const query = `
       INSERT INTO public.application_access_logs 
-      (user_id, tenant_id, application_id, access_type, ip_address, user_agent, endpoint, reason)
+      (user_id_fk, tenant_id_fk, application_id_fk, access_type, ip_address, user_agent, endpoint, reason)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
     
@@ -349,14 +348,14 @@ class UserApplicationAccess {
     let query = `
       SELECT aal.*, a.name as app_name, a.slug as app_slug
       FROM public.application_access_logs aal
-      LEFT JOIN public.applications a ON aal.application_id = a.id
-      WHERE aal.user_id = $1 AND aal.tenant_id = $2
+      LEFT JOIN public.applications a ON aal.application_id_fk = a.id
+      WHERE aal.user_id_fk = $1 AND aal.tenant_id_fk = $2
         AND aal.created_at > NOW() - INTERVAL '${days} days'
     `;
     const params = [userId, tenantId];
     
     if (applicationId) {
-      query += ` AND aal.application_id = $${params.length + 1}`;
+      query += ` AND aal.application_id_fk = $${params.length + 1}`;
       params.push(applicationId);
     }
     

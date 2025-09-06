@@ -1,41 +1,89 @@
 import { api } from '@client/config/http'
-import { TenantLicensesResponse, TenantLicense, AdjustLicensePayload } from '../features/tenants/licenses/types'
+import { 
+  TenantLicensesResponse, 
+  TenantLicense, 
+  AdjustLicensePayload, 
+  ActivateLicensePayload,
+  ActivateLicenseResponse 
+} from '../features/tenants/licenses/types'
 
 export class EntitlementsService {
-  static async getTenantLicenses(tenantId: number): Promise<TenantLicensesResponse> {
-    const response = await api.get('/internal/api/v1/entitlements', {
+  /**
+   * Get all licenses for a tenant with enhanced data
+   */
+  static async getTenantLicenses(
+    tenantId: number, 
+    options?: {
+      includeExpired?: boolean
+      status?: string
+      limit?: number
+      offset?: number
+    }
+  ): Promise<TenantLicensesResponse> {
+    const params = new URLSearchParams()
+    if (options?.includeExpired) params.set('includeExpired', 'true')
+    if (options?.status) params.set('status', options.status)
+    if (options?.limit) params.set('limit', String(options.limit))
+    if (options?.offset) params.set('offset', String(options.offset))
+    
+    const url = `/internal/api/v1/entitlements${params.toString() ? `?${params.toString()}` : ''}`
+    
+    const response = await api.get(url, {
       'x-tenant-id': String(tenantId) // Always send numeric ID as string
     })
     return response
   }
 
+  /**
+   * Adjust existing license settings
+   */
   static async adjustLicense(
     tenantId: number, 
     slug: string, 
     payload: AdjustLicensePayload
-  ): Promise<{ success: boolean; data: TenantLicense }> {
+  ): Promise<{ success: boolean; data: { license: TenantLicense } }> {
     const response = await api.put(`/internal/api/v1/entitlements/${slug}/adjust`, payload, {
       'x-tenant-id': String(tenantId) // Always send numeric ID as string
     })
     return response
   }
 
+  /**
+   * Activate license for an application
+   */
   static async activateLicense(
     tenantId: number, 
-    slug: string
-  ): Promise<{ success: boolean; data: TenantLicense }> {
-    const response = await api.post(`/internal/api/v1/entitlements/${slug}/activate`, {}, {
+    slug: string,
+    payload?: ActivateLicensePayload
+  ): Promise<ActivateLicenseResponse> {
+    const response = await api.post(`/internal/api/v1/entitlements/${slug}/activate`, payload || {}, {
       'x-tenant-id': String(tenantId) // Always send numeric ID as string
     })
     return response
   }
 
-  static async suspendLicense(tenantId: number, slug: string): Promise<{ success: boolean; data: TenantLicense }> {
+  /**
+   * Suspend a license
+   */
+  static async suspendLicense(tenantId: number, slug: string): Promise<{ success: boolean; data: { license: TenantLicense } }> {
     return this.adjustLicense(tenantId, slug, { status: 'suspended' })
   }
 
-  static async resumeLicense(tenantId: number, slug: string): Promise<{ success: boolean; data: TenantLicense }> {
+  /**
+   * Resume/reactivate a license
+   */
+  static async resumeLicense(tenantId: number, slug: string): Promise<{ success: boolean; data: { license: TenantLicense } }> {
     return this.adjustLicense(tenantId, slug, { status: 'active' })
+  }
+
+  /**
+   * Get specific license details
+   */
+  static async getLicense(tenantId: number, slug: string): Promise<{ success: boolean; data: { license: TenantLicense } }> {
+    const response = await api.get(`/internal/api/v1/entitlements/${slug}`, {
+      'x-tenant-id': String(tenantId)
+    })
+    return response
   }
 }
 

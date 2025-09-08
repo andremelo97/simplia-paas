@@ -1,5 +1,5 @@
 import React from 'react'
-import { Card, CardHeader, CardContent, Badge, Button, Table } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Badge, Button, Table, StatusBadge } from '@client/common/ui'
 import { TenantLicense } from '../../licenses/types'
 
 interface TenantLicenseCardProps {
@@ -15,15 +15,6 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
   onManageUsers,
   onViewPricing
 }) => {
-  const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' => {
-    switch (status) {
-      case 'active': return 'success'
-      case 'trial': return 'info' 
-      case 'suspended': return 'warning'
-      case 'expired': return 'error'
-      default: return 'default'
-    }
-  }
 
   const formatCurrency = (amount: number, currency: string = 'BRL') => {
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -50,9 +41,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
               <h3 className="text-lg font-semibold text-gray-900">
                 {license.application.name}
               </h3>
-              <Badge variant={getStatusColor(license.status)}>
-                {license.status}
-              </Badge>
+              <StatusBadge status={license.status as 'active' | 'inactive' | 'suspended'} />
             </div>
             {license.application.description && (
               <p className="text-sm text-gray-600">{license.application.description}</p>

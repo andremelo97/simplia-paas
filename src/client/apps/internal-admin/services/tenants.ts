@@ -24,6 +24,24 @@ export interface TenantResponse {
   updatedAt: string
 }
 
+export interface TenantMetrics {
+  totalUsers: number
+  activeUsers: number
+  applications: {
+    slug: string
+    status: string
+    userLimit: number | null
+    seatsUsed: number
+    expiresAt: string | null
+  }[]
+}
+
+export interface TenantDetailsResponse {
+  success: boolean
+  data: TenantResponse
+  metrics: TenantMetrics
+}
+
 export interface CreateTenantResponse {
   success: boolean
   message: string
@@ -149,7 +167,7 @@ export class TenantsService {
    * @param id - Tenant ID
    * @returns Promise with tenant data
    */
-  async getTenant(id: number): Promise<{ success: boolean; data: TenantResponse }> {
+  async getTenant(id: number): Promise<TenantDetailsResponse> {
     console.log('🏢 [TenantsService] Fetching tenant by ID:', id)
 
     try {
@@ -210,6 +228,197 @@ export class TenantsService {
       return response
     } catch (error) {
       console.error('❌ [TenantsService] Failed to update tenant:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Activate application license for tenant (Platform Admin)
+   * @param tenantId - Tenant ID
+   * @param appSlug - Application slug
+   * @param licenseData - License configuration
+   * @returns Promise with activated license data
+   */
+  async activateLicense(
+    tenantId: number, 
+    appSlug: string, 
+    licenseData?: {
+      userLimit?: number
+      expiryDate?: string
+      status?: 'active' | 'trial'
+    }
+  ): Promise<{ 
+    success: boolean; 
+    data: { 
+      license: {
+        id: number
+        tenantId: number
+        applicationSlug: string
+        applicationName: string
+        status: string
+        userLimit: number | null
+        seatsUsed: number
+        expiryDate: string | null
+        activatedAt: string
+      }
+    } 
+  }> {
+    console.log('🏢 [TenantsService] Activating license:', { tenantId, appSlug, licenseData })
+
+    try {
+      const response = await api.post(
+        `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/activate`, 
+        licenseData || {}
+      )
+      
+      console.log('✅ [TenantsService] License activated:', {
+        tenantId,
+        appSlug,
+        licenseId: response.data?.license?.id
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to activate license:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Adjust application license seats for tenant (Platform Admin)
+   * @param tenantId - Tenant ID
+   * @param appSlug - Application slug
+   * @param adjustmentData - Seat adjustment data
+   * @returns Promise with adjusted license data
+   */
+  async adjustLicense(
+    tenantId: number, 
+    appSlug: string, 
+    adjustmentData: { userLimit: number }
+  ): Promise<{ 
+    success: boolean; 
+    data: { 
+      license: {
+        id: number
+        tenantId: number
+        applicationSlug: string
+        applicationName: string
+        status: string
+        userLimit: number
+        seatsUsed: number
+        seatsAvailable: number
+        expiryDate: string | null
+        updatedAt: string
+      }
+    } 
+  }> {
+    console.log('🏢 [TenantsService] Adjusting license seats:', { tenantId, appSlug, adjustmentData })
+
+    try {
+      const response = await api.put(
+        `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/adjust`, 
+        adjustmentData
+      )
+      
+      console.log('✅ [TenantsService] License seats adjusted:', {
+        tenantId,
+        appSlug,
+        userLimit: response.data?.license?.userLimit,
+        seatsUsed: response.data?.license?.seatsUsed
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to adjust license seats:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Grant user access to application (Platform Admin)
+   * @param tenantId - Tenant ID
+   * @param userId - User ID
+   * @param appSlug - Application slug
+   * @returns Promise with grant result
+   */
+  async grantUserAccess(
+    tenantId: number, 
+    userId: number, 
+    appSlug: string
+  ): Promise<{ 
+    success: boolean; 
+    data: { 
+      access: {
+        id: number
+        userId: number
+        applicationSlug: string
+        tenantId: number
+        grantedAt: string
+        isActive: boolean
+      }
+    } 
+  }> {
+    console.log('🏢 [TenantsService] Granting user access:', { tenantId, userId, appSlug })
+
+    try {
+      const response = await api.post(
+        `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/grant`
+      )
+      
+      console.log('✅ [TenantsService] User access granted:', {
+        tenantId,
+        userId,
+        appSlug,
+        accessId: response.data?.access?.id
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to grant user access:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Revoke user access to application (Platform Admin)
+   * @param tenantId - Tenant ID
+   * @param userId - User ID
+   * @param appSlug - Application slug
+   * @returns Promise with revoke result
+   */
+  async revokeUserAccess(
+    tenantId: number, 
+    userId: number, 
+    appSlug: string
+  ): Promise<{ 
+    success: boolean; 
+    data: { 
+      access: {
+        id: number
+        userId: number
+        applicationSlug: string
+        tenantId: number
+        revokedAt: string
+        isActive: boolean
+      }
+    } 
+  }> {
+    console.log('🏢 [TenantsService] Revoking user access:', { tenantId, userId, appSlug })
+
+    try {
+      const response = await api.post(
+        `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/revoke`
+      )
+      
+      console.log('✅ [TenantsService] User access revoked:', {
+        tenantId,
+        userId,
+        appSlug
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to revoke user access:', error)
       throw error
     }
   }

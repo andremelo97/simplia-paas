@@ -1,4 +1,5 @@
 export { Button, buttonVariants, type ButtonProps } from './Button'
+export { LinkButton } from './LinkButton'
 export { Input, type InputProps } from './Input'
 export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from './Card'
 export { Label } from './Label'

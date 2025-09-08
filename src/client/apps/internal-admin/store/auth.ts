@@ -4,16 +4,24 @@ import { api } from '@client/config/http'
 import { AppError, isAppError } from '@client/common/feedback'
 
 interface User {
-  id: number
+  userId: number  // Backend uses userId, not id
+  id?: number     // Keep for backward compatibility
   email: string
   firstName?: string
   lastName?: string
-  role: 'operations' | 'manager' | 'admin'
-  tenantId: string
-  tenantSchema: string
-  platformRole?: 'internal_admin'
-  allowedApps: string[]
-  userType: string
+  name?: string   // Backend includes name field
+  role?: 'operations' | 'manager' | 'admin'
+  tenantId?: number  // Numeric tenant ID from FK relationship
+  tenantSchema?: string
+  platformRole?: 'internal_admin'  // Platform-level role for internal admin
+  allowedApps?: string[]
+  userType?: {
+    id: number
+    slug: string
+    hierarchyLevel: number
+  }
+  active?: boolean
+  createdAt?: string
 }
 
 interface AuthState {
@@ -44,12 +52,18 @@ export const useAuthStore = create<AuthState>()(persist(
       set({ isLoading: true, error: null })
       try {
         const response = await api.post('/internal/api/v1/platform-auth/login', credentials)
-        const result = response // Backend returns { success, message, data: { user, token } }
+        // Backend returns { meta: { code: "LOGIN_SUCCESS" }, data: { user, token, expiresIn } }
+        
+        // Add backward compatibility: map userId to id
+        const user = {
+          ...response.data.user,
+          id: response.data.user.userId
+        }
         
         set({
           isAuthenticated: true,
-          user: result.data.user,
-          token: result.data.token,
+          user: user,
+          token: response.data.token,
           isLoading: false,
           error: null
         })

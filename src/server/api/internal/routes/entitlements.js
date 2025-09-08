@@ -965,64 +965,208 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
  *       403:
  *         description: Insufficient permissions
  */
+/**
+ * @openapi
+ * /entitlements/{appSlug}/adjust:
+ *   put:
+ *     tags: [Entitlements (Tenant-scoped)]
+ *     summary: Adjust license seats and settings
+ *     description: Update user limit and other license settings. User limit cannot be reduced below current seats used.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug (e.g., 'tq', 'pm', 'billing')
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userLimit:
+ *                 type: integer
+ *                 minimum: 0
+ *                 description: New user limit (must be >= current seats used)
+ *               expiryDate:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 description: License expiry date
+ *               status:
+ *                 type: string
+ *                 enum: [active, trial, expired, suspended]
+ *     responses:
+ *       200:
+ *         description: License adjusted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: "LICENSE_ADJUSTED" }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     license:
+ *                       type: object
+ *                       properties:
+ *                         id: { type: integer }
+ *                         applicationSlug: { type: string }
+ *                         applicationName: { type: string }
+ *                         userLimit: { type: integer, nullable: true }
+ *                         seatsUsed: { type: integer }
+ *                         seatsAvailable: { type: integer }
+ *                         status: { type: string }
+ *                         expiresAt: { type: string, format: date-time, nullable: true }
+ *       422:
+ *         description: Validation error - user limit below seats used
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "Validation Error" }
+ *                 message: { type: string }
+ *                 details:
+ *                   type: object
+ *                   properties:
+ *                     reason: { type: string, example: "TOTAL_LT_USED" }
+ *                     seatsUsed: { type: integer }
+ *                     requestedLimit: { type: integer }
+ *       404:
+ *         description: License not found
+ */
 router.put('/:applicationSlug/adjust', requireAdmin, async (req, res) => {
   try {
     const { applicationSlug } = req.params;
     const { userLimit, expiryDate, status } = req.body;
     const tenantId = req.tenant.id; // Use numeric ID
     
+    console.log(`🔄 [Entitlements] Adjusting license: ${applicationSlug} for tenant ${tenantId}`, { userLimit, expiryDate, status });
+    
     // Get application
     const application = await Application.findBySlug(applicationSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Application '${applicationSlug}' not found`
+      });
+    }
     
-    // Find existing license
-    const license = await TenantApplication.findByTenantAndApplication(tenantId, application.id);
-    
-    // Prepare updates
-    const updates = {};
-    if (userLimit !== undefined) updates.user_limit = parseInt(userLimit);
-    if (expiryDate !== undefined) updates.expiry_date = new Date(expiryDate);
-    if (status !== undefined) updates.status = status;
-    
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({
-        error: {
-          code: 400,
-          message: 'At least one field must be provided to adjust'
+    // Find existing license with FOR UPDATE to prevent race conditions
+    const license = await TenantApplication.findByTenantAndApplicationWithLock(tenantId, application.id);
+    if (!license) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `License for '${applicationSlug}' not found for this tenant`,
+        details: {
+          reason: 'LICENSE_NOT_FOUND',
+          applicationSlug,
+          tenantId
         }
       });
     }
     
+    // Validate user limit constraint
+    if (userLimit !== undefined) {
+      const newUserLimit = parseInt(userLimit);
+      const currentSeatsUsed = license.seatsUsed || 0;
+      
+      if (newUserLimit < 0) {
+        return res.status(422).json({
+          error: 'Validation Error',
+          message: 'User limit cannot be negative',
+          details: {
+            reason: 'INVALID_USER_LIMIT',
+            requestedLimit: newUserLimit
+          }
+        });
+      }
+      
+      if (newUserLimit < currentSeatsUsed) {
+        return res.status(422).json({
+          error: 'Validation Error',
+          message: `Cannot reduce user limit below current seats used. Currently using ${currentSeatsUsed} seats.`,
+          details: {
+            reason: 'TOTAL_LT_USED',
+            seatsUsed: currentSeatsUsed,
+            requestedLimit: newUserLimit
+          }
+        });
+      }
+    }
+    
+    // Prepare updates
+    const updates = {};
+    if (userLimit !== undefined) updates.max_users = parseInt(userLimit);
+    if (expiryDate !== undefined) updates.expires_at = expiryDate ? new Date(expiryDate) : null;
+    if (status !== undefined) updates.status = status;
+    
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'At least one field must be provided to adjust'
+      });
+    }
+    
     // Update license
-    await license.update(updates);
+    const updatedLicense = await license.update(updates);
+    
+    console.log(`✅ [Entitlements] License adjusted: ${applicationSlug}`, {
+      userLimit: updatedLicense.maxUsers,
+      seatsUsed: updatedLicense.seatsUsed,
+      available: (updatedLicense.maxUsers || 0) - (updatedLicense.seatsUsed || 0)
+    });
     
     res.json({
       success: true,
-      message: `License for ${applicationSlug} adjusted successfully`,
+      meta: {
+        code: 'LICENSE_ADJUSTED',
+        message: 'License adjusted successfully'
+      },
       data: {
         license: {
-          ...license.toJSON(),
+          id: updatedLicense.id,
           applicationSlug,
           applicationName: application.name,
-          seatsAvailable: (license.user_limit || 0) - (license.seats_used || 0)
+          userLimit: updatedLicense.maxUsers,
+          seatsUsed: updatedLicense.seatsUsed,
+          seatsAvailable: (updatedLicense.maxUsers || 0) - (updatedLicense.seatsUsed || 0),
+          status: updatedLicense.status,
+          expiresAt: updatedLicense.expiresAt,
+          updatedAt: updatedLicense.updatedAt
         }
       }
     });
   } catch (error) {
     if (error instanceof ApplicationNotFoundError || error instanceof TenantApplicationNotFoundError) {
       return res.status(404).json({
-        error: {
-          code: 404,
-          message: error.message
-        }
+        error: 'Not Found',
+        message: error.message
       });
     }
     
-    console.error('Error adjusting license:', error);
+    console.error('❌ [Entitlements] Error adjusting license:', error);
     res.status(500).json({
-      error: {
-        code: 500,
-        message: 'Failed to adjust license'
-      }
+      error: 'Internal Server Error',
+      message: 'Failed to adjust license'
     });
   }
 });

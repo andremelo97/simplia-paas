@@ -2,10 +2,13 @@ const express = require('express');
 const { requireAuth } = require('../../../infra/middleware/auth');
 const { requirePlatformRole } = require('../../../infra/middleware/platformRole');
 const Tenant = require('../../../infra/models/Tenant');
-const { TenantApplication } = require('../../../infra/models/TenantApplication');
+const { TenantApplication, TenantApplicationNotFoundError } = require('../../../infra/models/TenantApplication');
+const { Application, ApplicationNotFoundError } = require('../../../infra/models/Application');
 const User = require('../../../infra/models/User');
+const { UserApplicationAccess } = require('../../../infra/models/UserApplicationAccess');
 const TenantAddress = require('../../../infra/models/TenantAddress');
 const TenantContact = require('../../../infra/models/TenantContact');
+const database = require('../../../infra/db/database');
 
 const router = express.Router();
 
@@ -226,9 +229,10 @@ router.get('/:id', async (req, res) => {
         totalUsers,
         activeUsers,
         applications: applications.map(app => ({
-          slug: app.applicationSlug,
+          slug: app.application?.slug,
+          name: app.application?.name,
           status: app.status,
-          userLimit: app.userLimit,
+          userLimit: app.maxUsers,
           seatsUsed: app.seatsUsed,
           expiresAt: app.expiresAt
         }))
@@ -1491,6 +1495,747 @@ router.delete('/:id/contacts/:contactId', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to delete contact'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/applications/{appSlug}/activate:
+ *   post:
+ *     tags: [Tenant Management]
+ *     summary: Activate application license for tenant
+ *     description: Activate a license for a specific application on a tenant (platform admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *         example: 1
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug (tq, pm, billing, reports)
+ *         example: "billing"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userLimit:
+ *                 type: integer
+ *                 minimum: 1
+ *                 description: Maximum number of users for this license
+ *                 example: 50
+ *               expiryDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: License expiry date (optional)
+ *                 example: "2024-12-31T23:59:59Z"
+ *               status:
+ *                 type: string
+ *                 enum: [active, trial]
+ *                 default: active
+ *                 description: License status
+ *                 example: "active"
+ *     responses:
+ *       201:
+ *         description: License activated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: "LICENSE_ACTIVATED" }
+ *                     message: { type: string, example: "License activated successfully." }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     license:
+ *                       type: object
+ *                       properties:
+ *                         id: { type: integer }
+ *                         tenantId: { type: integer }
+ *                         applicationSlug: { type: string }
+ *                         status: { type: string }
+ *                         userLimit: { type: integer }
+ *                         seatsUsed: { type: integer }
+ *                         expiryDate: { type: string }
+ *       400:
+ *         description: Validation error or license already exists
+ *       404:
+ *         description: Tenant or application not found
+ *       409:
+ *         description: License already active for this tenant and application
+ */
+router.post('/:id/applications/:appSlug/activate', async (req, res) => {
+  try {
+    const { id, appSlug } = req.params;
+    const { userLimit, expiryDate, status = 'active' } = req.body;
+    const tenantId = parseInt(id);
+
+    // Validate tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    // Validate application exists by slug
+    const application = await Application.findBySlug(appSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Application '${appSlug}' not found`
+      });
+    }
+
+    // Check if application is active
+    if (application.status !== 'active') {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: `Application '${appSlug}' is not active and cannot be licensed`
+      });
+    }
+
+    // Check if license already exists
+    const existingLicense = await TenantApplication.findByTenantAndApplication(tenantId, application.id);
+    if (existingLicense && existingLicense.status === 'active') {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: `License for '${appSlug}' is already active for this tenant`
+      });
+    }
+
+    // Validate user limit if provided
+    if (userLimit && userLimit < 1) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'User limit must be greater than 0'
+      });
+    }
+
+    // Create or reactivate license
+    let license;
+    if (existingLicense) {
+      // Reactivate existing license
+      license = await existingLicense.update({
+        status,
+        expires_at: expiryDate ? new Date(expiryDate) : null,
+        max_users: userLimit
+      });
+    } else {
+      // Create new license
+      license = await TenantApplication.grantLicense({
+        tenantId: tenantId,
+        applicationId: application.id,
+        userLimit,
+        expiryDate,
+        status
+      });
+    }
+
+    console.log(`✅ [Platform] License activated: ${appSlug} for tenant ${tenantId}`);
+
+    res.status(201).json({
+      success: true,
+      meta: {
+        code: "LICENSE_ACTIVATED",
+        message: "License activated successfully."
+      },
+      data: {
+        license: {
+          id: license.id,
+          tenantId: tenantId,
+          applicationSlug: appSlug,
+          applicationName: application.name,
+          status: license.status,
+          userLimit: license.userLimit,
+          seatsUsed: license.seatsUsed,
+          expiryDate: license.expiryDate,
+          activatedAt: license.createdAt || license.updatedAt
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('Error activating license:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to activate license'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/applications/{appSlug}/adjust:
+ *   put:
+ *     tags: [Tenant Management]
+ *     summary: Adjust license seats (Platform Admin)
+ *     description: Update user limit and other license settings for a tenant's application license. User limit cannot be reduced below current seats used.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug (e.g., 'tq', 'pm', 'billing')
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userLimit:
+ *                 type: integer
+ *                 minimum: 0
+ *                 description: New user limit (must be >= current seats used)
+ *               expiryDate:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 description: License expiry date
+ *               status:
+ *                 type: string
+ *                 enum: [active, trial, expired, suspended]
+ *     responses:
+ *       200:
+ *         description: License adjusted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: "LICENSE_ADJUSTED" }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     license:
+ *                       type: object
+ *                       properties:
+ *                         id: { type: integer }
+ *                         tenantId: { type: integer }
+ *                         applicationSlug: { type: string }
+ *                         applicationName: { type: string }
+ *                         userLimit: { type: integer, nullable: true }
+ *                         seatsUsed: { type: integer }
+ *                         seatsAvailable: { type: integer }
+ *                         status: { type: string }
+ *                         expiresAt: { type: string, format: date-time, nullable: true }
+ *       422:
+ *         description: Validation error - user limit below seats used
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "Validation Error" }
+ *                 message: { type: string }
+ *                 details:
+ *                   type: object
+ *                   properties:
+ *                     reason: { type: string, example: "TOTAL_LT_USED" }
+ *                     seatsUsed: { type: integer }
+ *                     requestedLimit: { type: integer }
+ *       404:
+ *         description: Tenant or license not found
+ */
+router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id);
+    const { appSlug } = req.params;
+    const { userLimit, expiryDate, status } = req.body;
+    
+    console.log(`🔄 [Platform] Adjusting license: ${appSlug} for tenant ${tenantId}`, { userLimit, expiryDate, status });
+    
+    // Validate tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+    
+    // Get application
+    const application = await Application.findBySlug(appSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Application '${appSlug}' not found`
+      });
+    }
+    
+    // Find existing license with FOR UPDATE to prevent race conditions
+    const license = await TenantApplication.findByTenantAndApplicationWithLock(tenantId, application.id);
+    if (!license) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `License for '${appSlug}' not found for this tenant`,
+        details: {
+          reason: 'LICENSE_NOT_FOUND',
+          applicationSlug: appSlug,
+          tenantId
+        }
+      });
+    }
+    
+    // Validate user limit constraint
+    if (userLimit !== undefined) {
+      const newUserLimit = parseInt(userLimit);
+      const currentSeatsUsed = license.seatsUsed || 0;
+      
+      if (newUserLimit < 0) {
+        return res.status(422).json({
+          error: 'Validation Error',
+          message: 'User limit cannot be negative',
+          details: {
+            reason: 'INVALID_USER_LIMIT',
+            requestedLimit: newUserLimit
+          }
+        });
+      }
+      
+      if (newUserLimit < currentSeatsUsed) {
+        return res.status(422).json({
+          error: 'Validation Error',
+          message: `Cannot reduce user limit below current seats used. Currently using ${currentSeatsUsed} seats.`,
+          details: {
+            reason: 'TOTAL_LT_USED',
+            seatsUsed: currentSeatsUsed,
+            requestedLimit: newUserLimit
+          }
+        });
+      }
+    }
+    
+    // Prepare updates
+    const updates = {};
+    if (userLimit !== undefined) updates.max_users = parseInt(userLimit);
+    if (expiryDate !== undefined) updates.expires_at = expiryDate ? new Date(expiryDate) : null;
+    if (status !== undefined) updates.status = status;
+    
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'At least one field must be provided to adjust'
+      });
+    }
+    
+    // Update license
+    const updatedLicense = await license.update(updates);
+    
+    console.log(`✅ [Platform] License adjusted: ${appSlug} for tenant ${tenantId}`, {
+      userLimit: updatedLicense.maxUsers,
+      seatsUsed: updatedLicense.seatsUsed,
+      available: (updatedLicense.maxUsers || 0) - (updatedLicense.seatsUsed || 0)
+    });
+    
+    res.json({
+      success: true,
+      meta: {
+        code: 'LICENSE_ADJUSTED',
+        message: 'License adjusted successfully'
+      },
+      data: {
+        license: {
+          id: updatedLicense.id,
+          tenantId: tenantId,
+          applicationSlug: appSlug,
+          applicationName: application.name,
+          userLimit: updatedLicense.maxUsers,
+          seatsUsed: updatedLicense.seatsUsed,
+          seatsAvailable: (updatedLicense.maxUsers || 0) - (updatedLicense.seatsUsed || 0),
+          status: updatedLicense.status,
+          expiresAt: updatedLicense.expiresAt,
+          updatedAt: updatedLicense.updatedAt
+        }
+      }
+    });
+  } catch (error) {
+    if (error instanceof ApplicationNotFoundError || error instanceof TenantApplicationNotFoundError) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: error.message
+      });
+    }
+    
+    console.error('❌ [Platform] Error adjusting license:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to adjust license'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/users/{userId}/applications/{appSlug}/grant:
+ *   post:
+ *     tags: [Tenant Management]
+ *     summary: Grant application access to user (Platform Admin)
+ *     description: Grant access to an application for a specific user, consuming one seat from the tenant's license
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug
+ *     responses:
+ *       201:
+ *         description: Access granted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: "ACCESS_GRANTED" }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     access:
+ *                       type: object
+ *                       properties:
+ *                         userId: { type: integer }
+ *                         applicationSlug: { type: string }
+ *                         tenantId: { type: integer }
+ *                         seatsRemaining: { type: integer }
+ *       409:
+ *         description: User already has access
+ *       422:
+ *         description: No seats available or license inactive
+ */
+router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id);
+    const userId = parseInt(req.params.userId);
+    const { appSlug } = req.params;
+    
+    console.log(`🔄 [Platform] Granting access: ${appSlug} to user ${userId} in tenant ${tenantId}`);
+    
+    // Validate tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+    
+    // Validate user exists and belongs to tenant
+    const user = await User.findById(userId, tenantId);
+    if (!user || user.tenantIdFk !== tenantId) {
+      return res.status(422).json({
+        error: 'Validation Error',
+        message: 'User not found or does not belong to this tenant',
+        details: {
+          reason: 'USER_NOT_IN_TENANT',
+          userId,
+          tenantId
+        }
+      });
+    }
+    
+    // Get application
+    const application = await Application.findBySlug(appSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Application '${appSlug}' not found`
+      });
+    }
+    
+    // Start transaction for seat management
+    await database.query('BEGIN');
+    
+    try {
+      // Find license with lock to prevent race conditions
+      const license = await TenantApplication.findByTenantAndApplicationWithLock(tenantId, application.id);
+      if (!license || license.status !== 'active') {
+        await database.query('ROLLBACK');
+        return res.status(422).json({
+          error: 'Validation Error',
+          message: `License for '${appSlug}' is not active for this tenant`,
+          details: {
+            reason: 'LICENSE_INACTIVE',
+            applicationSlug: appSlug,
+            status: license?.status || 'not_found'
+          }
+        });
+      }
+      
+      // Check seat availability
+      const seatsUsed = license.seatsUsed || 0;
+      const userLimit = license.maxUsers;
+      const seatsAvailable = userLimit ? (userLimit - seatsUsed) : Infinity;
+      
+      if (seatsAvailable <= 0) {
+        await database.query('ROLLBACK');
+        return res.status(422).json({
+          error: 'Validation Error',
+          message: `No seats available for '${appSlug}'. Currently using ${seatsUsed}/${userLimit} seats.`,
+          details: {
+            reason: 'NO_SEATS_AVAILABLE',
+            seatsUsed,
+            userLimit,
+            seatsAvailable: 0
+          }
+        });
+      }
+      
+      // Check if user already has access
+      const existingAccess = await UserApplicationAccess.findByUserAndApp(userId, application.id, tenantId);
+      if (existingAccess && existingAccess.isActive) {
+        await database.query('ROLLBACK');
+        return res.status(409).json({
+          error: 'Conflict',
+          message: `User already has access to '${appSlug}'`,
+          details: {
+            reason: 'ALREADY_GRANTED',
+            userId,
+            applicationSlug: appSlug
+          }
+        });
+      }
+      
+      // Grant access and increment seat count
+      const accessData = {
+        tenantIdFk: tenantId,
+        userIdFk: userId,
+        applicationIdFk: application.id,
+        userTypeIdFkSnapshot: user.userTypeIdFk,
+        grantedByFk: req.user.userId, // Platform admin granting access
+        isActive: true
+      };
+      
+      const access = await UserApplicationAccess.create(accessData);
+      await TenantApplication.incrementSeat(tenantId, application.id);
+      
+      await database.query('COMMIT');
+      
+      console.log(`✅ [Platform] Access granted: ${appSlug} to user ${userId}, seats: ${seatsUsed + 1}/${userLimit}`);
+      
+      res.status(201).json({
+        success: true,
+        meta: {
+          code: 'ACCESS_GRANTED',
+          message: 'Application access granted successfully'
+        },
+        data: {
+          access: {
+            userId,
+            applicationSlug: appSlug,
+            tenantId,
+            seatsRemaining: seatsAvailable - 1,
+            grantedAt: access.createdAt
+          }
+        }
+      });
+      
+    } catch (innerError) {
+      await database.query('ROLLBACK');
+      throw innerError;
+    }
+    
+  } catch (error) {
+    console.error('❌ [Platform] Error granting access:', error);
+    
+    if (error.code === '23505') { // PostgreSQL unique violation
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'User already has access to this application',
+        details: {
+          reason: 'ALREADY_GRANTED'
+        }
+      });
+    }
+    
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to grant application access'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/users/{userId}/applications/{appSlug}/revoke:
+ *   post:
+ *     tags: [Tenant Management]
+ *     summary: Revoke application access from user (Platform Admin)
+ *     description: Revoke access to an application for a specific user, freeing one seat in the tenant's license
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug
+ *     responses:
+ *       200:
+ *         description: Access revoked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: "ACCESS_REVOKED" }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     seatsFreed: { type: integer, example: 1 }
+ *                     seatsRemaining: { type: integer }
+ *       404:
+ *         description: Access not found
+ */
+router.post('/:id/users/:userId/applications/:appSlug/revoke', async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id);
+    const userId = parseInt(req.params.userId);
+    const { appSlug } = req.params;
+    
+    console.log(`🔄 [Platform] Revoking access: ${appSlug} from user ${userId} in tenant ${tenantId}`);
+    
+    // Validate tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+    
+    // Get application
+    const application = await Application.findBySlug(appSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Application '${appSlug}' not found`
+      });
+    }
+    
+    // Start transaction for seat management
+    await database.query('BEGIN');
+    
+    try {
+      // Find existing access
+      const access = await UserApplicationAccess.findByUserAndApp(userId, application.id, tenantId);
+      if (!access || !access.isActive) {
+        await database.query('ROLLBACK');
+        return res.status(404).json({
+          error: 'Not Found',
+          message: `User does not have access to '${appSlug}'`,
+          details: {
+            reason: 'ACCESS_NOT_FOUND',
+            userId,
+            applicationSlug: appSlug
+          }
+        });
+      }
+      
+      // Revoke access and decrement seat count
+      await access.revoke();
+      await TenantApplication.decrementSeat(tenantId, application.id);
+      
+      // Get updated license info
+      const license = await TenantApplication.findByTenantAndApplication(tenantId, application.id);
+      const seatsRemaining = license.maxUsers ? (license.maxUsers - (license.seatsUsed - 1)) : Infinity;
+      
+      await database.query('COMMIT');
+      
+      console.log(`✅ [Platform] Access revoked: ${appSlug} from user ${userId}, seats freed: 1`);
+      
+      res.json({
+        success: true,
+        meta: {
+          code: 'ACCESS_REVOKED',
+          message: 'Application access revoked successfully'
+        },
+        data: {
+          seatsFreed: 1,
+          seatsRemaining,
+          revokedAt: new Date().toISOString()
+        }
+      });
+      
+    } catch (innerError) {
+      await database.query('ROLLBACK');
+      throw innerError;
+    }
+    
+  } catch (error) {
+    console.error('❌ [Platform] Error revoking access:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to revoke application access'
     });
   }
 });

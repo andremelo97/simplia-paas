@@ -477,6 +477,27 @@ class TenantApplication {
     const result = await database.query(query, [tenantId, applicationId]);
     return result.rows.length > 0 ? new TenantApplication(result.rows[0]) : null;
   }
+
+  /**
+   * Find tenant application by tenant and application with row lock
+   * @param {number} tenantId - Tenant ID
+   * @param {number} applicationId - Application ID  
+   * @returns {TenantApplication|null}
+   */
+  static async findByTenantAndApplicationWithLock(tenantId, applicationId) {
+    const query = `
+      SELECT ta.*, a.name as app_name, a.slug as app_slug, a.description as app_description,
+             a.price_per_user as app_price_per_user, a.version as app_version
+      FROM tenant_applications ta
+      INNER JOIN applications a ON ta.application_id_fk = a.id
+      WHERE ta.tenant_id_fk = $1 AND ta.application_id_fk = $2
+      FOR UPDATE
+      LIMIT 1
+    `;
+    
+    const result = await database.query(query, [tenantId, applicationId]);
+    return result.rows.length > 0 ? new TenantApplication(result.rows[0]) : null;
+  }
 }
 
 module.exports = { TenantApplication, TenantApplicationNotFoundError };

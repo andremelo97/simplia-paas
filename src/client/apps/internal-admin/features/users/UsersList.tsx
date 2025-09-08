@@ -288,6 +288,10 @@ export const UsersList: React.FC = () => {
   }
 
   const getPageTitle = () => {
+    const appSlug = searchParams.get('app')
+    if (tenantId && appSlug) {
+      return `Tenant Users - ${appSlug.toUpperCase()} App Context`
+    }
     if (tenantId) {
       return `Tenant Users`
     }
@@ -301,8 +305,48 @@ export const UsersList: React.FC = () => {
     return `/tenants/${userTenantId}/users/${user.id}/edit`
   }
 
+  const appSlug = searchParams.get('app')
+  const showAppContext = !!appSlug
+
   return (
     <div className="space-y-6">
+      {/* App Context Banner */}
+      {showAppContext && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-blue-800">
+                  Viewing from Application Context
+                </h3>
+                <p className="text-sm text-blue-600">
+                  Showing users for application: <strong>{appSlug?.toUpperCase()}</strong>. Use "Manage Apps" to grant or revoke access for individual users.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                // Remove app parameter from URL
+                const newSearchParams = new URLSearchParams(searchParams)
+                newSearchParams.delete('app')
+                setSearchParams(newSearchParams)
+              }}
+              className="text-blue-400 hover:text-blue-600 transition-colors"
+              aria-label="Close application context banner"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Users</h1>
@@ -425,6 +469,13 @@ export const UsersList: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-3">
+                          <Link
+                            to={`/tenants/${user.tenantId || user.tenantIdFk}/licenses?user=${user.id}`}
+                            className="action-link"
+                            aria-label={`View licenses for ${user.name}'s tenant`}
+                          >
+                            View Licenses
+                          </Link>
                           <button
                             onClick={() => handleManageApps(user)}
                             className="action-link"

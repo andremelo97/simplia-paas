@@ -3,7 +3,7 @@ import { Modal, Button, Input, Table, Badge, Alert, Skeleton, EmptyState } from 
 import { TenantLicense } from '../../licenses/types'
 import { Application } from '../../../../services/applications'
 import { ApplicationsService } from '../../../../services/applications'
-import { entitlementsService } from '../../../../services/entitlements'
+import { tenantsService } from '../../../../services/tenants'
 import { publishFeedback } from '@client/common/feedback/store'
 
 interface ActivateApplicationModalProps {
@@ -86,7 +86,10 @@ export const ActivateApplicationModal: React.FC<ActivateApplicationModalProps> =
       setError(null)
       console.log('🔄 [ActivateApplicationModal] Activating license:', { tenantId, appSlug })
 
-      const response = await entitlementsService.activateLicense(tenantId, appSlug)
+      const response = await tenantsService.activateLicense(tenantId, appSlug, {
+        userLimit: 50, // Default user limit
+        status: 'active'
+      })
       
       console.log('✅ [ActivateApplicationModal] License activated successfully:', response.data)
 

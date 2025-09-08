@@ -49,7 +49,7 @@ class UserApplicationAccess {
    */
   static async findById(id) {
     const query = `
-      SELECT uaa.*, u.name as user_name, u.email as user_email, u.role as user_role,
+      SELECT uaa.*, u.first_name || ' ' || u.last_name as user_name, u.email as user_email, u.role as user_role,
              a.name as app_name, a.slug as app_slug, a.description as app_description
       FROM public.user_application_access uaa
       INNER JOIN public.users u ON uaa.user_id_fk = u.id
@@ -364,6 +364,61 @@ class UserApplicationAccess {
     
     const result = await database.query(query, params);
     return result.rows;
+  }
+
+  /**
+   * Create new user application access
+   * @param {Object} data - Access data
+   * @returns {UserApplicationAccess}
+   */
+  static async create(data) {
+    const query = `
+      INSERT INTO user_application_access (
+        tenant_id_fk, user_id_fk, application_id_fk, user_type_id_snapshot_fk, 
+        granted_by_fk, is_active, granted_at
+      ) 
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      RETURNING *
+    `;
+    
+    const params = [
+      data.tenantIdFk,
+      data.userIdFk,
+      data.applicationIdFk,
+      data.userTypeIdFkSnapshot,
+      data.grantedByFk,
+      data.isActive !== false
+    ];
+    
+    const result = await database.query(query, params);
+    return new UserApplicationAccess(result.rows[0]);
+  }
+
+  /**
+   * Find user application access by user and application
+   * @param {number} userId - User ID
+   * @param {number} applicationId - Application ID  
+   * @param {number} tenantId - Tenant ID
+   * @returns {UserApplicationAccess|null}
+   */
+  static async findByUserAndApp(userId, applicationId, tenantId) {
+    const query = `
+      SELECT uaa.*, 
+             u.first_name || ' ' || u.last_name as user_name,
+             u.email as user_email,
+             u.role as user_role,
+             a.name as app_name,
+             a.slug as app_slug,
+             a.description as app_description
+      FROM user_application_access uaa
+      LEFT JOIN users u ON uaa.user_id_fk = u.id
+      LEFT JOIN applications a ON uaa.application_id_fk = a.id
+      WHERE uaa.user_id_fk = $1 AND uaa.application_id_fk = $2 AND uaa.tenant_id_fk = $3
+      LIMIT 1
+    `;
+    
+    const result = await database.query(query, [userId, applicationId, tenantId]);
+    return result.rows.length > 0 ? new UserApplicationAccess(result.rows[0]) : null;
   }
 
   /**

@@ -34,6 +34,8 @@ export interface TenantLicense {
   expiryDate: string | null
   activatedAt: string
   userLimit: number | null
+  seatsUsed: number
+  seatsAvailable: number | null
   totalSeatsUsed: number
   createdAt: string
   updatedAt: string

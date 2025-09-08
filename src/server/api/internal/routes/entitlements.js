@@ -186,7 +186,7 @@ async function getEnhancedLicenses(tenantId, options = {}) {
       LEFT JOIN public.user_application_access uaa 
         ON ta.application_id = uaa.application_id 
         AND ta.tenant_id_fk = uaa.tenant_id_fk 
-        AND uaa.is_active = true
+        AND uaa.active = true
       LEFT JOIN public.users u ON uaa.user_id = u.id
       LEFT JOIN public.user_types ut ON COALESCE(uaa.user_type_id_snapshot, u.user_type_id) = ut.id
       WHERE ta.tenant_id_fk = $1 AND ta.active = true
@@ -470,7 +470,7 @@ router.get('/users', requireAuth, requireManagerOrAdmin, async (req, res) => {
         FROM public.user_application_access uaa
         INNER JOIN public.users u ON uaa.user_id = u.id
         INNER JOIN public.applications a ON uaa.application_id = a.id
-        WHERE uaa.tenant_id_fk = $1 AND uaa.is_active = true
+        WHERE uaa.tenant_id_fk = $1 AND uaa.active = true
           AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
         ORDER BY uaa.granted_at DESC
         LIMIT $2 OFFSET $3

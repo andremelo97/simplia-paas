@@ -117,7 +117,6 @@ CREATE TABLE IF NOT EXISTS user_application_access (
     granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     granted_by_fk INTEGER REFERENCES users(id),
     expires_at TIMESTAMP, -- NULL for permanent access
-    is_active BOOLEAN DEFAULT true,
     active BOOLEAN NOT NULL DEFAULT true,
     -- Pricing snapshots (captured at grant time for billing consistency)
     price_snapshot NUMERIC(10,2),
@@ -252,7 +251,7 @@ SELECT
   SUM(COALESCE(uaa.price_snapshot, 0))::NUMERIC(10,2) AS total_price
 FROM user_application_access uaa
 JOIN users u ON u.id = uaa.user_id_fk
-WHERE uaa.is_active = TRUE
+WHERE uaa.active = TRUE
 GROUP BY 1,2,3;
 
 COMMENT ON VIEW v_tenant_app_seats_by_type IS 'Aggregates active seats by tenant, app and user type with pricing';

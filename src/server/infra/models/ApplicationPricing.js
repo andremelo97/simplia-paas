@@ -376,7 +376,7 @@ class ApplicationPricing {
         AND (ap.valid_to IS NULL OR ap.valid_to > $2)
       )
       WHERE uaa.tenant_id_fk = $1 
-        AND uaa.is_active = TRUE
+        AND uaa.active = TRUE
       GROUP BY 1,2,3,6
       ORDER BY application_name
     `;

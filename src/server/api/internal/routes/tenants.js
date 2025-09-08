@@ -1651,6 +1651,28 @@ router.post('/:id/applications/:appSlug/activate', async (req, res) => {
 
     console.log(`✅ [Platform] License activated: ${appSlug} for tenant ${tenantId}`);
 
+    // Format response to match frontend expectations (same structure as entitlements endpoint)
+    const licenseResponse = {
+      id: license.id,
+      application: {
+        id: application.id,
+        name: application.name,
+        slug: application.slug,
+        description: application.description
+      },
+      status: license.status,
+      pricingSnapshot: null, // Will be populated when seats are assigned
+      seatsByUserType: [], // Will be populated when users are granted access
+      expiryDate: license.expiryDate,
+      activatedAt: license.createdAt || license.updatedAt,
+      userLimit: license.userLimit,
+      seatsUsed: license.seatsUsed || 0,
+      seatsAvailable: license.userLimit ? (license.userLimit - (license.seatsUsed || 0)) : null,
+      totalSeatsUsed: license.seatsUsed || 0,
+      createdAt: license.createdAt,
+      updatedAt: license.updatedAt
+    };
+
     res.status(201).json({
       success: true,
       meta: {
@@ -1658,17 +1680,7 @@ router.post('/:id/applications/:appSlug/activate', async (req, res) => {
         message: "License activated successfully."
       },
       data: {
-        license: {
-          id: license.id,
-          tenantId: tenantId,
-          applicationSlug: appSlug,
-          applicationName: application.name,
-          status: license.status,
-          userLimit: license.userLimit,
-          seatsUsed: license.seatsUsed,
-          expiryDate: license.expiryDate,
-          activatedAt: license.createdAt || license.updatedAt
-        }
+        license: licenseResponse
       }
     });
 
@@ -1903,7 +1915,7 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
  *   post:
  *     tags: [Tenant Management]
  *     summary: Grant application access to user (Platform Admin)
- *     description: Grant access to an application for a specific user, consuming one seat from the tenant's license
+ *     description: Grant access to an application for a specific user, consuming one seat from the tenant's license. Requires valid pricing configuration.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1925,6 +1937,17 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
  *         schema:
  *           type: string
  *         description: Application slug
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               roleInApp:
+ *                 type: string
+ *                 enum: [user, operations, manager, admin]
+ *                 description: Role for user in this specific application (defaults to user's general role)
  *     responses:
  *       201:
  *         description: Access granted successfully
@@ -1952,7 +1975,20 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
  *       409:
  *         description: User already has access
  *       422:
- *         description: No seats available or license inactive
+ *         description: No seats available, license inactive, or pricing not configured
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string }
+ *                 message: { type: string }
+ *                 details:
+ *                   type: object
+ *                   properties:
+ *                     reason: { type: string, example: "PRICING_NOT_CONFIGURED" }
+ *                     applicationId: { type: integer }
+ *                     userTypeId: { type: integer }
  */
 router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) => {
   try {
@@ -2047,16 +2083,25 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
         });
       }
       
-      // Grant access and increment seat count
+      // Grant access and increment seat count using the new pricing-aware implementation
+      // BE-FIX-003: Map user.role to appropriate role_in_app
+      const roleInAppMapping = {
+        'operations': 'operations',
+        'manager': 'manager', 
+        'admin': 'admin'
+      };
+      
       const accessData = {
         tenantIdFk: tenantId,
         userIdFk: userId,
         applicationIdFk: application.id,
-        userTypeIdFkSnapshot: user.userTypeIdFk,
+        userTypeIdFkSnapshot: user.userTypeId,
         grantedByFk: req.user.userId, // Platform admin granting access
+        roleInApp: req.body.roleInApp || roleInAppMapping[user.role] || 'operations', // Use provided role or map from user.role
         isActive: true
       };
       
+      // Use the pricing-aware create method that validates pricing and populates snapshots
       const access = await UserApplicationAccess.create(accessData);
       await TenantApplication.incrementSeat(tenantId, application.id);
       
@@ -2088,6 +2133,18 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
     
   } catch (error) {
     console.error('❌ [Platform] Error granting access:', error);
+    
+    if (error.code === 'PRICING_NOT_CONFIGURED') {
+      return res.status(422).json({
+        error: 'Pricing Not Configured', 
+        message: error.message,
+        details: {
+          reason: 'PRICING_NOT_CONFIGURED',
+          applicationSlug: appSlug,
+          userType: user.role || 'unknown'
+        }
+      });
+    }
     
     if (error.code === '23505') { // PostgreSQL unique violation
       return res.status(409).json({
@@ -2236,6 +2293,245 @@ router.post('/:id/users/:userId/applications/:appSlug/revoke', async (req, res) 
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to revoke application access'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{id}/applications/{appSlug}/users:
+ *   get:
+ *     tags: [Tenant Management]
+ *     summary: List tenant users with application access status
+ *     description: Get all users in a tenant with their access status for a specific application (Platform Admin)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug (e.g., 'tq', 'pm', 'billing')
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Search query for user name or email
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 50
+ *         description: Number of users per page
+ *     responses:
+ *       200:
+ *         description: Users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     usage:
+ *                       type: object
+ *                       properties:
+ *                         used: { type: integer }
+ *                         total: { type: integer, nullable: true }
+ *                         available: { type: integer, nullable: true }
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer }
+ *                           name: { type: string }
+ *                           email: { type: string }
+ *                           role: { type: string }
+ *                           status: { type: string }
+ *                           granted: { type: boolean }
+ *                           accessId: { type: integer, nullable: true }
+ *                           grantedAt: { type: string, nullable: true }
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: integer }
+ *                         limit: { type: integer }
+ *                         offset: { type: integer }
+ *                         hasMore: { type: boolean }
+ *       404:
+ *         description: Tenant or application not found
+ */
+router.get('/:id/applications/:appSlug/users', async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id);
+    const { appSlug } = req.params;
+    const { q, page = 1, limit = 50 } = req.query;
+    
+    // Validate and sanitize parameters
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 50));
+    const offset = (pageNum - 1) * limitNum;
+    const searchQuery = q ? String(q).trim() : null;
+    
+    console.log(`📋 [Platform] Listing users for app ${appSlug} in tenant ${tenantId}`, {
+      search: searchQuery,
+      page: pageNum,
+      limit: limitNum
+    });
+    
+    // Validate tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+    
+    // Get application by slug
+    const application = await Application.findBySlug(appSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `Application '${appSlug}' not found`
+      });
+    }
+    
+    // Check if tenant has license for this application
+    const license = await TenantApplication.findByTenantAndApplication(tenantId, application.id);
+    if (!license) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: `License not found for application '${appSlug}'`,
+        details: {
+          reason: 'LICENSE_NOT_FOUND',
+          tenantId,
+          applicationSlug: appSlug
+        }
+      });
+    }
+    
+    // Build query to get users with access status
+    let baseQuery = `
+      SELECT 
+        u.id,
+        u.first_name,
+        u.last_name,
+        u.email,
+        u.role,
+        u.status,
+        uaa.id as access_id,
+        uaa.granted_at,
+        uaa.active
+      FROM users u
+      LEFT JOIN user_application_access uaa ON u.id = uaa.user_id_fk 
+        AND uaa.application_id_fk = $2 
+        AND uaa.tenant_id_fk = $1
+        AND uaa.active = true
+      WHERE u.tenant_id_fk = $1 
+        AND u.status != 'deleted'
+    `;
+    
+    const queryParams = [tenantId, application.id];
+    let paramIndex = 2;
+    
+    // Add search filter if provided
+    if (searchQuery) {
+      paramIndex++;
+      baseQuery += ` AND (
+        LOWER(u.first_name || ' ' || u.last_name) LIKE LOWER($${paramIndex})
+        OR LOWER(u.email) LIKE LOWER($${paramIndex})
+      )`;
+      queryParams.push(`%${searchQuery}%`);
+    }
+    
+    // Add ordering and pagination
+    baseQuery += ` ORDER BY u.id ASC LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}`;
+    queryParams.push(limitNum, offset);
+    
+    // Execute query
+    const result = await database.query(baseQuery, queryParams);
+    
+    // Count total users for pagination
+    let countQuery = `
+      SELECT COUNT(*) as total 
+      FROM users u 
+      WHERE u.tenant_id_fk = $1 AND u.status != 'deleted'
+    `;
+    const countParams = [tenantId];
+    
+    if (searchQuery) {
+      countQuery += ` AND (
+        LOWER(u.first_name || ' ' || u.last_name) LIKE LOWER($2)
+        OR LOWER(u.email) LIKE LOWER($2)
+      )`;
+      countParams.push(`%${searchQuery}%`);
+    }
+    
+    const countResult = await database.query(countQuery, countParams);
+    const total = parseInt(countResult.rows[0].total);
+    
+    // Format response
+    const users = result.rows.map(row => ({
+      id: row.id,
+      name: `${row.first_name} ${row.last_name}`.trim(),
+      email: row.email,
+      role: row.role,
+      status: row.status,
+      granted: !!row.access_id,
+      accessId: row.access_id,
+      grantedAt: row.granted_at
+    }));
+    
+    // Calculate usage from license
+    const usage = {
+      used: license.seatsUsed || 0,
+      total: license.maxUsers,
+      available: license.maxUsers ? (license.maxUsers - (license.seatsUsed || 0)) : null
+    };
+    
+    const hasMore = offset + limitNum < total;
+    
+    console.log(`✅ [Platform] Listed ${users.length}/${total} users, ${users.filter(u => u.granted).length} with access`);
+    
+    res.json({
+      success: true,
+      data: {
+        usage,
+        items: users,
+        pagination: {
+          total,
+          limit: limitNum,
+          offset,
+          hasMore
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ [Platform] Error listing app users:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to list application users'
     });
   }
 });

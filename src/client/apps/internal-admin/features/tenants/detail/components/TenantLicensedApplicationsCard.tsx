@@ -68,10 +68,10 @@ export const TenantLicensedApplicationsCard: React.FC<TenantLicensedApplications
                 <td>
                   <div>
                     <div className="font-medium text-gray-900">
-                      {license.application.name}
+                      {license.application?.name || 'Unknown Application'}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {license.application.slug}
+                      {license.application?.slug || 'unknown'}
                     </div>
                   </div>
                 </td>

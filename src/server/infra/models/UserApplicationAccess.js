@@ -1,6 +1,7 @@
 const database = require('../db/database');
 const { Application, ApplicationNotFoundError } = require('./Application');
 const { TenantApplication } = require('./TenantApplication');
+const ApplicationPricing = require('./ApplicationPricing');
 
 class UserApplicationAccessNotFoundError extends Error {
   constructor(message) {
@@ -19,7 +20,7 @@ class UserApplicationAccess {
     this.grantedAt = data.granted_at;
     this.grantedBy = data.granted_by;
     this.expiresAt = data.expires_at;
-    this.isActive = data.is_active;
+    this.isActive = data.active;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
     
@@ -86,7 +87,7 @@ class UserApplicationAccess {
     }
     
     if (isActive !== null) {
-      query += ` AND uaa.is_active = $${params.length + 1}`;
+      query += ` AND uaa.active = $${params.length + 1}`;
       params.push(isActive);
     }
     
@@ -117,7 +118,7 @@ class UserApplicationAccess {
     const params = [applicationId, tenantId];
     
     if (isActive !== null) {
-      query += ` AND uaa.is_active = $${params.length + 1}`;
+      query += ` AND uaa.active = $${params.length + 1}`;
       params.push(isActive);
     }
     
@@ -221,7 +222,7 @@ class UserApplicationAccess {
       FROM public.user_application_access uaa
       INNER JOIN public.applications a ON uaa.application_id_fk = a.id
       WHERE uaa.user_id_fk = $1 AND uaa.tenant_id_fk = $2 AND a.slug = $3 
-        AND uaa.is_active = true
+        AND uaa.active = true
         AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
     `;
     
@@ -238,7 +239,7 @@ class UserApplicationAccess {
       FROM public.user_application_access uaa
       INNER JOIN public.applications a ON uaa.application_id_fk = a.id
       INNER JOIN public.tenant_applications ta ON (ta.application_id_fk = a.id AND ta.tenant_id_fk = uaa.tenant_id_fk)
-      WHERE uaa.user_id_fk = $1 AND uaa.tenant_id_fk = $2 AND uaa.is_active = true
+      WHERE uaa.user_id_fk = $1 AND uaa.tenant_id_fk = $2 AND uaa.active = true
         AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
         AND ta.status = 'active'
         AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
@@ -256,7 +257,7 @@ class UserApplicationAccess {
    * Update user application access
    */
   async update(updates) {
-    const allowedUpdates = ['role_in_app', 'expires_at', 'is_active'];
+    const allowedUpdates = ['role_in_app', 'expires_at', 'active'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -298,10 +299,10 @@ class UserApplicationAccess {
   }
 
   /**
-   * Revoke user access (set is_active to false)
+   * Revoke user access (set active to false)
    */
   async revoke(revokedBy) {
-    const result = await this.update({ is_active: false });
+    const result = await this.update({ active: false });
     
     // Log the access revocation
     await UserApplicationAccess.logAccess({
@@ -367,30 +368,92 @@ class UserApplicationAccess {
   }
 
   /**
-   * Create new user application access
+   * Create new user application access with pricing validation and snapshots
    * @param {Object} data - Access data
    * @returns {UserApplicationAccess}
    */
   static async create(data) {
+    const {
+      tenantIdFk,
+      userIdFk,
+      applicationIdFk,
+      userTypeIdFkSnapshot,
+      grantedByFk,
+      roleInApp = 'user',
+      isActive = true
+    } = data;
+    
+    console.log(`🔄 [UserApplicationAccess.create] Creating access for user ${userIdFk} to app ${applicationIdFk}`);
+    
+    // Validate required fields
+    if (!tenantIdFk || !userIdFk || !applicationIdFk || !userTypeIdFkSnapshot) {
+      const error = new Error('tenantIdFk, userIdFk, applicationIdFk and userTypeIdFkSnapshot are required');
+      error.code = 'INVALID_PARAMS';
+      error.status = 400;
+      throw error;
+    }
+    
+    // Validate role_in_app
+    const allowedRoles = ['user', 'admin', 'manager', 'operations'];
+    if (!allowedRoles.includes(roleInApp)) {
+      const error = new Error(`Invalid role_in_app. Must be one of: ${allowedRoles.join(', ')}`);
+      error.code = 'INVALID_ROLE_IN_APP';
+      error.status = 422;
+      error.details = {
+        provided: roleInApp,
+        allowed: allowedRoles
+      };
+      throw error;
+    }
+    
+    // BE-FIX-001: Validate pricing is configured for (application × user_type)
+    const pricing = await ApplicationPricing.getCurrentPrice(applicationIdFk, userTypeIdFkSnapshot);
+    if (!pricing) {
+      console.log(`❌ [UserApplicationAccess.create] No pricing found for app ${applicationIdFk} × user_type ${userTypeIdFkSnapshot}`);
+      
+      const error = new Error('Application pricing not configured for this user type');
+      error.code = 'PRICING_NOT_CONFIGURED';
+      error.status = 422;
+      error.details = {
+        applicationId: applicationIdFk,
+        userTypeId: userTypeIdFkSnapshot,
+        reason: 'No valid pricing configuration found for the current date'
+      };
+      throw error;
+    }
+    
+    console.log(`✅ [UserApplicationAccess.create] Found pricing: ${pricing.currency} ${pricing.price}/${pricing.billingCycle}`);
+    
+    // BE-FIX-002: Insert with complete pricing snapshots
     const query = `
       INSERT INTO user_application_access (
         tenant_id_fk, user_id_fk, application_id_fk, user_type_id_snapshot_fk, 
-        granted_by_fk, is_active, granted_at
+        granted_by_fk, role_in_app, active, granted_at,
+        price_snapshot, currency_snapshot, granted_cycle
       ) 
-      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), $8, $9, $10)
       RETURNING *
     `;
     
     const params = [
-      data.tenantIdFk,
-      data.userIdFk,
-      data.applicationIdFk,
-      data.userTypeIdFkSnapshot,
-      data.grantedByFk,
-      data.isActive !== false
+      tenantIdFk,
+      userIdFk,
+      applicationIdFk,
+      userTypeIdFkSnapshot, // Snapshot of user's type at grant time
+      grantedByFk,
+      roleInApp, // BE-FIX-003: Use provided role instead of hardcoded 'user'
+      isActive,
+      pricing.price, // Price snapshot
+      pricing.currency, // Currency snapshot
+      pricing.billingCycle // Billing cycle snapshot
     ];
     
+    console.log(`🔄 [UserApplicationAccess.create] Inserting with snapshots: price=${pricing.price} ${pricing.currency}, cycle=${pricing.billingCycle}, role=${roleInApp}`);
+    
     const result = await database.query(query, params);
+    
+    console.log(`✅ [UserApplicationAccess.create] Access created with ID: ${result.rows[0].id}`);
+    
     return new UserApplicationAccess(result.rows[0]);
   }
 

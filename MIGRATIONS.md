@@ -142,7 +142,7 @@ CREATE TABLE user_application_access (
   granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   granted_by_fk INTEGER REFERENCES users(id),
   expires_at TIMESTAMP, -- NULL for permanent access
-  is_active BOOLEAN DEFAULT true,
+  active BOOLEAN DEFAULT true,
   -- Price Snapshots (billing consistency)
   price_snapshot NUMERIC(10,2),
   currency_snapshot CHAR(3),
@@ -261,7 +261,7 @@ SELECT
   SUM(COALESCE(uaa.price_snapshot, 0))::NUMERIC(10,2) AS total_price
 FROM user_application_access uaa
 JOIN users u ON u.id = uaa.user_id_fk
-WHERE uaa.is_active = TRUE
+WHERE uaa.active = TRUE
 GROUP BY 1,2,3;
 ```
 
@@ -324,7 +324,7 @@ idx_users_tenant_fk_active ON users(tenant_id_fk, active)
 
 -- 5-layer authorization flow
 idx_auth_flow_tenant_app ON tenant_applications(tenant_id_fk, application_id_fk, status, active, expires_at)
-idx_auth_flow_user_app ON user_application_access(user_id_fk, application_id_fk, is_active, expires_at)
+idx_auth_flow_user_app ON user_application_access(user_id_fk, application_id_fk, active, expires_at)
 ```
 
 #### Seat Management

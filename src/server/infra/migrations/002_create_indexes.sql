@@ -83,7 +83,7 @@ CREATE INDEX IF NOT EXISTS idx_user_access_granted ON user_application_access(gr
 
 -- Authorization flow optimization (5-layer check)
 CREATE INDEX IF NOT EXISTS idx_auth_flow_tenant_app ON tenant_applications(tenant_id_fk, application_id_fk, status, active, expires_at);
-CREATE INDEX IF NOT EXISTS idx_auth_flow_user_app ON user_application_access(user_id_fk, application_id_fk, is_active, expires_at);
+CREATE INDEX IF NOT EXISTS idx_auth_flow_user_app ON user_application_access(user_id_fk, application_id_fk, active, expires_at);
 
 -- Reporting and analytics
 CREATE INDEX IF NOT EXISTS idx_analytics_tenant_time ON application_access_logs(tenant_id_fk, created_at DESC, decision);
@@ -97,8 +97,8 @@ CREATE INDEX IF NOT EXISTS idx_analytics_app_usage ON application_access_logs(ap
 -- Legacy partial index removed: idx_users_active_only
 CREATE INDEX IF NOT EXISTS idx_users_active_fk_only ON users(tenant_id_fk, email) WHERE active = true; -- Primary partial
 CREATE INDEX IF NOT EXISTS idx_tenant_apps_active_only ON tenant_applications(tenant_id_fk, application_id_fk) WHERE active = true;
-CREATE INDEX IF NOT EXISTS idx_user_access_active_only ON user_application_access(user_id_fk, application_id_fk) WHERE active = true AND is_active = true;
-CREATE INDEX IF NOT EXISTS idx_user_access_tenant_fk_active ON user_application_access(tenant_id_fk, user_id_fk, application_id_fk) WHERE active = true AND is_active = true;
+CREATE INDEX IF NOT EXISTS idx_user_access_active_only ON user_application_access(user_id_fk, application_id_fk) WHERE active = true;
+CREATE INDEX IF NOT EXISTS idx_user_access_tenant_fk_active ON user_application_access(tenant_id_fk, user_id_fk, application_id_fk) WHERE active = true;
 
 -- Failed access attempts (security monitoring)
 CREATE INDEX IF NOT EXISTS idx_access_denied_only ON application_access_logs(tenant_id_fk, created_at DESC, user_id_fk) WHERE decision = 'denied';

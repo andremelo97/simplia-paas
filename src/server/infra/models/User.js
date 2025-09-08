@@ -23,29 +23,15 @@ class User {
 
   /**
    * Create users table in public schema
+   * DEPRECATED: Use migrations instead (001_create_core_tables.sql)
    */
+  /* 
   static async createTable() {
-    const query = `
-      CREATE TABLE IF NOT EXISTS public.users (
-        id SERIAL PRIMARY KEY,
-        tenant_id VARCHAR(100) NOT NULL,
-        email VARCHAR(255) NOT NULL,
-        password_hash VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        role VARCHAR(50) NOT NULL DEFAULT 'secretary',
-        status VARCHAR(20) NOT NULL DEFAULT 'active',
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(tenant_id, email)
-      );
-      
-      CREATE INDEX IF NOT EXISTS idx_users_tenant_id ON public.users(tenant_id);
-      CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
-      CREATE INDEX IF NOT EXISTS idx_users_tenant_email ON public.users(tenant_id, email);
-    `;
-    
-    await database.query(query);
+    // This method is deprecated - table structure is managed by migrations
+    // See: src/server/infra/migrations/001_create_core_tables.sql
+    throw new Error('createTable is deprecated - use database migrations');
   }
+  */
 
   /**
    * Find user by ID and tenant (using numeric FK)
@@ -207,22 +193,26 @@ class User {
     }
     
     // Get tenant subdomain and name for legacy compatibility and denormalization
-    const tenantQuery = `SELECT subdomain, name FROM tenants WHERE id = $1`;
+    const tenantQuery = `SELECT subdomain, name FROM tenants WHERE id = $1 AND active = true`;
     const tenantResult = await database.query(tenantQuery, [tenantIdFk]);
-    const tenantSubdomain = tenantResult.rows[0]?.subdomain;
-    const tenantName = tenantResult.rows[0]?.name;
+    
+    if (tenantResult.rows.length === 0) {
+      throw new Error(`Tenant not found with ID: ${tenantIdFk}`);
+    }
+    
+    const tenantSubdomain = tenantResult.rows[0].subdomain;
+    const tenantName = tenantResult.rows[0].name;
     
     const query = `
       INSERT INTO public.users (
-        tenant_id, tenant_id_fk, tenant_name, email, password_hash, 
-        first_name, last_name, role, status, user_type_id
+        tenant_id_fk, tenant_name, email, password_hash, 
+        first_name, last_name, role, status, user_type_id_fk
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
     
     const result = await database.query(query, [
-      tenantSubdomain, // Legacy string 
       tenantIdFk, // Primary numeric FK
       tenantName, // Denormalized tenant name
       email, 

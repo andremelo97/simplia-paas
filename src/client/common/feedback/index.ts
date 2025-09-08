@@ -3,5 +3,11 @@ export * from './catalog'
 export * from './store'
 export { FeedbackHost } from './FeedbackHost'
 
-// Helper function for easy access
-export { publishFeedback } from './store'
+// Helper functions for easy access
+export { 
+  publishFeedback,
+  suppressFeedbackCode,
+  unsuppressFeedbackCode,
+  clearSuppressedFeedback,
+  withSuppressedFeedback
+} from './store'

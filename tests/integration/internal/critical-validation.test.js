@@ -123,7 +123,7 @@ describe('Critical Authorization Validation', () => {
 
       // Seed user application access
       await global.testDb.query(
-        `INSERT INTO user_application_access (tenant_id_fk, user_id_fk, application_id_fk, is_active, active)
+        `INSERT INTO user_application_access (tenant_id_fk, user_id_fk, application_id_fk, active, active)
          VALUES ($1, $2, $3, true, true)`,
         [tenant.id, user.id, tqApplication.id]
       );
@@ -283,7 +283,7 @@ describe('Critical Authorization Validation', () => {
 
       // Seed user application access
       await global.testDb.query(
-        `INSERT INTO user_application_access (tenant_id_fk, user_id_fk, application_id_fk, is_active, active)
+        `INSERT INTO user_application_access (tenant_id_fk, user_id_fk, application_id_fk, active, active)
          VALUES ($1, $2, $3, true, true)`,
         [tenant.id, user.id, tqApplication.id]
       );
@@ -462,7 +462,7 @@ describe('Critical Authorization Validation', () => {
 
       // Verify no access was created
       const accessResult = await global.testDb.query(
-        'SELECT * FROM user_application_access WHERE user_id = $1 AND application_id = $2 AND is_active = true',
+        'SELECT * FROM user_application_access WHERE user_id = $1 AND application_id = $2 AND active = true',
         [user.id, tqApplication.id]
       );
       expect(accessResult.rows.length).toBe(0);
@@ -479,10 +479,10 @@ describe('Critical Authorization Validation', () => {
       );
 
       await global.testDb.query(
-        `INSERT INTO user_application_access (user_id_fk, application_id_fk, tenant_id_fk, is_active, active, price_snapshot, currency_snapshot)
+        `INSERT INTO user_application_access (user_id_fk, application_id_fk, tenant_id_fk, active, active, price_snapshot, currency_snapshot)
          VALUES ($1, $2, $3, true, true, 55.00, 'BRL')
          ON CONFLICT (tenant_id_fk, user_id_fk, application_id_fk) DO UPDATE SET
-           is_active = true, active = true`,
+           active = true, active = true`,
         [user.id, tqApplication.id, tenant.id]
       );
 
@@ -509,7 +509,7 @@ describe('Critical Authorization Validation', () => {
         'SELECT * FROM user_application_access WHERE user_id = $1 AND application_id = $2',
         [user.id, tqApplication.id]
       );
-      expect(accessResult.rows[0].is_active).toBe(false);
+      expect(accessResult.rows[0].active).toBe(false);
     });
   });
 });

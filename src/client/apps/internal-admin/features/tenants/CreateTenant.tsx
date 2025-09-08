@@ -5,6 +5,7 @@ import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
 import { addressService } from '../../services/addresses'
 import { contactService } from '../../services/contacts'
+import { withSuppressedFeedback } from '@client/common/feedback'
 import { AddressesRepeater } from './AddressesRepeater'
 import { ContactsRepeater } from './ContactsRepeater'
 import { AddressFormValues, ContactFormValues } from './types'
@@ -167,51 +168,54 @@ export const CreateTenant: React.FC = () => {
         contactCount: contacts.length
       })
 
-      // Step 1: Create the tenant
-      const tenantResponse = await tenantsService.create({
-        name: formData.name.trim(),
-        subdomain
+      // Create tenant with addresses and contacts, suppressing individual feedback messages
+      await withSuppressedFeedback(['ADDRESS_CREATED', 'CONTACT_CREATED'], async () => {
+        // Step 1: Create the tenant
+        const tenantResponse = await tenantsService.create({
+          name: formData.name.trim(),
+          subdomain
+        })
+        
+        const tenant = tenantResponse.data.tenant
+        console.log('✅ [CreateTenant] Tenant created successfully, ID:', tenant.id)
+        
+        // Step 2: Create addresses for the tenant
+        if (addresses.length > 0) {
+          console.log('📍 [CreateTenant] Creating addresses...')
+          for (const address of addresses) {
+            await addressService.createAddress(tenant.id, {
+              type: address.type,
+              label: address.label,
+              line1: address.line1,
+              line2: address.line2,
+              city: address.city,
+              state: address.state,
+              postalCode: address.postal_code,
+              countryCode: address.country_code,
+              isPrimary: address.is_primary
+            })
+          }
+          console.log('✅ [CreateTenant] Addresses created successfully')
+        }
+        
+        // Step 3: Create contacts for the tenant
+        if (contacts.length > 0) {
+          console.log('👥 [CreateTenant] Creating contacts...')
+          for (const contact of contacts) {
+            await contactService.createContact(tenant.id, {
+              type: contact.type,
+              fullName: contact.name,
+              title: contact.title,
+              department: contact.department,
+              email: contact.email,
+              phoneE164: contact.phone_number ? `+${contact.phone_number}` : undefined,
+              notes: contact.notes,
+              isPrimary: contact.is_primary
+            })
+          }
+          console.log('✅ [CreateTenant] Contacts created successfully')
+        }
       })
-      
-      const tenant = tenantResponse.data.tenant
-      console.log('✅ [CreateTenant] Tenant created successfully, ID:', tenant.id)
-      
-      // Step 2: Create addresses for the tenant
-      if (addresses.length > 0) {
-        console.log('📍 [CreateTenant] Creating addresses...')
-        for (const address of addresses) {
-          await addressService.createAddress(tenant.id, {
-            type: address.type,
-            label: address.label,
-            line1: address.line1,
-            line2: address.line2,
-            city: address.city,
-            state: address.state,
-            postalCode: address.postal_code,
-            countryCode: address.country_code,
-            isPrimary: address.is_primary
-          })
-        }
-        console.log('✅ [CreateTenant] Addresses created successfully')
-      }
-      
-      // Step 3: Create contacts for the tenant
-      if (contacts.length > 0) {
-        console.log('👥 [CreateTenant] Creating contacts...')
-        for (const contact of contacts) {
-          await contactService.createContact(tenant.id, {
-            type: contact.type,
-            fullName: contact.name,
-            title: contact.title,
-            department: contact.department,
-            email: contact.email,
-            phoneE164: contact.phone_number ? `+${contact.phone_number}` : undefined,
-            notes: contact.notes,
-            isPrimary: contact.is_primary
-          })
-        }
-        console.log('✅ [CreateTenant] Contacts created successfully')
-      }
       
       // Success feedback is now handled automatically by the HTTP interceptor
       // based on the meta.code from the backend response

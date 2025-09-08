@@ -29,21 +29,21 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
     return new Date(date).toLocaleDateString('pt-BR')
   }
 
-  const totalSeatsUsed = license.seatsByUserType.reduce((sum, seat) => sum + seat.used, 0)
-  const hasSeats = license.seatsByUserType.length > 0
+  const totalSeatsUsed = license.seatsByUserType?.reduce((sum, seat) => sum + seat.used, 0) || 0
+  const hasSeats = (license.seatsByUserType?.length || 0) > 0
 
   return (
-    <Card id={`app-${license.application.slug}`} className="scroll-mt-4">
+    <Card id={`app-${license.application?.slug || 'unknown'}`} className="scroll-mt-4">
       <CardHeader className="p-6 pb-4">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h3 className="text-lg font-semibold text-gray-900">
-                {license.application.name}
+                {license.application?.name || 'Unknown Application'}
               </h3>
               <StatusBadge status={license.status as 'active' | 'inactive' | 'suspended'} />
             </div>
-            {license.application.description && (
+            {license.application?.description && (
               <p className="text-sm text-gray-600">{license.application.description}</p>
             )}
           </div>
@@ -119,7 +119,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {license.seatsByUserType.map((seat) => (
+                {(license.seatsByUserType || []).map((seat) => (
                   <tr key={seat.userTypeId}>
                     <td className="font-medium">{seat.userType}</td>
                     <td className="text-center">

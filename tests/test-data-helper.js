@@ -176,12 +176,12 @@ async function createTestUserAccess(userId, tenantId, applicationId, options = {
 
   await global.testDb.query(
     `INSERT INTO user_application_access 
-     (user_id_fk, tenant_id_fk, application_id_fk, role_in_app, is_active, 
+     (user_id_fk, tenant_id_fk, application_id_fk, role_in_app, active, 
       price_snapshot, currency_snapshot, user_type_id_snapshot, granted_cycle)
      VALUES ($1, $2, $3, $4, true, $5, $6, $7, $8)
      ON CONFLICT (user_id_fk, tenant_id_fk, application_id_fk) DO UPDATE SET
        role_in_app = EXCLUDED.role_in_app,
-       is_active = EXCLUDED.is_active,
+       active = EXCLUDED.active,
        price_snapshot = EXCLUDED.price_snapshot`,
     [userId, tenantId, applicationId, roleInApp, priceSnapshot, currencySnapshot, userTypeId, grantedCycle]
   );

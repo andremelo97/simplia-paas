@@ -29,7 +29,7 @@ export const ActivateApplicationModal: React.FC<ActivateApplicationModalProps> =
   const [error, setError] = useState<string | null>(null)
 
   // Get licensed application slugs for filtering
-  const licensedSlugs = existingLicenses.map(license => license.application.slug)
+  const licensedSlugs = existingLicenses?.map(license => license?.application?.slug).filter(Boolean) || []
 
   useEffect(() => {
     if (isOpen) {

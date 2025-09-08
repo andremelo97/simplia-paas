@@ -317,7 +317,7 @@ class TenantApplication {
     const query = `
       SELECT COUNT(*) as count
       FROM public.user_application_access uaa
-      WHERE uaa.application_id_fk = $1 AND uaa.tenant_id_fk = $2 AND uaa.is_active = true
+      WHERE uaa.application_id_fk = $1 AND uaa.tenant_id_fk = $2 AND uaa.active = true
     `;
     
     const result = await database.query(query, [this.applicationId, this.tenantId]);

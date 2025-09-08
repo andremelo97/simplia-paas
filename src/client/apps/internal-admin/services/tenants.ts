@@ -97,7 +97,7 @@ export class TenantsService {
     const payload = {
       name: tenantData.name.trim(),
       subdomain: tenantData.subdomain.trim(),
-      status: tenantData.status || 'trial'
+      status: tenantData.status || 'active'
     }
 
     console.log('🏢 [TenantsService] Creating tenant:', { 
@@ -419,6 +419,75 @@ export class TenantsService {
       return response
     } catch (error) {
       console.error('❌ [TenantsService] Failed to revoke user access:', error)
+      throw error
+    }
+  }
+
+  /**
+   * List tenant users with application access status
+   * @param tenantId - Tenant ID
+   * @param appSlug - Application slug
+   * @param params - Query parameters
+   * @returns Promise with users list and usage info
+   */
+  async listAppUsers(
+    tenantId: number,
+    appSlug: string,
+    params?: {
+      q?: string
+      page?: number
+      limit?: number
+    }
+  ): Promise<{
+    success: boolean
+    data: {
+      usage: {
+        used: number
+        total: number | null
+        available: number | null
+      }
+      items: {
+        id: number
+        name: string
+        email: string
+        role: string
+        status: string
+        granted: boolean
+        accessId: number | null
+        grantedAt: string | null
+      }[]
+      pagination: {
+        total: number
+        limit: number
+        offset: number
+        hasMore: boolean
+      }
+    }
+  }> {
+    const searchParams = new URLSearchParams()
+    
+    if (params?.q) searchParams.append('q', params.q)
+    if (params?.page) searchParams.append('page', params.page.toString())
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+
+    const queryString = searchParams.toString()
+    const endpoint = `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/users${queryString ? `?${queryString}` : ''}`
+
+    console.log('🏢 [TenantsService] Fetching app users:', { tenantId, appSlug, params })
+
+    try {
+      const response = await api.get(endpoint)
+      
+      console.log('✅ [TenantsService] App users fetched:', {
+        tenantId,
+        appSlug,
+        count: response.data?.items?.length,
+        usage: response.data?.usage
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to fetch app users:', error)
       throw error
     }
   }

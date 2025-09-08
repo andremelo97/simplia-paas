@@ -433,7 +433,7 @@ SELECT
   SUM(COALESCE(uaa.price_snapshot, 0))::NUMERIC(10,2) AS total_price
 FROM user_application_access uaa
 JOIN users u ON u.id = uaa.user_id_fk
-WHERE uaa.is_active = TRUE
+WHERE uaa.active = TRUE
 GROUP BY 1,2,3;
 ```
 
@@ -456,7 +456,7 @@ Reports Dashboard:           operations($20), manager($35), admin($50)
 6. **Auditoria**: Log com decisão e contexto completo
 
 #### Revoke (Revogação de Acesso)  
-1. **Inativação**: `is_active = false` no registro `user_application_access`
+1. **Inativação**: `active = false` no registro `user_application_access`
 2. **Liberação de Seat**: `TenantApplication.decrementSeat()` → `seats_used -= 1`
 3. **Auditoria**: Log da revogação
 

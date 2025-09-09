@@ -946,7 +946,7 @@ router.put('/:id/addresses/:addressId', async (req, res) => {
  *   delete:
  *     tags: [Tenant Management]
  *     summary: Delete tenant address
- *     description: Soft delete (deactivate) an address
+ *     description: Permanently delete an address from the database
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -993,7 +993,7 @@ router.delete('/:id/addresses/:addressId', async (req, res) => {
       });
     }
 
-    const success = await TenantAddress.softDelete(addressIdInt, tenantId);
+    const success = await TenantAddress.hardDelete(addressIdInt, tenantId);
     
     if (!success) {
       return res.status(404).json({
@@ -1428,7 +1428,7 @@ router.put('/:id/contacts/:contactId', async (req, res) => {
  *   delete:
  *     tags: [Tenant Management]
  *     summary: Delete tenant contact
- *     description: Soft delete (deactivate) a contact person
+ *     description: Permanently delete a contact person from the database
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1475,7 +1475,7 @@ router.delete('/:id/contacts/:contactId', async (req, res) => {
       });
     }
 
-    const success = await TenantContact.softDelete(contactIdInt, tenantId);
+    const success = await TenantContact.hardDelete(contactIdInt, tenantId);
     
     if (!success) {
       return res.status(404).json({
@@ -2535,5 +2535,343 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
     });
   }
 });
+
+/**
+ * @openapi
+ * /tenants/{id}/applications/{appSlug}/users:
+ *   get:
+ *     tags: [Tenant Management]
+ *     summary: List assigned users for application
+ *     description: Get list of users assigned to a specific application within a tenant
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 50
+ *         description: Number of users to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *         description: Number of users to skip
+ *     responses:
+ *       200:
+ *         description: List of assigned users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           name:
+ *                             type: string
+ *                           email:
+ *                             type: string
+ *                           role:
+ *                             type: string
+ *                           grantedAt:
+ *                             type: string
+ *                             format: date-time
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         offset:
+ *                           type: integer
+ *                         hasMore:
+ *                           type: boolean
+ *       404:
+ *         description: Tenant or application not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/:id/applications/:appSlug/users', async (req, res) => {
+  try {
+    const { id, appSlug } = req.params;
+    const tenantId = parseInt(id);
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+
+    if (isNaN(tenantId)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid tenant ID'
+      });
+    }
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    // Find application by slug
+    const application = await Application.findBySlug(appSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Application not found'
+      });
+    }
+
+    // Get assigned users with access details
+    const query = `
+      SELECT 
+        u.id,
+        CONCAT(u.first_name, ' ', u.last_name) as name,
+        u.email,
+        u.role,
+        uaa.granted_at,
+        uaa.active
+      FROM users u
+      JOIN user_application_access uaa ON u.id = uaa.user_id_fk
+      WHERE uaa.tenant_id_fk = $1 
+        AND uaa.application_id_fk = $2 
+        AND uaa.active = true
+        AND u.active = true
+      ORDER BY uaa.granted_at DESC
+      LIMIT $3 OFFSET $4
+    `;
+
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM users u
+      JOIN user_application_access uaa ON u.id = uaa.user_id_fk
+      WHERE uaa.tenant_id_fk = $1 
+        AND uaa.application_id_fk = $2 
+        AND uaa.active = true
+        AND u.active = true
+    `;
+
+    console.log('🔄 [Tenants API] Executing query with params:', {
+      tenantId,
+      applicationId: application.id,
+      appSlug,
+      limit,
+      offset
+    });
+
+    const [usersResult, countResult] = await Promise.all([
+      database.query(query, [tenantId, application.id, limit, offset]),
+      database.query(countQuery, [tenantId, application.id])
+    ]);
+
+    console.log('✅ [Tenants API] Query results:', {
+      usersFound: usersResult.rows.length,
+      totalCount: countResult.rows[0].total,
+      sampleUsers: usersResult.rows.slice(0, 2)
+    });
+
+    const users = usersResult.rows.map(user => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      grantedAt: user.granted_at
+    }));
+
+    const total = parseInt(countResult.rows[0].total);
+    const hasMore = offset + limit < total;
+
+    res.json({
+      success: true,
+      data: {
+        users,
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ [Platform] Error listing application users:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to list application users'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /tenants/{id}/users/{userId}/applications/{appSlug}/reactivate:
+ *   put:
+ *     summary: Reactivate user access to application
+ *     description: Reactivates a user's access to an application by setting active=true
+ *     tags:
+ *       - Tenant Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug
+ *     responses:
+ *       200:
+ *         description: Access reactivated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     access:
+ *                       type: object
+ *       404:
+ *         description: Tenant, user, application, or access record not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/:id/users/:userId/applications/:appSlug/reactivate', async (req, res) => {
+  try {
+    const { id, userId, appSlug } = req.params;
+    const tenantId = parseInt(id);
+    const targetUserId = parseInt(userId);
+
+    if (isNaN(tenantId) || isNaN(targetUserId)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid tenant ID or user ID'
+      });
+    }
+
+    console.log(`🔄 [Platform] Reactivating access: ${appSlug} for user ${targetUserId} in tenant ${tenantId}`);
+
+    // Verify tenant exists
+    const tenant = await Tenant.findById(tenantId);
+    if (!tenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
+      });
+    }
+
+    // Verify user exists in tenant
+    const user = await User.findByIdAndTenant(targetUserId, tenantId);
+    if (!user) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'User not found in tenant'
+      });
+    }
+
+    // Verify application exists
+    const application = await Application.findBySlug(appSlug);
+    if (!application) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Application not found'
+      });
+    }
+
+    // Find existing access record
+    const existingAccess = await UserApplicationAccess.findByUserAndApp(
+      targetUserId, 
+      application.id, 
+      tenantId
+    );
+
+    if (!existingAccess) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'No existing access record found for this user and application'
+      });
+    }
+
+    // Reactivate the access
+    const reactivatedAccess = await UserApplicationAccess.reactivate(
+      targetUserId,
+      application.id,
+      tenantId
+    );
+
+    console.log(`✅ [Platform] Access reactivated successfully for user ${targetUserId} to app ${appSlug}`);
+
+    res.json({
+      success: true,
+      meta: {
+        code: 'ACCESS_REACTIVATED',
+        message: 'User access reactivated successfully'
+      },
+      data: {
+        access: reactivatedAccess
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ [Platform] Error reactivating access:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to reactivate user access'
+    });
+  }
+});
+
+
 
 module.exports = router;

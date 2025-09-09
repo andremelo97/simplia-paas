@@ -4,14 +4,10 @@ import { TenantLicense } from '../../licenses/types'
 
 interface TenantLicensedApplicationsCardProps {
   licenses: TenantLicense[]
-  onViewDetails: (appSlug: string) => void
-  onViewPricing: (license: TenantLicense) => void
 }
 
 export const TenantLicensedApplicationsCard: React.FC<TenantLicensedApplicationsCardProps> = ({
-  licenses,
-  onViewDetails,
-  onViewPricing
+  licenses
 }) => {
   const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' => {
     switch (status) {
@@ -29,10 +25,13 @@ export const TenantLicensedApplicationsCard: React.FC<TenantLicensedApplications
   }
 
   const getTotalSeats = (license: TenantLicense) => {
-    const used = license.seatsByUserType.reduce((sum, seat) => sum + seat.used, 0)
+    // Use totalSeatsUsed if available, otherwise calculate from seatsByUserType
+    const used = license.totalSeatsUsed ?? 
+      (license.seatsByUserType?.reduce((sum, seat) => sum + seat.used, 0) || 0)
     const total = license.userLimit || '∞'
     return `${used}/${total}`
   }
+
 
   return (
     <Card>
@@ -59,7 +58,6 @@ export const TenantLicensedApplicationsCard: React.FC<TenantLicensedApplications
               <th className="text-center">Seats Used/Total</th>
               <th className="text-center">Activated</th>
               <th className="text-center">Expires</th>
-              <th className="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -90,24 +88,6 @@ export const TenantLicensedApplicationsCard: React.FC<TenantLicensedApplications
                 </td>
                 <td className="text-center text-sm">
                   {formatDate(license.expiryDate)}
-                </td>
-                <td className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => onViewPricing(license)}
-                    >
-                      View Pricing
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => onViewDetails(license.application.slug)}
-                    >
-                      View
-                    </Button>
-                  </div>
                 </td>
               </tr>
             ))}

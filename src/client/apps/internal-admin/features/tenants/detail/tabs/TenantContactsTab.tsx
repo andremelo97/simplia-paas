@@ -2,21 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, CardContent, Button, Badge } from '@client/common/ui'
 import { publishFeedback } from '@client/common/feedback/store'
-
-interface Contact {
-  id: number
-  type: string
-  fullName: string
-  email: string
-  phoneE164?: string
-  title?: string
-  department?: string
-  isPrimary: boolean
-  createdAt: string
-}
+import { tenantsService, TenantContact } from '../../../../services/tenants'
 
 export const TenantContactsTab: React.FC = () => {
-  const [contacts, setContacts] = useState<Contact[]>([])
+  const [contacts, setContacts] = useState<TenantContact[]>([])
   const [loading, setLoading] = useState(true)
   const { tenantId } = useParams<{ tenantId: string }>()
   const numericTenantId = tenantId ? parseInt(tenantId) : undefined
@@ -27,47 +16,17 @@ export const TenantContactsTab: React.FC = () => {
     const fetchContacts = async () => {
       try {
         setLoading(true)
-        // Note: Using mock data for now - replace with actual API call
-        // const response = await contactsService.list(numericTenantId)
+        console.log('👥 [TenantContactsTab] Fetching contacts for tenant:', numericTenantId)
         
-        // Mock data for demonstration
-        const mockContacts: Contact[] = [
-          {
-            id: 1,
-            type: 'ADMIN',
-            fullName: 'John Smith',
-            email: 'john.smith@example.com',
-            phoneE164: '+15551234567',
-            title: 'Administrator',
-            department: 'IT',
-            isPrimary: true,
-            createdAt: '2024-01-15T10:30:00Z'
-          },
-          {
-            id: 2,
-            type: 'BILLING',
-            fullName: 'Sarah Johnson',
-            email: 'sarah.johnson@example.com',
-            phoneE164: '+15559876543',
-            title: 'Finance Manager',
-            department: 'Finance',
-            isPrimary: false,
-            createdAt: '2024-02-01T14:15:00Z'
-          },
-          {
-            id: 3,
-            type: 'TECH',
-            fullName: 'Mike Wilson',
-            email: 'mike.wilson@example.com',
-            title: 'IT Support',
-            department: 'IT',
-            isPrimary: false,
-            createdAt: '2024-02-15T09:20:00Z'
-          }
-        ]
+        const response = await tenantsService.listContacts(numericTenantId, {
+          active: true,
+          limit: 50
+        })
         
-        setContacts(mockContacts)
+        console.log('✅ [TenantContactsTab] Contacts loaded:', response.data.contacts.length)
+        setContacts(response.data.contacts)
       } catch (error) {
+        console.error('❌ [TenantContactsTab] Failed to load contacts:', error)
         publishFeedback({
           kind: 'error',
           message: 'Failed to load contacts. Please try again.'

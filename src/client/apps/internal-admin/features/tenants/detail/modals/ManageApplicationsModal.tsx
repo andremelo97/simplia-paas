@@ -124,19 +124,27 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
       return
     }
 
+    // Check if user already had access before (has accessId) - use reactivate
+    // Otherwise it's a new user - use grant
+    const user = users.find(u => u.id === userId)
+    const hasExistingAccess = user?.accessId !== null
+    
     try {
       setProcessingUserId(userId)
       setError(null)
       
-      console.log('🔄 [ManageApplicationsModal] Granting access:', { 
+      console.log(`🔄 [ManageApplicationsModal] ${hasExistingAccess ? 'Reactivating' : 'Granting'} access:`, { 
         tenantId, 
         userId, 
-        appSlug: license.application?.slug 
+        appSlug: license.application?.slug,
+        hasExistingAccess
       })
-
-      const response = await tenantsService.grantUserAccess(tenantId, userId, license.application.slug)
       
-      console.log('✅ [ManageApplicationsModal] Access granted successfully')
+      const response = hasExistingAccess 
+        ? await tenantsService.reactivateUserAccess(tenantId, userId, license.application.slug)
+        : await tenantsService.grantUserAccess(tenantId, userId, license.application.slug)
+      
+      console.log(`✅ [ManageApplicationsModal] Access ${hasExistingAccess ? 'reactivated' : 'granted'} successfully`)
 
       // Update user list - mark user as having access
       setUsers(prev => prev.map(user => 
@@ -161,7 +169,7 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
       onUsersUpdated(updatedLicense)
       
     } catch (err: any) {
-      console.error('❌ [ManageApplicationsModal] Failed to grant access:', err)
+      console.error(`❌ [ManageApplicationsModal] Failed to ${hasExistingAccess ? 'reactivate' : 'grant'} access:`, err)
       
       if (err.response?.data?.details?.reason === 'NO_SEATS_AVAILABLE') {
         const adjustSeatsUrl = `/tenants/${tenantId}/licenses?app=${license.application.slug}&action=adjust-seats`

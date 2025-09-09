@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Link, useSearchParams, useParams } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Select, Modal, Checkbox, StatusBadge, Status } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Select, StatusBadge, Status } from '@client/common/ui'
 import { usersService } from '../../services/users'
-import { ApplicationsService, Application } from '../../services/applications'
-import { publishFeedback } from '@client/common/feedback/store'
 import { UserDto, UserStatus, USER_STATUS_FILTER_OPTIONS, getDisplayRole } from './types'
 
 // Debounce hook for search input
@@ -23,13 +21,6 @@ const useDebounce = (value: string, delay: number) => {
   return debouncedValue
 }
 
-interface UserAppAccess {
-  applicationSlug: string
-  applicationName: string
-  hasAccess: boolean
-  roleInApp?: string
-  grantedAt?: string
-}
 
 export const UsersList: React.FC = () => {
   const [users, setUsers] = useState<UserDto[]>([])
@@ -39,14 +30,6 @@ export const UsersList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalUsers, setTotalUsers] = useState(0)
-  
-  // Manage Apps Dialog State
-  const [isManageAppsOpen, setIsManageAppsOpen] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<UserDto | null>(null)
-  const [applications, setApplications] = useState<Application[]>([])
-  const [userApps, setUserApps] = useState<UserAppAccess[]>([])
-  const [loadingApps, setLoadingApps] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
   
   const [searchParams, setSearchParams] = useSearchParams()
   const { tenantId: routeTenantId } = useParams<{ tenantId: string }>()
@@ -187,96 +170,6 @@ export const UsersList: React.FC = () => {
     setCurrentPage(1) // Reset to first page when filtering
   }
 
-  const handleManageApps = async (user: UserDto) => {
-    setSelectedUser(user)
-    setIsManageAppsOpen(true)
-    setLoadingApps(true)
-    
-    try {
-      // Load all applications
-      const allApps = await ApplicationsService.getApplications()
-      setApplications(allApps)
-      
-      // Mock user app access (would come from backend in real implementation)
-      const mockUserApps: UserAppAccess[] = allApps.map(app => ({
-        applicationSlug: app.slug,
-        applicationName: app.name,
-        hasAccess: Math.random() > 0.6, // Random for demo
-        roleInApp: 'user',
-        grantedAt: '2024-09-01T10:00:00Z'
-      }))
-      
-      setUserApps(mockUserApps)
-      
-    } catch (error) {
-      console.error('❌ [UsersList] Failed to load user applications:', error)
-      publishFeedback({
-        kind: 'error',
-        message: 'Failed to load user application access'
-      })
-    } finally {
-      setLoadingApps(false)
-    }
-  }
-
-  const handleToggleAppAccess = async (applicationSlug: string, hasAccess: boolean) => {
-    if (!selectedUser) return
-    
-    setSubmitting(true)
-    
-    try {
-      if (hasAccess) {
-        // Grant access
-        await usersService.grantAppAccess(selectedUser.id, {
-          applicationSlug,
-          roleInApp: 'user'
-        })
-        publishFeedback({
-          kind: 'success',
-          message: `Access granted to ${applicationSlug.toUpperCase()}`
-        })
-      } else {
-        // Revoke access
-        await usersService.revokeAppAccess(selectedUser.id, {
-          applicationSlug
-        })
-        publishFeedback({
-          kind: 'success',
-          message: `Access revoked from ${applicationSlug.toUpperCase()}`
-        })
-      }
-      
-      // Update local state
-      setUserApps(prev => prev.map(app => 
-        app.applicationSlug === applicationSlug 
-          ? { ...app, hasAccess, grantedAt: hasAccess ? new Date().toISOString() : undefined }
-          : app
-      ))
-      
-    } catch (error: any) {
-      console.error('❌ [UsersList] Failed to toggle app access:', error)
-      
-      // Handle specific error cases
-      if (error.status === 403 && error.message?.includes('seat limit')) {
-        publishFeedback({
-          kind: 'error',
-          message: 'Cannot grant access: Seat limit reached for this application'
-        })
-      } else if (error.status === 422 && error.message?.includes('pricing')) {
-        publishFeedback({
-          kind: 'error',
-          message: 'Cannot grant access: No pricing configured for this application'
-        })
-      } else {
-        publishFeedback({
-          kind: 'error',
-          message: hasAccess ? 'Failed to grant application access' : 'Failed to revoke application access'
-        })
-      }
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
 
   if (loading) {
@@ -470,20 +363,6 @@ export const UsersList: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-3">
                           <Link
-                            to={`/tenants/${user.tenantId || user.tenantIdFk}/licenses?user=${user.id}`}
-                            className="action-link"
-                            aria-label={`View licenses for ${user.name}'s tenant`}
-                          >
-                            View Licenses
-                          </Link>
-                          <button
-                            onClick={() => handleManageApps(user)}
-                            className="action-link"
-                            aria-label={`Manage applications for ${user.name}`}
-                          >
-                            Manage Apps
-                          </button>
-                          <Link
                             to={getEditUserPath(user)}
                             className="action-link"
                             aria-label={`Edit user ${user.name}`}
@@ -553,73 +432,6 @@ export const UsersList: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Manage Apps Modal */}
-      <Modal 
-        open={isManageAppsOpen} 
-        onClose={() => setIsManageAppsOpen(false)}
-        title={`Manage Applications - ${selectedUser?.name}`}
-        description="Grant or revoke access to applications"
-        size="xl"
-        showCloseButton={false}
-      >
-        <div className="px-6 py-4">
-            {loadingApps ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-                <span className="ml-2 text-gray-600">Loading applications...</span>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {userApps.map((userApp) => (
-                  <div key={userApp.applicationSlug} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex-1">
-                          <h3 className="text-sm font-medium text-gray-900">
-                            {userApp.applicationName}
-                          </h3>
-                          <p className="text-xs text-gray-500">
-                            Slug: {userApp.applicationSlug}
-                          </p>
-                          {userApp.hasAccess && userApp.grantedAt && (
-                            <p className="text-xs" style={{color: 'var(--brand-tertiary)'}}>
-                              Granted on {new Date(userApp.grantedAt).toLocaleDateString()}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`app-${userApp.applicationSlug}`}
-                        checked={userApp.hasAccess}
-                        onChange={(e) => handleToggleAppAccess(userApp.applicationSlug, e.target.checked)}
-                        disabled={submitting}
-                        label={userApp.hasAccess ? 'Access Granted' : 'Grant Access'}
-                      />
-                    </div>
-                  </div>
-                ))}
-                
-                {userApps.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No applications available</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-            <Button
-              variant="secondary"
-              onClick={() => setIsManageAppsOpen(false)}
-              disabled={submitting}
-            >
-              Close
-            </Button>
-          </div>
-      </Modal>
     </div>
   )
 }

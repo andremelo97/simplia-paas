@@ -200,6 +200,9 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
           onChange={(e) => {
             if (e.target.checked) {
               onSetPrimary(index);
+            } else {
+              // Allow unchecking by setting this item to false
+              onChange(index, 'is_primary', false);
             }
           }}
           className="h-4 w-4 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)] border-gray-300 rounded"

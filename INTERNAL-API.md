@@ -224,12 +224,49 @@ Desativar tenant (soft delete).
 ### **Addresses** (4 endpoints)
 
 ### GET `/tenants/:id/addresses`
-Endereços do tenant.
+Lista endereços do tenant com opções de filtro.
 
-**Parâmetros**: `type`, `active`, `limit`, `offset`
+**Parâmetros Query**:
+- `type` (string, opcional): Filtrar por tipo (`HQ`, `BILLING`, `SHIPPING`, `BRANCH`, `OTHER`)
+- `active` (boolean, opcional): Filtrar endereços ativos/inativos
+- `limit` (number, opcional): Limite de resultados (padrão: 20)
+- `offset` (number, opcional): Paginação (padrão: 0)
+
+**Resposta 200**:
+```json
+{
+  "success": true,
+  "data": {
+    "addresses": [
+      {
+        "id": 1,
+        "tenantId": 123,
+        "type": "HQ",
+        "label": "Sede Principal",
+        "line1": "Rua das Flores, 123",
+        "line2": "Sala 456",
+        "city": "São Paulo",
+        "state": "SP",
+        "postalCode": "01234-567",
+        "countryCode": "BR",
+        "isPrimary": true,
+        "active": true,
+        "createdAt": "2024-01-15T10:30:00Z",
+        "updatedAt": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "pagination": {
+      "total": 5,
+      "limit": 20,
+      "offset": 0,
+      "hasMore": false
+    }
+  }
+}
+```
 
 ### POST `/tenants/:id/addresses`
-Adicionar endereço.
+Adiciona novo endereço ao tenant.
 
 **Body**:
 ```json
@@ -237,6 +274,7 @@ Adicionar endereço.
   "type": "HQ",
   "label": "Sede Principal",
   "line1": "Rua das Flores, 123",
+  "line2": "Sala 456",
   "city": "São Paulo",
   "state": "SP",
   "postalCode": "01234-567",
@@ -245,19 +283,117 @@ Adicionar endereço.
 }
 ```
 
+**Resposta 201**:
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "ADDRESS_CREATED",
+    "message": "Address added successfully."
+  },
+  "data": {
+    "address": {
+      "id": 2,
+      "tenantId": 123,
+      "type": "HQ",
+      "label": "Sede Principal",
+      "line1": "Rua das Flores, 123",
+      "line2": "Sala 456",
+      "city": "São Paulo",
+      "state": "SP",
+      "postalCode": "01234-567",
+      "countryCode": "BR",
+      "isPrimary": true,
+      "active": true,
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z"
+    }
+  }
+}
+```
+
+**Erros**:
+- `400`: Dados de entrada inválidos
+- `409`: Conflito de endereço primário (já existe um primário do mesmo tipo)
+
 ### PUT `/tenants/:id/addresses/:addressId`
-Atualizar endereço.
+Atualiza endereço existente.
+
+**Body**: Mesmos campos do POST (todos opcionais)
+
+**Resposta 200**: 
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "ADDRESS_UPDATED",
+    "message": "Address updated successfully."
+  },
+  "data": {
+    "address": { /* endereço atualizado */ }
+  }
+}
+```
 
 ### DELETE `/tenants/:id/addresses/:addressId`
-Remover endereço.
+Remove endereço (soft delete).
+
+**Resposta 200**:
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "ADDRESS_DELETED",
+    "message": "Address removed successfully."
+  }
+}
+```
 
 ### **Contacts** (4 endpoints)
 
 ### GET `/tenants/:id/contacts`
-Contatos do tenant.
+Lista contatos do tenant com opções de filtro.
+
+**Parâmetros Query**:
+- `type` (string, opcional): Filtrar por tipo (`ADMIN`, `BILLING`, `TECH`, `LEGAL`, `OTHER`)
+- `active` (boolean, opcional): Filtrar contatos ativos/inativos
+- `limit` (number, opcional): Limite de resultados (padrão: 20)
+- `offset` (number, opcional): Paginação (padrão: 0)
+
+**Resposta 200**:
+```json
+{
+  "success": true,
+  "data": {
+    "contacts": [
+      {
+        "id": 1,
+        "tenantId": 123,
+        "type": "ADMIN",
+        "fullName": "João Silva",
+        "email": "joao@clinica.com",
+        "phoneE164": "+5511999999999",
+        "title": "Diretor",
+        "department": "Administração",
+        "notes": "Contato principal da empresa",
+        "isPrimary": true,
+        "active": true,
+        "createdAt": "2024-01-15T10:30:00Z",
+        "updatedAt": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "pagination": {
+      "total": 3,
+      "limit": 20,
+      "offset": 0,
+      "hasMore": false
+    }
+  }
+}
+```
 
 ### POST `/tenants/:id/contacts`
-Adicionar contato.
+Adiciona novo contato ao tenant.
 
 **Body**:
 ```json
@@ -268,15 +404,74 @@ Adicionar contato.
   "phoneE164": "+5511999999999",
   "title": "Diretor",
   "department": "Administração",
+  "notes": "Contato principal da empresa",
   "isPrimary": true
 }
 ```
 
+**Resposta 201**:
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "CONTACT_CREATED",
+    "message": "Contact added successfully."
+  },
+  "data": {
+    "contact": {
+      "id": 2,
+      "tenantId": 123,
+      "type": "ADMIN",
+      "fullName": "João Silva",
+      "email": "joao@clinica.com",
+      "phoneE164": "+5511999999999",
+      "title": "Diretor",
+      "department": "Administração",
+      "notes": "Contato principal da empresa",
+      "isPrimary": true,
+      "active": true,
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-15T10:30:00Z"
+    }
+  }
+}
+```
+
+**Erros**:
+- `400`: Dados de entrada inválidos (email malformado, telefone não E.164)
+- `409`: Conflito de contato primário (já existe um primário do mesmo tipo)
+
 ### PUT `/tenants/:id/contacts/:contactId`
-Atualizar contato.
+Atualiza contato existente.
+
+**Body**: Mesmos campos do POST (todos opcionais)
+
+**Resposta 200**:
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "CONTACT_UPDATED",
+    "message": "Contact updated successfully."
+  },
+  "data": {
+    "contact": { /* contato atualizado */ }
+  }
+}
+```
 
 ### DELETE `/tenants/:id/contacts/:contactId`
-Remover contato.
+Remove contato (soft delete).
+
+**Resposta 200**:
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "CONTACT_DELETED",
+    "message": "Contact removed successfully."
+  }
+}
 
 ---
 

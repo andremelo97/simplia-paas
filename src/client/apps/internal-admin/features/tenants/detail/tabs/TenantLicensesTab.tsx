@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { Skeleton, EmptyState, Alert, Button } from '@client/common/ui'
-import { TenantLicense, TenantLicensesResponse } from '../../licenses/types'
+import { TenantLicense, TenantLicensesResponse, Application } from '../../licenses/types'
 import { TenantLicenseCard } from '../components/TenantLicenseCard'
 import { TenantLicensedApplicationsCard } from '../components/TenantLicensedApplicationsCard'
 import { ActivateApplicationButton } from '../components/ActivateApplicationButton'
 import { AdjustSeatsModal } from '../modals/AdjustSeatsModal'
 import { ManageApplicationsModal } from '../modals/ManageApplicationsModal'
 import { tenantsService } from '../../../../services/tenants'
+import { ApplicationsService } from '../../../../services/applications'
 
 export const TenantLicensesTab: React.FC = () => {
   const [licenses, setLicenses] = useState<TenantLicense[]>([])
@@ -17,8 +18,10 @@ export const TenantLicensesTab: React.FC = () => {
   const [isAdjustSeatsModalOpen, setIsAdjustSeatsModalOpen] = useState(false)
   const [selectedLicenseForUsers, setSelectedLicenseForUsers] = useState<TenantLicense | null>(null)
   const [isManageUsersModalOpen, setIsManageUsersModalOpen] = useState(false)
+  const [applications, setApplications] = useState<Application[]>([])
   const { tenantId } = useParams<{ tenantId: string }>()
   const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
   const numericTenantId = tenantId ? parseInt(tenantId) : undefined
 
   useEffect(() => {
@@ -65,7 +68,15 @@ export const TenantLicensesTab: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      console.log('🔄 [TenantLicensesTab] Fetching tenant details for licenses:', numericTenantId)
+      console.log('🔄 [TenantLicensesTab] Fetching applications and tenant details for licenses:', numericTenantId)
+
+      // First, fetch all applications to get the ID mapping
+      const allApplications = await ApplicationsService.getApplications()
+      console.log('📋 [TenantLicensesTab] Applications fetched:', allApplications.length)
+      setApplications(allApplications)
+
+      // Create a slug-to-app mapping
+      const appSlugMap = new Map(allApplications.map(app => [app.slug, app]))
 
       // Use tenant details endpoint which includes applications in metrics
       const response = await tenantsService.getTenant(numericTenantId)
@@ -73,24 +84,28 @@ export const TenantLicensesTab: React.FC = () => {
       console.log('✅ [TenantLicensesTab] Tenant details fetched successfully:', response.data)
 
       // Convert applications from tenant metrics to license format
-      const applications = response.metrics?.applications || []
-      const convertedLicenses: TenantLicense[] = applications.map(app => ({
-        id: `${numericTenantId}-${app.slug}`, // Generate pseudo ID
-        application: {
-          id: 0, // We don't have app ID from this endpoint
-          name: app.name || app.slug?.toUpperCase() || 'Unknown', // Use name from backend
-          slug: app.slug,
-          description: `${app.name || app.slug} license`
-        },
-        status: app.status,
-        userLimit: app.userLimit,
-        seatsUsed: app.seatsUsed,
-        seatsAvailable: app.userLimit ? Math.max(0, app.userLimit - app.seatsUsed) : null,
-        expiresAt: app.expiresAt,
-        activatedAt: new Date().toISOString(), // We don't have this from the endpoint
-        seatsByUserType: [] // We don't have this breakdown from this endpoint
-      })).filter(license => license.application.slug) // Filter out apps without slug
+      const tenantApplications = response.metrics?.applications || []
+      const convertedLicenses: TenantLicense[] = tenantApplications.map(app => {
+        const fullAppData = appSlugMap.get(app.slug)
+        return {
+          id: `${numericTenantId}-${app.slug}`, // Generate pseudo ID
+          application: {
+            id: fullAppData?.id || 0, // Use real application ID from applications service
+            name: fullAppData?.name || app.name || app.slug?.toUpperCase() || 'Unknown',
+            slug: app.slug,
+            description: fullAppData?.description || `${fullAppData?.name || app.slug} license`
+          },
+          status: app.status,
+          userLimit: app.userLimit,
+          totalSeatsUsed: app.seatsUsed,
+          seatsAvailable: app.userLimit ? Math.max(0, app.userLimit - app.seatsUsed) : null,
+          expiresAt: app.expiresAt,
+          activatedAt: new Date().toISOString(), // We don't have this from the endpoint
+          seatsByUserType: [] // We don't have this breakdown from this endpoint
+        }
+      }).filter(license => license.application.slug && license.application.id > 0) // Filter out apps without slug or invalid ID
 
+      console.log('🔄 [TenantLicensesTab] Converted licenses with application IDs:', convertedLicenses.map(l => ({slug: l.application.slug, id: l.application.id})))
       setLicenses(convertedLicenses)
     } catch (err) {
       console.error('❌ [TenantLicensesTab] Failed to fetch licenses:', err)
@@ -161,8 +176,14 @@ export const TenantLicensesTab: React.FC = () => {
   }
 
   const handleViewPricing = (license: TenantLicense) => {
-    // TODO: Open pricing details modal
-    console.log('View pricing for:', license.application.name)
+    console.log('🔍 [TenantLicensesTab] View pricing for:', license.application.name, 'ID:', license.application.id)
+    
+    if (license.application.id > 0) {
+      navigate(`/applications/${license.application.id}/pricing`)
+    } else {
+      console.error('❌ [TenantLicensesTab] Invalid application ID for pricing navigation:', license.application.id)
+      // Fallback: could show an error message to the user
+    }
   }
 
   if (loading) {
@@ -268,6 +289,7 @@ export const TenantLicensesTab: React.FC = () => {
               <TenantLicenseCard
                 key={license.id}
                 license={license}
+                tenantId={numericTenantId!}
                 onAdjustSeats={handleAdjustSeats}
                 onManageUsers={handleManageUsers}
                 onViewPricing={handleViewPricing}
@@ -282,8 +304,6 @@ export const TenantLicensesTab: React.FC = () => {
         <div>
           <TenantLicensedApplicationsCard
             licenses={licenses}
-            onViewDetails={handleViewDetails}
-            onViewPricing={handleViewPricing}
           />
         </div>
       )}

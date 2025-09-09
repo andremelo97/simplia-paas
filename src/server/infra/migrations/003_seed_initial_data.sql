@@ -195,7 +195,7 @@ WHERE t.subdomain = 'default'
     WHERE tc.tenant_id_fk = t.id AND tc.type = 'ADMIN'
   );
 
--- Insert billing contact for default tenant (idempotent)
+-- Insert billing contact for default tenant (idempotent) - NOT primary since ADMIN is already primary
 INSERT INTO tenant_contacts (
   tenant_id_fk,
   type,
@@ -216,7 +216,7 @@ SELECT
   'Coordenadora Financeira' as title,
   'Financeiro' as department,
   'Preferência de contato: email. Horário comercial: 08:00-18:00. Fuso horário: America/Sao_Paulo' as notes,
-  true as is_primary
+  false as is_primary
 FROM tenants t
 WHERE t.subdomain = 'default'
   AND NOT EXISTS (

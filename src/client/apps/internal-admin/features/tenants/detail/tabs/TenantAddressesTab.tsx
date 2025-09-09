@@ -2,23 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, CardContent, Button, Badge } from '@client/common/ui'
 import { publishFeedback } from '@client/common/feedback/store'
-
-interface Address {
-  id: number
-  type: string
-  label: string
-  line1: string
-  line2?: string
-  city: string
-  state: string
-  postalCode: string
-  countryCode: string
-  isPrimary: boolean
-  createdAt: string
-}
+import { tenantsService, TenantAddress } from '../../../../services/tenants'
 
 export const TenantAddressesTab: React.FC = () => {
-  const [addresses, setAddresses] = useState<Address[]>([])
+  const [addresses, setAddresses] = useState<TenantAddress[]>([])
   const [loading, setLoading] = useState(true)
   const { tenantId } = useParams<{ tenantId: string }>()
   const numericTenantId = tenantId ? parseInt(tenantId) : undefined
@@ -29,40 +16,17 @@ export const TenantAddressesTab: React.FC = () => {
     const fetchAddresses = async () => {
       try {
         setLoading(true)
-        // Note: Using mock data for now - replace with actual API call
-        // const response = await addressesService.list(numericTenantId)
+        console.log('🏠 [TenantAddressesTab] Fetching addresses for tenant:', numericTenantId)
         
-        // Mock data for demonstration
-        const mockAddresses: Address[] = [
-          {
-            id: 1,
-            type: 'HQ',
-            label: 'Headquarters',
-            line1: '123 Business Ave',
-            line2: 'Suite 100',
-            city: 'San Francisco',
-            state: 'CA',
-            postalCode: '94102',
-            countryCode: 'US',
-            isPrimary: true,
-            createdAt: '2024-01-15T10:30:00Z'
-          },
-          {
-            id: 2,
-            type: 'BILLING',
-            label: 'Billing Address',
-            line1: '456 Finance St',
-            city: 'New York',
-            state: 'NY',
-            postalCode: '10001',
-            countryCode: 'US',
-            isPrimary: false,
-            createdAt: '2024-02-01T14:15:00Z'
-          }
-        ]
+        const response = await tenantsService.listAddresses(numericTenantId, {
+          active: true,
+          limit: 50
+        })
         
-        setAddresses(mockAddresses)
+        console.log('✅ [TenantAddressesTab] Addresses loaded:', response.data.addresses.length)
+        setAddresses(response.data.addresses)
       } catch (error) {
+        console.error('❌ [TenantAddressesTab] Failed to load addresses:', error)
         publishFeedback({
           kind: 'error',
           message: 'Failed to load addresses. Please try again.'
@@ -110,7 +74,7 @@ export const TenantAddressesTab: React.FC = () => {
     }
   }
 
-  const formatFullAddress = (address: Address) => {
+  const formatFullAddress = (address: TenantAddress) => {
     const parts = [
       address.line1,
       address.line2,

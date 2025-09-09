@@ -250,6 +250,15 @@ class TenantAddress {
     return result.rowCount > 0;
   }
 
+  static async hardDelete(id, tenantId) {
+    const result = await database.query(
+      'DELETE FROM tenant_addresses WHERE id = $1 AND tenant_id_fk = $2',
+      [id, tenantId]
+    );
+    
+    return result.rowCount > 0;
+  }
+
   static async count(tenantId, options = {}) {
     const { type, active = true } = options;
     

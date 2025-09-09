@@ -119,6 +119,16 @@ class HttpClient {
     const backendMessage = errorData?.error?.message || errorData?.message
     const fieldErrors = errorData?.error?.details || errorData?.details
     
+    // Handle expired token - automatic logout
+    if (status === 401 && (
+      backendMessage?.includes('expired') || 
+      backendMessage?.includes('Token expired') ||
+      errorData?.error === 'Token expired'
+    )) {
+      // Clear auth storage and redirect to login
+      this.handleExpiredToken()
+    }
+    
     // Map status to kind and code
     const { kind, code } = mapStatusToErrorCode(status, endpoint, backendCode)
     
@@ -151,6 +161,25 @@ class HttpClient {
     return appError
   }
 
+  private handleExpiredToken() {
+    // Clear localStorage auth data
+    localStorage.removeItem('auth-storage')
+    
+    // Show a notification about the expired session
+    publishFeedback({
+      kind: 'info',
+      code: 'SESSION_EXPIRED',
+      title: 'Session expired',
+      message: 'Your session has expired. Please sign in again.',
+      path: window.location.pathname
+    })
+    
+    // Redirect to login after a short delay
+    setTimeout(() => {
+      window.location.href = '/auth/login'
+    }, 1000)
+  }
+
   async get(endpoint: string, headers?: Record<string, string>) {
     // GET requests handle tenant headers explicitly per endpoint
     // Platform-scoped endpoints (applications) don't need tenant headers
@@ -169,6 +198,14 @@ class HttpClient {
   async put(endpoint: string, data?: any, headers?: Record<string, string>) {
     return this.request(endpoint, {
       method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+      headers,
+    })
+  }
+
+  async patch(endpoint: string, data?: any, headers?: Record<string, string>) {
+    return this.request(endpoint, {
+      method: 'PATCH',
       body: data ? JSON.stringify(data) : undefined,
       headers,
     })

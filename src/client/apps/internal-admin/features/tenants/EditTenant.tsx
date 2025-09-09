@@ -3,8 +3,6 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import { Card, CardHeader, CardContent, Button, Input, Label, Textarea, Checkbox } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
-import { addressService } from '../../services/addresses'
-import { contactService } from '../../services/contacts'
 import { AddressesRepeater } from './AddressesRepeater'
 import { ContactsRepeater } from './ContactsRepeater'
 import { AddressFormValues, ContactFormValues } from './types'
@@ -52,20 +50,18 @@ export const EditTenantPage: React.FC = () => {
 
       try {
         setIsLoading(true)
-        console.log('🔄 [EditTenant] Loading tenant data for ID:', id)
 
         // Load core tenant data
         const tenantResponse = await tenantsService.getTenant(parseInt(id))
         const tenant = tenantResponse.data
 
-        console.log('✅ [EditTenant] Tenant loaded:', tenant.name)
 
         // Load addresses
-        const addressesResponse = await addressService.getAddresses(parseInt(id), { active: true })
+        const addressesResponse = await tenantsService.listAddresses(parseInt(id), { active: true, limit: 100 })
         const addressesData = addressesResponse.data.addresses || []
 
         // Load contacts
-        const contactsResponse = await contactService.getContacts(parseInt(id), { active: true })
+        const contactsResponse = await tenantsService.listContacts(parseInt(id), { active: true, limit: 100 })
         const contactsData = contactsResponse.data.contacts || []
 
         // Map to form values
@@ -138,13 +134,8 @@ export const EditTenantPage: React.FC = () => {
           contacts: JSON.parse(JSON.stringify(finalContacts))
         })
 
-        console.log('✅ [EditTenant] Data loaded successfully:', {
-          addresses: finalAddresses.length,
-          contacts: finalContacts.length
-        })
 
       } catch (error: any) {
-        console.error('❌ [EditTenant] Failed to load tenant:', error)
         
         if (error.status === 404) {
           setLoadError('Tenant not found')
@@ -257,9 +248,9 @@ export const EditTenantPage: React.FC = () => {
     const coreChanged = JSON.stringify(formData) !== JSON.stringify(snapshot.core)
 
     // Address changes
-    const addressesNew = addresses.filter(addr => !addr.id)
+    const addressesNew = addresses.filter(addr => !addr.id || addr.id.startsWith('tmp-'))
     const addressesUpdated = addresses.filter(addr => {
-      if (!addr.id) return false
+      if (!addr.id || addr.id.startsWith('tmp-')) return false
       const original = snapshot.addresses.find(s => s.id === addr.id)
       return original && JSON.stringify(addr) !== JSON.stringify(original)
     })
@@ -268,9 +259,9 @@ export const EditTenantPage: React.FC = () => {
       .map(addr => addr.id!)
 
     // Contact changes
-    const contactsNew = contacts.filter(contact => !contact.id)
+    const contactsNew = contacts.filter(contact => !contact.id || contact.id.startsWith('tmp-'))
     const contactsUpdated = contacts.filter(contact => {
-      if (!contact.id) return false
+      if (!contact.id || contact.id.startsWith('tmp-')) return false
       const original = snapshot.contacts.find(s => s.id === contact.id)
       return original && JSON.stringify(contact) !== JSON.stringify(original)
     })
@@ -299,18 +290,15 @@ export const EditTenantPage: React.FC = () => {
 
     const diff = calculateDiff()
     if (!diff) {
-      console.error('❌ [EditTenant] Cannot calculate diff - missing data')
       return
     }
 
     setIsSubmitting(true)
     
     try {
-      console.log('🔄 [EditTenant] Submitting changes:', diff)
 
       // Update core tenant if changed
       if (diff.coreChanged) {
-        console.log('🏢 [EditTenant] Updating core tenant data')
         await tenantsService.updateTenant(diff.tenantId, {
           name: formData.name.trim(),
           description: formData.description.trim(),
@@ -320,89 +308,82 @@ export const EditTenantPage: React.FC = () => {
 
       // Create new addresses
       for (const address of diff.addressesNew) {
-        console.log('📍 [EditTenant] Creating new address:', address.type)
-        await addressService.createAddress(diff.tenantId, {
-          type: address.type,
-          label: address.label,
-          line1: address.line1,
-          line2: address.line2,
-          city: address.city,
-          state: address.state,
-          postalCode: address.postal_code,
-          countryCode: address.country_code,
-          isPrimary: address.is_primary
-        })
+        const addressData = {
+          type: address.type || 'OTHER',
+          label: address.label || undefined,
+          line1: address.line1 || 'Not specified',
+          line2: address.line2 || undefined,
+          city: address.city || undefined,
+          state: address.state || undefined,
+          postalCode: address.postal_code || undefined,
+          countryCode: address.country_code || 'BR',
+          isPrimary: address.is_primary || false
+        }
+        await tenantsService.createAddress(diff.tenantId, addressData)
       }
 
       // Update existing addresses
       for (const address of diff.addressesUpdated) {
-        console.log('📍 [EditTenant] Updating address:', address.id)
-        await addressService.updateAddress(diff.tenantId, address.id!, {
-          type: address.type,
-          label: address.label,
-          line1: address.line1,
-          line2: address.line2,
-          city: address.city,
-          state: address.state,
-          postalCode: address.postal_code,
-          countryCode: address.country_code,
-          isPrimary: address.is_primary
-        })
+        const addressData = {
+          type: address.type || 'OTHER',
+          label: address.label || undefined,
+          line1: address.line1 || 'Not specified',
+          line2: address.line2 || undefined,
+          city: address.city || undefined,
+          state: address.state || undefined,
+          postalCode: address.postal_code || undefined,
+          countryCode: address.country_code || 'BR',
+          isPrimary: address.is_primary || false
+        }
+        await tenantsService.updateAddress(diff.tenantId, address.id!, addressData)
       }
 
       // Delete removed addresses
       for (const addressId of diff.addressesDeleted) {
-        console.log('📍 [EditTenant] Deleting address:', addressId)
-        await addressService.deleteAddress(diff.tenantId, addressId)
+        await tenantsService.deleteAddress(diff.tenantId, addressId)
       }
 
       // Create new contacts
       for (const contact of diff.contactsNew) {
-        console.log('👥 [EditTenant] Creating new contact:', contact.name)
         const contactData = {
-          type: contact.type,
-          fullName: contact.name,
-          title: contact.title,
-          department: contact.department,
-          email: contact.email,
-          phoneE164: contact.phone_number,
-          notes: contact.notes,
-          isPrimary: contact.is_primary
+          type: contact.type || 'OTHER',
+          fullName: contact.name || 'Unknown',
+          title: contact.title || undefined,
+          department: contact.department || undefined,
+          email: contact.email || undefined,
+          phoneE164: contact.phone_number || undefined,
+          notes: contact.notes || undefined,
+          isPrimary: contact.is_primary || false
         };
         
-        await contactService.createContact(diff.tenantId, contactData)
+        await tenantsService.createContact(diff.tenantId, contactData)
       }
 
       // Update existing contacts
       for (const contact of diff.contactsUpdated) {
-        console.log('👥 [EditTenant] Updating contact:', contact.id)
         const contactData = {
-          type: contact.type,
-          fullName: contact.name,
-          title: contact.title,
-          department: contact.department,
-          email: contact.email,
-          phoneE164: contact.phone_number,
-          notes: contact.notes,
-          isPrimary: contact.is_primary
+          type: contact.type || 'OTHER',
+          fullName: contact.name || 'Unknown',
+          title: contact.title || undefined,
+          department: contact.department || undefined,
+          email: contact.email || undefined,
+          phoneE164: contact.phone_number || undefined,
+          notes: contact.notes || undefined,
+          isPrimary: contact.is_primary || false
         };
         
-        await contactService.updateContact(diff.tenantId, contact.id!, contactData)
+        await tenantsService.updateContact(diff.tenantId, contact.id!, contactData)
       }
 
       // Delete removed contacts
       for (const contactId of diff.contactsDeleted) {
-        console.log('👥 [EditTenant] Deleting contact:', contactId)
-        await contactService.deleteContact(diff.tenantId, contactId)
+        await tenantsService.deleteContact(diff.tenantId, contactId)
       }
-
-      console.log('✅ [EditTenant] All changes saved successfully')
 
       // Success feedback is handled automatically by HTTP interceptor
       // Stay on edit page (don't navigate away)
       
     } catch (error: any) {
-      console.error('❌ [EditTenant] Failed to update tenant:', error)
       
       // Handle specific error cases
       let errorMessage = 'Failed to update tenant. Please try again.'
@@ -493,6 +474,11 @@ export const EditTenantPage: React.FC = () => {
           <Link to={`/users?tenantId=${id}`}>
             <Button variant="secondary">
               Manage Users
+            </Button>
+          </Link>
+          <Link to={`/tenants/${id}/licenses`}>
+            <Button variant="tertiary">
+              Manage Licenses
             </Button>
           </Link>
         </div>

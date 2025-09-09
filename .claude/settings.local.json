@@ -89,7 +89,8 @@
       "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas -c \"\\d application_pricing\")",
       "Bash(PGPASSWORD=1234 psql -U simplia -d simplia_paas_test -c \"\\d application_pricing\")",
       "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas_test -c \"\\d users\")",
-      "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas_test -c \"\\d user_application_access\")"
+      "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas_test -c \"\\d user_application_access\")",
+      "Bash(VITE_PORT=3002 npm run dev:client)"
     ],
     "deny": [],
     "ask": []

@@ -71,6 +71,165 @@ export interface TenantsListParams {
   page?: number
 }
 
+// Address and Contact interfaces
+export interface TenantAddress {
+  id: number
+  tenantId: number
+  type: string
+  label: string
+  line1: string
+  line2?: string
+  city: string
+  state: string
+  postalCode: string
+  countryCode: string
+  isPrimary: boolean
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TenantContact {
+  id: number
+  tenantId: number
+  type: string
+  fullName: string
+  email: string
+  phoneE164?: string
+  title?: string
+  department?: string
+  notes?: string
+  isPrimary: boolean
+  active: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface TenantAddressesResponse {
+  success: boolean
+  data: {
+    addresses: TenantAddress[]
+    pagination: {
+      total: number
+      limit: number
+      offset: number
+      hasMore: boolean
+    }
+  }
+}
+
+export interface TenantContactsResponse {
+  success: boolean
+  data: {
+    contacts: TenantContact[]
+    pagination: {
+      total: number
+      limit: number
+      offset: number
+      hasMore: boolean
+    }
+  }
+}
+
+// CRUD request/response interfaces
+export interface CreateAddressRequest {
+  type: string
+  label: string
+  line1: string
+  line2?: string
+  city: string
+  state: string
+  postalCode: string
+  countryCode: string
+  isPrimary?: boolean
+}
+
+export interface UpdateAddressRequest {
+  type?: string
+  label?: string
+  line1?: string
+  line2?: string
+  city?: string
+  state?: string
+  postalCode?: string
+  countryCode?: string
+  isPrimary?: boolean
+}
+
+export interface CreateContactRequest {
+  type: string
+  fullName: string
+  email: string
+  phoneE164?: string
+  title?: string
+  department?: string
+  notes?: string
+  isPrimary?: boolean
+}
+
+export interface UpdateContactRequest {
+  type?: string
+  fullName?: string
+  email?: string
+  phoneE164?: string
+  title?: string
+  department?: string
+  notes?: string
+  isPrimary?: boolean
+}
+
+export interface AddressCRUDResponse {
+  success: boolean
+  meta: {
+    code: string
+    message: string
+  }
+  data: {
+    address: TenantAddress
+  }
+}
+
+export interface ContactCRUDResponse {
+  success: boolean
+  meta: {
+    code: string
+    message: string
+  }
+  data: {
+    contact: TenantContact
+  }
+}
+
+export interface DeleteResponse {
+  success: boolean
+  meta: {
+    code: string
+    message: string
+  }
+}
+
+// Application Users interfaces
+export interface AssignedUser {
+  id: number
+  name: string
+  email: string
+  role: string
+  grantedAt: string
+}
+
+export interface AssignedUsersResponse {
+  success: boolean
+  data: {
+    users: AssignedUser[]
+    pagination: {
+      total: number
+      limit: number
+      offset: number
+      hasMore: boolean
+    }
+  }
+}
+
 /**
  * Tenants API Service
  * Handles communication with the internal tenants API
@@ -424,6 +583,50 @@ export class TenantsService {
   }
 
   /**
+   * Reactivate user access to application (Platform Admin)
+   * @param tenantId - Tenant ID
+   * @param userId - User ID
+   * @param appSlug - Application slug
+   * @returns Promise with reactivate result
+   */
+  async reactivateUserAccess(
+    tenantId: number, 
+    userId: number, 
+    appSlug: string
+  ): Promise<{ 
+    success: boolean; 
+    data: { 
+      access: {
+        id: number
+        userId: number
+        applicationSlug: string
+        tenantId: number
+        grantedAt: string
+        isActive: boolean
+      }
+    } 
+  }> {
+    console.log('🏢 [TenantsService] Reactivating user access:', { tenantId, userId, appSlug })
+
+    try {
+      const response = await api.put(
+        `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/reactivate`
+      )
+      
+      console.log('✅ [TenantsService] User access reactivated:', {
+        tenantId,
+        userId,
+        appSlug
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to reactivate user access:', error)
+      throw error
+    }
+  }
+
+  /**
    * List tenant users with application access status
    * @param tenantId - Tenant ID
    * @param appSlug - Application slug
@@ -488,6 +691,253 @@ export class TenantsService {
       return response
     } catch (error) {
       console.error('❌ [TenantsService] Failed to fetch app users:', error)
+      throw error
+    }
+  }
+
+  /**
+   * List tenant addresses
+   * @param tenantId - Tenant ID
+   * @param params - Query parameters
+   * @returns Promise with addresses list
+   */
+  async listAddresses(tenantId: number, params?: {
+    type?: string
+    active?: boolean
+    limit?: number
+    offset?: number
+  }): Promise<TenantAddressesResponse> {
+    const searchParams = new URLSearchParams()
+    
+    if (params?.type) searchParams.append('type', params.type)
+    if (params?.active !== undefined) searchParams.append('active', params.active.toString())
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+    if (params?.offset) searchParams.append('offset', params.offset.toString())
+
+    const queryString = searchParams.toString()
+    const endpoint = `${this.baseEndpoint}/${tenantId}/addresses${queryString ? `?${queryString}` : ''}`
+
+    console.log('🏢 [TenantsService] Fetching tenant addresses:', { tenantId, params })
+
+    try {
+      const response = await api.get(endpoint)
+      
+      console.log('✅ [TenantsService] Tenant addresses fetched:', {
+        tenantId,
+        count: response.data?.addresses?.length,
+        total: response.data?.pagination?.total
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to fetch tenant addresses:', error)
+      throw error
+    }
+  }
+
+  /**
+   * List tenant contacts
+   * @param tenantId - Tenant ID
+   * @param params - Query parameters
+   * @returns Promise with contacts list
+   */
+  async listContacts(tenantId: number, params?: {
+    type?: string
+    active?: boolean
+    limit?: number
+    offset?: number
+  }): Promise<TenantContactsResponse> {
+    const searchParams = new URLSearchParams()
+    
+    if (params?.type) searchParams.append('type', params.type)
+    if (params?.active !== undefined) searchParams.append('active', params.active.toString())
+    if (params?.limit) searchParams.append('limit', params.limit.toString())
+    if (params?.offset) searchParams.append('offset', params.offset.toString())
+
+    const queryString = searchParams.toString()
+    const endpoint = `${this.baseEndpoint}/${tenantId}/contacts${queryString ? `?${queryString}` : ''}`
+
+    console.log('🏢 [TenantsService] Fetching tenant contacts:', { tenantId, params })
+
+    try {
+      const response = await api.get(endpoint)
+      
+      console.log('✅ [TenantsService] Tenant contacts fetched:', {
+        tenantId,
+        count: response.data?.contacts?.length,
+        total: response.data?.pagination?.total
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to fetch tenant contacts:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Create tenant address
+   * @param tenantId - Tenant ID
+   * @param addressData - Address data
+   * @returns Promise with created address
+   */
+  async createAddress(tenantId: number, addressData: CreateAddressRequest): Promise<AddressCRUDResponse> {
+    console.log('🏠 [TenantsService] Creating address for tenant:', tenantId, addressData)
+
+    try {
+      const response = await api.post(`${this.baseEndpoint}/${tenantId}/addresses`, addressData)
+      
+      console.log('✅ [TenantsService] Address created successfully:', {
+        tenantId,
+        addressId: response.data?.address?.id
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to create address:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Update tenant address
+   * @param tenantId - Tenant ID
+   * @param addressId - Address ID
+   * @param addressData - Updated address data
+   * @returns Promise with updated address
+   */
+  async updateAddress(tenantId: number, addressId: number, addressData: UpdateAddressRequest): Promise<AddressCRUDResponse> {
+    console.log('🏠 [TenantsService] Updating address:', { tenantId, addressId, ...addressData })
+
+    try {
+      const response = await api.put(`${this.baseEndpoint}/${tenantId}/addresses/${addressId}`, addressData)
+      
+      console.log('✅ [TenantsService] Address updated successfully:', {
+        tenantId,
+        addressId: response.data?.address?.id
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to update address:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Delete tenant address
+   * @param tenantId - Tenant ID
+   * @param addressId - Address ID
+   * @returns Promise with delete result
+   */
+  async deleteAddress(tenantId: number, addressId: number): Promise<DeleteResponse> {
+    console.log('🏠 [TenantsService] Deleting address:', { tenantId, addressId })
+
+    try {
+      const response = await api.delete(`${this.baseEndpoint}/${tenantId}/addresses/${addressId}`)
+      
+      console.log('✅ [TenantsService] Address deleted successfully:', { tenantId, addressId })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to delete address:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Create tenant contact
+   * @param tenantId - Tenant ID
+   * @param contactData - Contact data
+   * @returns Promise with created contact
+   */
+  async createContact(tenantId: number, contactData: CreateContactRequest): Promise<ContactCRUDResponse> {
+    console.log('👥 [TenantsService] Creating contact for tenant:', tenantId, contactData)
+
+    try {
+      const response = await api.post(`${this.baseEndpoint}/${tenantId}/contacts`, contactData)
+      
+      console.log('✅ [TenantsService] Contact created successfully:', {
+        tenantId,
+        contactId: response.data?.contact?.id
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to create contact:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Update tenant contact
+   * @param tenantId - Tenant ID
+   * @param contactId - Contact ID
+   * @param contactData - Updated contact data
+   * @returns Promise with updated contact
+   */
+  async updateContact(tenantId: number, contactId: number, contactData: UpdateContactRequest): Promise<ContactCRUDResponse> {
+    console.log('👥 [TenantsService] Updating contact:', { tenantId, contactId, ...contactData })
+
+    try {
+      const response = await api.put(`${this.baseEndpoint}/${tenantId}/contacts/${contactId}`, contactData)
+      
+      console.log('✅ [TenantsService] Contact updated successfully:', {
+        tenantId,
+        contactId: response.data?.contact?.id
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to update contact:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Delete tenant contact
+   * @param tenantId - Tenant ID
+   * @param contactId - Contact ID
+   * @returns Promise with delete result
+   */
+  async deleteContact(tenantId: number, contactId: number): Promise<DeleteResponse> {
+    console.log('👥 [TenantsService] Deleting contact:', { tenantId, contactId })
+
+    try {
+      const response = await api.delete(`${this.baseEndpoint}/${tenantId}/contacts/${contactId}`)
+      
+      console.log('✅ [TenantsService] Contact deleted successfully:', { tenantId, contactId })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to delete contact:', error)
+      throw error
+    }
+  }
+
+
+  /**
+   * List assigned users for a specific application within a tenant
+   * @param tenantId - Tenant ID
+   * @param appSlug - Application slug
+   * @param options - Query options
+   * @returns Promise with assigned users list
+   */
+  async listApplicationUsers(
+    tenantId: number, 
+    appSlug: string, 
+    options: { limit?: number; offset?: number } = {}
+  ): Promise<AssignedUsersResponse> {
+    const { limit = 50, offset = 0 } = options
+    
+    try {
+      const response = await api.get(`${this.baseEndpoint}/${tenantId}/applications/${appSlug}/users`, {
+        params: { limit, offset }
+      })
+
+      return response
+    } catch (error: any) {
+      console.error('Failed to list application users:', error)
       throw error
     }
   }

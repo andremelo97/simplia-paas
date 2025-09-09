@@ -105,6 +105,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   AUTH_NETWORK_FAILURE: {
     title: "Connection Error",
     message: "Can't reach the server. Check your connection and try again."
+  },
+  SESSION_EXPIRED: {
+    title: "Session Expired",
+    message: "Your session has expired. Please sign in again."
   }
 }
 

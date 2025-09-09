@@ -1,9 +1,11 @@
-import React from 'react'
-import { Card, CardHeader, CardContent, Badge, Button, Table, StatusBadge } from '@client/common/ui'
+import React, { useState, useEffect } from 'react'
+import { Card, CardHeader, CardContent, Badge, Button, Table, StatusBadge, EmptyState } from '@client/common/ui'
 import { TenantLicense } from '../../licenses/types'
+import { tenantsService, AssignedUser } from '../../../../services/tenants'
 
 interface TenantLicenseCardProps {
   license: TenantLicense
+  tenantId: number
   onAdjustSeats: (license: TenantLicense) => void
   onManageUsers: (license: TenantLicense) => void
   onViewPricing: (license: TenantLicense) => void
@@ -11,10 +13,35 @@ interface TenantLicenseCardProps {
 
 export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
   license,
+  tenantId,
   onAdjustSeats,
   onManageUsers,
   onViewPricing
 }) => {
+  const [assignedUsers, setAssignedUsers] = useState<AssignedUser[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(true)
+
+  useEffect(() => {
+    const fetchAssignedUsers = async () => {
+      if (!license.application?.slug) return
+      
+      try {
+        setLoadingUsers(true)
+        const response = await tenantsService.listApplicationUsers(tenantId, license.application.slug, {
+          limit: 10 // Show first 10 users
+        })
+        const users = response.data?.items || []
+        setAssignedUsers(users)
+      } catch (error) {
+        console.error('Failed to load assigned users:', error)
+        setAssignedUsers([])
+      } finally {
+        setLoadingUsers(false)
+      }
+    }
+
+    fetchAssignedUsers()
+  }, [tenantId, license.application?.slug])
 
   const formatCurrency = (amount: number, currency: string = 'BRL') => {
     const formatter = new Intl.NumberFormat('pt-BR', {
@@ -106,7 +133,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
         )}
 
         {/* Seats by User Type */}
-        {hasSeats ? (
+        {hasSeats && (
           <div>
             <h4 className="text-sm font-medium text-gray-900 mb-3">Seats by User Type</h4>
             <Table>
@@ -145,11 +172,51 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
               </tbody>
             </Table>
           </div>
-        ) : (
-          <div className="text-center py-6">
-            <p className="text-gray-500">No users assigned to this application yet.</p>
-          </div>
         )}
+
+        {/* Assigned Users */}
+        <div className="mt-6">
+          <h4 className="text-sm font-medium text-gray-900 mb-3">Assigned Users</h4>
+          {loadingUsers ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="animate-pulse h-10 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          ) : assignedUsers && assignedUsers.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <thead>
+                  <tr>
+                    <th className="text-left">Name</th>
+                    <th className="text-left">Email</th>
+                    <th className="text-left">Role</th>
+                    <th className="text-left">Granted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(assignedUsers || []).map((user) => (
+                    <tr key={user.id}>
+                      <td className="font-medium">{user.name}</td>
+                      <td className="text-gray-600">{user.email}</td>
+                      <td>
+                        <Badge variant="secondary">{user.role}</Badge>
+                      </td>
+                      <td className="text-gray-500 text-sm">
+                        {new Date(user.grantedAt).toLocaleDateString('pt-BR')}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          ) : (
+            <EmptyState 
+              title="No assigned users"
+              description="No users have been assigned to this application yet."
+            />
+          )}
+        </div>
 
         {/* License Information */}
         <div className="mt-6 pt-6 border-t border-gray-200">

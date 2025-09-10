@@ -48,14 +48,10 @@ export const TenantContactsTab: React.FC = () => {
     })
   }
 
-  const formatPhone = (phoneE164?: string) => {
-    if (!phoneE164) return 'N/A'
-    // Simple formatting for US numbers
-    if (phoneE164.startsWith('+1') && phoneE164.length === 12) {
-      const digits = phoneE164.slice(2)
-      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
-    }
-    return phoneE164
+  const formatPhone = (phone?: string) => {
+    if (!phone) return 'N/A'
+    // Display phone as-is (no formatting)
+    return phone
   }
 
   const getTypeLabel = (type: string) => {
@@ -188,7 +184,7 @@ export const TenantContactsTab: React.FC = () => {
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatPhone(contact.phoneE164)}
+                      {formatPhone(contact.phone)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div>

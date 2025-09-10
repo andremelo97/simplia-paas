@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 Guidance for Claude Code when working with Simplia PaaS codebase.
 
 ## Tech Stack
@@ -36,6 +38,11 @@ npm run dev:server      # Server only (port 3001)
 npm run dev:client      # Client only (port 3002)
 npm run migrate         # Run database migrations
 npm test               # Run all tests
+npm run test:watch      # Run tests in watch mode
+npm run db:create:test  # Create test database
+npm run db:drop:test    # Drop test database
+npm run build           # Build for production
+npm start              # Start production server
 ```
 
 ## Critical Database Rules
@@ -62,6 +69,20 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - **Test DB**: Auto-created `TEST_DATABASE_NAME`
 - **Path Aliases**: `@server/*`, `@client/*`, `@shared/*`
 - **Auth Testing**: JWT role override support
+- **Run specific tests**: `npx jest tests/integration/internal/critical-validation.test.js`
+- **Test patterns**: `npx jest --testNamePattern="Layer 1"`
+
+## Environment Setup
+- Copy `.env.example` to `.env` and configure database settings
+- PostgreSQL required for local development
+- Test database automatically created with `npm test`
+
+## Important Files
+- **Migrations**: `src/server/infra/migrations/` - Database schema evolution
+- **API Routes**: `src/server/api/internal/routes/` - Express route handlers
+- **Models**: `src/server/infra/models/` - Database abstractions
+- **Frontend Apps**: `src/client/apps/` - Multi-app architecture
+- **Tests**: `tests/integration/internal/` - Critical validation tests
 
 ---
 

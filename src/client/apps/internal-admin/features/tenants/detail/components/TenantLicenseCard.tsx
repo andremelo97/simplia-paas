@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardHeader, CardContent, Badge, Button, Table, StatusBadge, EmptyState } from '@client/common/ui'
 import { TenantLicense } from '../../licenses/types'
 import { tenantsService, AssignedUser } from '../../../../services/tenants'
+import { getRoleBadgeVariant, getAccessBadgeVariant, getAccessBadgeText } from '@client/common/utils/badgeUtils'
 
 interface TenantLicenseCardProps {
   license: TenantLicense
@@ -30,7 +31,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
         const response = await tenantsService.listApplicationUsers(tenantId, license.application.slug, {
           limit: 10 // Show first 10 users
         })
-        const users = response.data?.items || []
+        const users = response.data?.users || []
         setAssignedUsers(users)
       } catch (error) {
         console.error('Failed to load assigned users:', error)
@@ -191,6 +192,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
                     <th className="text-left">Name</th>
                     <th className="text-left">Email</th>
                     <th className="text-left">Role</th>
+                    <th className="text-left">Access</th>
                     <th className="text-left">Granted</th>
                   </tr>
                 </thead>
@@ -200,10 +202,17 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
                       <td className="font-medium">{user.name}</td>
                       <td className="text-gray-600">{user.email}</td>
                       <td>
-                        <Badge variant="secondary">{user.role}</Badge>
+                        <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
+                          {user.role}
+                        </Badge>
+                      </td>
+                      <td>
+                        <Badge variant={getAccessBadgeVariant(user.granted)}>
+                          {getAccessBadgeText(user.granted)}
+                        </Badge>
                       </td>
                       <td className="text-gray-500 text-sm">
-                        {new Date(user.grantedAt).toLocaleDateString('pt-BR')}
+                        {user.grantedAt ? new Date(user.grantedAt).toLocaleDateString('pt-BR') : 'Never'}
                       </td>
                     </tr>
                   ))}

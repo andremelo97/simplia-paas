@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Label, Textarea, Checkbox } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Label, Checkbox } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
 import { AddressesRepeater } from './AddressesRepeater'
@@ -9,7 +9,6 @@ import { AddressFormValues, ContactFormValues } from './types'
 
 interface TenantFormData {
   name: string
-  description: string
   status: 'active' | 'inactive'
 }
 
@@ -22,7 +21,6 @@ interface TenantSnapshot {
 export const EditTenantPage: React.FC = () => {
   const [formData, setFormData] = useState<TenantFormData>({
     name: '',
-    description: '',
     status: 'active'
   })
   const [addresses, setAddresses] = useState<AddressFormValues[]>([])
@@ -86,7 +84,7 @@ export const EditTenantPage: React.FC = () => {
           title: contact.title || '',
           department: contact.department || '',
           email: contact.email?.toLowerCase() || '',
-          phone_number: contact.phoneE164?.trim() || '',
+          phone_number: contact.phone?.trim() || '',
           notes: contact.notes || '',
           is_primary: contact.isPrimary || false
         }))
@@ -94,7 +92,6 @@ export const EditTenantPage: React.FC = () => {
         // Initialize form data
         const coreData: TenantFormData = {
           name: tenant.name || '',
-          description: tenant.description || '',
           status: (tenant.status === 'active' || tenant.status === 'inactive') ? tenant.status : 'active'
         }
 
@@ -189,9 +186,6 @@ export const EditTenantPage: React.FC = () => {
       errors.name = 'Tenant name must be less than 100 characters'
     }
     
-    if (formData.description && formData.description.length > 500) {
-      errors.description = 'Description must be less than 500 characters'
-    }
 
     // Validate addresses - at least one required
     if (addresses.length === 0) {
@@ -301,7 +295,6 @@ export const EditTenantPage: React.FC = () => {
       if (diff.coreChanged) {
         await tenantsService.updateTenant(diff.tenantId, {
           name: formData.name.trim(),
-          description: formData.description.trim(),
           status: formData.status
         })
       }
@@ -351,7 +344,7 @@ export const EditTenantPage: React.FC = () => {
           title: contact.title || undefined,
           department: contact.department || undefined,
           email: contact.email || undefined,
-          phoneE164: contact.phone_number || undefined,
+          phone: contact.phone_number || undefined,
           notes: contact.notes || undefined,
           isPrimary: contact.is_primary || false
         };
@@ -367,7 +360,7 @@ export const EditTenantPage: React.FC = () => {
           title: contact.title || undefined,
           department: contact.department || undefined,
           email: contact.email || undefined,
-          phoneE164: contact.phone_number || undefined,
+          phone: contact.phone_number || undefined,
           notes: contact.notes || undefined,
           isPrimary: contact.is_primary || false
         };
@@ -505,19 +498,6 @@ export const EditTenantPage: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
-                <div>
-                  <Textarea
-                    id="description"
-                    label="Description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description')(e as any)}
-                    rows={3}
-                    placeholder="Optional description of the tenant organization"
-                    disabled={isSubmitting}
-                    error={validationErrors.description}
-                    helperText="Brief description of the tenant organization (optional)"
-                  />
-                </div>
               </div>
 
               <div className="pt-4 border-t border-gray-200">

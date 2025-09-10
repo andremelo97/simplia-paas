@@ -95,7 +95,7 @@ export interface TenantContact {
   type: string
   fullName: string
   email: string
-  phoneE164?: string
+  phone?: string
   title?: string
   department?: string
   notes?: string
@@ -160,7 +160,7 @@ export interface CreateContactRequest {
   type: string
   fullName: string
   email: string
-  phoneE164?: string
+  phone?: string
   title?: string
   department?: string
   notes?: string
@@ -171,7 +171,7 @@ export interface UpdateContactRequest {
   type?: string
   fullName?: string
   email?: string
-  phoneE164?: string
+  phone?: string
   title?: string
   department?: string
   notes?: string
@@ -214,7 +214,10 @@ export interface AssignedUser {
   name: string
   email: string
   role: string
-  grantedAt: string
+  status: string
+  granted: boolean
+  accessId: number | null
+  grantedAt: string | null
 }
 
 export interface AssignedUsersResponse {
@@ -649,7 +652,7 @@ export class TenantsService {
         total: number | null
         available: number | null
       }
-      items: {
+      users: {
         id: number
         name: string
         email: string
@@ -684,7 +687,7 @@ export class TenantsService {
       console.log('✅ [TenantsService] App users fetched:', {
         tenantId,
         appSlug,
-        count: response.data?.items?.length,
+        count: response.data?.users?.length,
         usage: response.data?.usage
       })
 

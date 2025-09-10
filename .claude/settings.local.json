@@ -90,7 +90,11 @@
       "Bash(PGPASSWORD=1234 psql -U simplia -d simplia_paas_test -c \"\\d application_pricing\")",
       "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas_test -c \"\\d users\")",
       "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas_test -c \"\\d user_application_access\")",
-      "Bash(VITE_PORT=3002 npm run dev:client)"
+      "Bash(VITE_PORT=3002 npm run dev:client)",
+      "Bash(PGPASSWORD=1234 psql -U simplia -d simplia_paas_test -c \"SELECT u.id, u.first_name, u.last_name, u.email, uaa.active, uaa.granted_at FROM users u LEFT JOIN user_application_access uaa ON u.id = uaa.user_id_fk WHERE u.tenant_id_fk = 1 ORDER BY u.id;\")",
+      "Bash(netstat:*)",
+      "Bash(set PORT=3003)",
+      "Bash(PGPASSWORD=postgres psql -U postgres -d simplia_paas_test -c \"\\d+ tenants\")"
     ],
     "deny": [],
     "ask": []

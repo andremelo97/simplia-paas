@@ -1,6 +1,6 @@
 # Simplia PaaS Internal API Documentation
 
-**Version**: 1.1.4  
+**Version**: 1.1.8  
 **Base URL**: `http://localhost:3001/internal/api/v1`  
 **Documentation**: `http://localhost:3001/docs/internal` (Swagger UI - Platform Admin Only)
 
@@ -127,7 +127,51 @@ Alertas de segurança e anomalias.
 
 ---
 
-## 🔑 2. Platform Authentication
+## 📊 2. Platform Metrics
+
+> **Acesso**: Platform Admin (`internal_admin`) apenas
+
+### GET `/metrics/overview`
+Retorna métricas agregadas da plataforma para dashboard administrativo.
+
+**Headers**:
+- `Authorization: Bearer <jwt_token>`
+
+**Resposta 200**:
+```json
+{
+  "success": true,
+  "data": {
+    "tenants": {
+      "total": 45,
+      "newThisWeek": 3,
+      "newThisMonth": 8
+    },
+    "users": {
+      "total": 234,
+      "newThisWeek": 12,
+      "newThisMonth": 35
+    },
+    "applications": {
+      "active": 4
+    },
+    "licenses": {
+      "active": 67
+    }
+  },
+  "meta": {
+    "cachedAt": "2025-01-10T15:30:00Z",
+    "executionTime": "45ms"
+  }
+}
+```
+
+**Cache**: 60 segundos TTL para otimizar performance  
+**Performance**: Queries executadas em paralelo com índices otimizados
+
+---
+
+## 🔑 3. Platform Authentication
 
 > **Escopo**: Global (sem tenant context)
 
@@ -172,7 +216,7 @@ Logout da plataforma.
 
 ---
 
-## 🏢 3. Tenant Management
+## 🏢 4. Tenant Management
 
 > **Acesso**: Platform Admin apenas
 
@@ -475,7 +519,7 @@ Remove contato (soft delete).
 
 ---
 
-## 👥 4. Tenant Users Management
+## 👥 5. Tenant Users Management
 
 > **Acesso**: Platform Admin apenas
 
@@ -518,7 +562,7 @@ Lista global de usuários com filtro por tenant.
 
 ---
 
-## 🔐 5. Tenant Authentication
+## 🔐 6. Tenant Authentication
 
 > **Escopo**: Tenant-specific (requer `x-tenant-id`)
 
@@ -553,7 +597,7 @@ Logout.
 
 ---
 
-## 👤 6. Users (Tenant-Scoped)
+## 👤 7. Users (Tenant-Scoped)
 
 > **Escopo**: Tenant-specific  
 > **Middleware**: Tenant context + Auth + Role-based
@@ -611,7 +655,7 @@ Revogar acesso à aplicação.
 
 ---
 
-## 📱 7. Applications
+## 📱 8. Applications
 
 > **Acesso**: Platform Admin apenas
 
@@ -696,7 +740,7 @@ Atualizar preço.
 
 ---
 
-## 🎫 8. Entitlements (Licenses)
+## 🎫 9. Entitlements (Licenses)
 
 > **Escopo**: Tenant-specific  
 > **Headers**: `x-tenant-id` obrigatório

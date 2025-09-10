@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Label, Textarea } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Label } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
 import { addressService } from '../../services/addresses'
@@ -12,13 +12,11 @@ import { AddressFormValues, ContactFormValues } from './types'
 
 interface TenantFormData {
   name: string
-  description: string
 }
 
 export const CreateTenant: React.FC = () => {
   const [formData, setFormData] = useState<TenantFormData>({
-    name: '',
-    description: ''
+    name: ''
   })
   const [addresses, setAddresses] = useState<AddressFormValues[]>([])
   const [contacts, setContacts] = useState<ContactFormValues[]>([])
@@ -90,9 +88,6 @@ export const CreateTenant: React.FC = () => {
       errors.name = 'Tenant name must be less than 100 characters'
     }
     
-    if (formData.description && formData.description.length > 500) {
-      errors.description = 'Description must be less than 500 characters'
-    }
 
     // Validate addresses - at least one required
     if (addresses.length === 0) {
@@ -163,7 +158,6 @@ export const CreateTenant: React.FC = () => {
       console.log('🏢 [CreateTenant] Submitting tenant creation:', {
         name: formData.name.trim(),
         subdomain,
-        hasDescription: !!formData.description.trim(),
         addressCount: addresses.length,
         contactCount: contacts.length
       })
@@ -208,7 +202,7 @@ export const CreateTenant: React.FC = () => {
               title: contact.title,
               department: contact.department,
               email: contact.email,
-              phoneE164: contact.phone_number ? `+${contact.phone_number}` : undefined,
+              phone: contact.phone_number || undefined,
               notes: contact.notes,
               isPrimary: contact.is_primary
             })
@@ -289,19 +283,6 @@ export const CreateTenant: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
-                <div>
-                  <Textarea
-                    id="description"
-                    label="Description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description')(e as any)}
-                    rows={3}
-                    placeholder="Optional description of the tenant organization"
-                    disabled={isSubmitting}
-                    error={validationErrors.description}
-                    helperText="Brief description of the tenant organization (optional)"
-                  />
-                </div>
               </div>
             </CardContent>
           </Card>

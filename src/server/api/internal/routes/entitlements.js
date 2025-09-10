@@ -213,7 +213,7 @@ async function getEnhancedLicenses(tenantId, options = {}) {
       ta.status,
       ta.activated_at,
       ta.expires_at,
-      ta.user_limit,
+      ta.max_users as user_limit,
       ta.seats_used as total_seats_used,
       ta.active,
       ta.created_at,
@@ -229,10 +229,10 @@ async function getEnhancedLicenses(tenantId, options = {}) {
             'userTypeId', ls.user_type_id,
             'userType', ls.user_type_name,
             'used', COALESCE(ls.seats_used, 0),
-            'total', ta.user_limit,
+            'total', ta.max_users,
             'available', CASE 
-              WHEN ta.user_limit IS NULL THEN NULL
-              ELSE GREATEST(0, ta.user_limit - COALESCE(ls.seats_used, 0))
+              WHEN ta.max_users IS NULL THEN NULL
+              ELSE GREATEST(0, ta.max_users - COALESCE(ls.seats_used, 0))
             END,
             'hierarchyLevel', ls.hierarchy_level,
             'pricing', JSON_BUILD_OBJECT(
@@ -267,7 +267,7 @@ async function getEnhancedLicenses(tenantId, options = {}) {
   
   query += `
     GROUP BY ta.id, ta.tenant_id_fk, ta.application_id, ta.status, ta.activated_at, 
-             ta.expires_at, ta.user_limit, ta.seats_used, ta.active, ta.created_at, 
+             ta.expires_at, ta.max_users, ta.seats_used, ta.active, ta.created_at, 
              ta.updated_at, a.name, a.slug, a.description
     ORDER BY ta.activated_at DESC
     LIMIT $${params.length + 1} OFFSET $${params.length + 2}
@@ -402,10 +402,10 @@ router.get('/:applicationSlug', requireManagerOrAdmin, async (req, res) => {
     
     const seatUtilization = {
       used: licenseInfo.seats_used || 0,
-      limit: licenseInfo.user_limit || 0,
-      available: (licenseInfo.user_limit || 0) - (licenseInfo.seats_used || 0),
-      percentage: licenseInfo.user_limit ? 
-        Math.round(((licenseInfo.seats_used || 0) / licenseInfo.user_limit) * 100) : 0
+      limit: licenseInfo.max_users || 0,
+      available: (licenseInfo.max_users || 0) - (licenseInfo.seats_used || 0),
+      percentage: licenseInfo.max_users ? 
+        Math.round(((licenseInfo.seats_used || 0) / licenseInfo.max_users) * 100) : 0
     };
     
     res.json({
@@ -775,7 +775,7 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
               id: existingLicense.id,
               activatedAt: existingLicense.activated_at,
               expiresAt: existingLicense.expires_at,
-              userLimit: existingLicense.user_limit
+              userLimit: existingLicense.max_users
             }
           }
         }
@@ -796,7 +796,7 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
       // Reactivate existing license
       license = await existingLicense.update({
         status,
-        user_limit: licenseData.userLimit,
+        max_users: licenseData.userLimit,
         expires_at: licenseData.expiryDate,
         activated_at: new Date()
       });
@@ -829,7 +829,7 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
             slug: applicationSlug
           },
           status: license.status,
-          userLimit: license.user_limit,
+          userLimit: license.max_users,
           totalSeatsUsed: license.seats_used || 0,
           activatedAt: license.activated_at,
           expiryDate: license.expires_at,

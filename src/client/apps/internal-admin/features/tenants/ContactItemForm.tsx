@@ -41,10 +41,8 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
   };
 
   const handlePhoneChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length <= 15) {
-      handleFieldChange('phone_number', cleaned);
-    }
+    // Accept phone in any format - no cleaning needed
+    handleFieldChange('phone_number', value);
   };
 
   return (
@@ -148,13 +146,13 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
           <Input
             id={`contact-${index}-phone`}
             type="tel"
-            value={contact.phone_number ? formatPhoneNumber(contact.phone_number) : ''}
+            value={contact.phone_number || ''}
             onChange={(e) => handlePhoneChange(e.target.value)}
-            placeholder="+1 555-123-4567"
+            placeholder="(11) 99999-9999 or +55 11 99999-9999"
             error={errors.phone_number}
           />
           <p className="text-xs text-gray-500">
-            E.164 format (numbers only, up to 15 digits)
+            Phone number in any format
           </p>
         </div>
 

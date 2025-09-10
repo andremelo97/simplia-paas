@@ -174,9 +174,9 @@ class Tenant {
             'app_slug', a.slug,
             'status', ta.status,
             'expiry_date', ta.expiry_date,
-            'user_limit', ta.user_limit,
+            'user_limit', ta.max_users,
             'seats_used', ta.seats_used,
-            'seats_available', (ta.user_limit - ta.seats_used)
+            'seats_available', (ta.max_users - ta.seats_used)
           )
         ) FILTER (WHERE ta.id IS NOT NULL) as licenses
       FROM tenants t

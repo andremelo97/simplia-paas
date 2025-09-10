@@ -11,7 +11,7 @@ class TenantContact {
     this.type = data.type;
     this.fullName = data.full_name;
     this.email = data.email;
-    this.phoneE164 = data.phone_e164;
+    this.phone = data.phone;
     this.title = data.title;
     this.department = data.department;
     this.notes = data.notes;
@@ -75,7 +75,7 @@ class TenantContact {
       type,
       fullName,
       email,
-      phoneE164,
+      phone,
       title,
       department,
       notes,
@@ -103,13 +103,7 @@ class TenantContact {
       normalizedEmail = email.toLowerCase().trim();
     }
 
-    // Validate phone format if provided (E.164)
-    if (phoneE164) {
-      const e164Regex = /^\+[1-9]\d{1,14}$/;
-      if (!e164Regex.test(phoneE164)) {
-        throw new Error('Phone must be in E.164 format (e.g., +5511999999999)');
-      }
-    }
+    // Phone can be in any format - no validation needed
 
 
     // If setting as primary, unset other primaries of same type first
@@ -122,7 +116,7 @@ class TenantContact {
 
     const query = `
       INSERT INTO tenant_contacts (
-        tenant_id_fk, type, full_name, email, phone_e164, title, department,
+        tenant_id_fk, type, full_name, email, phone, title, department,
         notes, is_primary, active
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
@@ -133,7 +127,7 @@ class TenantContact {
       type,
       fullName.trim(),
       normalizedEmail,
-      phoneE164,
+      phone,
       title ? title.trim() : null,
       department ? department.trim() : null,
       notes ? notes.trim() : null,
@@ -149,7 +143,7 @@ class TenantContact {
       type,
       fullName,
       email,
-      phoneE164,
+      phone,
       title,
       department,
       notes,
@@ -194,17 +188,13 @@ class TenantContact {
       }
     }
 
-    if (phoneE164 !== undefined) {
-      if (phoneE164) {
-        const e164Regex = /^\+[1-9]\d{1,14}$/;
-        if (!e164Regex.test(phoneE164)) {
-          throw new Error('Phone must be in E.164 format (e.g., +5511999999999)');
-        }
-        updates.push(`phone_e164 = $${paramIndex}`);
-        params.push(phoneE164);
+    if (phone !== undefined) {
+      if (phone) {
+        updates.push(`phone = $${paramIndex}`);
+        params.push(phone.trim());
         paramIndex++;
       } else {
-        updates.push(`phone_e164 = NULL`);
+        updates.push(`phone = NULL`);
       }
     }
 
@@ -308,7 +298,7 @@ class TenantContact {
       type: this.type,
       fullName: this.fullName,
       email: this.email,
-      phoneE164: this.phoneE164,
+      phone: this.phone,
       title: this.title,
       department: this.department,
       notes: this.notes,

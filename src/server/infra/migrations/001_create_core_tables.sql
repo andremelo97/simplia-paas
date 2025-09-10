@@ -192,7 +192,7 @@ CREATE TABLE IF NOT EXISTS tenant_contacts (
     type TEXT NOT NULL CHECK (type IN ('ADMIN','BILLING','TECH','LEGAL','OTHER')),
     full_name TEXT NOT NULL,
     email TEXT NULL, -- normalize to lower-case in application
-    phone_e164 TEXT NULL, -- E.164 format (+5511999999999)
+    phone TEXT NULL, -- Phone number in any format
     title TEXT NULL, -- job title
     department TEXT NULL, -- department/area
     notes TEXT NULL,
@@ -207,7 +207,7 @@ COMMENT ON COLUMN tenant_contacts.tenant_id_fk IS 'Foreign key reference to tena
 COMMENT ON COLUMN tenant_contacts.type IS 'Contact type: ADMIN=administrative, BILLING=billing contact, TECH=technical, LEGAL=legal contact, OTHER=custom';
 COMMENT ON COLUMN tenant_contacts.full_name IS 'Full name of the contact person';
 COMMENT ON COLUMN tenant_contacts.email IS 'Email address (normalized to lowercase in application layer)';
-COMMENT ON COLUMN tenant_contacts.phone_e164 IS 'Phone number in E.164 international format';
+COMMENT ON COLUMN tenant_contacts.phone IS 'Phone number in any format (stored as-is)';
 COMMENT ON COLUMN tenant_contacts.title IS 'Job title or position';
 COMMENT ON COLUMN tenant_contacts.department IS 'Department or business area';
 COMMENT ON COLUMN tenant_contacts.is_primary IS 'Whether this is the primary contact for this type (max 1 per tenant+type)';

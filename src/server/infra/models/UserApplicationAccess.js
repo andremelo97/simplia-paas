@@ -317,6 +317,46 @@ class UserApplicationAccess {
   }
 
   /**
+   * Reactivate existing user access (set active to true)
+   */
+  static async reactivate(userId, applicationId, tenantId, reactivatedBy) {
+    console.log(`🔄 [UserApplicationAccess.reactivate] Reactivating access for user ${userId} to app ${applicationId} in tenant ${tenantId}`);
+    
+    // Find the existing access record (active or inactive)
+    const existingAccess = await UserApplicationAccess.findByUserAndApp(userId, applicationId, tenantId);
+    
+    if (!existingAccess) {
+      const error = new Error(`No existing access record found for user ${userId} and application ${applicationId}`);
+      error.code = 'ACCESS_NOT_FOUND';
+      error.status = 404;
+      throw error;
+    }
+    
+    if (existingAccess.isActive) {
+      const error = new Error(`User ${userId} already has active access to application ${applicationId}`);
+      error.code = 'ALREADY_ACTIVE';
+      error.status = 409;
+      throw error;
+    }
+    
+    // Reactivate the access
+    const result = await existingAccess.update({ active: true });
+    
+    // Log the access reactivation
+    await UserApplicationAccess.logAccess({
+      userId: existingAccess.userId,
+      tenantId: existingAccess.tenantId,
+      applicationId: existingAccess.applicationId,
+      accessType: 'reactivated',
+      reason: `Access reactivated by user ${reactivatedBy}`
+    });
+    
+    console.log(`✅ [UserApplicationAccess.reactivate] Access reactivated successfully for user ${userId}`);
+    
+    return result;
+  }
+
+  /**
    * Log access attempt for audit trail
    */
   static async logAccess(logData) {

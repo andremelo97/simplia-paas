@@ -1077,7 +1077,7 @@ router.delete('/:id/addresses/:addressId', async (req, res) => {
  *                           type: { type: string }
  *                           fullName: { type: string }
  *                           email: { type: string }
- *                           phoneE164: { type: string }
+ *                           phone: { type: string }
  *                           title: { type: string }
  *                           department: { type: string }
  *                           notes: { type: string }
@@ -1180,7 +1180,7 @@ router.get('/:id/contacts', async (req, res) => {
  *                 type: string
  *                 format: email
  *                 example: "joao@clinic.com"
- *               phoneE164:
+ *               phone:
  *                 type: string
  *                 pattern: '^\\+[1-9]\\d{1,14}$'
  *                 example: "+5511999887766"
@@ -1228,7 +1228,7 @@ router.post('/:id/contacts', async (req, res) => {
   try {
     const { id } = req.params;
     const tenantId = parseInt(id);
-    const { type, fullName, email, phoneE164, title, department, notes, isPrimary } = req.body;
+    const { type, fullName, email, phone, title, department, notes, isPrimary } = req.body;
 
     // Verify tenant exists
     const tenant = await Tenant.findById(tenantId);
@@ -1244,7 +1244,7 @@ router.post('/:id/contacts', async (req, res) => {
       type,
       fullName,
       email,
-      phoneE164,
+      phone,
       title,
       department,
       notes,
@@ -1325,7 +1325,7 @@ router.post('/:id/contacts', async (req, res) => {
  *               email:
  *                 type: string
  *                 format: email
- *               phoneE164:
+ *               phone:
  *                 type: string
  *                 pattern: '^\\+[1-9]\\d{1,14}$'
  *               title:
@@ -2140,7 +2140,7 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
         message: error.message,
         details: {
           reason: 'PRICING_NOT_CONFIGURED',
-          applicationSlug: appSlug,
+          applicationSlug: application.slug,
           userType: user.role || 'unknown'
         }
       });
@@ -2297,244 +2297,6 @@ router.post('/:id/users/:userId/applications/:appSlug/revoke', async (req, res) 
   }
 });
 
-/**
- * @openapi
- * /tenants/{id}/applications/{appSlug}/users:
- *   get:
- *     tags: [Tenant Management]
- *     summary: List tenant users with application access status
- *     description: Get all users in a tenant with their access status for a specific application (Platform Admin)
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Tenant ID
- *       - in: path
- *         name: appSlug
- *         required: true
- *         schema:
- *           type: string
- *         description: Application slug (e.g., 'tq', 'pm', 'billing')
- *       - in: query
- *         name: q
- *         schema:
- *           type: string
- *         description: Search query for user name or email
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *           default: 1
- *         description: Page number
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *           default: 50
- *         description: Number of users per page
- *     responses:
- *       200:
- *         description: Users retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success: { type: boolean }
- *                 data:
- *                   type: object
- *                   properties:
- *                     usage:
- *                       type: object
- *                       properties:
- *                         used: { type: integer }
- *                         total: { type: integer, nullable: true }
- *                         available: { type: integer, nullable: true }
- *                     items:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           id: { type: integer }
- *                           name: { type: string }
- *                           email: { type: string }
- *                           role: { type: string }
- *                           status: { type: string }
- *                           granted: { type: boolean }
- *                           accessId: { type: integer, nullable: true }
- *                           grantedAt: { type: string, nullable: true }
- *                     pagination:
- *                       type: object
- *                       properties:
- *                         total: { type: integer }
- *                         limit: { type: integer }
- *                         offset: { type: integer }
- *                         hasMore: { type: boolean }
- *       404:
- *         description: Tenant or application not found
- */
-router.get('/:id/applications/:appSlug/users', async (req, res) => {
-  try {
-    const tenantId = parseInt(req.params.id);
-    const { appSlug } = req.params;
-    const { q, page = 1, limit = 50 } = req.query;
-    
-    // Validate and sanitize parameters
-    const pageNum = Math.max(1, parseInt(page) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 50));
-    const offset = (pageNum - 1) * limitNum;
-    const searchQuery = q ? String(q).trim() : null;
-    
-    console.log(`📋 [Platform] Listing users for app ${appSlug} in tenant ${tenantId}`, {
-      search: searchQuery,
-      page: pageNum,
-      limit: limitNum
-    });
-    
-    // Validate tenant exists
-    const tenant = await Tenant.findById(tenantId);
-    if (!tenant) {
-      return res.status(404).json({
-        error: 'Not Found',
-        message: 'Tenant not found'
-      });
-    }
-    
-    // Get application by slug
-    const application = await Application.findBySlug(appSlug);
-    if (!application) {
-      return res.status(404).json({
-        error: 'Not Found',
-        message: `Application '${appSlug}' not found`
-      });
-    }
-    
-    // Check if tenant has license for this application
-    const license = await TenantApplication.findByTenantAndApplication(tenantId, application.id);
-    if (!license) {
-      return res.status(404).json({
-        error: 'Not Found',
-        message: `License not found for application '${appSlug}'`,
-        details: {
-          reason: 'LICENSE_NOT_FOUND',
-          tenantId,
-          applicationSlug: appSlug
-        }
-      });
-    }
-    
-    // Build query to get users with access status
-    let baseQuery = `
-      SELECT 
-        u.id,
-        u.first_name,
-        u.last_name,
-        u.email,
-        u.role,
-        u.status,
-        uaa.id as access_id,
-        uaa.granted_at,
-        uaa.active
-      FROM users u
-      LEFT JOIN user_application_access uaa ON u.id = uaa.user_id_fk 
-        AND uaa.application_id_fk = $2 
-        AND uaa.tenant_id_fk = $1
-        AND uaa.active = true
-      WHERE u.tenant_id_fk = $1 
-        AND u.status != 'deleted'
-    `;
-    
-    const queryParams = [tenantId, application.id];
-    let paramIndex = 2;
-    
-    // Add search filter if provided
-    if (searchQuery) {
-      paramIndex++;
-      baseQuery += ` AND (
-        LOWER(u.first_name || ' ' || u.last_name) LIKE LOWER($${paramIndex})
-        OR LOWER(u.email) LIKE LOWER($${paramIndex})
-      )`;
-      queryParams.push(`%${searchQuery}%`);
-    }
-    
-    // Add ordering and pagination
-    baseQuery += ` ORDER BY u.id ASC LIMIT $${paramIndex + 1} OFFSET $${paramIndex + 2}`;
-    queryParams.push(limitNum, offset);
-    
-    // Execute query
-    const result = await database.query(baseQuery, queryParams);
-    
-    // Count total users for pagination
-    let countQuery = `
-      SELECT COUNT(*) as total 
-      FROM users u 
-      WHERE u.tenant_id_fk = $1 AND u.status != 'deleted'
-    `;
-    const countParams = [tenantId];
-    
-    if (searchQuery) {
-      countQuery += ` AND (
-        LOWER(u.first_name || ' ' || u.last_name) LIKE LOWER($2)
-        OR LOWER(u.email) LIKE LOWER($2)
-      )`;
-      countParams.push(`%${searchQuery}%`);
-    }
-    
-    const countResult = await database.query(countQuery, countParams);
-    const total = parseInt(countResult.rows[0].total);
-    
-    // Format response
-    const users = result.rows.map(row => ({
-      id: row.id,
-      name: `${row.first_name} ${row.last_name}`.trim(),
-      email: row.email,
-      role: row.role,
-      status: row.status,
-      granted: !!row.access_id,
-      accessId: row.access_id,
-      grantedAt: row.granted_at
-    }));
-    
-    // Calculate usage from license
-    const usage = {
-      used: license.seatsUsed || 0,
-      total: license.maxUsers,
-      available: license.maxUsers ? (license.maxUsers - (license.seatsUsed || 0)) : null
-    };
-    
-    const hasMore = offset + limitNum < total;
-    
-    console.log(`✅ [Platform] Listed ${users.length}/${total} users, ${users.filter(u => u.granted).length} with access`);
-    
-    res.json({
-      success: true,
-      data: {
-        usage,
-        items: users,
-        pagination: {
-          total,
-          limit: limitNum,
-          offset,
-          hasMore
-        }
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ [Platform] Error listing app users:', error);
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Failed to list application users'
-    });
-  }
-});
 
 /**
  * @openapi
@@ -2650,32 +2412,31 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
       });
     }
 
-    // Get assigned users with access details
+    // Get all users with access status details
     const query = `
       SELECT 
         u.id,
         CONCAT(u.first_name, ' ', u.last_name) as name,
         u.email,
         u.role,
+        u.status,
+        uaa.id as access_id,
         uaa.granted_at,
-        uaa.active
+        COALESCE(uaa.active, false) as granted
       FROM users u
-      JOIN user_application_access uaa ON u.id = uaa.user_id_fk
-      WHERE uaa.tenant_id_fk = $1 
+      LEFT JOIN user_application_access uaa ON u.id = uaa.user_id_fk 
         AND uaa.application_id_fk = $2 
-        AND uaa.active = true
+        AND uaa.tenant_id_fk = $1
+      WHERE u.tenant_id_fk = $1 
         AND u.active = true
-      ORDER BY uaa.granted_at DESC
+      ORDER BY uaa.granted_at DESC NULLS LAST, u.created_at DESC
       LIMIT $3 OFFSET $4
     `;
 
     const countQuery = `
       SELECT COUNT(*) as total
       FROM users u
-      JOIN user_application_access uaa ON u.id = uaa.user_id_fk
-      WHERE uaa.tenant_id_fk = $1 
-        AND uaa.application_id_fk = $2 
-        AND uaa.active = true
+      WHERE u.tenant_id_fk = $1 
         AND u.active = true
     `;
 
@@ -2686,10 +2447,12 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
       limit,
       offset
     });
+    
+    console.log('🔍 [Tenants API] Query SQL:', query);
 
     const [usersResult, countResult] = await Promise.all([
       database.query(query, [tenantId, application.id, limit, offset]),
-      database.query(countQuery, [tenantId, application.id])
+      database.query(countQuery, [tenantId])
     ]);
 
     console.log('✅ [Tenants API] Query results:', {
@@ -2703,16 +2466,38 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      status: user.status,
+      granted: user.granted,
+      accessId: user.access_id,
       grantedAt: user.granted_at
     }));
 
     const total = parseInt(countResult.rows[0].total);
     const hasMore = offset + limit < total;
 
+    // Calculate usage statistics
+    const usedSeats = users.filter(user => user.granted).length;
+    
+    // Get license info for seat limits
+    const licenseQuery = `
+      SELECT max_users, seats_used
+      FROM tenant_applications
+      WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = true
+    `;
+    const licenseResult = await database.query(licenseQuery, [tenantId, application.id]);
+    const license = licenseResult.rows[0];
+    
+    const usage = {
+      used: license ? license.seats_used : usedSeats,
+      total: license ? license.max_users : null,
+      available: license && license.max_users ? Math.max(0, license.max_users - license.seats_used) : null
+    };
+
     res.json({
       success: true,
       data: {
         users,
+        usage,
         pagination: {
           total,
           limit,
@@ -2812,7 +2597,7 @@ router.put('/:id/users/:userId/applications/:appSlug/reactivate', async (req, re
     }
 
     // Verify user exists in tenant
-    const user = await User.findByIdAndTenant(targetUserId, tenantId);
+    const user = await User.findById(targetUserId, tenantId);
     if (!user) {
       return res.status(404).json({
         error: 'Not Found',

@@ -1,7 +1,8 @@
-import React from 'react'
-import { Card, CardHeader, CardContent } from '@client/common/ui'
+import React, { useState, useEffect } from 'react'
+import { Card, CardHeader, CardContent, Skeleton, Alert } from '@client/common/ui'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, Users, Building, Package, Activity } from 'lucide-react'
+import { metricsService, PlatformMetrics } from '../../services/metrics'
 
 const MetricCard: React.FC<{
   title: string
@@ -69,63 +70,39 @@ const MetricCard: React.FC<{
   )
 }
 
-const RecentActivity: React.FC = () => {
-  const activities = [
-    {
-      id: 1,
-      action: 'New tenant created',
-      details: 'Clinic ABC (tenant_clinic_abc)',
-      timestamp: '2 hours ago',
-      user: 'consultoriasimplia@gmail.com'
-    },
-    {
-      id: 2,
-      action: 'User access granted',
-      details: 'TQ application access for user john.doe',
-      timestamp: '4 hours ago',
-      user: 'consultoriasimplia@gmail.com'
-    },
-    {
-      id: 3,
-      action: 'License renewed',
-      details: 'PM application for Tenant XYZ',
-      timestamp: '6 hours ago',
-      user: 'system'
-    }
-  ]
-
-  return (
-    <Card>
-      <CardHeader className="p-6 pb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-      </CardHeader>
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          {activities.map((activity) => (
-            <div key={activity.id} className="flex items-start space-x-3">
-              <div className="flex-shrink-0">
-                <div className="h-2 w-2 bg-blue-600 rounded-full mt-2"></div>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  {activity.action}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {activity.details}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  {activity.timestamp} • by {activity.user}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
 
 export const Dashboard: React.FC = () => {
+  const [metrics, setMetrics] = useState<PlatformMetrics | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchMetrics = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      console.log('🔄 [Dashboard] Fetching platform metrics...')
+      
+      const data = await metricsService.getPlatformOverview()
+      setMetrics(data)
+      console.log('✅ [Dashboard] Metrics loaded:', data)
+      
+    } catch (err: any) {
+      console.error('❌ [Dashboard] Failed to load metrics:', err)
+      setError(err.message || 'Failed to load metrics')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchMetrics()
+  }, [])
+
+  const getTrend = (newThisWeek: number, newThisMonth: number): 'up' | 'down' | 'stable' => {
+    if (newThisWeek > 0 || newThisMonth > 0) return 'up'
+    return 'stable'
+  }
+
   return (
     <div className="space-y-8">
       {/* Header Section */}
@@ -147,112 +124,75 @@ export const Dashboard: React.FC = () => {
           <div className="h-8 w-1 bg-blue-600 rounded-full"></div>
           <h2 className="text-xl font-semibold text-gray-900">Key Metrics</h2>
         </div>
+
+        {error && (
+          <Alert variant="error" className="mb-6">
+            Failed to load metrics: {error}
+          </Alert>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          <MetricCard
-            title="Total Tenants"
-            value={42}
-            subtitle="5 new tenants this month"
-            trend="up"
-            icon={<Building className="h-5 w-5" />}
-            color="blue"
-          />
-          
-          <MetricCard
-            title="Total Users"
-            value={186}
-            subtitle="12 new users this week"
-            trend="up"
-            icon={<Users className="h-5 w-5" />}
-            color="green"
-          />
-          
-          <MetricCard
-            title="Active Applications"
-            value={4}
-            subtitle="TQ, PM, Billing, Reports"
-            trend="stable"
-            icon={<Package className="h-5 w-5" />}
-            color="purple"
-          />
-          
-          <MetricCard
-            title="License Utilization"
-            value="78%"
-            subtitle="Average across all tenants"
-            trend="stable"
-            icon={<Activity className="h-5 w-5" />}
-            color="orange"
-          />
+          {loading ? (
+            <>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-lg" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                    <Skeleton className="h-8 w-16" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </Card>
+              ))}
+            </>
+          ) : metrics ? (
+            <>
+              <MetricCard
+                title="Total Tenants"
+                value={metrics.tenants.total}
+                subtitle={`${metrics.tenants.newThisWeek} new this week • ${metrics.tenants.newThisMonth} this month`}
+                trend={getTrend(metrics.tenants.newThisWeek, metrics.tenants.newThisMonth)}
+                icon={<Building className="h-5 w-5" />}
+                color="blue"
+              />
+              
+              <MetricCard
+                title="Total Users"
+                value={metrics.users.total}
+                subtitle={`${metrics.users.newThisWeek} new this week • ${metrics.users.newThisMonth} this month`}
+                trend={getTrend(metrics.users.newThisWeek, metrics.users.newThisMonth)}
+                icon={<Users className="h-5 w-5" />}
+                color="green"
+              />
+              
+              <MetricCard
+                title="Active Applications"
+                value={metrics.applications.active}
+                subtitle="Applications currently available"
+                trend="stable"
+                icon={<Package className="h-5 w-5" />}
+                color="purple"
+              />
+              
+              <MetricCard
+                title="Active Licenses"
+                value={metrics.licenses.active}
+                subtitle="Total active tenant licenses"
+                trend="stable"
+                icon={<Activity className="h-5 w-5" />}
+                color="orange"
+              />
+            </>
+          ) : (
+            <div className="col-span-4 text-center py-8">
+              <p className="text-gray-500">No metrics data available</p>
+            </div>
+          )}
         </div>
       </motion.section>
 
-      {/* Activity & Status Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-        className="space-y-4"
-      >
-        <div className="flex items-center gap-3 mb-6">
-          <div className="h-8 w-1 bg-emerald-600 rounded-full"></div>
-          <h2 className="text-xl font-semibold text-gray-900">Activity & System Status</h2>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          <RecentActivity />
-          
-          <Card className="border-gray-200/50 shadow-sm">
-            <CardHeader className="p-6 pb-4">
-              <h3 className="text-lg font-semibold text-gray-900">System Status</h3>
-              <p className="text-sm text-gray-500 mt-1">Current operational status of platform services</p>
-            </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50/50 border border-green-200/30">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-gray-700">Internal API</span>
-                  </div>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                    Operational
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50/50 border border-green-200/30">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-gray-700">Database</span>
-                  </div>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                    Operational
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50/50 border border-green-200/30">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-gray-700">Authentication Service</span>
-                  </div>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                    Operational
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg bg-yellow-50/50 border border-yellow-200/30">
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm font-medium text-gray-700">License Validation</span>
-                  </div>
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                    Maintenance
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </motion.section>
     </div>
   )
 }

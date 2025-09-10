@@ -6,7 +6,7 @@ export interface TenantContact {
   type: 'ADMIN' | 'BILLING' | 'TECH' | 'LEGAL' | 'OTHER';
   fullName: string;
   email?: string;
-  phoneE164?: string;
+  phone?: string;
   title?: string;
   department?: string;
   notes?: string;
@@ -20,7 +20,7 @@ export interface CreateContactData {
   type: 'ADMIN' | 'BILLING' | 'TECH' | 'LEGAL' | 'OTHER';
   fullName: string;
   email?: string;
-  phoneE164?: string;
+  phone?: string;
   title?: string;
   department?: string;
   notes?: string;

@@ -159,7 +159,7 @@ class TenantApplication {
     
     console.log('🔄 [TenantApplication.grantLicense] Inserting new license...');
     const query = `
-      INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, user_limit)
+      INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, max_users)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
@@ -358,8 +358,8 @@ class TenantApplication {
    */
   static async checkSeatAvailability(tenantId, applicationId) {
     const query = `
-      SELECT user_limit, seats_used,
-             (user_limit - seats_used) as seats_available
+      SELECT max_users, seats_used,
+             (max_users - seats_used) as seats_available
       FROM tenant_applications 
       WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = true
     `;

@@ -17,6 +17,7 @@ const applicationsRoutes = require('./api/internal/routes/applications');
 const entitlementsRoutes = require('./api/internal/routes/entitlements');
 const tenantsRoutes = require('./api/internal/routes/tenants');
 const auditRoutes = require('./api/internal/routes/audit');
+const metricsRoutes = require('./api/internal/routes/metrics');
 
 // Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -89,6 +90,9 @@ internalRouter.use('/', tenantUsersRoutes);
 
 // Audit routes (platform-scoped, for internal admins only)
 internalRouter.use('/audit', auditRoutes);
+
+// Metrics routes (platform-scoped, for internal admins only)
+internalRouter.use('/metrics', metricsRoutes);
 
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();

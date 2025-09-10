@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Modal, Button, LinkButton, Alert, Table, Badge, StatusBadge, Skeleton, EmptyState, Input } from '@client/common/ui'
 import { TenantLicense } from '../../licenses/types'
 import { tenantsService } from '../../../../services/tenants'
+import { getRoleBadgeVariant, getAccessBadgeVariant, getAccessBadgeText } from '@client/common/utils/badgeUtils'
 
 interface User {
   id: number
@@ -93,11 +94,16 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
         }
       )
       
-      setUsers(response.data.items)
-      setUsage(response.data.usage)
+      setUsers(response.data.users)
+      
+      // Set usage info from API response if available, otherwise fallback to license data
+      if (response.data.usage) {
+        setUsage(response.data.usage)
+      }
       
       console.log('✅ [ManageApplicationsModal] Users fetched:', {
-        count: response.data.items.length,
+        count: response.data.users.length,
+        users: response.data.users,
         usage: response.data.usage
       })
       
@@ -124,10 +130,10 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
       return
     }
 
-    // Check if user already had access before (has accessId) - use reactivate
-    // Otherwise it's a new user - use grant
+    // Check if user already had access before (has accessId but not currently granted) - use reactivate
+    // Otherwise it's a new user or never had access - use grant
     const user = users.find(u => u.id === userId)
-    const hasExistingAccess = user?.accessId !== null
+    const hasExistingAccess = user?.accessId !== null && !user?.granted
     
     try {
       setProcessingUserId(userId)
@@ -261,14 +267,6 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
     onClose()
   }
 
-  const getRoleBadgeVariant = (role: string): 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' => {
-    switch (role) {
-      case 'admin': return 'error'
-      case 'manager': return 'warning' 
-      case 'operations': return 'info'
-      default: return 'default'
-    }
-  }
 
   // Use real usage data from API or fallback to license data
   const currentUsage = usage || { 
@@ -276,7 +274,7 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
     total: license.userLimit || null, 
     available: license.seatsAvailable || null 
   }
-  const usersWithAccess = users.filter(user => user.granted).length
+  const usersWithAccess = users?.filter(user => user.granted).length || 0
 
   return (
     <Modal 
@@ -377,11 +375,9 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
                         <StatusBadge status={user.status as 'active' | 'inactive' | 'suspended'} />
                       </td>
                       <td className="text-center">
-                        {user.granted ? (
-                          <Badge variant="success">Granted</Badge>
-                        ) : (
-                          <Badge variant="default">Not Granted</Badge>
-                        )}
+                        <Badge variant={getAccessBadgeVariant(user.granted)}>
+                          {getAccessBadgeText(user.granted)}
+                        </Badge>
                       </td>
                       <td className="text-center">
                         {user.granted ? (

@@ -25,7 +25,7 @@ simplia-paas/
 │   │   │   │   │   ├── 📁 auth/       # Autenticação
 │   │   │   │   │   │   └── Login.tsx  # Página de login com AppError
 │   │   │   │   │   ├── 📁 dashboard/  # Dashboard principal
-│   │   │   │   │   │   └── Dashboard.tsx # Dashboard com métricas
+│   │   │   │   │   │   └── Dashboard.tsx # Dashboard com métricas reais via API
 │   │   │   │   │   ├── 📁 tenants/    # Gestão de tenants
 │   │   │   │   │   │   ├── TenantsList.tsx      # Lista de tenants
 │   │   │   │   │   │   ├── CreateTenant.tsx     # Criação com AppFeedback
@@ -78,7 +78,8 @@ simplia-paas/
 │   │   │   │   │   ├── applications.ts # Serviço de aplicações e pricing matrix
 │   │   │   │   │   ├── entitlements.ts # **NOVO**: Serviço de entitlements com conversão tenant ID
 │   │   │   │   │   ├── addresses.ts   # Serviço de endereços
-│   │   │   │   │   └── contacts.ts    # Serviço de contatos
+│   │   │   │   │   ├── contacts.ts    # Serviço de contatos
+│   │   │   │   │   └── metrics.ts     # Serviço de métricas da plataforma
 │   │   │   │   ├── 📁 store/          # Estado global Zustand
 │   │   │   │   │   ├── auth.ts        # Auth store (platformRole)
 │   │   │   │   │   ├── ui.ts          # UI store (notifications)
@@ -152,7 +153,8 @@ simplia-paas/
 │   │   │           ├── entitlements.js # Gestão de licenças e acessos
 │   │   │           ├── audit.js       # Logs de auditoria e compliance
 │   │   │           ├── platform-auth.js # Autenticação de plataforma
-│   │   │           └── tenants.js     # Gestão de tenants
+│   │   │           ├── tenants.js     # Gestão de tenants
+│   │   │           └── metrics.js     # Métricas agregadas da plataforma com cache
 │   │   │
 │   │   ├── 📁 infra/                  # Camada de infraestrutura
 │   │   │   ├── 📁 db/
@@ -182,6 +184,7 @@ simplia-paas/
 │   │   │   │   ├── 001_create_core_tables.sql # Todas tabelas core + relacionamentos + auditoria
 │   │   │   │   ├── 002_create_indexes.sql    # Estratégia de indexação organizada
 │   │   │   │   ├── 003_seed_initial_data.sql  # Dados essenciais + tenants padrão
+│   │   │   │   ├── 004_metrics_indexes.sql   # Índices para métricas com filtros temporais
 │   │   │   │   ├── 004_fix_default_tenant.sql # Correções do tenant padrão
 │   │   │   │   ├── 005_fix_admin_password.sql # Correção da senha do admin
 │   │   │   │   ├── 006_pricing_range.sql     # **NOVO**: Range types e exclusion constraints para overlap prevention
@@ -894,6 +897,18 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 
 ### ✨ Implementações Recentes (Janeiro 2025)
 
+- **✅ 📊 Dashboard com Métricas Reais**: Sistema completo de dashboard com dados do backend
+  - **Backend API**: Endpoint `/internal/api/v1/metrics/overview` com cache de 60 segundos
+  - **Métricas Agregadas**: Total de Tenants, Users, Applications e Licenses ativas
+  - **Filtros Temporais**: New this week/month com breakdowns detalhados
+  - **Performance**: Queries otimizadas em paralelo + índices específicos para métricas
+  - **Frontend Service**: `metricsService` com tratamento de erros e loading states
+  - **Dashboard UI**: Cards responsivos com skeleton loading e trend indicators
+  - **Cache Strategy**: TTL de 60s para evitar queries desnecessárias no banco
+  - **Database Indexes**: Índices compostos otimizados para filtros de data (`active + created_at`)
+  - **Error Handling**: Estados de loading, erro e dados vazios com UX apropriada
+  - **Documentação API**: OpenAPI completa com schemas e exemplos
+
 - **✅ 🚫 Sistema de Overlap Prevention**: Prevenção completa de sobreposição de períodos de pricing
   - **Database Migration**: PostgreSQL range types com exclusion constraints para prevenção nativa
   - **Utilities Layer**: `datetime.js` com funções de overlap usando semântica [start, end) - inclusive start, exclusive end
@@ -972,8 +987,9 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 ```
 
 ### 📈 Status de Desenvolvimento
-- 🟢 **Backend API**: 100% completo com documentação Swagger + pricing system + grant/revoke APIs
+- 🟢 **Backend API**: 100% completo com documentação Swagger + pricing system + grant/revoke APIs + **métricas com cache**
 - 🟢 **Frontend Foundation**: Design system e error handling implementados  
+- 🟢 **Dashboard**: **Métricas reais do backend** com 4 cards (Tenants, Users, Applications, Licenses) + filtros temporais + loading/error states
 - 🟢 **Tenant Management**: CRUD completo com addresses/contacts + status toggle + **página de licenças** + seat management visual
 - 🟢 **Users Management**: CRUD completo + modal Grant/Revoke com preview de preços
 - 🟢 **Applications Management**: Lista + interface completa de pricing matrix (tabela/modal/versionamento)
@@ -988,7 +1004,8 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 **Para contexto técnico detalhado, implementações específicas, e documentação completa da API, consulte:**
 
 - **[📚 INTERNAL-API.md](./INTERNAL-API.md)** - Documentação completa da Internal Admin API
-- **[🔧 CLAUDE.md](./CLAUDE.md)** - Orientações técnicas para desenvolvimento
+- **[⚡ CLAUDE.md](./CLAUDE.md)** - Guia rápido para Claude Code (essencial)
+- **[📖 CLAUDE2.md](./CLAUDE2.md)** - Documentação técnica completa e detalhada
 - **[🧪 TESTING-QA.md](./TESTING-QA.md)** - Documentação de testes e QA
 
 ## 📄 Licença

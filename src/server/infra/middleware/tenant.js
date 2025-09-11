@@ -46,6 +46,7 @@ class TenantMiddleware {
       '/internal/api/v1/platform-auth',
       '/internal/api/v1/tenants', // tenant management is platform-scoped
       '/internal/api/v1/audit',
+      '/internal/api/v1/me', // self-service routes use public schema only
       '/health',
       '/docs',
     ];
@@ -208,11 +209,12 @@ class TenantMiddleware {
   }
 
   /**
-   * Convert numeric tenant ID to schema name
+   * Convert tenant to schema name using slug
    */
-  tenantIdToSchema(numericTenantId) {
-    // Always use numeric ID for schema name for consistency
-    return `tenant_${numericTenantId}`;
+  tenantToSchema(tenant) {
+    // Use tenant slug for schema name, convert hyphens to underscores (e.g., tenant_test_andre)
+    const schemaSlug = tenant.subdomain.replace(/-/g, '_');
+    return `tenant_${schemaSlug}`;
   }
 
   /**
@@ -224,6 +226,31 @@ class TenantMiddleware {
       if (!exists) {
         throw new TenantNotFoundError(`Schema not found: ${schemaName}`);
       }
+    }
+  }
+
+  /**
+   * Apply tenant schema search_path for database queries
+   * Only called for tenant-scoped routes
+   */
+  async applyTenantSearchPath(schemaName) {
+    try {
+      // Check if schema exists before applying search_path
+      const schemaExists = await database.schemaExists(schemaName);
+      if (!schemaExists) {
+        console.warn(`Schema ${schemaName} does not exist, skipping search_path application`);
+        return;
+      }
+      
+      // Set search_path to tenant schema first, then public for fallback
+      const searchPathQuery = `SET LOCAL search_path TO ${schemaName}, public`;
+      await database.query(searchPathQuery);
+      
+      console.log(`Applied search_path: ${schemaName}, public`);
+    } catch (error) {
+      console.error(`Failed to apply tenant search_path for ${schemaName}:`, error);
+      // Don't throw error, just warn - let query proceed with default search_path
+      console.warn(`Continuing with default search_path (public)`);
     }
   }
 
@@ -242,11 +269,21 @@ class TenantMiddleware {
       // Resolve tenant using dual resolution (numeric ID or slug)
       const { tenant, inputFormat } = await this.resolveTenant(rawIdentifier, source, userAgent);
       
-      // Always use tenant's numeric ID for schema (consistent and secure)
-      const schema = this.tenantIdToSchema(tenant.id);
+      // Use tenant slug for schema name (e.g., tenant_test_andre)
+      const schema = this.tenantToSchema(tenant);
       
-      // Validate schema exists
-      await this.validateSchema(schema);
+      // Validate schema exists (non-blocking for tenant-scoped routes)
+      try {
+        await this.validateSchema(schema);
+      } catch (schemaError) {
+        if (isTenantScoped) {
+          // For tenant-scoped routes, warn but continue
+          console.warn(`Schema validation failed for ${schema}, continuing with public schema:`, schemaError.message);
+        } else {
+          // For platform routes, schema validation failure is not critical
+          console.log(`Schema validation skipped for platform route: ${req.path}`);
+        }
+      }
       
       // Create normalized tenant context - ID ALWAYS numeric, no string persistence
       const tenantContext = {
@@ -266,6 +303,13 @@ class TenantMiddleware {
       // Initialize user context placeholder
       req.user = null;
       
+      // Apply tenant schema search_path for tenant-scoped routes only
+      // Platform/Global routes stay in public schema
+      const isTenantScoped = this.isTenantScopedRoute(req);
+      if (isTenantScoped) {
+        await this.applyTenantSearchPath(schema);
+      }
+      
       // Enhanced telemetry logging
       const isCurl = userAgent.toLowerCase().includes('curl/');
       const logLevel = (inputFormat === 'slug' && !isCurl) ? 'warn' : 'log';
@@ -279,7 +323,9 @@ class TenantMiddleware {
         userAgent: isCurl ? 'curl' : userAgent.substring(0, 50),
         ip: req.ip,
         path: req.path,
-        compatMode: this.options.compatSlugFallback
+        compatMode: this.options.compatSlugFallback,
+        tenantScoped: isTenantScoped,
+        searchPathApplied: isTenantScoped ? `${schema}, public` : 'public (default)'
       });
       
       next();

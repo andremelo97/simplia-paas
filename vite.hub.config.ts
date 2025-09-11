@@ -4,18 +4,10 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
-  root: 'src/client',
-  build: {
-    outDir: '../../dist/client'
-  },
-  resolve: {
-    alias: {
-      '@shared': path.resolve(__dirname, 'src/shared'),
-      '@client': path.resolve(__dirname, 'src/client')
-    }
-  },
+  root: 'src/client/apps/hub',
   server: {
-    port: 3002,
+    port: 3003,
+    host: true,
     strictPort: true,
     proxy: {
       '/internal/api': {
@@ -28,6 +20,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: false
       }
+    }
+  },
+  build: {
+    outDir: '../../../dist/hub',
+    emptyOutDir: true
+  },
+  resolve: {
+    alias: {
+      '@client': path.resolve(__dirname, 'src/client'),
+      '@server': path.resolve(__dirname, 'src/server'),
+      '@shared': path.resolve(__dirname, 'src/shared')
     }
   }
 })

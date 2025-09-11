@@ -29,7 +29,7 @@ router.use(userRateLimit);
  * @openapi
  * /users:
  *   get:
- *     tags: [Users (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | User Management]
  *     summary: List users in tenant
  *     description: Get all users belonging to the current tenant with filtering and pagination
  *     security:
@@ -607,7 +607,7 @@ router.put('/me/profile', async (req, res) => {
  * @openapi
  * /users/{userId}/apps:
  *   get:
- *     tags: [Users (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | User Management]
  *     summary: Get user's application access
  *     description: List all applications a specific user has access to
  *     security:
@@ -723,7 +723,7 @@ router.get('/:userId/apps', requireManagerOrAdmin, async (req, res) => {
  * @openapi
  * /users/{userId}/apps/grant:
  *   post:
- *     tags: [Users (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | User Management]
  *     summary: Grant user access to application
  *     description: Give a user access to a specific application within the tenant
  *     security:
@@ -926,7 +926,7 @@ router.post('/:userId/apps/grant', requireAdmin, async (req, res) => {
  * @openapi
  * /users/{userId}/apps/revoke:
  *   delete:
- *     tags: [Users (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | User Management]
  *     summary: Revoke user access to application
  *     description: Remove a user's access to a specific application within the tenant
  *     security:

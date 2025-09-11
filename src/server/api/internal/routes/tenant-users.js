@@ -230,7 +230,7 @@ router.post('/dev/tenants/:tenantId/users', async (req, res) => {
  * @openapi
  * /tenants/{tenantId}/users:
  *   get:
- *     tags: [Tenant Users (Internal Admin)]
+ *     tags: [Global | Tenant Management]
  *     summary: List users in specific tenant
  *     description: Get all users belonging to a specific tenant (internal admin only)
  *     security:
@@ -357,7 +357,7 @@ router.get('/tenants/:tenantId/users', requireAuth, requirePlatformRole('interna
  * @openapi
  * /tenants/{tenantId}/users:
  *   post:
- *     tags: [Tenant Users (Internal Admin)]
+ *     tags: [Global | Tenant Management]
  *     summary: Create user in specific tenant
  *     description: Create a new user directly assigned to a specific tenant (internal admin only)
  *     security:
@@ -535,7 +535,7 @@ router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('intern
  * @openapi
  * /tenants/{tenantId}/users/{userId}:
  *   get:
- *     tags: [Tenant Users (Internal Admin)]
+ *     tags: [Global | Tenant Management]
  *     summary: Get user in specific tenant
  *     description: Get a specific user by ID within a tenant context (internal admin only)
  *     security:
@@ -628,7 +628,7 @@ router.get('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRole(
  * @openapi
  * /tenants/{tenantId}/users/{userId}:
  *   put:
- *     tags: [Tenant Users (Internal Admin)]
+ *     tags: [Global | Tenant Management]
  *     summary: Update user in specific tenant
  *     description: Update user details within a specific tenant context (internal admin only)
  *     security:
@@ -745,7 +745,7 @@ router.put('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRole(
  * @openapi
  * /tenants/{tenantId}/users/{userId}:
  *   delete:
- *     tags: [Tenant Users (Internal Admin)]
+ *     tags: [Global | Tenant Management]
  *     summary: Deactivate user in specific tenant
  *     description: Soft delete (deactivate) a user within a specific tenant context (internal admin only)
  *     security:
@@ -831,7 +831,7 @@ router.delete('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRo
  * @openapi
  * /tenants/{tenantId}/users/{userId}/reset-password:
  *   post:
- *     tags: [Tenant Users (Internal Admin)]
+ *     tags: [Global | Tenant Management]
  *     summary: Reset user password in specific tenant
  *     description: Reset a user's password within a specific tenant context (internal admin only)
  *     security:
@@ -959,7 +959,7 @@ router.post('/tenants/:tenantId/users/:userId/reset-password', requireAuth, requ
  * @openapi
  * /users:
  *   get:
- *     tags: [Users (Global - Internal Admin)]
+ *     tags: [Global | Tenant Management]
  *     summary: List users globally with tenant filter
  *     description: Get all users across all tenants with optional tenant filtering (internal admin only)
  *     security:

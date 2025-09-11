@@ -16,7 +16,7 @@ router.use(requireAuth, requirePlatformRole('internal_admin'));
  * @openapi
  * /applications:
  *   get:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: List application catalog
  *     description: Get all applications in the system with filtering and pagination
  *     security:
@@ -121,7 +121,7 @@ router.get('/', async (req, res) => {
  * @openapi
  * /applications/{id}:
  *   get:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: Get application by ID
  *     description: Get specific application details by ID
  *     security:
@@ -194,7 +194,7 @@ router.get('/:id', async (req, res) => {
  * @openapi
  * /applications/slug/{slug}:
  *   get:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: Get application by slug
  *     description: Get specific application details by slug identifier
  *     security:
@@ -330,7 +330,7 @@ router.get('/user/accessible', requireAuth, requireAnyAppAccess, async (req, res
  * @openapi
  * /applications:
  *   post:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: Create new application
  *     description: Create a new application in the system catalog
  *     security:
@@ -539,7 +539,7 @@ router.delete('/:id', async (req, res) => {
  * @openapi
  * /applications/{id}/tenants:
  *   get:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: List licensed tenants for application
  *     description: Get all tenants that have licenses for a specific application
  *     security:
@@ -707,7 +707,7 @@ router.get('/:id/tenants', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing:
  *   get:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: Get application pricing matrix
  *     description: Get pricing for all user types for a specific application
  *     security:
@@ -795,7 +795,7 @@ router.get('/:id/pricing', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing:
  *   post:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: Create or schedule application pricing
  *     description: Create new pricing for application and user type combination
  *     security:
@@ -956,7 +956,7 @@ router.post('/:id/pricing', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing/{pricingId}:
  *   put:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: Update application pricing
  *     description: Update existing pricing entry
  *     security:
@@ -1069,7 +1069,7 @@ router.put('/:id/pricing/:pricingId', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing/{pricingId}/end:
  *   post:
- *     tags: [Applications - Platform]
+ *     tags: [Global | Application Management]
  *     summary: End pricing period
  *     description: End an active pricing period by setting validTo to current timestamp and active to false
  *     security:

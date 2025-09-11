@@ -19,7 +19,7 @@ router.use(requireAuth, requirePlatformRole('internal_admin'));
  * @openapi
  * /tenants:
  *   get:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: List all tenants
  *     description: Get paginated list of all tenants in the system with operational metrics
  *     security:
@@ -148,7 +148,7 @@ router.get('/', async (req, res) => {
  * @openapi
  * /tenants/{id}:
  *   get:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Get tenant details
  *     description: Get detailed information about a specific tenant
  *     security:
@@ -251,7 +251,7 @@ router.get('/:id', async (req, res) => {
  * @openapi
  * /tenants:
  *   post:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Create new tenant
  *     description: Create a new tenant with schema and initial configuration
  *     security:
@@ -334,6 +334,9 @@ router.post('/', async (req, res) => {
       status
     });
 
+    // Create the tenant schema in PostgreSQL
+    await Tenant.createSchema(schemaName);
+
     res.status(201).json({
       meta: {
         code: "TENANT_CREATED",
@@ -371,7 +374,7 @@ router.post('/', async (req, res) => {
  * @openapi
  * /tenants/{id}:
  *   put:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Update tenant
  *     description: Update tenant information and status
  *     security:
@@ -476,7 +479,7 @@ router.put('/:id', async (req, res) => {
  * @openapi
  * /tenants/{id}:
  *   delete:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Deactivate tenant
  *     description: Soft delete (deactivate) a tenant - sets active=false, preserves data
  *     security:
@@ -539,7 +542,7 @@ router.delete('/:id', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses:
  *   get:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: List tenant addresses
  *     description: Get all addresses for a tenant with filtering options
  *     security:
@@ -663,7 +666,7 @@ router.get('/:id/addresses', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses:
  *   post:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Create tenant address
  *     description: Add a new address to the tenant
  *     security:
@@ -809,7 +812,7 @@ router.post('/:id/addresses', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses/{addressId}:
  *   put:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Update tenant address
  *     description: Update an existing address
  *     security:
@@ -944,7 +947,7 @@ router.put('/:id/addresses/:addressId', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses/{addressId}:
  *   delete:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Delete tenant address
  *     description: Permanently delete an address from the database
  *     security:
@@ -1025,7 +1028,7 @@ router.delete('/:id/addresses/:addressId', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts:
  *   get:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: List tenant contacts
  *     description: Get all contacts for a tenant with filtering options
  *     security:
@@ -1149,7 +1152,7 @@ router.get('/:id/contacts', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts:
  *   post:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Create tenant contact
  *     description: Add a new contact person to the tenant
  *     security:
@@ -1292,7 +1295,7 @@ router.post('/:id/contacts', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts/{contactId}:
  *   put:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Update tenant contact
  *     description: Update an existing contact person
  *     security:
@@ -1426,7 +1429,7 @@ router.put('/:id/contacts/:contactId', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts/{contactId}:
  *   delete:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Delete tenant contact
  *     description: Permanently delete a contact person from the database
  *     security:
@@ -1503,7 +1506,7 @@ router.delete('/:id/contacts/:contactId', async (req, res) => {
  * @openapi
  * /tenants/{id}/applications/{appSlug}/activate:
  *   post:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Activate application license for tenant
  *     description: Activate a license for a specific application on a tenant (platform admin only)
  *     security:
@@ -1697,7 +1700,7 @@ router.post('/:id/applications/:appSlug/activate', async (req, res) => {
  * @openapi
  * /tenants/{id}/applications/{appSlug}/adjust:
  *   put:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Adjust license seats (Platform Admin)
  *     description: Update user limit and other license settings for a tenant's application license. User limit cannot be reduced below current seats used.
  *     security:
@@ -1913,7 +1916,7 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
  * @openapi
  * /tenants/{id}/users/{userId}/applications/{appSlug}/grant:
  *   post:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Grant application access to user (Platform Admin)
  *     description: Grant access to an application for a specific user, consuming one seat from the tenant's license. Requires valid pricing configuration.
  *     security:
@@ -2167,7 +2170,7 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
  * @openapi
  * /tenants/{id}/users/{userId}/applications/{appSlug}/revoke:
  *   post:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: Revoke application access from user (Platform Admin)
  *     description: Revoke access to an application for a specific user, freeing one seat in the tenant's license
  *     security:
@@ -2302,7 +2305,7 @@ router.post('/:id/users/:userId/applications/:appSlug/revoke', async (req, res) 
  * @openapi
  * /tenants/{id}/applications/{appSlug}/users:
  *   get:
- *     tags: [Tenant Management]
+ *     tags: [Global | Tenant Management]
  *     summary: List assigned users for application
  *     description: Get list of users assigned to a specific application within a tenant
  *     security:
@@ -2634,6 +2637,9 @@ router.put('/:id/users/:userId/applications/:appSlug/reactivate', async (req, re
       application.id,
       tenantId
     );
+
+    // Increment seat count since user is getting access back
+    await TenantApplication.incrementSeat(tenantId, application.id);
 
     console.log(`✅ [Platform] Access reactivated successfully for user ${targetUserId} to app ${appSlug}`);
 

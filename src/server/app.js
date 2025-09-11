@@ -18,6 +18,10 @@ const entitlementsRoutes = require('./api/internal/routes/entitlements');
 const tenantsRoutes = require('./api/internal/routes/tenants');
 const auditRoutes = require('./api/internal/routes/audit');
 const metricsRoutes = require('./api/internal/routes/metrics');
+const meRoutes = require('./api/internal/routes/me');
+
+// Public routes (no auth required)
+const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
 
 // Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -31,6 +35,7 @@ const DOCS_PATH = process.env.INTERNAL_DOCS_PATH || '/docs/internal';
 const ENABLE_DOCS = process.env.ENABLE_INTERNAL_DOCS === 'true';
 const ENABLE_HELMET = process.env.ENABLE_HELMET === 'true';
 const ADMIN_PANEL_ORIGIN = process.env.ADMIN_PANEL_ORIGIN;
+const HUB_ORIGIN = process.env.HUB_ORIGIN;
 
 // Global middlewares
 if (ENABLE_HELMET) {
@@ -57,6 +62,11 @@ const internalCorsOptions = {
       return callback(null, true);
     }
     
+    // Allow hub origin
+    if (origin === HUB_ORIGIN) {
+      return callback(null, true);
+    }
+    
     // Block other origins
     const error = new Error('Not allowed by CORS policy');
     error.status = 403;
@@ -69,6 +79,9 @@ const internalCorsOptions = {
 
 // Internal API Router
 const internalRouter = express.Router();
+
+// Public routes (no auth required)
+internalRouter.use('/public', tenantLookupRoutes);
 
 // Platform auth routes (no tenant context needed - for Simplia internal team)
 internalRouter.use('/platform-auth', platformAuthRoutes);
@@ -93,6 +106,9 @@ internalRouter.use('/audit', auditRoutes);
 
 // Metrics routes (platform-scoped, for internal admins only)
 internalRouter.use('/metrics', metricsRoutes);
+
+// Self-service routes that need tenant context but NO search_path
+internalRouter.use('/me', tenantMiddleware, requireAuth, meRoutes);
 
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();
@@ -135,6 +151,40 @@ if (ENABLE_DOCS) {
         version: '1.0.0',
         description: 'Internal API for Simplia team to manage tenants, licenses, and system administration',
       },
+      tags: [
+        {
+          name: 'Global | Internal Admin',
+          description: 'Platform authentication and admin user management for Simplia team members. No tenant context required.'
+        },
+        {
+          name: 'Global | Tenant Management',
+          description: 'Complete tenant lifecycle management including creation, configuration, and billing operations.'
+        },
+        {
+          name: 'Global | Application Management', 
+          description: 'Application catalog management, pricing configuration, and licensing operations across tenants.'
+        },
+        {
+          name: 'Global | System Metrics',
+          description: 'Platform-wide analytics, performance monitoring, and operational metrics for administrators.'
+        },
+        {
+          name: 'Global | Audit Logs',
+          description: 'Security audit trails and compliance logging for platform operations and tenant activities.'
+        },
+        {
+          name: 'Tenant-Scoped | Authentication',
+          description: 'Authentication services for tenant users including login, logout, and session management.'
+        },
+        {
+          name: 'Tenant-Scoped | User Management',
+          description: 'Tenant-scoped user administration and profile management. Requires x-tenant-id header.'
+        },
+        {
+          name: 'Tenant-Scoped | Access Control',
+          description: 'Application entitlements and permission management within tenant context.'
+        }
+      ],
       servers: [
         {
           url: INTERNAL_PREFIX,
@@ -166,7 +216,10 @@ if (ENABLE_DOCS) {
       },
       security: [{ bearerAuth: [] }],
     },
-    apis: ['src/server/api/internal/routes/*.js'], // JSDoc comments in route files
+    apis: [
+      'src/server/api/internal/routes/*.js',
+      'src/server/api/internal/public/*.js'
+    ], // JSDoc comments in route files
   });
 
   // Development: Skip auth for local testing

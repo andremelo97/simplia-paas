@@ -86,6 +86,22 @@ simplia-paas/
 │   │   │   │   │   └── index.ts       # Re-exports
 │   │   │   │   ├── 📁 assets/         # Assets específicos do admin
 │   │   │   │   └── app.tsx            # Componente principal
+│   │   │   ├── 📁 hub/               # Client Hub App (portal de acesso dos usuários)
+│   │   │   │   ├── 📁 components/     # Componentes específicos do Hub
+│   │   │   │   │   ├── Header.tsx     # Header com logout e tenant info
+│   │   │   │   │   ├── Layout.tsx     # Layout principal do Hub
+│   │   │   │   │   └── Sidebar.tsx    # Sidebar de navegação do Hub
+│   │   │   │   ├── 📁 pages/          # Páginas do Hub
+│   │   │   │   │   ├── Home.tsx       # Home com apps disponíveis
+│   │   │   │   │   └── Login.tsx      # Login com lookup de tenant
+│   │   │   │   ├── 📁 services/       # Cliente para /internal/api/v1/me
+│   │   │   │   │   └── hub.ts         # Serviço de apps do usuário
+│   │   │   │   ├── 📁 store/          # Estado específico do Hub
+│   │   │   │   │   ├── auth.ts        # Autenticação do usuário final
+│   │   │   │   │   └── ui.ts          # Estado da UI do Hub
+│   │   │   │   ├── index.html         # HTML específico do Hub
+│   │   │   │   ├── main.tsx           # Entry point do Hub
+│   │   │   │   └── routes.tsx         # Roteamento do Hub
 │   │   │   ├── 📁 tq-client/          # App do produto TQ (cliente final)
 │   │   │   │   ├── 📁 routes/         # rotas específicas do TQ
 │   │   │   │   ├── 📁 features/       # funcionalidades do TQ
@@ -149,12 +165,14 @@ simplia-paas/
 │   │   │       └── 📁 routes/         # Routes da API interna
 │   │   │           ├── auth.js        # Autenticação e gestão de usuários
 │   │   │           ├── users.js       # CRUD de usuários administrativo
+│   │   │           ├── tenant-users.js # **NOVO**: API tenant-scoped para usuários
 │   │   │           ├── applications.js # Catálogo de aplicações
 │   │   │           ├── entitlements.js # Gestão de licenças e acessos
 │   │   │           ├── audit.js       # Logs de auditoria e compliance
 │   │   │           ├── platform-auth.js # Autenticação de plataforma
-│   │   │           ├── tenants.js     # Gestão de tenants
-│   │   │           └── metrics.js     # Métricas agregadas da plataforma com cache
+│   │   │           ├── tenants.js     # Gestão de tenants (com /reactivate endpoint)
+│   │   │           ├── metrics.js     # Métricas agregadas da plataforma com cache
+│   │   │           └── me.js          # **NOVO**: Endpoints self-service para Hub (/me/apps)
 │   │   │
 │   │   ├── 📁 infra/                  # Camada de infraestrutura
 │   │   │   ├── 📁 db/
@@ -228,7 +246,8 @@ simplia-paas/
 ├── 📄 package.json                   # Dependências e scripts npm
 ├── 📄 tsconfig.json                  # Configuração TypeScript global
 ├── 📄 tsconfig.server.json           # Configuração TypeScript para servidor
-├── 📄 vite.config.ts                 # Configuração Vite
+├── 📄 vite.config.ts                 # Configuração Vite para internal-admin
+├── 📄 vite.hub.config.ts             # **NOVO**: Configuração Vite para Hub (porta 3003)
 ├── 📄 tailwind.config.js             # Configuração Tailwind CSS
 ├── 📄 postcss.config.js              # Configuração PostCSS
 ├── 📄 jest.config.js                 # Configuração Jest para testes
@@ -479,8 +498,11 @@ npm run dev
 # Executar apenas o servidor (porta 3001)
 npm run dev:server
 
-# Executar apenas o cliente (porta 3000)  
+# Executar apenas o internal-admin (porta 3002)  
 npm run dev:client
+
+# Executar apenas o Hub app (porta 3003)
+npm run dev:hub
 ```
 
 ### Database
@@ -642,6 +664,49 @@ VITE_AUT_API_BASE_URL=/api/v1/automation
 - **Criação automática de DB de teste** - Setup e cleanup transparente
 
 ## 🔒 Segurança e Multi-tenancy
+
+## Arquitetura Híbrida de Multi-Tenancy (Decisão Atual)
+
+A plataforma adota **modelo híbrido**:
+
+**Fica no `public` (core de plataforma, visão global / internal-admin):**
+- `tenants`, `users` (com `tenant_id_fk` numérico), `applications`
+- `application_pricing`, `tenant_applications`
+- `user_application_access` (grants com snapshots)
+- `application_access_logs` (auditoria)
+
+**Vai para `tenant_<slug>` (dados de produto, Hub/Apps):**
+- Tabelas específicas de domínio: `tq_*`, `crm_*`, etc.
+
+**Isolamento por rota (search_path):**
+- *Global (Platform/Admin)*: **não** aplica `search_path`; opera direto em `public`.
+- *Tenant-Scoped (Hub/Apps)*: aplica `SET LOCAL search_path TO tenant_<slug>, public`.
+
+**Exemplo (JS – middleware aplicado apenas em rotas tenant-scoped):**
+```js
+// SET LOCAL garante que o search_path não vaze para outras requests do pool
+await db.query('BEGIN');
+await db.query(`SET LOCAL search_path TO ${tenantSchema}, public`);
+const data = await fn(); // lê/escreve dados do app no schema do tenant; core continua em public
+await db.query('COMMIT');
+```
+
+**Exemplos de consultas:**
+```sql
+-- Global/internal-admin (sempre em public)
+SELECT * FROM public.tenant_applications WHERE tenant_id_fk = $1;
+
+-- Tenant-scoped (após SET LOCAL search_path TO tenant_<slug>, public)
+-- dados do app no schema do tenant:
+INSERT INTO transcriptions (...) VALUES (...);   -- cai em tenant_<slug>.transcriptions
+-- core ainda em public:
+SELECT * FROM public.user_application_access WHERE tenant_id_fk = $1;
+```
+
+**Anti-padrões evitados:**
+- ❌ Mover `users` para schema do tenant
+- ❌ Duplicar tabelas core por tenant
+- ❌ Aplicar `search_path` em rotas de visão global
 
 ### Isolamento de Dados
 - **Schema-per-tenant**: Cada tenant tem seu próprio schema PostgreSQL
@@ -897,6 +962,28 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 
 ### ✨ Implementações Recentes (Janeiro 2025)
 
+- **✅ 🏠 Client Hub App**: Portal completo para usuários finais acessarem suas aplicações
+  - **Arquitetura Multi-App**: Hub separado do internal-admin com build e port independentes
+  - **Autenticação Híbrida**: Two-step auth (tenant lookup → login) com x-tenant-id headers
+  - **Self-Service API**: Novo endpoint `/internal/api/v1/me/apps` platform-scoped para evitar schema conflicts
+  - **Tenant Middleware Fix**: Correção crítica para /me routes serem platform-scoped, não tenant-scoped
+  - **Frontend Limpo**: Interface simplificada focada em mostrar apps disponíveis
+  - **Build Independente**: `npm run dev:hub` (porta 3003) separado do internal-admin
+  - **JWT Context**: Header x-tenant-id automático via interceptors
+  - **Defensive Programming**: Tratamento robusto de arrays undefined e loading states
+  - **UX Otimizada**: Remoção de elementos desnecessários ("Available" tags, menu items extra)
+
+- **✅ 🔧 Seat Counting Fix**: Correção crítica no endpoint `/reactivate`
+  - **Problema Identificado**: O endpoint `/reactivate` não estava incrementando seats após reativar acesso
+  - **Correção Aplicada**: Adicionado `TenantApplication.incrementSeat()` ao endpoint /reactivate
+  - **Consistência Completa**: Agora todos endpoints mantêm seat counting corretamente:
+    - `/grant`: Incrementa seats ✅
+    - `/revoke`: Decrementa seats ✅ 
+    - `/reactivate`: Agora incrementa seats ✅ (foi a correção)
+  - **Interface Refletindo BD**: Garantia que interface sempre reflete estado real do banco
+
+### ✨ Implementações Anteriores (Janeiro 2025)
+
 - **✅ 📊 Dashboard com Métricas Reais**: Sistema completo de dashboard com dados do backend
   - **Backend API**: Endpoint `/internal/api/v1/metrics/overview` com cache de 60 segundos
   - **Métricas Agregadas**: Total de Tenants, Users, Applications e Licenses ativas
@@ -1011,6 +1098,29 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 ## 📄 Licença
 
 Este projeto está sob desenvolvimento para uso interno da Simplia Healthcare Solutions.
+
+---
+
+## Swagger & Tags (Global vs Tenant-Scoped)
+
+Para facilitar o consumo da API e evitar ambiguidades, a documentação
+separa endpoints por **categorias**:
+
+- **Global (Platform/Admin)** — *Tag:* `global`
+  - Acesso: equipe Simplia (platform role)
+  - Escopo: visão cross-tenant
+  - Exemplos: `/platform-auth/*`, `/metrics/*`, `/tenants`, `/applications`, `/audit/*`
+  - Headers: `Authorization` (Bearer). **Sem** `x-tenant-id`.
+
+- **Tenant-Scoped (Hub/Apps)** — *Tag:* `tenant`
+  - Acesso: usuários do tenant
+  - Escopo: isolado por tenant
+  - Exemplos: `/auth/*`, `/users`, `/users/:id/apps/*`, `/entitlements/*`
+  - Headers: `Authorization` (Bearer) + `x-tenant-id: <tenantId numérico>`
+
+**Padrão de exemplos no Swagger:**
+- Sempre mostrar **dois exemplos**: um Global e um Tenant-Scoped
+- Deixar explícito quando usar `x-tenant-id`
 
 ---
 

@@ -1,6 +1,7 @@
 import { AppError, createAppError, isAppError } from '../common/feedback/types'
 import { mapStatusToErrorCode, getErrorMessage } from '../common/feedback/catalog'
 import { publishFeedback, resolveFeedbackMessage } from '../common/feedback'
+import { shouldInjectTenantHeader, getCurrentTenantId } from '../common/auth/interceptor'
 
 // HTTP client configuration
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:3001'
@@ -16,8 +17,13 @@ class HttpClient {
     const url = `${this.baseURL}${endpoint}`
     
     // Get auth token from localStorage (persisted by Zustand)
-    const authStorage = localStorage.getItem('auth-storage')
+    // Try both internal-admin and hub storage keys
+    const internalAdminStorage = localStorage.getItem('auth-storage')
+    const hubStorage = localStorage.getItem('hub-auth-storage')
     let token: string | null = null
+    
+    // Try hub storage first (for hub app), then internal-admin storage
+    const authStorage = hubStorage || internalAdminStorage
     
     if (authStorage) {
       try {
@@ -28,11 +34,16 @@ class HttpClient {
       }
     }
     
+    // Auto-inject x-tenant-id header if needed
+    const tenantId = getCurrentTenantId()
+    const shouldInjectTenant = shouldInjectTenantHeader(endpoint)
+    
     const config: RequestInit = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        ...(shouldInjectTenant && tenantId ? { 'x-tenant-id': String(tenantId) } : {}),
         ...options.headers,
       },
     }

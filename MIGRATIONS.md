@@ -23,6 +23,14 @@ npm run migrate
 **Localização:** `src/server/infra/migrations/`  
 **Script de execução:** `src/server/infra/scripts/runMigrations.js`
 
+## Estratégia de Migrations
+
+- **Core (global):** migrations padrão operando sobre `public` (tabelas de plataforma).
+- **Tenant (opcional):** quando existirem tabelas de produto por-tenant, manter scripts idempotentes e um runner per-tenant que:
+  1) aplica `SET LOCAL search_path TO tenant_<slug>, public`;
+  2) executa `CREATE TABLE IF NOT EXISTS ...`;
+  3) controla versão em `public.tenant_schema_migrations`.
+
 ## Database Schema
 
 ### Core Tables (10 total)

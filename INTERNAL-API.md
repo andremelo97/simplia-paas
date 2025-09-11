@@ -1,5 +1,7 @@
 # Simplia PaaS Internal API Documentation
 
+**Docs: Multi-Tenancy Híbrido (Global vs Tenant-Scoped) — Setembro/2025**
+
 **Version**: 1.1.8  
 **Base URL**: `http://localhost:3001/internal/api/v1`  
 **Documentation**: `http://localhost:3001/docs/internal` (Swagger UI - Platform Admin Only)
@@ -7,6 +9,19 @@
 ## Overview
 
 A Simplia Internal API é uma API RESTful completa para administração da plataforma SaaS multi-tenant. Projetada para equipes internas da Simplia e administradores de tenant, oferece gerenciamento completo de usuários, aplicações, licenças, preços e auditoria.
+
+## Categorias de Escopo
+
+- **Global (Platform/Admin)** *(tag: `global`)*  
+  Visão cross-tenant. Não utiliza `x-tenant-id`. Opera sobre o core em `public`.
+- **Tenant-Scoped (Hub/Apps)** *(tag: `tenant`)*  
+  Isolado por tenant. Requer `x-tenant-id`. Pode aplicar `search_path` no backend.
+
+### Tabela de Referência Rápida
+| Tag    | Exemplos de Endpoints                                  | Headers                           |
+|--------|--------------------------------------------------------|-----------------------------------|
+| global | `/platform-auth/*`, `/metrics/overview`, `/tenants/*`, `/applications/*`, `/audit/*` | `Authorization`                   |
+| tenant | `/auth/*`, `/users/*`, `/users/:id/apps/*`, `/entitlements/*`         | `Authorization`, `x-tenant-id`    |
 
 ## 🔐 Autenticação e Autorização
 
@@ -89,10 +104,15 @@ Sistema de notificações padronizadas para operações bem-sucedidas:
 
 ## 🔍 1. Audit & Security
 
+**Tag:** `global`
+
 > **Acesso**: Platform Admin (`internal_admin`) apenas
 
 ### GET `/audit/access-logs`
 Lista logs de acesso com filtros avançados.
+
+**Headers:**
+- `Authorization: Bearer <jwt>`
 
 **Parâmetros**:
 - `tenantId`, `applicationSlug`, `decision`, `userId`
@@ -129,13 +149,15 @@ Alertas de segurança e anomalias.
 
 ## 📊 2. Platform Metrics
 
+**Tag:** `global`
+
 > **Acesso**: Platform Admin (`internal_admin`) apenas
 
 ### GET `/metrics/overview`
 Retorna métricas agregadas da plataforma para dashboard administrativo.
 
-**Headers**:
-- `Authorization: Bearer <jwt_token>`
+**Headers:**
+- `Authorization: Bearer <jwt>`
 
 **Resposta 200**:
 ```json
@@ -173,10 +195,15 @@ Retorna métricas agregadas da plataforma para dashboard administrativo.
 
 ## 🔑 3. Platform Authentication
 
+**Tag:** `global`
+
 > **Escopo**: Global (sem tenant context)
 
 ### POST `/platform-auth/login`
 Login para equipe Simplia.
+
+**Headers:**
+- `Content-Type: application/json`
 
 **Body**:
 ```json
@@ -564,17 +591,23 @@ Lista global de usuários com filtro por tenant.
 
 ## 🔐 6. Tenant Authentication
 
+**Tag:** `tenant`
+
 > **Escopo**: Tenant-specific (requer `x-tenant-id`)
 
 ### POST `/auth/register`
 Registro de novo usuário no tenant.
 
-**Headers**: `x-tenant-id: 1`
+**Headers:**
+- `Content-Type: application/json`
+- `x-tenant-id: <tenantId numérico>`
 
 ### POST `/auth/login`
 Login no painel administrativo.
 
-**Headers**: `x-tenant-id: 1`
+**Headers:**
+- `Content-Type: application/json`
+- `x-tenant-id: <tenantId numérico>`
 **Body**:
 ```json
 {
@@ -599,6 +632,8 @@ Logout.
 
 ## 👤 7. Users (Tenant-Scoped)
 
+**Tag:** `tenant`
+
 > **Escopo**: Tenant-specific  
 > **Middleware**: Tenant context + Auth + Role-based
 
@@ -606,7 +641,9 @@ Logout.
 Lista usuários do tenant.
 
 **Acesso**: Manager/Admin  
-**Headers**: `x-tenant-id`  
+**Headers:**
+- `Authorization: Bearer <jwt>`
+- `x-tenant-id: <tenantId numérico>`
 **Parâmetros**: `page`, `limit`, `role`, `status`
 
 ### POST `/users`
@@ -973,6 +1010,11 @@ npm run db:create:test
 # Drop test database
 npm run db:drop:test
 ```
+
+### Boas Práticas de Consumo
+- Prefira `public.*` ao se referir explicitamente ao core em exemplos SQL.
+- Sempre informar `x-tenant-id` nos exemplos `tenant`.
+- Em exemplos de grant/revoke, mencionar snapshots de preço e *seat limit* globais por app/tenant.
 
 ---
 

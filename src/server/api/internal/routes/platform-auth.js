@@ -11,7 +11,7 @@ const authRateLimit = createRateLimit(15 * 60 * 1000, 10); // 10 requests per 15
  * @openapi
  * /platform-auth/login:
  *   post:
- *     tags: [Platform Authentication]
+ *     tags: [Global | Internal Admin]
  *     summary: Platform admin login (Simplia team)
  *     description: |
  *       Login for Simplia internal team members with platform_role = 'internal_admin'.
@@ -126,7 +126,7 @@ router.post('/login', authRateLimit, async (req, res) => {
  * @openapi
  * /platform-auth/me:
  *   get:
- *     tags: [Platform Authentication]
+ *     tags: [Global | Internal Admin]
  *     summary: Get current platform admin profile
  *     description: Get authenticated platform admin information and privileges
  *     security:
@@ -218,7 +218,7 @@ router.get('/me', requireAuth, async (req, res) => {
  * @openapi
  * /platform-auth/refresh:
  *   post:
- *     tags: [Platform Authentication]
+ *     tags: [Global | Internal Admin]
  *     summary: Refresh platform admin token
  *     description: Refresh JWT token for platform admin session
  *     requestBody:
@@ -286,7 +286,7 @@ router.post('/refresh', authRateLimit, async (req, res) => {
  * @openapi
  * /platform-auth/logout:
  *   post:
- *     tags: [Platform Authentication]
+ *     tags: [Global | Internal Admin]
  *     summary: Logout platform admin
  *     description: Logout platform admin and invalidate session
  *     security:

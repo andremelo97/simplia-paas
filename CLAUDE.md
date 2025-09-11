@@ -33,9 +33,10 @@ src/
 ## Development Commands
 ```bash
 npm install              # Install dependencies
-npm run dev             # Run both server + client
+npm run dev             # Run both server + internal-admin client
 npm run dev:server      # Server only (port 3001)
-npm run dev:client      # Client only (port 3002)
+npm run dev:client      # Internal-admin only (port 3002)
+npm run dev:hub         # Hub app only (port 3003)
 npm run migrate         # Run database migrations
 npm test               # Run all tests
 npm run test:watch      # Run tests in watch mode
@@ -44,6 +45,26 @@ npm run db:drop:test    # Drop test database
 npm run build           # Build for production
 npm start              # Start production server
 ```
+
+## Multi-App Architecture
+- **Internal-Admin** (`/internal/api/v1`): Platform administration (tenants, users, apps, pricing)
+- **Hub App** (`/internal/api/v1/me`): Self-service portal for end users to access their apps
+- **Product Apps**: TQ, CRM, Automation clients (future development)
+
+## Critical Routes and Middleware
+- **Platform-Scoped Routes** (NO tenant header needed):
+  - `/internal/api/v1/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`
+  - `/internal/api/v1/me/*` - **CRITICAL**: Hub self-service routes use public schema only
+- **Tenant-Scoped Routes** (x-tenant-id header required):
+  - `/internal/api/v1/auth`, `/users`, `/entitlements` 
+
+## Regras para Multi-Tenancy no Desenvolvimento
+- **Não** mover `users`/`user_application_access` para schemas de tenant.
+- internal-admin = **Global**: não aplicar `search_path` (usa apenas `public`).
+- Hub/Apps = **Platform-scoped**: /me routes são platform-scoped, NÃO aplicar search_path.
+- Product routes = **Tenant-Scoped**: aplicar `SET LOCAL search_path TO tenant_<slug>, public`.
+- Prefixe `public.` quando quiser deixar claro que é core.
+- `createSchema()` é ponto de extensão para tabelas por-tenant (idempotentes).
 
 ## Critical Database Rules
 - **ALL FKs are numeric**: `INTEGER NOT NULL REFERENCES`
@@ -83,6 +104,31 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - **Models**: `src/server/infra/models/` - Database abstractions
 - **Frontend Apps**: `src/client/apps/` - Multi-app architecture
 - **Tests**: `tests/integration/internal/` - Critical validation tests
+- **Hub App**: `src/client/apps/hub/` - Self-service portal for end users
+
+## Critical Seat Counting Rules
+- **Grant**: MUST call `TenantApplication.incrementSeat(tenantId, applicationId)`
+- **Revoke**: MUST call `TenantApplication.decrementSeat(tenantId, applicationId)`
+- **Reactivate**: MUST call `TenantApplication.incrementSeat(tenantId, applicationId)`
+- **All endpoints MUST maintain seat consistency**: Interface must always reflect database state
+
+## Exemplos de Implementação (Docs-Only)
+
+**Middleware (exemplo de documentação):**
+```js
+// Apenas para rotas tenant-scoped
+async function withTenant(tenantSchema, fn) {
+  await db.query('BEGIN');
+  try {
+    await db.query(`SET LOCAL search_path TO ${tenantSchema}, public`);
+    const out = await fn();
+    await db.query('COMMIT');
+    return out;
+  } catch (e) {
+    await db.query('ROLLBACK'); throw e;
+  }
+}
+```
 
 ---
 

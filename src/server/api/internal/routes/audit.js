@@ -12,7 +12,7 @@ router.use(requireAuth, requirePlatformRole('internal_admin'));
  * @openapi
  * /audit/access-logs:
  *   get:
- *     tags: [Audit & Compliance]
+ *     tags: [Global | Audit Logs]
  *     summary: Query access logs
  *     description: |
  *       Get paginated access logs with comprehensive filtering for compliance and security monitoring.
@@ -228,7 +228,7 @@ router.get('/access-logs', async (req, res) => {
  * @openapi
  * /audit/access-summary:
  *   get:
- *     tags: [Audit & Compliance]
+ *     tags: [Global | Audit Logs]
  *     summary: Get access summary statistics
  *     description: |
  *       Get aggregated statistics for access patterns, security insights, and compliance metrics.
@@ -382,7 +382,7 @@ router.get('/access-summary', async (req, res) => {
  * @openapi
  * /audit/security-alerts:
  *   get:
- *     tags: [Audit & Compliance]
+ *     tags: [Global | Audit Logs]
  *     summary: Get security alerts
  *     description: |
  *       Get potential security issues and anomalies detected in access patterns.

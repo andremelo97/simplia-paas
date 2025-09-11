@@ -1,6 +1,7 @@
 # CLAUDE2.md - Complete Technical Reference
 
 > **Note**: This is the complete technical documentation. For quick reference, see [CLAUDE.md](./CLAUDE.md).
+> **Multi-Tenancy**: Consultar seção "Arquitetura Híbrida de Multi-Tenancy" no README.md para decisões atuais sobre Global (Platform/Admin) vs Tenant-Scoped (Hub/Apps).
 
 This file contains comprehensive technical details, architectural decisions, and implementation guides for Claude Code when working with the Simplia PaaS codebase.
 

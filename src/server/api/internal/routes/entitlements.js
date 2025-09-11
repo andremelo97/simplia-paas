@@ -19,7 +19,7 @@ router.use(requireAuth);
  * @openapi
  * /entitlements:
  *   get:
- *     tags: [Entitlements (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | Access Control]
  *     summary: List tenant licenses with enhanced data
  *     description: Get all application licenses for the current tenant with pricing snapshots and seats per user type
  *     security:
@@ -319,7 +319,7 @@ function getPricingSnapshot(seatsByUserType) {
  * @openapi
  * /entitlements/{applicationSlug}:
  *   get:
- *     tags: [Entitlements (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | Access Control]
  *     summary: Get specific license details
  *     description: Get detailed information about a specific application license for the tenant
  *     security:
@@ -659,7 +659,7 @@ router.get('/users/:userId/applications', requireAuth, async (req, res) => {
  * @openapi
  * /entitlements/{applicationSlug}/activate:
  *   post:
- *     tags: [Entitlements (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | Access Control]
  *     summary: Activate license for application
  *     description: Activate or create a license for a specific application within the tenant
  *     security:
@@ -879,7 +879,7 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
  * @openapi
  * /entitlements/{applicationSlug}/adjust:
  *   put:
- *     tags: [Entitlements (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | Access Control]
  *     summary: Adjust license settings
  *     description: Modify existing license settings like user limits, status, or expiry date
  *     security:
@@ -969,7 +969,7 @@ router.post('/:applicationSlug/activate', requireAdmin, async (req, res) => {
  * @openapi
  * /entitlements/{appSlug}/adjust:
  *   put:
- *     tags: [Entitlements (Tenant-scoped)]
+ *     tags: [Tenant-Scoped | Access Control]
  *     summary: Adjust license seats and settings
  *     description: Update user limit and other license settings. User limit cannot be reduced below current seats used.
  *     security:

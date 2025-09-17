@@ -8,15 +8,18 @@ import { contactService } from '../../services/contacts'
 import { withSuppressedFeedback } from '@client/common/feedback'
 import { AddressesRepeater } from './AddressesRepeater'
 import { ContactsRepeater } from './ContactsRepeater'
-import { AddressFormValues, ContactFormValues } from './types'
+import { AddressFormValues, ContactFormValues, TIMEZONE_OPTIONS } from './types'
+import { Select } from '@client/common/ui'
 
 interface TenantFormData {
   name: string
+  timezone: string
 }
 
 export const CreateTenant: React.FC = () => {
   const [formData, setFormData] = useState<TenantFormData>({
-    name: ''
+    name: '',
+    timezone: 'America/Sao_Paulo' // Default to São Paulo timezone
   })
   const [addresses, setAddresses] = useState<AddressFormValues[]>([])
   const [contacts, setContacts] = useState<ContactFormValues[]>([])
@@ -86,6 +89,10 @@ export const CreateTenant: React.FC = () => {
       errors.name = 'Tenant name must be at least 3 characters'
     } else if (formData.name.length > 100) {
       errors.name = 'Tenant name must be less than 100 characters'
+    }
+
+    if (!formData.timezone.trim()) {
+      errors.timezone = 'Timezone is required'
     }
     
 
@@ -167,7 +174,8 @@ export const CreateTenant: React.FC = () => {
         // Step 1: Create the tenant
         const tenantResponse = await tenantsService.create({
           name: formData.name.trim(),
-          subdomain
+          subdomain,
+          timezone: formData.timezone
         })
         
         const tenant = tenantResponse.data.tenant
@@ -283,6 +291,17 @@ export const CreateTenant: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
+                <Select
+                  label="Timezone"
+                  value={formData.timezone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, timezone: e.target.value }))}
+                  options={TIMEZONE_OPTIONS}
+                  error={validationErrors.timezone}
+                  placeholder="Select timezone"
+                  helperText="IANA timezone identifier - cannot be changed after creation"
+                  required
+                  disabled={isSubmitting}
+                />
               </div>
             </CardContent>
           </Card>

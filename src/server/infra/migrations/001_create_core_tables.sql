@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS tenants (
   name VARCHAR(255) NOT NULL,
   subdomain VARCHAR(100) UNIQUE NOT NULL,
   schema_name VARCHAR(100) NOT NULL,
+  timezone VARCHAR(100) NOT NULL, -- IANA timezone (e.g., 'America/Sao_Paulo', 'Australia/Brisbane')
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS tenants (
 COMMENT ON TABLE tenants IS 'Multi-tenant support - each tenant has isolated schema and data';
 COMMENT ON COLUMN tenants.subdomain IS 'Unique subdomain identifier for tenant (used in URLs and headers)';
 COMMENT ON COLUMN tenants.schema_name IS 'PostgreSQL schema name for tenant isolation';
+COMMENT ON COLUMN tenants.timezone IS 'IANA timezone identifier (immutable after creation) - controls session timezone for tenant-scoped operations';
 
 -- User types table (operations < manager < admin hierarchy)
 CREATE TABLE IF NOT EXISTS user_types (
@@ -257,10 +259,17 @@ GROUP BY 1,2,3;
 COMMENT ON VIEW v_tenant_app_seats_by_type IS 'Aggregates active seats by tenant, app and user type with pricing';
 
 -- =============================================
+-- TIMEZONE IMMUTABILITY ENFORCEMENT
+-- =============================================
+
+-- Note: Timezone immutability is enforced at application level in the PUT route
+-- Database-level triggers will be added in a future migration
+
+-- =============================================
 -- TENANT CONSISTENCY TRIGGERS
 -- =============================================
 
--- Note: Tenant consistency triggers will be added in a future migration
+-- Note: Additional tenant consistency triggers will be added in a future migration
 -- For now, application-level validation ensures data integrity
 
 -- =============================================
@@ -274,4 +283,4 @@ COMMENT ON VIEW v_tenant_app_seats_by_type IS 'Aggregates active seats by tenant
 -- COMMENTS FOR DOCUMENTATION
 -- =============================================
 
-COMMENT ON DATABASE simplia_paas IS 'Simplia PaaS - Multi-tenant medical practice management platform';
+-- COMMENT ON DATABASE simplia_paas IS 'Simplia PaaS - Multi-tenant medical practice management platform';

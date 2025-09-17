@@ -230,10 +230,10 @@ class TenantMiddleware {
   }
 
   /**
-   * Apply tenant schema search_path for database queries
+   * Apply tenant schema search_path and timezone for database queries
    * Only called for tenant-scoped routes
    */
-  async applyTenantSearchPath(schemaName) {
+  async applyTenantSearchPath(schemaName, tenantTimezone) {
     try {
       // Check if schema exists before applying search_path
       const schemaExists = await database.schemaExists(schemaName);
@@ -241,14 +241,21 @@ class TenantMiddleware {
         console.warn(`Schema ${schemaName} does not exist, skipping search_path application`);
         return;
       }
-      
+
       // Set search_path to tenant schema first, then public for fallback
       const searchPathQuery = `SET LOCAL search_path TO ${schemaName}, public`;
       await database.query(searchPathQuery);
-      
-      console.log(`Applied search_path: ${schemaName}, public`);
+
+      // Set timezone for the session if tenant has a timezone
+      if (tenantTimezone) {
+        const timezoneQuery = `SET LOCAL TIME ZONE '${tenantTimezone}'`;
+        await database.query(timezoneQuery);
+        console.log(`Applied timezone: ${tenantTimezone} and search_path: ${schemaName}, public`);
+      } else {
+        console.log(`Applied search_path: ${schemaName}, public (no timezone specified)`);
+      }
     } catch (error) {
-      console.error(`Failed to apply tenant search_path for ${schemaName}:`, error);
+      console.error(`Failed to apply tenant search_path/timezone for ${schemaName}:`, error);
       // Don't throw error, just warn - let query proceed with default search_path
       console.warn(`Continuing with default search_path (public)`);
     }
@@ -290,6 +297,7 @@ class TenantMiddleware {
         id: tenant.id,           // ALWAYS INTEGER (source of truth)
         slug: tenant.subdomain,  // Read-only display/URL-friendly identifier
         schema,
+        timezone: tenant.timezone, // Tenant timezone for session configuration
         name: tenant.name,
         status: tenant.status,
         // Resolution metadata (for logging only)
@@ -303,11 +311,11 @@ class TenantMiddleware {
       // Initialize user context placeholder
       req.user = null;
       
-      // Apply tenant schema search_path for tenant-scoped routes only
+      // Apply tenant schema search_path and timezone for tenant-scoped routes only
       // Platform/Global routes stay in public schema
       const isTenantScoped = this.isTenantScopedRoute(req);
       if (isTenantScoped) {
-        await this.applyTenantSearchPath(schema);
+        await this.applyTenantSearchPath(schema, tenant.timezone);
       }
       
       // Enhanced telemetry logging

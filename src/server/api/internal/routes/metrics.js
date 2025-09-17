@@ -19,9 +19,12 @@ const metricsCache = {
  * @openapi
  * /metrics/overview:
  *   get:
- *     tags: [Global | System Metrics]
+ *     tags: [Metrics]
  *     summary: Get platform overview metrics
- *     description: Returns aggregated metrics for the platform dashboard including tenants, users, applications, and licenses with time-based breakdowns
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Returns aggregated metrics for the platform dashboard including tenants, users, applications, and licenses with time-based breakdowns
  *     security:
  *       - bearerAuth: []
  *     responses:

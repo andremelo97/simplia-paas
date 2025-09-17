@@ -10,6 +10,7 @@ import { AddressFormValues, ContactFormValues } from './types'
 interface TenantFormData {
   name: string
   status: 'active' | 'inactive'
+  timezone?: string  // Read-only display
 }
 
 interface TenantSnapshot {
@@ -21,7 +22,8 @@ interface TenantSnapshot {
 export const EditTenantPage: React.FC = () => {
   const [formData, setFormData] = useState<TenantFormData>({
     name: '',
-    status: 'active'
+    status: 'active',
+    timezone: undefined
   })
   const [addresses, setAddresses] = useState<AddressFormValues[]>([])
   const [contacts, setContacts] = useState<ContactFormValues[]>([])
@@ -92,7 +94,8 @@ export const EditTenantPage: React.FC = () => {
         // Initialize form data
         const coreData: TenantFormData = {
           name: tenant.name || '',
-          status: (tenant.status === 'active' || tenant.status === 'inactive') ? tenant.status : 'active'
+          status: (tenant.status === 'active' || tenant.status === 'inactive') ? tenant.status : 'active',
+          timezone: tenant.timezone || undefined
         }
 
         // If no addresses/contacts exist, start with default primary items
@@ -497,6 +500,15 @@ export const EditTenantPage: React.FC = () => {
                   required
                   disabled={isSubmitting}
                 />
+
+                {formData.timezone && (
+                  <Input
+                    label="Timezone"
+                    value={formData.timezone}
+                    disabled
+                    helperText="Timezone is immutable after tenant creation"
+                  />
+                )}
 
               </div>
 

@@ -153,36 +153,44 @@ if (ENABLE_DOCS) {
       },
       tags: [
         {
-          name: 'Global | Internal Admin',
-          description: 'Platform authentication and admin user management for Simplia team members. No tenant context required.'
+          name: 'Auth',
+          description: 'Authentication services (platform and tenant)',
+          'x-scope': 'mixed'
         },
         {
-          name: 'Global | Tenant Management',
-          description: 'Complete tenant lifecycle management including creation, configuration, and billing operations.'
+          name: 'Tenants',
+          description: 'Tenant lifecycle management (creation, update, addresses, contacts)',
+          'x-scope': 'global'
         },
         {
-          name: 'Global | Application Management', 
-          description: 'Application catalog management, pricing configuration, and licensing operations across tenants.'
+          name: 'Users',
+          description: 'User management and administration',
+          'x-scope': 'mixed'
         },
         {
-          name: 'Global | System Metrics',
-          description: 'Platform-wide analytics, performance monitoring, and operational metrics for administrators.'
+          name: 'Applications',
+          description: 'Application catalog and pricing management',
+          'x-scope': 'global'
         },
         {
-          name: 'Global | Audit Logs',
-          description: 'Security audit trails and compliance logging for platform operations and tenant activities.'
+          name: 'Licenses',
+          description: 'License management and application access control',
+          'x-scope': 'mixed'
         },
         {
-          name: 'Tenant-Scoped | Authentication',
-          description: 'Authentication services for tenant users including login, logout, and session management.'
+          name: 'Audit',
+          description: 'Security audit trails and compliance logging',
+          'x-scope': 'global'
         },
         {
-          name: 'Tenant-Scoped | User Management',
-          description: 'Tenant-scoped user administration and profile management. Requires x-tenant-id header.'
+          name: 'Metrics',
+          description: 'Platform analytics and performance monitoring',
+          'x-scope': 'global'
         },
         {
-          name: 'Tenant-Scoped | Access Control',
-          description: 'Application entitlements and permission management within tenant context.'
+          name: 'Public',
+          description: 'Self-service endpoints for end users',
+          'x-scope': 'platform'
         }
       ],
       servers: [

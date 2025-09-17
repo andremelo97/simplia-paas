@@ -16,9 +16,12 @@ const authRateLimit = createRateLimit(15 * 60 * 1000, 10); // 10 requests per 15
  * @openapi
  * /auth/register:
  *   post:
- *     tags: [Tenant-Scoped | Authentication]
+ *     tags: [Auth]
  *     summary: Register new user
- *     description: Register a new user in the current tenant context
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Register a new user in the current tenant context
  *     parameters:
  *       - in: header
  *         name: x-tenant-id
@@ -134,9 +137,12 @@ router.post('/register', authRateLimit, async (req, res) => {
  * @openapi
  * /auth/login:
  *   post:
- *     tags: [Tenant-Scoped | Authentication]
+ *     tags: [Auth]
  *     summary: Login to administrative panel
- *     description: Authenticate admin user and get JWT token with tenant context
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Authenticate admin user and get JWT token with tenant context
  *     parameters:
  *       - in: header
  *         name: x-tenant-id
@@ -290,9 +296,12 @@ router.post('/logout', requireAuth, async (req, res) => {
  * @openapi
  * /auth/me:
  *   get:
- *     tags: [Tenant-Scoped | Authentication]  
+ *     tags: [Auth]  
  *     summary: Get current user profile
- *     description: Get authenticated user information and permissions
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Get authenticated user information and permissions
  *     security:
  *       - bearerAuth: []
  *     parameters:

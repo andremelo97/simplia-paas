@@ -19,9 +19,12 @@ router.use(requireAuth, requirePlatformRole('internal_admin'));
  * @openapi
  * /tenants:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: List all tenants
- *     description: Get paginated list of all tenants in the system with operational metrics
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get paginated list of all tenants in the system with operational metrics
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -148,9 +151,12 @@ router.get('/', async (req, res) => {
  * @openapi
  * /tenants/{id}:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Get tenant details
- *     description: Get detailed information about a specific tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get detailed information about a specific tenant
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -251,9 +257,12 @@ router.get('/:id', async (req, res) => {
  * @openapi
  * /tenants:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Create new tenant
- *     description: Create a new tenant with schema and initial configuration
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Create a new tenant with schema and initial configuration
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -305,13 +314,34 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const { name, subdomain, status = 'active' } = req.body;
+    const { name, subdomain, timezone, status = 'active' } = req.body;
 
     // Basic validation
-    if (!name || !subdomain) {
+    if (!name || !subdomain || !timezone) {
       return res.status(400).json({
         error: 'Validation Error',
-        message: 'Name and subdomain are required'
+        message: 'Name, subdomain, and timezone are required'
+      });
+    }
+
+    // Validate timezone against PostgreSQL's timezone list
+    try {
+      const timezoneValidation = await database.query(
+        'SELECT 1 FROM pg_timezone_names WHERE name = $1',
+        [timezone]
+      );
+
+      if (timezoneValidation.rows.length === 0) {
+        return res.status(400).json({
+          error: 'Validation Error',
+          message: `Invalid timezone: ${timezone}. Must be a valid IANA timezone identifier.`
+        });
+      }
+    } catch (tzError) {
+      console.error('Error validating timezone:', tzError);
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Invalid timezone format'
       });
     }
 
@@ -331,6 +361,7 @@ router.post('/', async (req, res) => {
       name: name.trim(),
       subdomain: subdomain.toLowerCase().trim(),
       schemaName,
+      timezone: timezone.trim(),
       status
     });
 
@@ -374,9 +405,12 @@ router.post('/', async (req, res) => {
  * @openapi
  * /tenants/{id}:
  *   put:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Update tenant
- *     description: Update tenant information and status
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update tenant information and status
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -428,7 +462,15 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, status, description } = req.body;
+    const { name, status, description, timezone } = req.body;
+
+    // Reject timezone changes explicitly
+    if (timezone !== undefined) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Timezone cannot be changed after tenant creation'
+      });
+    }
 
     const updateData = {};
     if (name !== undefined) updateData.name = name.trim();
@@ -479,9 +521,12 @@ router.put('/:id', async (req, res) => {
  * @openapi
  * /tenants/{id}:
  *   delete:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Deactivate tenant
- *     description: Soft delete (deactivate) a tenant - sets active=false, preserves data
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Soft delete (deactivate) a tenant - sets active=false, preserves data
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -542,9 +587,12 @@ router.delete('/:id', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: List tenant addresses
- *     description: Get all addresses for a tenant with filtering options
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get all addresses for a tenant with filtering options
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -666,9 +714,12 @@ router.get('/:id/addresses', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Create tenant address
- *     description: Add a new address to the tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Add a new address to the tenant
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -812,9 +863,12 @@ router.post('/:id/addresses', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses/{addressId}:
  *   put:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Update tenant address
- *     description: Update an existing address
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update an existing address
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -947,9 +1001,12 @@ router.put('/:id/addresses/:addressId', async (req, res) => {
  * @openapi
  * /tenants/{id}/addresses/{addressId}:
  *   delete:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Delete tenant address
- *     description: Permanently delete an address from the database
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Permanently delete an address from the database
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1028,9 +1085,12 @@ router.delete('/:id/addresses/:addressId', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: List tenant contacts
- *     description: Get all contacts for a tenant with filtering options
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get all contacts for a tenant with filtering options
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1152,9 +1212,12 @@ router.get('/:id/contacts', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Create tenant contact
- *     description: Add a new contact person to the tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Add a new contact person to the tenant
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1295,9 +1358,12 @@ router.post('/:id/contacts', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts/{contactId}:
  *   put:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Update tenant contact
- *     description: Update an existing contact person
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update an existing contact person
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1429,9 +1495,12 @@ router.put('/:id/contacts/:contactId', async (req, res) => {
  * @openapi
  * /tenants/{id}/contacts/{contactId}:
  *   delete:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Delete tenant contact
- *     description: Permanently delete a contact person from the database
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Permanently delete a contact person from the database
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1506,9 +1575,12 @@ router.delete('/:id/contacts/:contactId', async (req, res) => {
  * @openapi
  * /tenants/{id}/applications/{appSlug}/activate:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Activate application license for tenant
- *     description: Activate a license for a specific application on a tenant (platform admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Activate a license for a specific application on a tenant (platform admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1700,9 +1772,12 @@ router.post('/:id/applications/:appSlug/activate', async (req, res) => {
  * @openapi
  * /tenants/{id}/applications/{appSlug}/adjust:
  *   put:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: Adjust license seats (Platform Admin)
- *     description: Update user limit and other license settings for a tenant's application license. User limit cannot be reduced below current seats used.
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update user limit and other license settings for a tenant's application license. User limit cannot be reduced below current seats used.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1916,9 +1991,12 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
  * @openapi
  * /tenants/{id}/users/{userId}/applications/{appSlug}/grant:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Licenses]
  *     summary: Grant application access to user (Platform Admin)
- *     description: Grant access to an application for a specific user, consuming one seat from the tenant's license. Requires valid pricing configuration.
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Grant access to an application for a specific user, consuming one seat from the tenant's license. Requires valid pricing configuration.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -2170,9 +2248,12 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
  * @openapi
  * /tenants/{id}/users/{userId}/applications/{appSlug}/revoke:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Licenses]
  *     summary: Revoke application access from user (Platform Admin)
- *     description: Revoke access to an application for a specific user, freeing one seat in the tenant's license
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Revoke access to an application for a specific user, freeing one seat in the tenant's license
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -2305,9 +2386,12 @@ router.post('/:id/users/:userId/applications/:appSlug/revoke', async (req, res) 
  * @openapi
  * /tenants/{id}/applications/{appSlug}/users:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Tenants]
  *     summary: List assigned users for application
- *     description: Get list of users assigned to a specific application within a tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get list of users assigned to a specific application within a tenant
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -2524,9 +2608,11 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
  * /tenants/{id}/users/{userId}/applications/{appSlug}/reactivate:
  *   put:
  *     summary: Reactivate user access to application
- *     description: Reactivates a user's access to an application by setting active=true
- *     tags:
- *       - Tenant Management
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Reactivates a user's access to an application by setting active=true
+ *     tags: [Licenses]
  *     security:
  *       - bearerAuth: []
  *     parameters:

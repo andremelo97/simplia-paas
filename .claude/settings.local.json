@@ -1,8 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cat:*)",
-      "Bash(DATABASE_USER=simplia DATABASE_PASSWORD=1234 DATABASE_NAME=simplia_paas_test node -e \"\nconst { Pool } = require(''pg'');\nconst pool = new Pool({\n  user: ''simplia'',\n  host: ''localhost'', \n  database: ''simplia_paas_test'',\n  password: ''1234'',\n  port: 5432,\n});\n\nasync function checkTenant5() {\n  try {\n    // Get tenant 5 info\n    const tenantResult = await pool.query(''SELECT id, name, subdomain FROM tenants WHERE id = 5'');\n    console.log(''Tenant 5:'', tenantResult.rows[0]);\n    \n    // Check what schemas exist\n    const schemaResult = await pool.query(\"\"SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE ''tenant_%'' ORDER BY schema_name\"\");\n    console.log(''Available schemas:'', schemaResult.rows.map(r => r.schema_name));\n    \n    pool.end();\n  } catch (err) {\n    console.error(''Error:'', err);\n    pool.end();\n  }\n}\ncheckTenant5();\n\")"
+      "Bash(for file in applications audit auth entitlements me metrics platform-auth tenants tenant-users users)",
+      "Bash(do echo \"=== $file.js ===\")",
+      "Bash(xargs basename:*)"
     ],
     "deny": [],
     "ask": []

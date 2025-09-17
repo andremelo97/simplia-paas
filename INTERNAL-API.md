@@ -70,6 +70,7 @@ x-tenant-id: <tenant_id_numeric>
 ### Isolamento de Dados
 - **Schema-per-tenant**: PostgreSQL schemas isolados
 - **Switching automático**: `SET search_path TO tenant_schema, public`
+- **Timezone por tenant**: `SET LOCAL TIME ZONE` aplicado por transação para operações tenant-scoped
 - **Validação**: Application-level para consistência de dados
 
 ## 📊 Rate Limiting
@@ -282,12 +283,18 @@ Criar novo tenant.
 {
   "name": "Nova Clínica",
   "subdomain": "nova-clinica",
+  "timezone": "America/Sao_Paulo",
   "status": "active"
 }
 ```
 
+**Campos obrigatórios**: `name`, `subdomain`, `timezone`
+**Nota**: `timezone` deve ser um identificador IANA válido e não pode ser alterado após criação.
+
 ### PUT `/tenants/:id`
 Atualizar tenant.
+
+**Nota**: O campo `timezone` não pode ser incluído em operações de atualização.
 
 ### DELETE `/tenants/:id`
 Desativar tenant (soft delete).

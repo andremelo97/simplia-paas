@@ -7,6 +7,7 @@ class Tenant {
       this.name = data.name;
       this.subdomain = data.subdomain;
       this.schemaName = data.schema_name;
+      this.timezone = data.timezone;
       this.status = data.status;
       this.active = data.active;
       this.createdAt = data.created_at;
@@ -20,6 +21,7 @@ class Tenant {
       name: this.name,
       subdomain: this.subdomain,
       schemaName: this.schemaName,
+      timezone: this.timezone,
       status: this.status,
       active: this.active,
       createdAt: this.createdAt,
@@ -27,13 +29,13 @@ class Tenant {
     };
   }
   // Criar novo tenant
-  static async create({ name, subdomain, schemaName, status = 'active' }) {
+  static async create({ name, subdomain, schemaName, timezone, status = 'active' }) {
     const query = `
-      INSERT INTO tenants (name, subdomain, schema_name, status, active)
-      VALUES ($1, $2, $3, $4, true)
+      INSERT INTO tenants (name, subdomain, schema_name, timezone, status, active)
+      VALUES ($1, $2, $3, $4, $5, true)
       RETURNING *
     `;
-    const result = await database.query(query, [name, subdomain, schemaName, status]);
+    const result = await database.query(query, [name, subdomain, schemaName, timezone, status]);
     return new Tenant(result.rows[0]);
   }
 

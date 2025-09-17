@@ -7,7 +7,7 @@
 O Simplia PaaS é um monorepo Node.js fullstack que combina:
 - **Backend**: Express.js com JavaScript puro para máxima performance
 - **Frontend**: React 18 + TypeScript com Vite para desenvolvimento moderno
-- **Multi-tenancy**: Isolamento por schema PostgreSQL com switching automático
+- **Multi-tenancy**: Isolamento por schema PostgreSQL com switching automático e timezone por tenant
 - **Sistema de Licenciamento**: Arquitetura enterprise de 5 camadas com auditoria completa
 - **Compliance**: Campos de auditoria em todas as tabelas + logs detalhados para conformidade médica
 
@@ -854,7 +854,7 @@ O **painel administrativo interno** possui interface moderna e profissional:
 - **10 tabelas** com campos de auditoria completos + triggers automáticos para `updated_at`
 - **20+ índices** otimizados para performance enterprise incluindo partial unique constraints  
 - **5 camadas de autorização** (License→**Seat Limit Global**→User→Role→Audit) com **snapshots de pricing**
-- **Multi-tenancy** com isolamento por schema PostgreSQL
+- **Multi-tenancy** com isolamento por schema PostgreSQL e timezone IANA por tenant (imutável após criação)
 - **JWT otimizado** com application slugs (substitui IDs por strings para performance)
 - **Gestão completa** de endereços e contatos com constraints de negócio
 - **JWT role override** - Middleware permite overriding de role via JWT para testes e flexibilidade

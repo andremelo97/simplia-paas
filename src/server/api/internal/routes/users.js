@@ -29,9 +29,12 @@ router.use(userRateLimit);
  * @openapi
  * /users:
  *   get:
- *     tags: [Tenant-Scoped | User Management]
+ *     tags: [Users]
  *     summary: List users in tenant
- *     description: Get all users belonging to the current tenant with filtering and pagination
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Get all users belonging to the current tenant with filtering and pagination
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -607,9 +610,12 @@ router.put('/me/profile', async (req, res) => {
  * @openapi
  * /users/{userId}/apps:
  *   get:
- *     tags: [Tenant-Scoped | User Management]
+ *     tags: [Users]
  *     summary: Get user's application access
- *     description: List all applications a specific user has access to
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       List all applications a specific user has access to
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -723,9 +729,12 @@ router.get('/:userId/apps', requireManagerOrAdmin, async (req, res) => {
  * @openapi
  * /users/{userId}/apps/grant:
  *   post:
- *     tags: [Tenant-Scoped | User Management]
+ *     tags: [Users]
  *     summary: Grant user access to application
- *     description: Give a user access to a specific application within the tenant
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Give a user access to a specific application within the tenant
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -926,9 +935,12 @@ router.post('/:userId/apps/grant', requireAdmin, async (req, res) => {
  * @openapi
  * /users/{userId}/apps/revoke:
  *   delete:
- *     tags: [Tenant-Scoped | User Management]
+ *     tags: [Users]
  *     summary: Revoke user access to application
- *     description: Remove a user's access to a specific application within the tenant
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Remove a user's access to a specific application within the tenant
  *     security:
  *       - bearerAuth: []
  *     parameters:

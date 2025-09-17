@@ -16,9 +16,12 @@ router.use(requireAuth, requirePlatformRole('internal_admin'));
  * @openapi
  * /applications:
  *   get:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: List application catalog
- *     description: Get all applications in the system with filtering and pagination
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get all applications in the system with filtering and pagination
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -121,9 +124,12 @@ router.get('/', async (req, res) => {
  * @openapi
  * /applications/{id}:
  *   get:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: Get application by ID
- *     description: Get specific application details by ID
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get specific application details by ID
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -194,9 +200,12 @@ router.get('/:id', async (req, res) => {
  * @openapi
  * /applications/slug/{slug}:
  *   get:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: Get application by slug
- *     description: Get specific application details by slug identifier
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get specific application details by slug identifier
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -330,9 +339,12 @@ router.get('/user/accessible', requireAuth, requireAnyAppAccess, async (req, res
  * @openapi
  * /applications:
  *   post:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: Create new application
- *     description: Create a new application in the system catalog
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Create a new application in the system catalog
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -539,9 +551,12 @@ router.delete('/:id', async (req, res) => {
  * @openapi
  * /applications/{id}/tenants:
  *   get:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: List licensed tenants for application
- *     description: Get all tenants that have licenses for a specific application
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get all tenants that have licenses for a specific application
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -707,9 +722,12 @@ router.get('/:id/tenants', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing:
  *   get:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: Get application pricing matrix
- *     description: Get pricing for all user types for a specific application
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get pricing for all user types for a specific application
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -795,9 +813,12 @@ router.get('/:id/pricing', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing:
  *   post:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: Create or schedule application pricing
- *     description: Create new pricing for application and user type combination
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Create new pricing for application and user type combination
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -956,9 +977,12 @@ router.post('/:id/pricing', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing/{pricingId}:
  *   put:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: Update application pricing
- *     description: Update existing pricing entry
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update existing pricing entry
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -1069,9 +1093,12 @@ router.put('/:id/pricing/:pricingId', async (req, res) => {
  * @openapi
  * /applications/{id}/pricing/{pricingId}/end:
  *   post:
- *     tags: [Global | Application Management]
+ *     tags: [Applications]
  *     summary: End pricing period
- *     description: End an active pricing period by setting validTo to current timestamp and active to false
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       End an active pricing period by setting validTo to current timestamp and active to false
  *     security:
  *       - bearerAuth: []
  *     parameters:

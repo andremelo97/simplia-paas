@@ -230,9 +230,12 @@ router.post('/dev/tenants/:tenantId/users', async (req, res) => {
  * @openapi
  * /tenants/{tenantId}/users:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Users]
  *     summary: List users in specific tenant
- *     description: Get all users belonging to a specific tenant (internal admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get all users belonging to a specific tenant (internal admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -357,9 +360,12 @@ router.get('/tenants/:tenantId/users', requireAuth, requirePlatformRole('interna
  * @openapi
  * /tenants/{tenantId}/users:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Users]
  *     summary: Create user in specific tenant
- *     description: Create a new user directly assigned to a specific tenant (internal admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Create a new user directly assigned to a specific tenant (internal admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -535,9 +541,12 @@ router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('intern
  * @openapi
  * /tenants/{tenantId}/users/{userId}:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Users]
  *     summary: Get user in specific tenant
- *     description: Get a specific user by ID within a tenant context (internal admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get a specific user by ID within a tenant context (internal admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -628,9 +637,12 @@ router.get('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRole(
  * @openapi
  * /tenants/{tenantId}/users/{userId}:
  *   put:
- *     tags: [Global | Tenant Management]
+ *     tags: [Users]
  *     summary: Update user in specific tenant
- *     description: Update user details within a specific tenant context (internal admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update user details within a specific tenant context (internal admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -745,9 +757,12 @@ router.put('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRole(
  * @openapi
  * /tenants/{tenantId}/users/{userId}:
  *   delete:
- *     tags: [Global | Tenant Management]
+ *     tags: [Users]
  *     summary: Deactivate user in specific tenant
- *     description: Soft delete (deactivate) a user within a specific tenant context (internal admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Soft delete (deactivate) a user within a specific tenant context (internal admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -831,9 +846,12 @@ router.delete('/tenants/:tenantId/users/:userId', requireAuth, requirePlatformRo
  * @openapi
  * /tenants/{tenantId}/users/{userId}/reset-password:
  *   post:
- *     tags: [Global | Tenant Management]
+ *     tags: [Users]
  *     summary: Reset user password in specific tenant
- *     description: Reset a user's password within a specific tenant context (internal admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Reset a user's password within a specific tenant context (internal admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -959,9 +977,12 @@ router.post('/tenants/:tenantId/users/:userId/reset-password', requireAuth, requ
  * @openapi
  * /users:
  *   get:
- *     tags: [Global | Tenant Management]
+ *     tags: [Users]
  *     summary: List users globally with tenant filter
- *     description: Get all users across all tenants with optional tenant filtering (internal admin only)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get all users across all tenants with optional tenant filtering (internal admin only)
  *     security:
  *       - bearerAuth: []
  *     parameters:

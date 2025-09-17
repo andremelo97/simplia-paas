@@ -35,9 +35,9 @@ COMMENT ON SCHEMA tenant_default IS 'Default tenant schema for development and a
 COMMENT ON SCHEMA tenant_test_clinic IS 'Test clinic schema for automated testing';
 
 -- Insert default tenant for development and testing
-INSERT INTO tenants (name, subdomain, schema_name, status) VALUES
-('Default Clinic', 'default', 'tenant_default', 'active'),
-('Test Clinic', 'test_clinic', 'tenant_test_clinic', 'active')
+INSERT INTO tenants (name, subdomain, schema_name, timezone, status) VALUES
+('Default Clinic', 'default', 'tenant_default', 'America/Sao_Paulo', 'active'),
+('Test Clinic', 'test_clinic', 'tenant_test_clinic', 'Australia/Brisbane', 'active')
 ON CONFLICT (subdomain) DO NOTHING;
 
 -- =============================================

@@ -12,8 +12,12 @@ const db = require('../../../infra/db/database');
  * @swagger
  * /internal/api/v1/me/apps:
  *   get:
- *     tags: [tenant]
+ *     tags: [Public]
  *     summary: List applications the current user can access (self-service)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       List applications the current user can access (self-service)
  *     security:
  *       - bearerAuth: []
  *     parameters:

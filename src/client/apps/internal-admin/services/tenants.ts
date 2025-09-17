@@ -4,6 +4,7 @@ import { api } from '@client/config/http'
 export interface CreateTenantRequest {
   name: string
   subdomain: string
+  timezone: string
   status?: 'active' | 'trial' | 'inactive'
 }
 
@@ -18,6 +19,7 @@ export interface TenantResponse {
   name: string
   subdomain: string
   schemaName: string
+  timezone: string
   status: string
   description?: string
   createdAt: string
@@ -254,18 +256,23 @@ export class TenantsService {
     if (!tenantData.subdomain?.trim()) {
       throw new Error('Subdomain is required')
     }
+    if (!tenantData.timezone?.trim()) {
+      throw new Error('Timezone is required')
+    }
 
     // Prepare payload matching backend expectations
     const payload = {
       name: tenantData.name.trim(),
       subdomain: tenantData.subdomain.trim(),
+      timezone: tenantData.timezone.trim(),
       status: tenantData.status || 'active'
     }
 
-    console.log('🏢 [TenantsService] Creating tenant:', { 
-      name: payload.name, 
+    console.log('🏢 [TenantsService] Creating tenant:', {
+      name: payload.name,
       subdomain: payload.subdomain,
-      status: payload.status 
+      timezone: payload.timezone,
+      status: payload.status
     })
 
     try {

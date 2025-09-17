@@ -2,7 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Guidance for Claude Code when working with Simplia PaaS codebase.
+## Quick Start for Development
+- Backend is **JavaScript only** (.js files) with Express + PostgreSQL
+- Frontend is **TypeScript** (.tsx/.ts files) with React + Vite
+- Use `npm run dev` to run both server and client concurrently
+- All database changes require migrations in `src/server/infra/migrations/`
+- Always run tests before making significant changes: `npm test`
+
+## Critical Development Rules
+- **ALL IDs are numeric**: Use numeric IDs everywhere (PKs, FKs, headers, JWT tokens)
+- **FK naming convention**: All foreign keys use `_fk` suffix (`tenant_id_fk`, `user_id_fk`)
+- **Multi-tenancy**: Each user belongs to exactly one tenant via `users.tenant_id_fk`
+- **Seat counting**: MUST call `TenantApplication.incrementSeat()` on grant, `decrementSeat()` on revoke
+- **No TypeScript in backend**: Server code is JavaScript only (.js files)
 
 ## Tech Stack
 - **Backend**: Node.js + Express + PostgreSQL (JavaScript only - .js files)
@@ -30,20 +42,21 @@ src/
 └── shared/          # Shared utilities (JavaScript .js)
 ```
 
-## Development Commands
+## Essential Commands
 ```bash
-npm install              # Install dependencies
-npm run dev             # Run both server + internal-admin client
-npm run dev:server      # Server only (port 3001)
-npm run dev:client      # Internal-admin only (port 3002)
-npm run dev:hub         # Hub app only (port 3003)
-npm run migrate         # Run database migrations
-npm test               # Run all tests
+# Development
+npm run dev             # Start both server (3001) + internal-admin (3002)
+npm run dev:hub         # Start Hub app only (port 3003)
+npm run migrate         # Run database migrations (REQUIRED after schema changes)
+
+# Testing
+npm test               # Run all tests (auto-creates test database)
 npm run test:watch      # Run tests in watch mode
+npx jest tests/integration/internal/critical-validation.test.js  # Run specific test
+
+# Database
 npm run db:create:test  # Create test database
-npm run db:drop:test    # Drop test database
-npm run build           # Build for production
-npm start              # Start production server
+npm run db:drop:test    # Drop test database completely
 ```
 
 ## Multi-App Architecture
@@ -51,12 +64,9 @@ npm start              # Start production server
 - **Hub App** (`/internal/api/v1/me`): Self-service portal for end users to access their apps
 - **Product Apps**: TQ, CRM, Automation clients (future development)
 
-## Critical Routes and Middleware
-- **Platform-Scoped Routes** (NO tenant header needed):
-  - `/internal/api/v1/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`
-  - `/internal/api/v1/me/*` - **CRITICAL**: Hub self-service routes use public schema only
-- **Tenant-Scoped Routes** (x-tenant-id header required):
-  - `/internal/api/v1/auth`, `/users`, `/entitlements` 
+## API Route Categories
+- **Platform-Scoped** (no tenant header): `/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`, `/me/*`
+- **Tenant-Scoped** (requires x-tenant-id header): `/auth`, `/users`, `/entitlements` 
 
 ## Regras para Multi-Tenancy no Desenvolvimento
 - **Não** mover `users`/`user_application_access` para schemas de tenant.
@@ -66,12 +76,12 @@ npm start              # Start production server
 - Prefixe `public.` quando quiser deixar claro que é core.
 - `createSchema()` é ponto de extensão para tabelas por-tenant (idempotentes).
 
-## Critical Database Rules
-- **ALL FKs are numeric**: `INTEGER NOT NULL REFERENCES`
-- **FK naming**: Use `_fk` suffix (`tenant_id_fk`, `user_id_fk`)
-- **Multi-tenancy**: Schema-per-tenant with `SET search_path`
-- **1:1 Model**: Each user belongs to exactly one tenant
-- **Authorization**: 5-layer enterprise licensing system
+## Database Conventions
+- **Numeric IDs**: All PKs/FKs are `INTEGER NOT NULL`
+- **FK naming**: Always use `_fk` suffix (`tenant_id_fk`, `user_id_fk`)
+- **Schema isolation**: `SET LOCAL search_path TO tenant_<slug>, public` for tenant-scoped operations
+- **User-tenant relationship**: 1:1 via `users.tenant_id_fk`
+- **Migrations**: All schema changes go in `src/server/infra/migrations/`
 
 ## API Patterns
 ```javascript
@@ -85,13 +95,12 @@ GET /internal/api/v1/tenants/:tenantId/users
 users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 ```
 
-## Testing
-- **Framework**: Jest + Supertest
-- **Test DB**: Auto-created `TEST_DATABASE_NAME`
-- **Path Aliases**: `@server/*`, `@client/*`, `@shared/*`
-- **Auth Testing**: JWT role override support
-- **Run specific tests**: `npx jest tests/integration/internal/critical-validation.test.js`
-- **Test patterns**: `npx jest --testNamePattern="Layer 1"`
+## Testing Guidelines
+- **Before major changes**: Always run `npm test` to ensure no regressions
+- **Test structure**: `/tests/integration/internal/` contains critical validation tests
+- **Database**: Tests auto-create and cleanup test database
+- **Path aliases**: Use `@server/*`, `@client/*`, `@shared/*` in tests
+- **Specific tests**: `npx jest tests/integration/internal/critical-validation.test.js`
 
 ## Environment Setup
 - Copy `.env.example` to `.env` and configure database settings
@@ -129,6 +138,21 @@ async function withTenant(tenantSchema, fn) {
   }
 }
 ```
+
+## Development Best Practices
+- **Lint & Type Check**: Run `npm run lint` and `npm run typecheck` before commits (check README for exact commands)
+- **Test First**: Always run `npm test` before making significant changes
+- **Database First**: Create migrations before changing models or adding features
+- **Numeric IDs Only**: ALL IDs must be numeric - no string IDs anywhere in the system
+- **FK Suffix**: All foreign keys must use `_fk` suffix for consistency
+- **Transaction Scope**: Use proper database transactions for multi-step operations
+
+## Common Troubleshooting
+- **Test database issues**: Run `npm run db:drop:test` then `npm test` to recreate clean test DB
+- **Seat counting inconsistency**: Verify all grant/revoke/reactivate endpoints call seat increment/decrement
+- **Multi-tenancy conflicts**: Ensure platform-scoped routes don't use `search_path`, tenant-scoped routes do
+- **Pricing not configured**: Add entries to `application_pricing` table before granting access
+- **Build failures**: Check for TypeScript errors in frontend, JavaScript syntax in backend
 
 ---
 

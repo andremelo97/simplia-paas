@@ -35,9 +35,8 @@ class TenantMiddleware {
     
     // Tenant-scoped routes that REQUIRE x-tenant-id header
     const tenantScopedPaths = [
-      '/internal/api/v1/users',
+      '/internal/api/v1/users', // tenant-scoped user routes (requires x-tenant-id)
       '/internal/api/v1/entitlements',
-      '/internal/api/v1/tenants/:id/users', // tenant-users routes
     ];
     
     // Platform-scoped routes (no tenant header required)

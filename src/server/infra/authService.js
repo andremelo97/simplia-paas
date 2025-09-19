@@ -185,6 +185,9 @@ class AuthService {
       throw new InvalidCredentialsError();
     }
 
+    // Update last_login timestamp (side effect for platform login tracking)
+    await user.updateLastLogin();
+
     // Create platform JWT payload (no tenant context, no app entitlements)
     const jwtPayload = {
       userId: user.id,

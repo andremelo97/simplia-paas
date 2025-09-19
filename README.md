@@ -679,7 +679,7 @@ A plataforma adota **modelo híbrido**:
 - Tabelas específicas de domínio: `tq_*`, `crm_*`, etc.
 
 **Isolamento por rota (search_path):**
-- *Global (Platform/Admin)*: **não** aplica `search_path`; opera direto em `public`.
+- *Global (Platform/Admin)*: **não** aplica `search_path`; opera direto em `public`. Inclui `/platform-auth/*` (Internal-Admin é Global).
 - *Tenant-Scoped (Hub/Apps)*: aplica `SET LOCAL search_path TO tenant_<slug>, public`.
 
 **Exemplo (JS – middleware aplicado apenas em rotas tenant-scoped):**

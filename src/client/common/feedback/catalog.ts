@@ -42,6 +42,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "User Deactivated",
     message: "User deactivated successfully."
   },
+  ROLE_IN_APP_UPDATED: {
+    title: "Role Updated",
+    message: "User role in application updated successfully."
+  },
 
   // Address operations
   ADDRESS_CREATED: {

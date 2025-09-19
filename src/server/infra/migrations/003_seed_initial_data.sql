@@ -239,11 +239,11 @@ WHERE t.subdomain = 'default'
 -- =============================================
 
 -- Insert default pricing for each application × user type combination
-INSERT INTO application_pricing (application_id_fk, user_type_id_fk, price, currency, billing_cycle, valid_from)
-SELECT 
+INSERT INTO application_pricing (application_id_fk, user_type_id_fk, price, currency, billing_cycle, active)
+SELECT
   a.id as application_id_fk,
   ut.id as user_type_id_fk,
-  CASE 
+  CASE
     WHEN a.slug = 'tq' AND ut.slug = 'operations' THEN 35.00
     WHEN a.slug = 'tq' AND ut.slug = 'manager' THEN 55.00
     WHEN a.slug = 'tq' AND ut.slug = 'admin' THEN 80.00
@@ -260,12 +260,11 @@ SELECT
   END as price,
   'BRL' as currency,
   'monthly' as billing_cycle,
-  NOW() as valid_from
+  TRUE as active
 FROM applications a
 CROSS JOIN user_types ut
-WHERE a.active = TRUE 
-  AND ut.active = TRUE
-ON CONFLICT (application_id_fk, user_type_id_fk, valid_from) DO NOTHING;
+WHERE a.active = TRUE
+  AND ut.active = TRUE;
 
 -- Backfill existing grants with pricing snapshots
 -- (Skip backfill for now since there are no existing grants in fresh DB)

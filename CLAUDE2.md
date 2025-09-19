@@ -757,7 +757,7 @@ const userContext = {
 };
 
 // API Endpoints - Tenant-scoped operations (numeric only)
-GET /internal/api/v1/tenants/:tenantId/users      // tenantId is ALWAYS numeric
+GET /internal/api/v1/tenants/users?tenantId=123   // Global endpoint with tenant filter
 POST /internal/api/v1/tenants/:tenantId/users     // Create user in specific tenant
 ```
 

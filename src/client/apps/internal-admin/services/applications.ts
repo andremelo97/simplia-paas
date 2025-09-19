@@ -21,8 +21,6 @@ export interface ApplicationPricing {
   price: string;
   currency: string;
   billingCycle: 'monthly' | 'yearly';
-  validFrom: string;
-  validTo: string | null;
   active: boolean;
   createdAt: string;
   updatedAt: string;
@@ -33,16 +31,14 @@ export interface CreatePricingPayload {
   price: number;
   currency: string;
   billingCycle: 'monthly' | 'yearly';
-  validFrom?: string;
-  validTo?: string;
+  active: boolean;
 }
 
 export interface UpdatePricingPayload {
   price?: number;
   currency?: string;
   billingCycle?: 'monthly' | 'yearly';
-  validFrom?: string;
-  validTo?: string;
+  active?: boolean;
 }
 
 export interface PricingResponse {
@@ -213,31 +209,4 @@ export const ApplicationsService = {
     }
   },
 
-  /**
-   * End pricing period
-   */
-  async endPricing(applicationId: number, pricingId: string): Promise<ApplicationPricing> {
-    console.log('🔍 [ApplicationsService] Ending pricing period:', { applicationId, pricingId });
-    const response = await api.post<CreatePricingResponse>(
-      `/internal/api/v1/applications/${applicationId}/pricing/${pricingId}/end`
-    );
-    console.log('📡 [ApplicationsService] End pricing API Response:', response);
-    
-    // Defensive check for response structure
-    if (!response || !response.data) {
-      throw new Error('Invalid end pricing API response structure');
-    }
-    
-    // Handle different possible response structures
-    if (response.data.pricing) {
-      // Direct structure: { data: { pricing: {...} } }
-      return response.data.pricing;
-    } else if (response.data.data?.pricing) {
-      // Nested structure: { data: { data: { pricing: {...} } } }
-      return response.data.data.pricing;
-    } else {
-      console.error('❌ [ApplicationsService] Unexpected end pricing response structure:', response);
-      throw new Error('Pricing data not found in end response');
-    }
-  }
 };

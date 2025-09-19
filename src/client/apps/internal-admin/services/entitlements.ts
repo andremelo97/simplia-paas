@@ -12,7 +12,7 @@ export class EntitlementsService {
    * Get all licenses for a tenant with enhanced data
    */
   static async getTenantLicenses(
-    tenantId: number, 
+    tenantId: number,
     options?: {
       includeExpired?: boolean
       status?: string
@@ -25,9 +25,9 @@ export class EntitlementsService {
     if (options?.status) params.set('status', options.status)
     if (options?.limit) params.set('limit', String(options.limit))
     if (options?.offset) params.set('offset', String(options.offset))
-    
+
     const url = `/internal/api/v1/entitlements${params.toString() ? `?${params.toString()}` : ''}`
-    
+
     const response = await api.get(url, {
       'x-tenant-id': String(tenantId) // Always send numeric ID as string
     })
@@ -38,8 +38,8 @@ export class EntitlementsService {
    * Adjust existing license settings
    */
   static async adjustLicense(
-    tenantId: number, 
-    slug: string, 
+    tenantId: number,
+    slug: string,
     payload: AdjustLicensePayload
   ): Promise<{ success: boolean; data: { license: TenantLicense } }> {
     const response = await api.put(`/internal/api/v1/entitlements/${slug}/adjust`, payload, {
@@ -52,7 +52,7 @@ export class EntitlementsService {
    * Activate license for an application
    */
   static async activateLicense(
-    tenantId: number, 
+    tenantId: number,
     slug: string,
     payload?: ActivateLicensePayload
   ): Promise<ActivateLicenseResponse> {
@@ -77,12 +77,10 @@ export class EntitlementsService {
   }
 
   /**
-   * Get specific license details
+   * Get specific license details (using Global Platform route)
    */
   static async getLicense(tenantId: number, slug: string): Promise<{ success: boolean; data: { license: TenantLicense } }> {
-    const response = await api.get(`/internal/api/v1/entitlements/${slug}`, {
-      'x-tenant-id': String(tenantId)
-    })
+    const response = await api.get(`/internal/api/v1/tenants/${tenantId}/applications/${slug}`)
     return response
   }
 }

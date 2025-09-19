@@ -1,12 +1,6 @@
 const router = require('express').Router();
 const db = require('../../../infra/db/database');
 
-/**
- * @swagger
- * tags:
- *   - name: tenant
- *     description: Tenant-scoped routes (Hub/Apps). Requires x-tenant-id.
- */
 
 /**
  * @swagger

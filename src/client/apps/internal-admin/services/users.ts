@@ -40,7 +40,7 @@ export interface UsersListParams extends UserFilters {
  * Uses numeric tenant_id_fk consistently (Users ↔ Tenants 1:1 model)
  */
 export class UsersService {
-  private readonly globalEndpoint = '/internal/api/v1/users'
+  private readonly globalEndpoint = '/internal/api/v1/tenants/users'
   private readonly tenantEndpoint = '/internal/api/v1/tenants'
 
   /**
@@ -86,47 +86,14 @@ export class UsersService {
   }
 
   /**
-   * List users for a specific tenant (tenant-scoped endpoint)
+   * List users for a specific tenant (uses global endpoint with tenant filter)
    * @param tenantId - Numeric tenant ID (tenant_id_fk)
    * @param params - List parameters
    * @returns Promise with users list and pagination
    */
   async listByTenant(tenantId: number, params: Omit<UsersListParams, 'tenantId'> = {}): Promise<UsersListResponse> {
-    const searchParams = new URLSearchParams()
-    
-    if (params.search) searchParams.append('search', params.search)
-    if (params.status && params.status !== 'all') searchParams.append('status', params.status)
-    if (params.limit) searchParams.append('limit', params.limit.toString())
-    
-    // Handle page-based pagination (convert to offset)
-    if (params.page && params.limit) {
-      const offset = (params.page - 1) * params.limit
-      searchParams.append('offset', offset.toString())
-    } else if (params.offset) {
-      searchParams.append('offset', params.offset.toString())
-    }
-
-    const queryString = searchParams.toString()
-    const endpoint = queryString 
-      ? `${this.tenantEndpoint}/${tenantId}/users?${queryString}` 
-      : `${this.tenantEndpoint}/${tenantId}/users`
-
-    console.log('👥 [UsersService] Fetching tenant users:', { tenantId, params, endpoint })
-
-    try {
-      const response = await api.get(endpoint)
-      
-      console.log('✅ [UsersService] Tenant users fetched:', {
-        count: response.data?.users?.length,
-        total: response.data?.pagination?.total,
-        tenantId
-      })
-
-      return response
-    } catch (error) {
-      console.error('❌ [UsersService] Failed to fetch tenant users:', error)
-      throw error
-    }
+    // Use the global endpoint with tenantId filter for consistency
+    return this.list({ ...params, tenantId })
   }
 
   /**

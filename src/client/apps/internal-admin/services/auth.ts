@@ -23,14 +23,8 @@ interface LoginResponse {
 }
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    try {
-      const response = await api.auth.login(credentials)
-      return response.data
-    } catch (error) {
-      throw error
-    }
-  },
+  // TODO: Removed dead code `login()` method - auth store calls platform-auth directly
+  // See: docs/internal-login-audit.md for details on actual login flow
 
   async getProfile(): Promise<LoginResponse['user']> {
     try {

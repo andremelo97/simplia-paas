@@ -220,6 +220,7 @@ export interface AssignedUser {
   granted: boolean
   accessId: number | null
   grantedAt: string | null
+  roleInApp?: string | null
 }
 
 export interface AssignedUsersResponse {
@@ -925,6 +926,54 @@ export class TenantsService {
     }
   }
 
+
+  /**
+   * Update user role in application
+   * @param tenantId - Tenant ID
+   * @param userId - User ID
+   * @param appSlug - Application slug
+   * @param roleInApp - New role for the user in this application
+   * @returns Promise with updated role data
+   */
+  async updateUserRoleInApp(
+    tenantId: number,
+    userId: number,
+    appSlug: string,
+    roleInApp: 'user' | 'operations' | 'manager' | 'admin'
+  ): Promise<{
+    success: boolean
+    meta: {
+      code: string
+      message: string
+    }
+    data: {
+      roleInApp: string
+      userId: number
+      applicationSlug: string
+      updatedAt: string
+    }
+  }> {
+    console.log('🔄 [TenantsService] Updating user role in app:', { tenantId, userId, appSlug, roleInApp })
+
+    try {
+      const response = await api.put(
+        `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/role`,
+        { roleInApp }
+      )
+
+      console.log('✅ [TenantsService] User role updated successfully:', {
+        tenantId,
+        userId,
+        appSlug,
+        newRole: roleInApp
+      })
+
+      return response
+    } catch (error) {
+      console.error('❌ [TenantsService] Failed to update user role in app:', error)
+      throw error
+    }
+  }
 
   /**
    * List assigned users for a specific application within a tenant

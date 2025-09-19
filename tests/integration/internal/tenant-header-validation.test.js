@@ -129,8 +129,7 @@ describe('Tenant Header Validation', () => {
       '/internal/api/v1/applications',
       '/internal/api/v1/platform-auth/me',
       '/internal/api/v1/tenants',
-      '/internal/api/v1/users',
-      '/internal/api/v1/tenants/1/users'
+      '/internal/api/v1/tenants/users'
     ];
 
     platformScopedEndpoints.forEach(endpoint => {

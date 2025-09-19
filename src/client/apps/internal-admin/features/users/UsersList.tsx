@@ -78,57 +78,11 @@ export const UsersList: React.FC = () => {
         message: (error as any)?.message,
         status: (error as any)?.status
       })
-      
-      // Fallback data for development
-      setUsers([
-        {
-          id: 1,
-          email: 'admin@clinic.com',
-          firstName: 'João',
-          lastName: 'Silva',
-          name: 'João Silva',
-          tenantId: 1,
-          tenantName: 'Default Clinic',
-          role: 'admin',
-          status: 'active',
-          active: true,
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-15T10:30:00Z',
-          lastLogin: '2024-09-02T14:22:00Z'
-        },
-        {
-          id: 2,
-          email: 'manager@clinic.com',
-          firstName: 'Maria',
-          lastName: 'Santos',
-          name: 'Maria Santos',
-          tenantId: 1,
-          tenantName: 'Default Clinic',
-          role: 'manager',
-          status: 'active',
-          active: true,
-          createdAt: '2024-02-20T14:15:00Z',
-          updatedAt: '2024-02-20T14:15:00Z',
-          lastLogin: '2024-09-01T09:45:00Z'
-        },
-        {
-          id: 3,
-          email: 'user@clinic.com',
-          firstName: 'Carlos',
-          lastName: 'Oliveira',
-          name: 'Carlos Oliveira',
-          tenantId: 1,
-          tenantName: 'Default Clinic',
-          role: 'operations',
-          status: 'inactive',
-          active: false,
-          createdAt: '2024-03-10T09:45:00Z',
-          updatedAt: '2024-03-10T09:45:00Z',
-          lastLogin: '2024-08-15T16:30:00Z'
-        }
-      ])
-      setTotalUsers(3)
-      setTotalPages(1)
+
+      // Show empty state when API fails
+      setUsers([])
+      setTotalUsers(0)
+      setTotalPages(0)
     } finally {
       setLoading(false)
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Button, LinkButton, Alert, Table, Badge, StatusBadge, Skeleton, EmptyState, Input } from '@client/common/ui'
+import { Modal, Button, LinkButton, Alert, Table, Badge, StatusBadge, Skeleton, EmptyState, Input, Select, Tooltip } from '@client/common/ui'
 import { TenantLicense } from '../../licenses/types'
 import { tenantsService } from '../../../../services/tenants'
 import { getRoleBadgeVariant, getAccessBadgeVariant, getAccessBadgeText } from '@client/common/utils/badgeUtils'
@@ -13,6 +13,7 @@ interface User {
   status: 'active' | 'inactive' | 'suspended'
   accessId: number | null
   grantedAt: string | null
+  roleInApp?: 'user' | 'operations' | 'manager' | 'admin' | null
 }
 
 interface UsageInfo {
@@ -43,12 +44,15 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
   const [processingUserId, setProcessingUserId] = useState<number | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [roleChanges, setRoleChanges] = useState<Record<number, string>>({})
+  const [updatingRole, setUpdatingRole] = useState(false)
 
   // Reset state when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       setError(null)
       setSearchTerm('')
+      setRoleChanges({})
       fetchUsers()
     }
   }, [isOpen, license.application?.slug])
@@ -196,6 +200,10 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
         setError('User already has access to this application.')
         // Refresh data to reflect current state
         fetchUsers()
+      } else if (err.response?.data?.details?.reason === 'PRICING_NOT_CONFIGURED') {
+        const userType = err.response.data.details?.userType || 'unknown'
+        const appSlug = err.response.data.details?.applicationSlug || license.application?.slug
+        setError(`No pricing configuration found for ${userType} users on ${appSlug}. Please configure pricing for this user type before granting access.`)
       } else if (err.response?.data?.message) {
         setError(err.response.data.message)
       } else {
@@ -262,8 +270,83 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
     }
   }
 
+  const handleRoleChange = (userId: number, newRole: string) => {
+    setRoleChanges(prev => ({
+      ...prev,
+      [userId]: newRole
+    }))
+  }
+
+  const handleUpdateRole = async () => {
+    if (!license.application?.slug || Object.keys(roleChanges).length === 0) return
+
+    // Block PUT requests for users without access
+    const hasInvalidChanges = Object.keys(roleChanges).some(userIdStr => {
+      const userId = parseInt(userIdStr)
+      const user = users.find(u => u.id === userId)
+      return !user?.granted
+    })
+
+    if (hasInvalidChanges) {
+      console.warn('🚫 [ManageApplicationsModal] Attempted to update role for users without access')
+      return
+    }
+
+    try {
+      setUpdatingRole(true)
+      setError(null)
+
+      console.log('🔄 [ManageApplicationsModal] Updating roles:', roleChanges)
+
+      // Update roles for all changed users
+      for (const [userIdStr, newRole] of Object.entries(roleChanges)) {
+        const userId = parseInt(userIdStr)
+        const user = users.find(u => u.id === userId)
+
+        // Double-check user has access before making API call
+        if (!user?.granted) {
+          console.warn(`🚫 [ManageApplicationsModal] Skipping role update for user ${userId} - no access`)
+          continue
+        }
+
+        await tenantsService.updateUserRoleInApp(
+          tenantId,
+          userId,
+          license.application.slug,
+          newRole as 'user' | 'operations' | 'manager' | 'admin'
+        )
+      }
+
+      console.log('✅ [ManageApplicationsModal] All roles updated successfully')
+
+      // Update local user state
+      setUsers(prev => prev.map(user => {
+        const newRole = roleChanges[user.id]
+        if (newRole && user.granted) {
+          return { ...user, roleInApp: newRole as any }
+        }
+        return user
+      }))
+
+      // Clear role changes
+      setRoleChanges({})
+
+    } catch (err: any) {
+      console.error('❌ [ManageApplicationsModal] Failed to update roles:', err)
+
+      if (err.response?.data?.message) {
+        setError(err.response.data.message)
+      } else {
+        setError('Failed to update user roles. Please try again.')
+      }
+    } finally {
+      setUpdatingRole(false)
+    }
+  }
+
   const handleClose = () => {
     setError(null)
+    setRoleChanges({})
     onClose()
   }
 
@@ -277,12 +360,12 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
   const usersWithAccess = users?.filter(user => user.granted).length || 0
 
   return (
-    <Modal 
-      open={isOpen} 
+    <Modal
+      open={isOpen}
       onClose={handleClose}
       title="Manage Users"
       description={`Grant or revoke access to ${license.application?.name || 'Application'}`}
-      size="lg"
+      size="xl"
     >
       <div className="px-6 py-4">
         {/* Current Usage Summary */}
@@ -367,9 +450,24 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
                         </div>
                       </td>
                       <td>
-                        <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
-                          {user.role}
-                        </Badge>
+                        <div className="w-32">
+                          <Tooltip
+                            content="Grant access to change role"
+                            disabled={user.granted}
+                          >
+                            <Select
+                              value={roleChanges[user.id] || user.roleInApp || user.role}
+                              onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                              disabled={!user.granted || updatingRole || processingUserId !== null}
+                              options={[
+                                { value: 'user', label: 'User' },
+                                { value: 'operations', label: 'Operations' },
+                                { value: 'manager', label: 'Manager' },
+                                { value: 'admin', label: 'Admin' }
+                              ]}
+                            />
+                          </Tooltip>
+                        </div>
                       </td>
                       <td>
                         <StatusBadge status={user.status as 'active' | 'inactive' | 'suspended'} />
@@ -429,15 +527,37 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
             </svg>
             View All Users
           </LinkButton>
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={handleClose}
-            disabled={processingUserId !== null}
-          >
-            Close
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={handleUpdateRole}
+              disabled={
+                Object.keys(roleChanges).length === 0 ||
+                updatingRole ||
+                processingUserId !== null ||
+                // Disable if any role changes are for users without access
+                Object.keys(roleChanges).some(userIdStr => {
+                  const userId = parseInt(userIdStr)
+                  const user = users.find(u => u.id === userId)
+                  return !user?.granted
+                })
+              }
+              isLoading={updatingRole}
+            >
+              Update role
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleClose}
+              disabled={processingUserId !== null || updatingRole}
+            >
+              Close
+            </Button>
+          </div>
         </div>
       </div>
     </Modal>

@@ -9,6 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "",
+        primary: "bg-black text-white hover:bg-gray-800 active:scale-[0.98]",
         destructive: "bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]",
         outline: "border border-gray-200 bg-background hover:bg-gray-50 hover:text-gray-900 active:scale-[0.98]",
         secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 active:scale-[0.98]",
@@ -46,7 +47,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       fontFamily: 'Montserrat, sans-serif',
       height: '32px',
       minHeight: '32px',
-      ...(variant === 'default' && {
+      ...((variant === 'default' || variant === 'primary') && {
         backgroundColor: '#000000',
         color: '#ffffff',
         border: 'none',

@@ -17,6 +17,7 @@ class User {
     this.status = data.status;
     this.userTypeId = data.user_type_id_fk;
     this.platformRole = data.platform_role;
+    this.lastLogin = data.last_login;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
@@ -43,11 +44,11 @@ class User {
     `;
     
     const result = await database.query(query, [id, tenantIdFk]);
-    
+
     if (result.rows.length === 0) {
       throw new UserNotFoundError(`ID: ${id}`);
     }
-    
+
     return new User(result.rows[0]);
   }
 
@@ -294,6 +295,28 @@ class User {
     }
     
     this.passwordHash = newPasswordHash;
+    this.updatedAt = result.rows[0].updated_at;
+    return this;
+  }
+
+  /**
+   * Update last login timestamp (for platform login tracking)
+   */
+  async updateLastLogin() {
+    const query = `
+      UPDATE public.users
+      SET last_login = NOW(), updated_at = NOW()
+      WHERE id = $1
+      RETURNING last_login, updated_at
+    `;
+
+    const result = await database.query(query, [this.id]);
+
+    if (result.rows.length === 0) {
+      throw new UserNotFoundError(`ID: ${this.id}`);
+    }
+
+    this.lastLogin = result.rows[0].last_login;
     this.updatedAt = result.rows[0].updated_at;
     return this;
   }

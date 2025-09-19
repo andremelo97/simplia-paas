@@ -1,9 +1,8 @@
 const database = require('../db/database');
-const { overlaps, normalizeToUTCSeconds, formatDateRange } = require('../utils/datetime');
 
 /**
  * ApplicationPricing Model
- * Manages pricing matrix for applications by user type with versioning support
+ * Manages pricing matrix for applications by user type with simple active/inactive model
  */
 class ApplicationPricing {
   constructor(data = {}) {
@@ -13,8 +12,6 @@ class ApplicationPricing {
     this.price = data.price;
     this.currency = data.currency || 'BRL';
     this.billingCycle = data.billingCycle || data.billing_cycle || 'monthly';
-    this.validFrom = data.validFrom || data.valid_from;
-    this.validTo = data.validTo || data.valid_to || null;
     this.active = data.active !== undefined ? data.active : true;
     this.createdAt = data.createdAt || data.created_at;
     this.updatedAt = data.updatedAt || data.updated_at;
@@ -22,25 +19,21 @@ class ApplicationPricing {
 
   /**
    * Get current active pricing for application and user type
-   * @param {number} applicationId 
-   * @param {number} userTypeId 
-   * @param {Date} at - Date to check pricing at (default: now)
+   * @param {number} applicationId
+   * @param {number} userTypeId
    * @returns {ApplicationPricing|null}
    */
-  static async getCurrentPrice(applicationId, userTypeId, at = new Date()) {
+  static async getCurrentPrice(applicationId, userTypeId) {
     const query = `
       SELECT *
-      FROM application_pricing 
-      WHERE application_id_fk = $1 
+      FROM application_pricing
+      WHERE application_id_fk = $1
         AND user_type_id_fk = $2
         AND active = TRUE
-        AND valid_from <= $3
-        AND (valid_to IS NULL OR valid_to > $3)
-      ORDER BY valid_from DESC
       LIMIT 1
     `;
-    
-    const result = await database.query(query, [applicationId, userTypeId, at]);
+
+    const result = await database.query(query, [applicationId, userTypeId]);
     return result.rows.length > 0 ? new ApplicationPricing(result.rows[0]) : null;
   }
 
@@ -64,30 +57,26 @@ class ApplicationPricing {
 
   /**
    * Get pricing matrix for an application (all user types)
-   * @param {number} applicationId 
-   * @param {boolean} currentOnly - Return only current pricing (default: true)
+   * @param {number} applicationId
+   * @param {boolean} activeOnly - Return only active pricing (default: true)
    * @returns {ApplicationPricing[]}
    */
-  static async getByApplication(applicationId, currentOnly = true) {
+  static async getByApplication(applicationId, activeOnly = true) {
     let query = `
       SELECT ap.*, ut.name as user_type_name, ut.slug as user_type_slug
       FROM application_pricing ap
       JOIN user_types ut ON ut.id = ap.user_type_id_fk
       WHERE ap.application_id_fk = $1
     `;
-    
+
     const params = [applicationId];
-    
-    if (currentOnly) {
-      query += `
-        AND ap.active = TRUE
-        AND ap.valid_from <= NOW()
-        AND (ap.valid_to IS NULL OR ap.valid_to > NOW())
-      `;
+
+    if (activeOnly) {
+      query += ` AND ap.active = TRUE`;
     }
-    
-    query += ` ORDER BY ut.hierarchy_level, ap.valid_from DESC`;
-    
+
+    query += ` ORDER BY ut.hierarchy_level, ap.created_at DESC`;
+
     const result = await database.query(query, params);
     return result.rows.map(row => ({
       id: row.id,
@@ -98,8 +87,6 @@ class ApplicationPricing {
       price: row.price,
       currency: row.currency,
       billingCycle: row.billing_cycle,
-      validFrom: row.valid_from,
-      validTo: row.valid_to,
       active: row.active,
       createdAt: row.created_at,
       updatedAt: row.updated_at
@@ -107,54 +94,42 @@ class ApplicationPricing {
   }
 
   /**
-   * Check for overlapping pricing periods
-   * @param {number} applicationId 
-   * @param {number} userTypeId 
-   * @param {Date} validFrom 
-   * @param {Date|null} validTo 
-   * @param {string} billingCycle 
-   * @param {string} currency 
+   * Check for duplicate pricing entry
+   * @param {number} applicationId
+   * @param {number} userTypeId
+   * @param {string} billingCycle
    * @param {number|null} excludeId - ID to exclude from check (for updates)
-   * @returns {Object|null} Conflict details or null if no overlap
+   * @returns {Object|null} Conflict details or null if no conflict
    */
-  static async checkOverlap(applicationId, userTypeId, validFrom, validTo, billingCycle = 'monthly', currency = 'BRL', excludeId = null) {
-    const validFromNorm = normalizeToUTCSeconds(validFrom);
-    const validToNorm = validTo ? normalizeToUTCSeconds(validTo) : null;
-    
-    // Query for existing pricing that might overlap
+  static async checkDuplicate(applicationId, userTypeId, billingCycle = 'monthly', excludeId = null) {
     let query = `
-      SELECT id, valid_from, valid_to, price, active
-      FROM application_pricing 
-      WHERE application_id_fk = $1 
+      SELECT id, price, active
+      FROM application_pricing
+      WHERE application_id_fk = $1
         AND user_type_id_fk = $2
         AND billing_cycle = $3
-        AND currency = $4
-        AND active = TRUE
     `;
-    
-    const params = [applicationId, userTypeId, billingCycle, currency];
-    
+
+    const params = [applicationId, userTypeId, billingCycle];
+
     if (excludeId) {
       query += ` AND id != $${params.length + 1}`;
       params.push(excludeId);
     }
-    
+
     const result = await database.query(query, params);
-    
-    // Check each existing period for overlap using our utility function
-    for (const existing of result.rows) {
-      if (overlaps(validFromNorm, validToNorm, existing.valid_from, existing.valid_to)) {
-        return {
-          conflict: true,
-          existingRange: formatDateRange(existing.valid_from, existing.valid_to),
-          newRange: formatDateRange(validFromNorm, validToNorm),
-          conflictingId: existing.id,
-          existingPrice: existing.price
-        };
-      }
+
+    if (result.rows.length > 0) {
+      const existing = result.rows[0];
+      return {
+        conflict: true,
+        conflictingId: existing.id,
+        existingPrice: existing.price,
+        existingActive: existing.active
+      };
     }
-    
-    return null; // No overlap found
+
+    return null; // No conflict found
   }
 
   /**
@@ -176,113 +151,54 @@ class ApplicationPricing {
       throw new Error('billingCycle must be monthly or yearly');
     }
 
-    const validFrom = data.validFrom || new Date();
     const billingCycle = data.billingCycle || 'monthly';
     const currency = data.currency || 'BRL';
 
-    // Check for overlapping periods before insertion
-    const overlap = await this.checkOverlap(
-      data.applicationId,
-      data.userTypeId, 
-      validFrom,
-      data.validTo || null,
-      billingCycle,
-      currency
-    );
-    
-    if (overlap) {
-      const error = new Error('Pricing period overlaps with existing pricing');
-      error.code = 'PRICING_OVERLAP';
-      error.status = 422;
-      error.details = {
-        conflict: overlap,
-        businessKey: {
-          applicationId: data.applicationId,
-          userTypeId: data.userTypeId,
-          billingCycle,
-          currency
-        }
-      };
-      throw error;
-    }
+    // Note: Multiple pricing entries are now allowed for the same combination
 
     const query = `
-      INSERT INTO application_pricing 
-        (application_id_fk, user_type_id_fk, price, currency, billing_cycle, valid_from, valid_to, active)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO application_pricing
+        (application_id_fk, user_type_id_fk, price, currency, billing_cycle, active)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
-    
+
     const result = await database.query(query, [
       data.applicationId,
       data.userTypeId,
       data.price,
       currency,
       billingCycle,
-      validFrom,
-      data.validTo || null,
       data.active !== undefined ? data.active : true
     ]);
-    
+
     return new ApplicationPricing(result.rows[0]);
   }
 
   /**
    * Update pricing entry
-   * @param {number} id 
-   * @param {Object} data 
+   * @param {number} id
+   * @param {Object} data
    * @returns {ApplicationPricing|null}
    */
   static async update(id, data) {
-    const allowedFields = ['price', 'currency', 'billingCycle', 'validTo', 'active'];
+    const allowedFields = ['price', 'currency', 'billingCycle', 'active'];
     const updates = [];
     const values = [];
     let paramIndex = 1;
 
-    // Get current record for overlap checking
+    // Get current record
     const currentQuery = `SELECT * FROM application_pricing WHERE id = $1`;
     const currentResult = await database.query(currentQuery, [id]);
-    
+
     if (currentResult.rows.length === 0) {
       throw new Error('Pricing entry not found');
-    }
-    
-    const current = currentResult.rows[0];
-    
-    // If updating validTo, check for overlaps with the new period
-    if (data.validTo !== undefined) {
-      const overlap = await this.checkOverlap(
-        current.application_id_fk,
-        current.user_type_id_fk,
-        current.valid_from,
-        data.validTo,
-        current.billing_cycle,
-        current.currency,
-        id // Exclude current record
-      );
-      
-      if (overlap) {
-        const error = new Error('Updated pricing period overlaps with existing pricing');
-        error.code = 'PRICING_OVERLAP';
-        error.status = 422;
-        error.details = {
-          conflict: overlap,
-          businessKey: {
-            applicationId: current.application_id_fk,
-            userTypeId: current.user_type_id_fk,
-            billingCycle: current.billing_cycle,
-            currency: current.currency
-          }
-        };
-        throw error;
-      }
     }
 
     // Build dynamic update query
     for (const [key, value] of Object.entries(data)) {
-      const dbField = key === 'billingCycle' ? 'billing_cycle' : 
-                      key === 'validTo' ? 'valid_to' : key;
-      
+      const dbField = key === 'billingCycle' ? 'billing_cycle' : key;
+
       if (allowedFields.includes(key) && value !== undefined) {
         if (key === 'price' && value < 0) {
           throw new Error('Price cannot be negative');
@@ -290,7 +206,7 @@ class ApplicationPricing {
         if (key === 'billingCycle' && !['monthly', 'yearly'].includes(value)) {
           throw new Error('billingCycle must be monthly or yearly');
         }
-        
+
         updates.push(`${dbField} = $${paramIndex}`);
         values.push(value);
         paramIndex++;
@@ -305,7 +221,7 @@ class ApplicationPricing {
     values.push(id);
 
     const query = `
-      UPDATE application_pricing 
+      UPDATE application_pricing
       SET ${updates.join(', ')}
       WHERE id = $${paramIndex}
       RETURNING *
@@ -315,50 +231,15 @@ class ApplicationPricing {
     return result.rows.length > 0 ? new ApplicationPricing(result.rows[0]) : null;
   }
 
-  /**
-   * Schedule future pricing change
-   * @param {number} applicationId 
-   * @param {number} userTypeId 
-   * @param {number} newPrice 
-   * @param {Date} validFrom 
-   * @param {Object} options - Additional options
-   * @returns {ApplicationPricing}
-   */
-  static async schedulePrice(applicationId, userTypeId, newPrice, validFrom, options = {}) {
-    if (validFrom <= new Date()) {
-      throw new Error('validFrom must be in the future');
-    }
-
-    // End current pricing at the day before new pricing starts
-    const currentPricing = await this.getCurrentPrice(applicationId, userTypeId);
-    if (currentPricing && !currentPricing.validTo) {
-      const endDate = new Date(validFrom);
-      endDate.setMilliseconds(endDate.getMilliseconds() - 1);
-      
-      await this.update(currentPricing.id, { validTo: endDate });
-    }
-
-    // Create new pricing entry
-    return await this.create({
-      applicationId,
-      userTypeId,
-      price: newPrice,
-      currency: options.currency || 'BRL',
-      billingCycle: options.billingCycle || 'monthly',
-      validFrom,
-      validTo: options.validTo || null
-    });
-  }
 
   /**
    * Get pricing summary for billing calculation
-   * @param {number} tenantId 
-   * @param {Date} forDate - Date to calculate billing for
+   * @param {number} tenantId
    * @returns {Object} Summary with totals by application
    */
-  static async getBillingSummary(tenantId, forDate = new Date()) {
+  static async getBillingSummary(tenantId) {
     const query = `
-      SELECT 
+      SELECT
         a.id as application_id,
         a.name as application_name,
         a.slug as application_slug,
@@ -369,19 +250,17 @@ class ApplicationPricing {
       JOIN applications a ON a.id = uaa.application_id_fk
       JOIN users u ON u.id = uaa.user_id_fk
       LEFT JOIN application_pricing ap ON (
-        ap.application_id_fk = uaa.application_id_fk 
+        ap.application_id_fk = uaa.application_id_fk
         AND ap.user_type_id_fk = COALESCE(uaa.user_type_id_fk_snapshot, u.user_type_id_fk)
-        AND ap.active = TRUE 
-        AND ap.valid_from <= $2
-        AND (ap.valid_to IS NULL OR ap.valid_to > $2)
+        AND ap.active = TRUE
       )
-      WHERE uaa.tenant_id_fk = $1 
+      WHERE uaa.tenant_id_fk = $1
         AND uaa.active = TRUE
       GROUP BY 1,2,3,6
       ORDER BY application_name
     `;
 
-    const result = await database.query(query, [tenantId, forDate]);
+    const result = await database.query(query, [tenantId]);
     return result.rows;
   }
 
@@ -397,8 +276,6 @@ class ApplicationPricing {
       price: parseFloat(this.price) || 0,
       currency: this.currency,
       billingCycle: this.billingCycle,
-      validFrom: this.validFrom,
-      validTo: this.validTo,
       active: this.active,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt

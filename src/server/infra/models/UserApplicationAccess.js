@@ -357,6 +357,48 @@ class UserApplicationAccess {
   }
 
   /**
+   * Update role_in_app for an existing access record
+   * @param {string} newRole - The new role to assign
+   * @returns {UserApplicationAccess}
+   */
+  async updateRoleInApp(newRole) {
+    console.log(`🔄 [UserApplicationAccess.updateRoleInApp] Updating role for access ${this.id} to ${newRole}`);
+
+    const validRoles = ['user', 'operations', 'manager', 'admin'];
+    if (!validRoles.includes(newRole)) {
+      throw new Error(`Invalid role: ${newRole}. Valid roles are: ${validRoles.join(', ')}`);
+    }
+
+    const query = `
+      UPDATE user_application_access
+      SET role_in_app = $1, updated_at = NOW()
+      WHERE id = $2
+      RETURNING *
+    `;
+
+    try {
+      const result = await database.query(query, [newRole, this.id]);
+
+      if (result.rows.length === 0) {
+        throw new UserApplicationAccessNotFoundError(`Access record with ID ${this.id} not found`);
+      }
+
+      const updatedData = result.rows[0];
+
+      // Update current object properties
+      this.roleInApp = updatedData.role_in_app;
+      this.updatedAt = updatedData.updated_at;
+
+      console.log(`✅ [UserApplicationAccess.updateRoleInApp] Role updated successfully to ${newRole}`);
+
+      return this;
+    } catch (error) {
+      console.error('❌ [UserApplicationAccess.updateRoleInApp] Error updating role:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Log access attempt for audit trail
    */
   static async logAccess(logData) {

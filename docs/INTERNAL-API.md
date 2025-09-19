@@ -200,6 +200,10 @@ Retorna métricas agregadas da plataforma para dashboard administrativo.
 
 > **Escopo**: Global (sem tenant context)
 
+### Rate Limiting (Configurável via ENV)
+- **Variáveis**: `PLATFORM_LOGIN_MAX` (default: 10), `PLATFORM_LOGIN_WINDOW_MS` (default: 900000)
+- **Rate Limit**: 10 requests por 15 minutos (padrão)
+
 ### POST `/platform-auth/login`
 Login para equipe Simplia.
 
@@ -214,22 +218,45 @@ Login para equipe Simplia.
 }
 ```
 
-**Resposta**:
+**Resposta de Sucesso**:
 ```json
 {
-  "success": true,
   "meta": {
     "code": "LOGIN_SUCCESS",
-    "message": "Login realizado com sucesso"
+    "message": "Signed in successfully."
   },
   "data": {
     "token": "jwt_token_here",
     "user": {
-      "id": 1,
+      "userId": 1,
       "email": "admin@simplia.com",
       "platformRole": "internal_admin"
-    }
+    },
+    "expiresIn": "24h"
   }
+}
+```
+
+**Efeitos Colaterais**:
+- Atualiza `users.last_login` para o usuário autenticado
+- Cria registro de auditoria em `platform_login_audit` com sucesso
+
+**Códigos de Erro**:
+| Status | Código | Descrição |
+|--------|--------|-----------|
+| 400 | `LOGIN_MISSING_CREDENTIALS` | Email/password ausentes |
+| 401 | `INVALID_CREDENTIALS` | Credenciais inválidas |
+| 403 | `PLATFORM_ROLE_REQUIRED` | Não possui platform_role = 'internal_admin' |
+| 403 | `ACCOUNT_INACTIVE` | Conta inativa/suspensa |
+| 429 | `RATE_LIMITED` | Excedeu limite de tentativas |
+
+**Exemplo de Erro**:
+```json
+{
+  "success": false,
+  "error": "Unauthorized",
+  "message": "Invalid email or password",
+  "meta": { "code": "INVALID_CREDENTIALS" }
 }
 ```
 
@@ -241,6 +268,11 @@ Renovar token JWT.
 
 ### POST `/platform-auth/logout`
 Logout da plataforma.
+
+### Auditoria de Platform Login
+Todos os acessos (sucessos e falhas) são registrados em `platform_login_audit` com:
+- `user_id_fk` (se usuário válido), `email`, `ip_address`, `user_agent`
+- `success` (true/false), `reason` (detalhes da falha), `created_at`
 
 ---
 
@@ -557,10 +589,12 @@ Remove contato (soft delete).
 
 > **Acesso**: Platform Admin apenas
 
-### GET `/tenants/:tenantId/users`
-Usuários de um tenant específico.
+### GET `/tenants/users`
+Lista usuários globalmente com filtro opcional por tenant.
 
-**Parâmetros**: `search`, `status`, `role`, `limit`, `offset`
+**Parâmetros**: `tenantId` (filter), `search`, `status`, `limit`, `offset`
+
+> **Nota**: Substituiu a rota `/tenants/:tenantId/users` para consistência
 
 ### POST `/tenants/:tenantId/users`
 Criar usuário diretamente em um tenant.
@@ -588,6 +622,43 @@ Desativar usuário.
 
 ### POST `/tenants/:tenantId/users/:userId/reset-password`
 Redefinir senha do usuário.
+
+### PUT `/tenants/:tenantId/users/:userId/applications/:appSlug/role`
+Atualizar role do usuário em aplicação específica.
+
+**Tag:** `global`
+**Acesso**: Platform Admin apenas
+
+**Body**:
+```json
+{
+  "roleInApp": "manager"
+}
+```
+
+**roleInApp**: Valores permitidos: `user`, `operations`, `manager`, `admin`
+
+**Response (200)**:
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "ROLE_IN_APP_UPDATED",
+    "message": "User role in application updated successfully"
+  },
+  "data": {
+    "roleInApp": "manager",
+    "userId": 123,
+    "applicationSlug": "tq",
+    "updatedAt": "2025-01-19T10:30:00Z"
+  }
+}
+```
+
+**Errors**:
+- `404 USER_APP_ACCESS_NOT_FOUND`: Usuário não tem acesso à aplicação
+- `422 INVALID_ROLE_IN_APP`: Role inválido
+- `403 FORBIDDEN`: Sem permissão platform admin
 
 ### GET `/users`
 Lista global de usuários com filtro por tenant.
@@ -676,26 +747,6 @@ Aplicações que o usuário tem acesso.
 
 **Acesso**: Manager/Admin
 
-### POST `/users/:userId/apps/grant`
-Conceder acesso a aplicação.
-
-**Acesso**: Admin  
-**Body**:
-```json
-{
-  "applicationSlug": "tq",
-  "roleInApp": "user",
-  "expiresAt": "2024-12-31"
-}
-```
-
-**Features**:
-- ✅ Pricing snapshots (preço capturado no momento da concessão)
-- ✅ Seat management (controle de limites por tenant)
-- ✅ 5-layer validation (enterprise authorization flow)
-
-### DELETE `/users/:userId/apps/revoke`
-Revogar acesso à aplicação.
 
 ---
 

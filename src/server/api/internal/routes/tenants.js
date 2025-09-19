@@ -17,6 +17,140 @@ router.use(requireAuth, requirePlatformRole('internal_admin'));
 
 /**
  * @openapi
+ * /tenants/users:
+ *   get:
+ *     tags: [Tenants]
+ *     summary: List users globally with tenant filter
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get all users across all tenants with optional tenant filtering (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: tenantId
+ *         schema:
+ *           type: integer
+ *         description: Filter by specific tenant ID
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by name or email
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive, suspended]
+ *         description: Filter by user status
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 50
+ *         description: Number of users per page
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *         description: Number of users to skip
+ *     responses:
+ *       200:
+ *         description: Users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: integer }
+ *                           email: { type: string }
+ *                           firstName: { type: string }
+ *                           lastName: { type: string }
+ *                           name: { type: string }
+ *                           role: { type: string }
+ *                           status: { type: string }
+ *                           tenantIdFk: { type: integer }
+ *                           tenantName: { type: string }
+ *                           lastLogin: { type: string, format: date-time, nullable: true }
+ *                           createdAt: { type: string }
+ *                           updatedAt: { type: string }
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         total: { type: integer }
+ *                         limit: { type: integer }
+ *                         offset: { type: integer }
+ *                         hasMore: { type: boolean }
+ *       403:
+ *         description: Insufficient permissions (internal_admin required)
+ */
+router.get('/users', async (req, res) => {
+  try {
+    const { tenantId, search, status, limit = 50, offset = 0 } = req.query;
+
+    const options = {
+      tenantId: tenantId ? parseInt(tenantId) : undefined,
+      search,
+      status,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    };
+
+    // Get users with the specified options
+    const users = await User.findAll(options);
+
+    // Get total count for pagination (simplified for now)
+    const totalUsers = users.length; // This should be improved to get actual total count
+
+    res.json({
+      success: true,
+      data: {
+        users: users.map(user => {
+          const userData = user.toJSON();
+          // Ensure consistent field mapping for frontend
+          return {
+            ...userData,
+            tenantId: userData.tenantIdFk,
+            tenantName: userData.tenantName || `Tenant ${userData.tenantIdFk}`,
+            name: userData.name || `${userData.firstName || ''} ${userData.lastName || ''}`.trim()
+          };
+        }),
+        pagination: {
+          total: totalUsers,
+          limit: options.limit,
+          offset: options.offset,
+          hasMore: false // Will be calculated properly when we implement real count
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get all users error:', error);
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to get users'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
  * /tenants:
  *   get:
  *     tags: [Tenants]
@@ -2072,13 +2206,16 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
  *                     userTypeId: { type: integer }
  */
 router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) => {
+  const tenantId = parseInt(req.params.id);
+  const userId = parseInt(req.params.userId);
+  const { appSlug } = req.params;
+
+  let user; // Declare user outside try block for error handler access
+
   try {
-    const tenantId = parseInt(req.params.id);
-    const userId = parseInt(req.params.userId);
-    const { appSlug } = req.params;
-    
+
     console.log(`🔄 [Platform] Granting access: ${appSlug} to user ${userId} in tenant ${tenantId}`);
-    
+
     // Validate tenant exists
     const tenant = await Tenant.findById(tenantId);
     if (!tenant) {
@@ -2087,9 +2224,9 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
         message: 'Tenant not found'
       });
     }
-    
+
     // Validate user exists and belongs to tenant
-    const user = await User.findById(userId, tenantId);
+    user = await User.findById(userId, tenantId);
     if (!user || user.tenantIdFk !== tenantId) {
       return res.status(422).json({
         error: 'Validation Error',
@@ -2217,12 +2354,12 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
     
     if (error.code === 'PRICING_NOT_CONFIGURED') {
       return res.status(422).json({
-        error: 'Pricing Not Configured', 
+        error: 'Pricing Not Configured',
         message: error.message,
         details: {
           reason: 'PRICING_NOT_CONFIGURED',
-          applicationSlug: application.slug,
-          userType: user.role || 'unknown'
+          applicationSlug: appSlug,
+          userType: user?.role || 'unknown'
         }
       });
     }
@@ -2298,10 +2435,11 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
  *         description: Access not found
  */
 router.post('/:id/users/:userId/applications/:appSlug/revoke', async (req, res) => {
+  const tenantId = parseInt(req.params.id);
+  const userId = parseInt(req.params.userId);
+  const { appSlug } = req.params;
+
   try {
-    const tenantId = parseInt(req.params.id);
-    const userId = parseInt(req.params.userId);
-    const { appSlug } = req.params;
     
     console.log(`🔄 [Platform] Revoking access: ${appSlug} from user ${userId} in tenant ${tenantId}`);
     
@@ -2501,7 +2639,7 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
 
     // Get all users with access status details
     const query = `
-      SELECT 
+      SELECT
         u.id,
         CONCAT(u.first_name, ' ', u.last_name) as name,
         u.email,
@@ -2509,12 +2647,13 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
         u.status,
         uaa.id as access_id,
         uaa.granted_at,
+        uaa.role_in_app,
         COALESCE(uaa.active, false) as granted
       FROM users u
-      LEFT JOIN user_application_access uaa ON u.id = uaa.user_id_fk 
-        AND uaa.application_id_fk = $2 
+      LEFT JOIN user_application_access uaa ON u.id = uaa.user_id_fk
+        AND uaa.application_id_fk = $2
         AND uaa.tenant_id_fk = $1
-      WHERE u.tenant_id_fk = $1 
+      WHERE u.tenant_id_fk = $1
         AND u.active = true
       ORDER BY uaa.granted_at DESC NULLS LAST, u.created_at DESC
       LIMIT $3 OFFSET $4
@@ -2556,7 +2695,8 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
       status: user.status,
       granted: user.granted,
       accessId: user.access_id,
-      grantedAt: user.granted_at
+      grantedAt: user.granted_at,
+      roleInApp: user.role_in_app // Application-specific role
     }));
 
     const total = parseInt(countResult.rows[0].total);
@@ -2749,6 +2889,820 @@ router.put('/:id/users/:userId/applications/:appSlug/reactivate', async (req, re
   }
 });
 
+/**
+ * @openapi
+ * /tenants/{id}/users/{userId}/applications/{appSlug}/role:
+ *   put:
+ *     tags: [Licenses]
+ *     summary: Update user role in application (Platform Admin)
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update the role_in_app field for a specific user in a specific application.
+ *       Only updates the application-specific role, does not affect the user's general role.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *       - in: path
+ *         name: appSlug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application slug
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - roleInApp
+ *             properties:
+ *               roleInApp:
+ *                 type: string
+ *                 enum: [user, operations, manager, admin]
+ *                 description: Role for user in this specific application
+ *     responses:
+ *       200:
+ *         description: Role updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: "ROLE_IN_APP_UPDATED" }
+ *                     message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     roleInApp: { type: string }
+ *                     userId: { type: integer }
+ *                     applicationSlug: { type: string }
+ *                     updatedAt: { type: string, format: date-time }
+ *       404:
+ *         description: User application access not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "USER_APP_ACCESS_NOT_FOUND" }
+ *                 message: { type: string }
+ *       422:
+ *         description: Invalid role specified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error: { type: string, example: "INVALID_ROLE_IN_APP" }
+ *                 message: { type: string }
+ *                 details:
+ *                   type: object
+ *                   properties:
+ *                     reason: { type: string }
+ *                     providedRole: { type: string }
+ *                     validRoles: { type: array, items: { type: string } }
+ *       403:
+ *         description: Insufficient permissions (internal_admin required)
+ */
+router.put('/:id/users/:userId/applications/:appSlug/role', async (req, res) => {
+  const tenantId = parseInt(req.params.id);
+  const userId = parseInt(req.params.userId);
+  const { appSlug } = req.params;
+  const { roleInApp } = req.body;
 
+  try {
+    // Validate role
+    const validRoles = ['user', 'operations', 'manager', 'admin'];
+    if (!roleInApp || !validRoles.includes(roleInApp)) {
+      return res.status(422).json({
+        error: 'INVALID_ROLE_IN_APP',
+        message: 'Invalid role specified for application access',
+        details: {
+          reason: 'INVALID_ROLE',
+          providedRole: roleInApp,
+          validRoles
+        }
+      });
+    }
+
+    await database.query('BEGIN');
+
+    try {
+      // Verify tenant exists
+      const tenant = await Tenant.findById(tenantId);
+      if (!tenant) {
+        await database.query('ROLLBACK');
+        return res.status(404).json({
+          error: 'TENANT_NOT_FOUND',
+          message: `Tenant with ID ${tenantId} not found`
+        });
+      }
+
+      // Verify user exists and belongs to tenant
+      const user = await User.findById(userId);
+      if (!user || user.tenantIdFk !== tenantId) {
+        await database.query('ROLLBACK');
+        return res.status(404).json({
+          error: 'USER_NOT_FOUND',
+          message: `User with ID ${userId} not found in tenant ${tenantId}`
+        });
+      }
+
+      // Verify application exists
+      const application = await Application.findBySlug(appSlug);
+      if (!application) {
+        await database.query('ROLLBACK');
+        return res.status(404).json({
+          error: 'APPLICATION_NOT_FOUND',
+          message: `Application with slug '${appSlug}' not found`
+        });
+      }
+
+      // Find existing user application access
+      const access = await UserApplicationAccess.findByUserAndApp(userId, application.id, tenantId);
+      if (!access) {
+        await database.query('ROLLBACK');
+        return res.status(404).json({
+          error: 'USER_APP_ACCESS_NOT_FOUND',
+          message: `User ${userId} does not have access to application ${appSlug} in tenant ${tenantId}`
+        });
+      }
+
+      // Update the role_in_app field
+      const updatedAccess = await access.updateRoleInApp(roleInApp);
+
+      await database.query('COMMIT');
+
+      console.log(`✅ [Platform] Role updated: user ${userId} role in ${appSlug} changed to ${roleInApp}`);
+
+      res.json({
+        success: true,
+        meta: {
+          code: 'ROLE_IN_APP_UPDATED',
+          message: 'User role in application updated successfully'
+        },
+        data: {
+          roleInApp: updatedAccess.roleInApp,
+          userId,
+          applicationSlug: appSlug,
+          updatedAt: updatedAccess.updatedAt
+        }
+      });
+
+    } catch (innerError) {
+      await database.query('ROLLBACK');
+      throw innerError;
+    }
+
+  } catch (error) {
+    console.error('❌ [Platform] Error updating role in app:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to update user role in application'
+    });
+  }
+});
+
+// =============================================================================
+// TENANT-SCOPED USER MANAGEMENT ROUTES
+// =============================================================================
+// These routes are mounted under /tenants prefix in app.js
+
+const bcrypt = require('bcrypt');
+
+/**
+ * @openapi
+ * /tenants/{tenantId}/users:
+ *   post:
+ *     tags: [Users]
+ *     summary: Create user in specific tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Create a new user directly assigned to a specific tenant (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID (numeric)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password, firstName, lastName]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: password123
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Doe
+ *               role:
+ *                 type: string
+ *                 enum: [operations, manager, admin]
+ *                 default: operations
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, suspended]
+ *                 default: active
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: USER_CREATED }
+ *                     message: { type: string, example: User created successfully }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id: { type: integer }
+ *                         email: { type: string }
+ *                         firstName: { type: string }
+ *                         lastName: { type: string }
+ *                         name: { type: string }
+ *                         role: { type: string }
+ *                         status: { type: string }
+ *                         tenantIdFk: { type: integer }
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Insufficient permissions
+ *       409:
+ *         description: User already exists
+ */
+router.post('/:tenantId/users', async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const { email, password, firstName, lastName, role = 'operations', status = 'active' } = req.body;
+
+    // Validation
+    if (!email || !password || !firstName || !lastName) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Email, password, firstName, and lastName are required'
+        }
+      });
+    }
+
+    if (!['operations', 'manager', 'admin'].includes(role)) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Role must be one of: operations, manager, admin'
+        }
+      });
+    }
+
+    // Hash password
+    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Get user type ID for the role
+    const userTypeQuery = `SELECT id FROM user_types WHERE slug = $1`;
+    const userTypeResult = await database.query(userTypeQuery, [role]);
+
+    if (userTypeResult.rows.length === 0) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Invalid role specified'
+        }
+      });
+    }
+
+    const userTypeId = userTypeResult.rows[0].id;
+
+    const userData = {
+      tenantIdFk: parseInt(tenantId),
+      email,
+      passwordHash,
+      firstName,
+      lastName,
+      role,
+      status,
+      userTypeId
+    };
+
+    const user = await User.create(userData);
+
+    res.status(201).json({
+      success: true,
+      meta: {
+        code: 'USER_CREATED',
+        message: 'User created successfully'
+      },
+      data: {
+        user: user.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Create tenant user error:', error);
+
+    if (error.name === 'DuplicateUserError') {
+      return res.status(409).json({
+        error: {
+          code: 409,
+          message: error.message
+        }
+      });
+    }
+
+    if (error.message.includes('validation') || error.message.includes('Invalid')) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: error.message
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to create user'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{tenantId}/users/{userId}:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get user in specific tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Get a specific user by ID within a tenant context (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID (numeric)
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: integer }
+ *                     email: { type: string }
+ *                     firstName: { type: string }
+ *                     lastName: { type: string }
+ *                     name: { type: string }
+ *                     role: { type: string }
+ *                     status: { type: string }
+ *                     tenantIdFk: { type: integer }
+ *                     createdAt: { type: string }
+ *                     updatedAt: { type: string }
+ *                     lastLogin: { type: string }
+ *       403:
+ *         description: Insufficient permissions (internal_admin required)
+ *       404:
+ *         description: User not found in tenant
+ */
+router.get('/:tenantId/users/:userId', async (req, res) => {
+  console.log('🎯 [TENANT-USER] Route matched! Full request info:', {
+    method: req.method,
+    path: req.path,
+    params: req.params,
+    query: req.query,
+    baseUrl: req.baseUrl,
+    originalUrl: req.originalUrl
+  });
+
+  try {
+    const { tenantId, userId } = req.params;
+
+    console.log('🔍 [TENANT-USER] GET endpoint called:', { tenantId: parseInt(tenantId), userId: parseInt(userId) });
+
+    // Find user by ID and tenant
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+
+    res.json({
+      success: true,
+      data: user.toJSON()
+    });
+  } catch (error) {
+    console.error('Get tenant user error:', error);
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User not found in specified tenant'
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to get user'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{tenantId}/users/{userId}:
+ *   put:
+ *     tags: [Users]
+ *     summary: Update user in specific tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Update user details within a specific tenant context (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID (numeric)
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName:
+ *                 type: string
+ *                 example: John
+ *               lastName:
+ *                 type: string
+ *                 example: Smith
+ *               role:
+ *                 type: string
+ *                 enum: [operations, manager, admin]
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, suspended]
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: USER_UPDATED }
+ *                     message: { type: string, example: User updated successfully }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user: { type: object }
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: User not found in tenant
+ */
+router.put('/:tenantId/users/:userId', async (req, res) => {
+  try {
+    const { tenantId, userId } = req.params;
+    const updates = req.body;
+
+    // Find user by ID and tenant
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+
+    // Update user
+    await user.update(updates);
+
+    res.json({
+      success: true,
+      meta: {
+        code: 'USER_UPDATED',
+        message: 'User updated successfully'
+      },
+      data: {
+        user: user.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Update tenant user error:', error);
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User not found in specified tenant'
+        }
+      });
+    }
+
+    if (error.message.includes('validation') || error.message.includes('Invalid')) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: error.message
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to update user'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{tenantId}/users/{userId}:
+ *   delete:
+ *     tags: [Users]
+ *     summary: Deactivate user in specific tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Soft delete (deactivate) a user within a specific tenant context (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID (numeric)
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     responses:
+ *       200:
+ *         description: User deactivated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: USER_DEACTIVATED }
+ *                     message: { type: string, example: User deactivated successfully }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user: { type: object }
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: User not found in tenant
+ */
+router.delete('/:tenantId/users/:userId', async (req, res) => {
+  try {
+    const { tenantId, userId } = req.params;
+
+    // Find user by ID and tenant
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+
+    // Soft delete user
+    await user.update({ status: 'inactive' });
+
+    res.json({
+      success: true,
+      meta: {
+        code: 'USER_DEACTIVATED',
+        message: 'User deactivated successfully'
+      },
+      data: {
+        user: user.toJSON()
+      }
+    });
+  } catch (error) {
+    console.error('Delete tenant user error:', error);
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User not found in specified tenant'
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to deactivate user'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tenants/{tenantId}/users/{userId}/reset-password:
+ *   post:
+ *     tags: [Users]
+ *     summary: Reset user password in specific tenant
+ *     description: |
+ *       **Scope:** Platform (Global)
+ *
+ *       Reset a user's password within a specific tenant context (internal admin only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tenantId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Tenant ID (numeric)
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [password]
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: newPassword123
+ *                 description: New password for the user
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: PASSWORD_RESET }
+ *                     message: { type: string, example: Password reset successfully }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId: { type: integer }
+ *                     resetBy: { type: string }
+ *                     resetAt: { type: string }
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: User not found in tenant
+ */
+router.post('/:tenantId/users/:userId/reset-password', async (req, res) => {
+  try {
+    const { tenantId, userId } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Password is required'
+        }
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Password must be at least 6 characters long'
+        }
+      });
+    }
+
+    // Find user by ID and tenant
+    const user = await User.findById(parseInt(userId), parseInt(tenantId));
+
+    // Hash new password
+    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
+    // Update user password
+    await user.update({ passwordHash });
+
+    res.json({
+      success: true,
+      meta: {
+        code: 'PASSWORD_RESET',
+        message: 'Password reset successfully'
+      },
+      data: {
+        userId: parseInt(userId),
+        resetBy: req.user?.email || 'admin',
+        resetAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Reset tenant user password error:', error);
+
+    if (error.name === 'UserNotFoundError') {
+      return res.status(404).json({
+        error: {
+          code: 404,
+          message: 'User not found in specified tenant'
+        }
+      });
+    }
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to reset password'
+      }
+    });
+  }
+});
 
 module.exports = router;
+

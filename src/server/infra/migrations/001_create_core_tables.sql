@@ -218,7 +218,7 @@ COMMENT ON COLUMN tenant_contacts.is_primary IS 'Whether this is the primary con
 -- APPLICATION PRICING MATRIX
 -- =============================================
 
--- Application pricing matrix (App × UserType with versioning)
+-- Application pricing matrix (App × UserType - simple active/inactive model)
 CREATE TABLE IF NOT EXISTS application_pricing (
   id BIGSERIAL PRIMARY KEY,
   application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
@@ -226,17 +226,13 @@ CREATE TABLE IF NOT EXISTS application_pricing (
   price NUMERIC(10,2) NOT NULL CHECK (price >= 0),
   currency CHAR(3) NOT NULL DEFAULT 'BRL',
   billing_cycle TEXT NOT NULL CHECK (billing_cycle IN ('monthly','yearly')) DEFAULT 'monthly',
-  valid_from TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  valid_to TIMESTAMPTZ NULL,
   active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE (application_id_fk, user_type_id_fk, valid_from)
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-COMMENT ON TABLE application_pricing IS 'Pricing matrix for App × UserType with versioning support';
-COMMENT ON COLUMN application_pricing.valid_from IS 'When this price becomes effective';
-COMMENT ON COLUMN application_pricing.valid_to IS 'When this price expires (NULL = indefinite)';
+COMMENT ON TABLE application_pricing IS 'Pricing matrix for App × UserType - allows multiple pricing entries';
+COMMENT ON COLUMN application_pricing.active IS 'Whether this pricing entry is currently active (manual control)';
 COMMENT ON COLUMN application_pricing.billing_cycle IS 'monthly or yearly billing cycle';
 
 -- =============================================
@@ -271,6 +267,28 @@ COMMENT ON VIEW v_tenant_app_seats_by_type IS 'Aggregates active seats by tenant
 
 -- Note: Additional tenant consistency triggers will be added in a future migration
 -- For now, application-level validation ensures data integrity
+
+-- =============================================
+-- PLATFORM LOGIN AUDIT TABLE (Global scope)
+-- =============================================
+
+-- Global audit table for platform admin login attempts
+-- Used by internal admin authentication system for security monitoring
+CREATE TABLE IF NOT EXISTS platform_login_audit (
+  id BIGSERIAL PRIMARY KEY,
+  user_id_fk INTEGER REFERENCES users(id), -- NULLable - failed logins may not have valid user
+  email VARCHAR(255) NOT NULL, -- Always capture attempted email
+  ip_address INET, -- Capture client IP for security analysis
+  user_agent TEXT, -- Browser/client identification
+  success BOOLEAN NOT NULL DEFAULT FALSE, -- Login success/failure flag
+  reason TEXT, -- Error reason for failed attempts (e.g., 'invalid_password', 'platform_role_required')
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index for efficient queries by email and time-based lookups
+CREATE INDEX IF NOT EXISTS idx_platform_login_audit_email_created ON platform_login_audit(email, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_platform_login_audit_success_created ON platform_login_audit(success, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_platform_login_audit_user_created ON platform_login_audit(user_id_fk, created_at DESC) WHERE user_id_fk IS NOT NULL;
 
 -- =============================================
 -- POSTGRESQL TRIGGERS FOR UPDATED_AT (Manual updates for now)

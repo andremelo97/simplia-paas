@@ -103,8 +103,8 @@ export const Header: React.FC = () => {
       onLogout={handleLogout}
       getBreadcrumbs={getBreadcrumbs}
       getDisplayRole={getDisplayRole}
-      showSearch={true}
-      showNotifications={true}
+      showSearch={false}
+      showNotifications={false}
     />
   )
 }

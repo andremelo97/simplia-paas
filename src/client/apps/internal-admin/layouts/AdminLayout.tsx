@@ -13,11 +13,11 @@ export const AdminLayout: React.FC = () => {
     <div className="h-screen bg-gray-50 flex overflow-hidden">
       {/* Sidebar */}
       <Sidebar />
-      
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        
+
         <main className="flex-1 overflow-y-auto overflow-x-visible">
           <div className="p-6">
             <motion.div
@@ -30,7 +30,7 @@ export const AdminLayout: React.FC = () => {
           </div>
         </main>
       </div>
-      
+
       {/* Global Feedback Host */}
       <FeedbackHost />
     </div>

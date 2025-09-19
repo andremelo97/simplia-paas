@@ -3,7 +3,17 @@
     "allow": [
       "Bash(for file in applications audit auth entitlements me metrics platform-auth tenants tenant-users users)",
       "Bash(do echo \"=== $file.js ===\")",
-      "Bash(xargs basename:*)"
+      "Bash(xargs basename:*)",
+      "Bash(npm run:*)",
+      "Bash(node:*)",
+      "Bash(npm test)",
+      "Bash(timeout:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd //c:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(npx vite:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

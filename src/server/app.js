@@ -12,7 +12,6 @@ const { requireTranscriptionQuoteAccess } = require('./infra/middleware/appAcces
 const authRoutes = require('./api/internal/routes/auth');
 const platformAuthRoutes = require('./api/internal/routes/platform-auth');
 const userRoutes = require('./api/internal/routes/users');
-const tenantUsersRoutes = require('./api/internal/routes/tenant-users');
 const applicationsRoutes = require('./api/internal/routes/applications');
 const entitlementsRoutes = require('./api/internal/routes/entitlements');
 const tenantsRoutes = require('./api/internal/routes/tenants');
@@ -97,9 +96,6 @@ internalRouter.use('/applications',
 );
 
 internalRouter.use('/tenants', tenantsRoutes);
-
-// Tenant-scoped user routes (internal admin only - no tenant middleware needed, uses path param)
-internalRouter.use('/', tenantUsersRoutes);
 
 // Audit routes (platform-scoped, for internal admins only)
 internalRouter.use('/audit', auditRoutes);

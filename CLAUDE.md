@@ -60,7 +60,7 @@ npm run db:drop:test    # Drop test database completely
 ```
 
 ## Multi-App Architecture
-- **Internal-Admin** (`/internal/api/v1`): Platform administration (tenants, users, apps, pricing)
+- **Internal-Admin** (`/internal/api/v1`): Platform administration (tenants, users, apps, pricing) - **Global scope only**
 - **Hub App** (`/internal/api/v1/me`): Self-service portal for end users to access their apps
 - **Product Apps**: TQ, CRM, Automation clients (future development)
 
@@ -70,7 +70,7 @@ npm run db:drop:test    # Drop test database completely
 
 ## Regras para Multi-Tenancy no Desenvolvimento
 - **Não** mover `users`/`user_application_access` para schemas de tenant.
-- internal-admin = **Global**: não aplicar `search_path` (usa apenas `public`).
+- **Internal-Admin = Global**: `/platform-auth/*` e outras rotas de admin NÃO aplicam `search_path` (usa apenas `public`).
 - Hub/Apps = **Platform-scoped**: /me routes são platform-scoped, NÃO aplicar search_path.
 - Product routes = **Tenant-Scoped**: aplicar `SET LOCAL search_path TO tenant_<slug>, public`.
 - Prefixe `public.` quando quiser deixar claro que é core.
@@ -85,8 +85,8 @@ npm run db:drop:test    # Drop test database completely
 
 ## API Patterns
 ```javascript
-// Always use numeric IDs in routes
-GET /internal/api/v1/tenants/:tenantId/users
+// Always use numeric IDs in routes and filters
+GET /internal/api/v1/tenants/users?tenantId=123
 
 // JWT contains numeric tenant ID only
 {userId: 123, tenantId: 456, role: 'admin'}
@@ -140,7 +140,7 @@ async function withTenant(tenantSchema, fn) {
 ```
 
 ## Development Best Practices
-- **Lint & Type Check**: Run `npm run lint` and `npm run typecheck` before commits (check README for exact commands)
+- **Type Check**: Frontend uses TypeScript - check for errors with `npx tsc --noEmit` in `src/client/`
 - **Test First**: Always run `npm test` before making significant changes
 - **Database First**: Create migrations before changing models or adding features
 - **Numeric IDs Only**: ALL IDs must be numeric - no string IDs anywhere in the system

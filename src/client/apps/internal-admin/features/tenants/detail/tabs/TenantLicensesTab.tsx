@@ -19,6 +19,7 @@ export const TenantLicensesTab: React.FC = () => {
   const [selectedLicenseForUsers, setSelectedLicenseForUsers] = useState<TenantLicense | null>(null)
   const [isManageUsersModalOpen, setIsManageUsersModalOpen] = useState(false)
   const [applications, setApplications] = useState<Application[]>([])
+  const [refreshKey, setRefreshKey] = useState(0)
   const { tenantId } = useParams<{ tenantId: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -167,12 +168,15 @@ export const TenantLicensesTab: React.FC = () => {
 
   const handleUsersUpdated = (updatedLicense: TenantLicense) => {
     // Update the license in the list
-    setLicenses(prev => prev.map(license => 
+    setLicenses(prev => prev.map(license =>
       license.id === updatedLicense.id ? updatedLicense : license
     ))
-    
-    // Refresh data to get latest state
+
+    // Refresh data to get latest state including updated user roles
     fetchLicenses()
+
+    // Force refresh of the specific card by updating key
+    setRefreshKey(prev => prev + 1)
   }
 
   const handleViewPricing = (license: TenantLicense) => {
@@ -287,7 +291,7 @@ export const TenantLicensesTab: React.FC = () => {
           <div className="space-y-6">
             {licenses.map((license) => (
               <TenantLicenseCard
-                key={license.id}
+                key={`${license.id}-${refreshKey}`}
                 license={license}
                 tenantId={numericTenantId!}
                 onAdjustSeats={handleAdjustSeats}

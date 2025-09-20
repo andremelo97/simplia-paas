@@ -874,21 +874,7 @@ Licenças do tenant.
 ### GET `/entitlements/:applicationSlug`
 Detalhes de licença específica.
 
-### POST `/entitlements/:applicationSlug/activate`
-Ativar licença para aplicação.
-
-**Acesso**: Admin  
-**Body**:
-```json
-{
-  "userLimit": 100,
-  "expiryDate": "2024-12-31",
-  "status": "active"
-}
-```
-
-### PUT `/entitlements/:applicationSlug/adjust`
-Ajustar configurações da licença.
+**Nota**: As operações de ativação e ajuste de licenças são feitas através das rotas global-scoped em `/tenants/:tenantId/applications/:slug/activate` e `/tenants/:tenantId/applications/:slug/adjust`.
 
 ---
 

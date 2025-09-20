@@ -3017,8 +3017,8 @@ router.put('/:id/users/:userId/applications/:appSlug/role', async (req, res) => 
       }
 
       // Verify user exists and belongs to tenant
-      const user = await User.findById(userId);
-      if (!user || user.tenantIdFk !== tenantId) {
+      const user = await User.findById(userId, tenantId);
+      if (!user) {
         await database.query('ROLLBACK');
         return res.status(404).json({
           error: 'USER_NOT_FOUND',

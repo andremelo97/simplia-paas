@@ -202,8 +202,8 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
                       <td className="font-medium">{user.name}</td>
                       <td className="text-gray-600">{user.email}</td>
                       <td>
-                        <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
-                          {user.role}
+                        <Badge variant={getRoleBadgeVariant(user.roleInApp || user.role)} className="capitalize">
+                          {user.roleInApp || user.role}
                         </Badge>
                       </td>
                       <td>

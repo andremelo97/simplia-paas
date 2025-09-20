@@ -460,7 +460,6 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
                               onChange={(e) => handleRoleChange(user.id, e.target.value)}
                               disabled={!user.granted || updatingRole || processingUserId !== null}
                               options={[
-                                { value: 'user', label: 'User' },
                                 { value: 'operations', label: 'Operations' },
                                 { value: 'manager', label: 'Manager' },
                                 { value: 'admin', label: 'Admin' }

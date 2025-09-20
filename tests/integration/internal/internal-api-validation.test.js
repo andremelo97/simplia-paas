@@ -321,26 +321,24 @@ describe('Internal API Validation', () => {
 
     test('should activate license even with edge case data', async () => {
       const response = await request(app)
-        .post(`${INTERNAL_API}/entitlements/tq/activate`)
+        .post(`${INTERNAL_API}/tenants/${testTenant.id}/applications/tq/activate`)
         .set('Authorization', `Bearer ${internalAdminToken}`)
-        .set('x-tenant-id', 'test_clinic')
         .send({
           userLimit: -1, // Edge case: negative limit
           status: 'invalid_status' // Edge case: non-standard status
         })
         .expect(201);
-      
+
       expect(response.body).toHaveProperty('success', true);
     });
 
     test('should return 400 when trying to adjust license with no fields', async () => {
       const response = await request(app)
-        .put(`${INTERNAL_API}/entitlements/tq/adjust`)
+        .put(`${INTERNAL_API}/tenants/${testTenant.id}/applications/tq/adjust`)
         .set('Authorization', `Bearer ${internalAdminToken}`)
-        .set('x-tenant-id', 'test_clinic')
         .send({}) // No fields to update
         .expect(400);
-      
+
       expect(response.body).toHaveProperty('error');
       expect(response.body.error.message).toContain('At least one field must be provided');
     });

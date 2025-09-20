@@ -91,9 +91,12 @@ simplia-paas/
 │   │   │   │   │   ├── Header.tsx     # Header com logout e tenant info
 │   │   │   │   │   ├── Layout.tsx     # Layout principal do Hub
 │   │   │   │   │   └── Sidebar.tsx    # Sidebar de navegação do Hub
+│   │   │   │   ├── 📁 features/       # Funcionalidades específicas do Hub
+│   │   │   │   │   └── 📁 apps/       # Gestão de aplicações do usuário
 │   │   │   │   ├── 📁 pages/          # Páginas do Hub
 │   │   │   │   │   ├── Home.tsx       # Home com apps disponíveis
 │   │   │   │   │   └── Login.tsx      # Login com lookup de tenant
+│   │   │   │   ├── 📁 providers/      # Providers React do Hub
 │   │   │   │   ├── 📁 services/       # Cliente para /internal/api/v1/me
 │   │   │   │   │   └── hub.ts         # Serviço de apps do usuário
 │   │   │   │   ├── 📁 store/          # Estado específico do Hub
@@ -131,6 +134,7 @@ simplia-paas/
 │   │   │   │   ├── FormSection.tsx    # Seção de formulário com botão add
 │   │   │   │   ├── FieldError.tsx     # Display de erro acessível
 │   │   │   │   ├── SelectCountry.tsx  # Seletor de país ISO-2
+│   │   │   │   ├── Tooltip.tsx        # **NOVO**: Componente de tooltip com suporte a disabled state
 │   │   │   │   └── index.ts           # Re-exports de componentes
 │   │   │   │
 │   │   │   ├── 📁 feedback/           # Sistema AppFeedback (novo)
@@ -140,12 +144,16 @@ simplia-paas/
 │   │   │   │   ├── FeedbackHost.tsx   # Componente global de feedback
 │   │   │   │   └── index.ts           # Re-exports do domínio
 │   │   │   │
+│   │   │   ├── 📁 auth/               # Utilitários de autenticação compartilhados
+│   │   │   │   └── tenantResolution.ts # Resolução de tenant para clientes
 │   │   │   ├── 📁 components/         # Componentes de negócio compartilhados
+│   │   │   │   └── 📁 Navigation/     # Componentes de navegação
 │   │   │   ├── 📁 hooks/              # React hooks compartilhados
 │   │   │   │   ├── use-toast.tsx      # Hook de toast
 │   │   │   │   └── useRepeater.ts     # Hook genérico para listas (add/remove/primary)
 │   │   │   ├── 📁 utils/              # Funções utilitárias
-│   │   │   │   └── cn.ts              # Utility para className
+│   │   │   │   ├── cn.ts              # Utility para className
+│   │   │   │   └── badgeUtils.ts      # Utilitários para badges e status
 │   │   │   └── 📁 constants/          # Constantes e configurações
 │   │   │
 │   │   ├── 📁 config/
@@ -161,20 +169,29 @@ simplia-paas/
 │   │
 │   ├── 📁 server/                     # Backend Express.js + JavaScript
 │   │   ├── 📁 api/                    # Camada de API organizada por domínio
-│   │   │   └── 📁 internal/           # API interna administrativa
-│   │   │       └── 📁 routes/         # Routes da API interna
-│   │   │           ├── auth.js        # Autenticação e gestão de usuários
-│   │   │           ├── users.js       # CRUD de usuários administrativo
-│   │   │           ├── tenant-users.js # **NOVO**: API tenant-scoped para usuários
-│   │   │           ├── applications.js # Catálogo de aplicações
-│   │   │           ├── entitlements.js # Gestão de licenças e acessos
-│   │   │           ├── audit.js       # Logs de auditoria e compliance
-│   │   │           ├── platform-auth.js # Autenticação de plataforma
-│   │   │           ├── tenants.js     # Gestão de tenants (com /reactivate endpoint)
-│   │   │           ├── metrics.js     # Métricas agregadas da plataforma com cache
-│   │   │           └── me.js          # **NOVO**: Endpoints self-service para Hub (/me/apps)
+│   │   │   ├── 📁 internal/           # API interna administrativa
+│   │   │   │   ├── 📁 public/         # Rotas públicas (sem autenticação)
+│   │   │   │   │   └── tenant-lookup.js # Lookup de tenant por subdomínio
+│   │   │   │   └── 📁 routes/         # Routes da API interna
+│   │   │   │       ├── auth.js        # Autenticação e gestão de usuários
+│   │   │   │       ├── users.js       # CRUD de usuários administrativo
+│   │   │   │       ├── tenant-users.js # **NOVO**: API tenant-scoped para usuários
+│   │   │   │       ├── applications.js # Catálogo de aplicações
+│   │   │   │       ├── entitlements.js # Gestão de licenças e acessos
+│   │   │   │       ├── audit.js       # Logs de auditoria e compliance
+│   │   │   │       ├── platform-auth.js # Autenticação de plataforma
+│   │   │   │       ├── tenants.js     # Gestão de tenants (com /reactivate endpoint)
+│   │   │   │       ├── metrics.js     # Métricas agregadas da plataforma com cache
+│   │   │   │       └── me.js          # **NOVO**: Endpoints self-service para Hub (/me/apps)
+│   │   │   ├── 📁 tq/                 # API do produto Transcription Quote
+│   │   │   │   └── 📁 routes/         # Rotas específicas do TQ
+│   │   │   ├── 📁 crm/                # API do produto CRM
+│   │   │   │   └── 📁 routes/         # Rotas específicas do CRM
+│   │   │   └── 📁 automation/         # API do produto Automation
+│   │   │       └── 📁 routes/         # Rotas específicas do Automation
 │   │   │
 │   │   ├── 📁 infra/                  # Camada de infraestrutura
+│   │   │   ├── 📁 config/             # Configurações da aplicação
 │   │   │   ├── 📁 db/
 │   │   │   │   └── database.js        # Singleton de conexão PostgreSQL com pool
 │   │   │   │
@@ -193,7 +210,8 @@ simplia-paas/
 │   │   │   │   ├── UserApplicationAccess.js # Acesso granular usuário-aplicação com snapshots
 │   │   │   │   ├── UserType.js        # Tipos de usuário com hierarquia
 │   │   │   │   ├── ApplicationPricing.js # Pricing matrix App × UserType com overlap prevention
-│   │   │   │   └── AccessLog.js       # Auditoria detalhada para compliance
+│   │   │   │   ├── AccessLog.js       # Auditoria detalhada para compliance
+│   │   │   │   └── PlatformLoginAudit.js # **NOVO**: Auditoria de logins da plataforma
 │   │   │   │
 │   │   │   ├── 📁 utils/
 │   │   │   │   └── datetime.js        # **NOVO**: Utilidades de overlap detection com semântica [start, end)
@@ -216,8 +234,14 @@ simplia-paas/
 │   │   │   ├── authService.js         # Lógica de autenticação + JWT
 │   │   │   └── userService.js         # Lógica de negócio de usuários
 │   │   │
-│   │   ├── 📁 core/                   # Core business logic (reservado)
-│   │   │   └── (vazio - para regras de negócio puras)
+│   │   ├── 📁 core/                   # Core business logic
+│   │   │   ├── 📁 applications/       # Lógica de negócio de aplicações
+│   │   │   ├── 📁 audit/              # Lógica de auditoria
+│   │   │   ├── 📁 licensing/          # Lógica de licenciamento
+│   │   │   ├── 📁 permissions/        # Lógica de permissões
+│   │   │   ├── 📁 pricing/            # Lógica de pricing
+│   │   │   ├── 📁 tenants/            # Lógica de tenants
+│   │   │   └── 📁 users/              # Lógica de usuários
 │   │   │
 │   │   ├── app.js                     # Configuração Express (separado para testes)
 │   │   └── index.js                   # Entry point do servidor Express
@@ -240,10 +264,21 @@ simplia-paas/
 │   ├── auth-helper.js                # Utilitários para geração de tokens JWT
 │   └── setup.js                      # Setup global dos testes
 │
+├── 📁 docs/                           # Documentação técnica do projeto
+│   ├── INTERNAL-API.md               # Documentação completa da API interna
+│   ├── MIGRATIONS.md                 # Documentação de migrações de banco
+│   ├── TESTING-QA.md                 # Documentação de testes e QA
+│   ├── internal-dashboard-audit.md   # Auditoria do dashboard interno
+│   ├── internal-login-audit.md       # Auditoria do sistema de login
+│   └── internal-tenants-audit.md     # Auditoria do sistema de tenants
+│
 ├── 📁 node_modules/                   # Dependências npm
 ├── 📁 dist/                          # Build artifacts (gerado)
+├── 📁 .claude/                       # Configurações Claude Code
+├── 📁 .git/                          # Controle de versão Git
 │
 ├── 📄 package.json                   # Dependências e scripts npm
+├── 📄 package-lock.json              # Lock de dependências npm
 ├── 📄 tsconfig.json                  # Configuração TypeScript global
 ├── 📄 tsconfig.server.json           # Configuração TypeScript para servidor
 ├── 📄 vite.config.ts                 # Configuração Vite para internal-admin
@@ -253,9 +288,12 @@ simplia-paas/
 ├── 📄 jest.config.js                 # Configuração Jest para testes
 ├── 📄 .env                           # Variáveis de ambiente (não commitado)
 ├── 📄 .env.example                   # Template de configuração
+├── 📄 .gitignore                     # Arquivos ignorados pelo Git
+├── 📄 .gitattributes                 # Atributos Git para formatação
 ├── 📄 index.html                     # Template HTML raiz
+├── 📄 debug-pricing.js               # Script de debug para pricing system
 ├── 📄 CLAUDE.md                      # Documentação para Claude Code
-├── 📄 TESTING-QA.md                  # Documentação de testes e QA
+├── 📄 CLAUDE2.md                     # Documentação técnica completa
 └── 📄 README.md                      # Este arquivo
 ```
 

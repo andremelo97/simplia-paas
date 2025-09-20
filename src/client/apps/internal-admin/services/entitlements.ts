@@ -35,30 +35,26 @@ export class EntitlementsService {
   }
 
   /**
-   * Adjust existing license settings
+   * Adjust existing license settings (using Global Platform route)
    */
   static async adjustLicense(
     tenantId: number,
     slug: string,
     payload: AdjustLicensePayload
   ): Promise<{ success: boolean; data: { license: TenantLicense } }> {
-    const response = await api.put(`/internal/api/v1/entitlements/${slug}/adjust`, payload, {
-      'x-tenant-id': String(tenantId) // Always send numeric ID as string
-    })
+    const response = await api.put(`/internal/api/v1/tenants/${tenantId}/applications/${slug}/adjust`, payload)
     return response
   }
 
   /**
-   * Activate license for an application
+   * Activate license for an application (using Global Platform route)
    */
   static async activateLicense(
     tenantId: number,
     slug: string,
     payload?: ActivateLicensePayload
   ): Promise<ActivateLicenseResponse> {
-    const response = await api.post(`/internal/api/v1/entitlements/${slug}/activate`, payload || {}, {
-      'x-tenant-id': String(tenantId) // Always send numeric ID as string
-    })
+    const response = await api.post(`/internal/api/v1/tenants/${tenantId}/applications/${slug}/activate`, payload || {})
     return response
   }
 

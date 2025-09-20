@@ -57,12 +57,12 @@ TenantsList.tsx → TenantsService.ts → Backend API → tenants.js → Modelos
 17. `updateContact()` → PUT `/tenants/:id/contacts/:contactId`
 18. `deleteContact()` → DELETE `/tenants/:id/contacts/:contactId`
 
-**IMPORTANTE**: EntitlementsService usa rotas tenant-scoped com header x-tenant-id:
+**ATUALIZADO**: EntitlementsService agora usa rotas global-scoped:
 - `getTenantLicenses()` → GET `/entitlements` + header x-tenant-id
-- `activateLicense()` → POST `/entitlements/:slug/activate` + header x-tenant-id
-- `adjustLicense()` → PUT `/entitlements/:slug/adjust` + header x-tenant-id
-- `suspendLicense()` → PUT `/entitlements/:slug/adjust` (status: suspended) + header x-tenant-id
-- `resumeLicense()` → PUT `/entitlements/:slug/adjust` (status: active) + header x-tenant-id
+- `activateLicense()` → POST `/tenants/:tenantId/applications/:slug/activate`
+- `adjustLicense()` → PUT `/tenants/:tenantId/applications/:slug/adjust`
+- `suspendLicense()` → PUT `/tenants/:tenantId/applications/:slug/adjust` (status: suspended)
+- `resumeLicense()` → PUT `/tenants/:tenantId/applications/:slug/adjust` (status: active)
 
 ## 3) Endpoints Implementados no Backend
 
@@ -324,10 +324,10 @@ CREATE TABLE tenant_applications (
 7. **Endereços**: CRUD através de `TenantAddressesTab.tsx`
 8. **Contatos**: CRUD através de `TenantContactsTab.tsx`
 
-**EntitlementsService (Tenant-Scoped com header - GAMBIARRA MAS FUNCIONAL)**:
+**EntitlementsService (ATUALIZADO - Global-Scoped)**:
 1. **Licenças**: `GET /entitlements` + header x-tenant-id
-2. **Ativar**: `POST /entitlements/:slug/activate` + header x-tenant-id
-3. **Ajustar**: `PUT /entitlements/:slug/adjust` + header x-tenant-id
+2. **Ativar**: `POST /tenants/:tenantId/applications/:slug/activate`
+3. **Ajustar**: `PUT /tenants/:tenantId/applications/:slug/adjust`
 
 ### 🔍 Análise de Utilização por Tela
 

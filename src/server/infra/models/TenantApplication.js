@@ -92,8 +92,8 @@ class TenantApplication {
    * Count tenant applications by tenant ID
    */
   static async count(tenantId, options = {}) {
-    const { status, includeExpired = false } = options;
-    
+    const { status, applicationSlug, includeExpired = false } = options;
+
     let query = `
       SELECT COUNT(*) as count
       FROM public.tenant_applications ta
@@ -101,16 +101,21 @@ class TenantApplication {
       WHERE ta.tenant_id_fk = $1 AND ta.active = true
     `;
     const params = [tenantId];
-    
+
     if (status) {
       query += ` AND ta.status = $${params.length + 1}`;
       params.push(status);
     }
-    
+
+    if (applicationSlug) {
+      query += ` AND a.slug = $${params.length + 1}`;
+      params.push(applicationSlug);
+    }
+
     if (!includeExpired) {
       query += ` AND (ta.expires_at IS NULL OR ta.expires_at > NOW())`;
     }
-    
+
     const result = await database.query(query, params);
     return parseInt(result.rows[0].count);
   }

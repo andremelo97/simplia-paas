@@ -172,13 +172,13 @@ class Application {
    */
   static async findByTenant(tenantId, options = {}) {
     const { status = 'active', limit = 50, offset = 0 } = options;
-    
+
     const query = `
-      SELECT a.*, ta.status as tenant_status, ta.activated_at, ta.expires_at, ta.max_users
+      SELECT a.*, ta.status as tenant_status, ta.activated_at, ta.expires_at, ta.max_users, ta.seats_used
       FROM public.applications a
-      INNER JOIN public.tenant_applications ta ON a.id = ta.application_id
+      INNER JOIN public.tenant_applications ta ON a.id = ta.application_id_fk
       WHERE ta.tenant_id_fk = $1 AND ta.status = $2
-      ORDER BY a.name ASC 
+      ORDER BY a.name ASC
       LIMIT $3 OFFSET $4
     `;
     
@@ -190,6 +190,7 @@ class Application {
       app.activatedAt = row.activated_at;
       app.expiresAt = row.expires_at;
       app.maxUsers = row.max_users;
+      app.seatsUsed = row.seats_used || 0;
       return app;
     });
   }
@@ -201,7 +202,7 @@ class Application {
     const query = `
       SELECT ta.*, a.name, a.slug
       FROM public.tenant_applications ta
-      INNER JOIN public.applications a ON ta.application_id = a.id
+      INNER JOIN public.applications a ON ta.application_id_fk = a.id
       WHERE ta.tenant_id_fk = $1 AND a.slug = $2 AND ta.status = 'active'
         AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
     `;

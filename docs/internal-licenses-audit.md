@@ -90,12 +90,14 @@ src/server/
 
 | Endpoint | Método | Service (função) | UI Component (ação) | Observações |
 |---|---|---|---|---|
+| **`/applications/tenant/{tenantId}/licensed`** | **GET** | **`services/applications.ts:getTenantLicensedApps`** | **`TenantLicensesTab.tsx` (fetchLicenses)** | **🆕 NOVO:** Platform-scoped; retorna aplicações licenciadas com seats/limits; substitui `tenants/{id}` metrics |
 | `/tenants/{id}/applications/{appSlug}/activate` | POST | `services/tenants.ts:activateLicense` | `ActivateApplicationModal.tsx` (botão "Activate Application") | Platform-scoped; exige admin role; usado pelo TenantsService e EntitlementsService |
 | `/tenants/{id}/applications/{appSlug}/adjust` | PUT | `services/tenants.ts:adjustLicense` | `AdjustSeatsModal.tsx` (botão "Submit") | Platform-scoped; valida userLimit ≥ seatsUsed; usado pelo TenantsService e EntitlementsService |
 | `/tenants/{id}/applications/{appSlug}/users` | GET | `services/tenants.ts:listAppUsers` | `TenantLicenseCard.tsx` (useEffect) + `ManageApplicationsModal.tsx` (loadUsers) | Platform-scoped; usado para exibir usuários no card e modal |
 | `/tenants/{id}/users/{userId}/applications/{appSlug}/grant` | POST | `services/tenants.ts:grantUserAccess` | `ManageApplicationsModal.tsx` (botão "Grant Access") | Platform-scoped; incrementa seat automaticamente |
 | `/tenants/{id}/users/{userId}/applications/{appSlug}/revoke` | POST | `services/tenants.ts:revokeUserAccess` | `ManageApplicationsModal.tsx` (botão "Revoke Access") | Platform-scoped; decrementa seat automaticamente |
 | `/tenants/{tenantId}/users/{userId}/applications/{appSlug}/role` | PUT | `services/tenants.ts:updateUserRoleInApp` | `ManageApplicationsModal.tsx` (Select role_in_app onChange) | Platform-scoped; exige acesso granted=true |
+| ~~`/tenants/{id}`~~ | ~~GET~~ | ~~`services/tenants.ts:getTenant`~~ | ~~`TenantLicensesTab.tsx`~~ | **❌ DEPRECIADO:** Não retorna mais `metrics.applications`; dados movidos para endpoint específico |
 
 ### Fluxos de Uso dos Endpoints
 
@@ -135,8 +137,9 @@ src/server/
 
 - ~~`POST /internal/api/v1/entitlements/{applicationSlug}/activate`~~ (removido)
 - ~~`PUT /internal/api/v1/entitlements/{applicationSlug}/adjust`~~ (removido)
+- ~~`GET /internal/api/v1/entitlements/{applicationSlug}`~~ (removido - consolidado na rota com filtro)
 
-**Justificativa:** Estas rotas eram tenant-scoped e foram consolidadas nas rotas platform-scoped `/tenants/{id}/applications/{appSlug}/*` para manter consistência arquitetural.
+**Justificativa:** Estas rotas eram tenant-scoped e foram consolidadas nas rotas platform-scoped `/tenants/{id}/applications/{appSlug}/*` para manter consistência arquitetural. A rota `GET /entitlements/{applicationSlug}` foi removida em favor do filtro `applicationSlug` na rota `GET /entitlements` para evitar duplicação.
 
 **Serviços Não Utilizados:**
 - `EntitlementsService`: Possui métodos `activateLicense()` e `adjustLicense()`, mas **não é usado por nenhum componente UI**
@@ -145,6 +148,55 @@ src/server/
 ---
 
 ### Detalhamento das APIs
+
+### 🆕 0. Listar Aplicações Licenciadas (NOVO)
+```http
+GET /internal/api/v1/applications/tenant/{tenantId}/licensed
+```
+
+**Escopo:** Platform (Internal Admin)
+**Autenticação:** JWT + Role Admin
+**Headers:** `Authorization: Bearer <token>`
+
+**Parâmetros:**
+- `tenantId` (path): ID numérico do tenant
+- `status` (query, opcional): Filtro por status ('active', 'suspended', 'expired') - default: 'active'
+- `limit` (query, opcional): Limite de resultados - default: 50, max: 100
+- `offset` (query, opcional): Offset para paginação - default: 0
+
+**Resposta de Sucesso (200):**
+```json
+{
+  "applications": [
+    {
+      "slug": "tq",
+      "name": "TQ - Quality Management",
+      "status": "active",
+      "userLimit": 50,
+      "seatsUsed": 12,
+      "expiresAt": "2024-12-31T23:59:59Z"
+    }
+  ],
+  "tenantId": 2
+}
+```
+
+**Query SQL:**
+```sql
+SELECT a.*, ta.status as tenant_status, ta.activated_at, ta.expires_at, ta.max_users, ta.seats_used
+FROM public.applications a
+INNER JOIN public.tenant_applications ta ON a.id = ta.application_id_fk
+WHERE ta.tenant_id_fk = $1 AND ta.status = $2
+ORDER BY a.name ASC
+LIMIT $3 OFFSET $4;
+```
+
+**Arquivo:** `src/server/api/internal/routes/applications.js:371`
+**Service:** `ApplicationsService.getTenantLicensedApps()`
+**UI Component:** `TenantLicensesTab.tsx:fetchLicenses()`
+
+**⚠️ MUDANÇA ARQUITETURAL:**
+Este endpoint substitui o uso de `GET /tenants/{id}` → `metrics.applications` para melhor **separação de responsabilidades** e **segurança** (princípio do menor privilégio).
 
 ### 1. Ativar Licença
 ```http
@@ -351,10 +403,14 @@ const [applications, setApplications] = useState<Application[]>([])
 ```
 
 **Fluxo de Dados:**
-1. `useEffect` → `fetchLicenses()` → `tenantsService.getTenant()`
-2. Conversão de dados tenant para formato `TenantLicense`
-3. Mapeamento de slugs para dados completos da aplicação
+1. `useEffect` → `fetchLicenses()` → `ApplicationsService.getTenantLicensedApps()`
+2. Busca paralela → `ApplicationsService.getApplications()` para mapeamento de dados completos
+3. Conversão de dados de applications para formato `TenantLicense`
 4. Renderização de `TenantLicenseCard` para cada licença
+
+**⚠️ MUDANÇA ARQUITETURAL (Setembro 2025):**
+- **Antes:** Usava `tenantsService.getTenant()` e acessava `response.metrics.applications`
+- **Agora:** Usa endpoint específico `ApplicationsService.getTenantLicensedApps()` para melhor separação de responsabilidades
 
 ### TenantLicenseCard
 **Arquivo:** `src/client/apps/internal-admin/features/tenants/detail/components/TenantLicenseCard.tsx`

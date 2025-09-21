@@ -142,51 +142,6 @@ class TenantUser {
   }
 
   /**
-   * Get users by role within tenant
-   */
-  static async getUsersByRole(tenantContext, role, options = {}) {
-    const users = await User.findByTenant(tenantContext.tenantId, {
-      ...options,
-      role
-    });
-    
-    return users.map(user => ({
-      ...user.getSafeData(),
-      tenant: {
-        id: tenantContext.tenantId,
-        schema: tenantContext.schema
-      }
-    }));
-  }
-
-  /**
-   * Bulk operations within tenant
-   */
-  static async bulkUpdateUsers(tenantContext, userIds, updates) {
-    const results = [];
-    
-    for (const userId of userIds) {
-      try {
-        const user = await User.findById(userId, tenantContext.tenantId);
-        const updatedUser = await user.update(updates);
-        results.push({
-          success: true,
-          userId,
-          user: updatedUser.getSafeData()
-        });
-      } catch (error) {
-        results.push({
-          success: false,
-          userId,
-          error: error.message
-        });
-      }
-    }
-    
-    return results;
-  }
-
-  /**
    * Transfer user to another tenant (admin operation)
    */
   static async transferUserToTenant(currentTenantContext, userId, targetTenantId) {

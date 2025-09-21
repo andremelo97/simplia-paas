@@ -612,6 +612,7 @@ A API Internal oferece:
 - Documentação Swagger interativa em `/docs/internal`
 - Pricing matrix (App × UserType) com snapshots automáticos
 - Grant/Revoke de acessos com controle de seats global
+- Dedicated endpoints seguindo principle of least privilege
 - Auditoria completa com logs detalhados
 
 ## ⚙️ Configuração de Ambiente
@@ -999,6 +1000,16 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 9. **Production Deployment**: Configurar CI/CD e ambientes
 
 ### ✨ Implementações Recentes (Janeiro 2025)
+
+- **✅ 🔐 API Security Enhancement**: Dedicated endpoint for tenant licensed applications
+  - **Security Issue Identified**: `/licenses` tab was using `GET /tenants/{id}` which returned ALL tenant data
+  - **Principle of Least Privilege**: Implemented dedicated `GET /applications/tenant/{tenantId}/licensed` endpoint
+  - **Data Minimization**: New endpoint returns ONLY licensed applications data needed by UI
+  - **Seat Data Included**: Returns `{slug, name, status, userLimit, seatsUsed, expiresAt}` per application
+  - **Documentation Updated**: Swagger, internal audit docs, and API mapping updated
+  - **Backwards Compatibility**: Previous tenant endpoint simplified, removed metrics/applications exposure
+  - **TenantLicensesTab Refactored**: Now uses dedicated endpoint instead of accessing tenant metrics
+  - **Platform-Scoped**: Internal route with proper authentication, no x-tenant-id headers needed
 
 - **✅ 🏠 Client Hub App**: Portal completo para usuários finais acessarem suas aplicações
   - **Arquitetura Multi-App**: Hub separado do internal-admin com build e port independentes

@@ -759,18 +759,6 @@ Catálogo de aplicações.
 
 **Parâmetros**: `status`, `limit`, `offset`
 
-### POST `/applications`
-Criar nova aplicação.
-
-**Body**:
-```json
-{
-  "name": "Patient Management",
-  "slug": "pm",
-  "description": "Sistema de gestão de pacientes",
-  "version": "1.0.0"
-}
-```
 
 ### GET `/applications/:id`
 Detalhes da aplicação por ID.
@@ -778,14 +766,42 @@ Detalhes da aplicação por ID.
 ### GET `/applications/slug/:slug`
 Detalhes da aplicação por slug.
 
-### PUT `/applications/:id`
-Atualizar aplicação.
 
-### DELETE `/applications/:id`
-Deprecar aplicação (soft delete).
 
-### GET `/applications/:id/tenants`
-Tenants que têm licença da aplicação.
+
+### GET `/tenants/{id}/applications`
+Aplicações licenciadas para um tenant específico.
+
+**Tag:** `global`
+
+**Descrição**: Retorna SOMENTE as aplicações licenciadas para o tenant, seguindo o principle of least privilege. Substituiu o uso de `GET /tenants/{id}` que expunha dados desnecessários.
+
+**Parâmetros de URL**:
+- `id` (number): ID numérico do tenant
+
+**Resposta**:
+```json
+{
+  "applications": [
+    {
+      "slug": "tq",
+      "name": "Transcription Quote",
+      "status": "active",
+      "userLimit": 50,
+      "seatsUsed": 12,
+      "expiresAt": "2025-12-31T23:59:59.000Z"
+    }
+  ],
+  "tenantId": 1
+}
+```
+
+**Exemplo de uso**:
+```bash
+curl -X GET \
+  "http://localhost:3001/internal/api/v1/tenants/1/applications" \
+  -H "Authorization: Bearer <token>"
+```
 
 ### **Application Pricing**
 
@@ -871,8 +887,7 @@ Licenças do tenant.
 }
 ```
 
-### GET `/entitlements/:applicationSlug`
-Detalhes de licença específica.
+**Nota sobre filtros**: A rota `/entitlements` agora suporta filtro por `applicationSlug` via query parameter (ex: `/entitlements?applicationSlug=tq`), substituindo a rota específica `/entitlements/:applicationSlug` que foi removida para evitar duplicação.
 
 **Nota**: As operações de ativação e ajuste de licenças são feitas através das rotas global-scoped em `/tenants/:tenantId/applications/:slug/activate` e `/tenants/:tenantId/applications/:slug/adjust`.
 

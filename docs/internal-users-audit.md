@@ -92,8 +92,6 @@ src/server/
 | `/users/:userId` | PUT | `services/users.ts:update` | `EditUser.tsx` (onSubmit) | Tenant-scoped; atualiza dados do user |
 | `/users/:userId` | DELETE | `services/users.ts:delete` | `UsersList.tsx` (delete action) | Tenant-scoped; soft delete |
 | `/users/stats` | GET | `services/users.ts:getStats` | Dashboard components | Tenant-scoped; estatísticas de usuários |
-| `/users/role/:role` | GET | Não utilizado na UI | N/A | Tenant-scoped; busca users por role |
-| `/users/bulk-update` | PUT | Não utilizado na UI | N/A | Tenant-scoped; atualização em lote |
 | `/users/:userId/reset-password` | POST | `services/users.ts:resetPassword` | Admin actions | Tenant-scoped; reset de senha |
 | `/users/me/profile` | GET | `services/users.ts:getCurrentProfile` | Profile components | Tenant-scoped; perfil pessoal |
 | `/users/me/profile` | PUT | `services/users.ts:updateCurrentProfile` | Profile components | Tenant-scoped; atualização de perfil |
@@ -123,13 +121,13 @@ src/server/
 
 ### Endpoints Não Utilizados na UI
 
-✅ **Identificados:** Os seguintes endpoints existem mas **não são utilizados** por componentes UI:
+✅ **Identificados:** O seguinte endpoint existe mas **não é utilizado** por componentes UI:
 
-- `GET /users/role/:role` - Busca users por role específico
-- `PUT /users/bulk-update` - Atualização em lote de usuários
 - `GET /users/stats` - Estatísticas de usuários (pode ser usado no Dashboard)
 
-**Justificativa:** Estes endpoints foram implementados para funcionalidades futuras ou uso interno, mas não têm interface visual no momento.
+**Justificativa:** Este endpoint foi implementado para funcionalidades futuras ou uso interno, mas não tem interface visual no momento.
+
+**Removidos:** As rotas `GET /users/role/:role` e `PUT /users/bulk-update` foram removidas do código por não serem utilizadas.
 
 ---
 

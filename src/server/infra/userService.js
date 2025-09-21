@@ -142,22 +142,6 @@ class UserService {
   }
 
   /**
-   * Get users by role
-   */
-  async getUsersByRole(tenantContext, requestingUser, role, options = {}) {
-    // Only admins and managers can filter users by role
-    if (!hasRole(requestingUser.role, USER_ROLES.MANAGER)) {
-      throw new InsufficientPermissionsError('view users by role');
-    }
-
-    if (!isValidRole(role)) {
-      throw new Error(`Invalid role: ${role}`);
-    }
-
-    return await TenantUser.getUsersByRole(tenantContext, role, options);
-  }
-
-  /**
    * Get tenant user statistics
    */
   async getTenantStats(tenantContext, requestingUser) {
@@ -167,40 +151,6 @@ class UserService {
     }
 
     return await TenantUser.getTenantStats(tenantContext);
-  }
-
-  /**
-   * Bulk update users
-   */
-  async bulkUpdateUsers(tenantContext, requestingUser, userIds, updates) {
-    // Only admins can perform bulk operations
-    if (requestingUser.role !== USER_ROLES.ADMIN) {
-      throw new InsufficientPermissionsError('perform bulk operations');
-    }
-
-    // Validate updates
-    const allowedUpdates = ['role', 'status'];
-    const filteredUpdates = {};
-    
-    for (const [key, value] of Object.entries(updates)) {
-      if (allowedUpdates.includes(key) && value !== undefined) {
-        if (key === 'role' && !isValidRole(value)) {
-          throw new Error(`Invalid role: ${value}`);
-        }
-        filteredUpdates[key] = value;
-      }
-    }
-
-    if (Object.keys(filteredUpdates).length === 0) {
-      throw new Error('No valid updates provided for bulk operation');
-    }
-
-    // Prevent self-modification in bulk operations
-    if (userIds.includes(requestingUser.userId)) {
-      throw new Error('Cannot include your own account in bulk operations');
-    }
-
-    return await TenantUser.bulkUpdateUsers(tenantContext, userIds, filteredUpdates);
   }
 
   /**

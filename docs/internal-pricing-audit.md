@@ -12,7 +12,7 @@ Este documento mapeia completamente o **Sistema de Pricing** do Internal Admin, 
 
 ### Métricas do Sistema
 - **Componentes Frontend:** 1 principal + integração em 5 módulos
-- **Rotas API:** 4 endpoints dedicados + 8 integrações
+- **Rotas API:** 4 endpoints dedicados + 3 integrações
 - **Modelos de Dados:** 2 principais (ApplicationPricing, UserApplicationAccess snapshots)
 - **Tipos TypeScript:** 12 interfaces/types
 - **Sistema de Snapshots:** Pricing capturado no momento do grant
@@ -92,7 +92,6 @@ src/server/
 | `/tenants/:id/applications/:slug/activate` | POST | Validação automática de pricing | `ActivateApplicationModal.tsx` | Platform-scoped; exige pricing configurado |
 | `/tenants/:id/users/:userId/applications/:slug/grant` | POST | Captura pricing snapshot | `ManageApplicationsModal.tsx` | Platform-scoped; cria snapshot no grant |
 | `/entitlements` | GET | Retorna pricing snapshots | `TenantLicenseCard.tsx` | Tenant-scoped; exibe pricing atual |
-| `/applications/:id/tenants` | GET | Billing summary com pricing | Dashboard components | Platform-scoped; relatórios financeiros |
 
 ### Fluxos de Uso dos Endpoints
 

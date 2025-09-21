@@ -191,59 +191,6 @@ router.get('/stats', requireAdmin, async (req, res) => {
 });
 
 /**
- * GET /users/role/:role
- * Get users by role
- */
-router.get('/role/:role', requireManagerOrAdmin, async (req, res) => {
-  try {
-    const { role } = req.params;
-    const { page = 1, limit = 20 } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-
-    const options = {
-      limit: parseInt(limit),
-      offset
-    };
-
-    const users = await userService.getUsersByRole(req.tenant, req.user, role, options);
-
-    res.json({
-      success: true,
-      data: {
-        role,
-        users,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: users.length
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Get users by role error:', error);
-
-    if (error.name === 'InsufficientPermissionsError') {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: error.message
-      });
-    }
-
-    if (error.message.includes('Invalid role')) {
-      return res.status(400).json({
-        error: 'Validation Error',
-        message: error.message
-      });
-    }
-
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Failed to get users by role'
-    });
-  }
-});
-
-/**
  * POST /users
  * Create new user
  */
@@ -428,69 +375,6 @@ router.delete('/:userId', requireAdmin, async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to delete user'
-    });
-  }
-});
-
-/**
- * PUT /users/bulk-update
- * Bulk update users
- */
-router.put('/bulk-update', requireAdmin, async (req, res) => {
-  try {
-    const { userIds, updates } = req.body;
-
-    if (!Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({
-        error: 'Validation Error',
-        message: 'userIds must be a non-empty array'
-      });
-    }
-
-    if (!updates || typeof updates !== 'object') {
-      return res.status(400).json({
-        error: 'Validation Error',
-        message: 'updates object is required'
-      });
-    }
-
-    const results = await userService.bulkUpdateUsers(req.tenant, req.user, userIds, updates);
-
-    const successCount = results.filter(r => r.success).length;
-    const failureCount = results.filter(r => !r.success).length;
-
-    res.json({
-      success: true,
-      message: `Bulk update completed: ${successCount} successful, ${failureCount} failed`,
-      data: {
-        results,
-        summary: {
-          total: results.length,
-          successful: successCount,
-          failed: failureCount
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Bulk update users error:', error);
-
-    if (error.name === 'InsufficientPermissionsError') {
-      return res.status(403).json({
-        error: 'Forbidden',
-        message: error.message
-      });
-    }
-
-    if (error.message.includes('validation') || error.message.includes('Invalid')) {
-      return res.status(400).json({
-        error: 'Validation Error',
-        message: error.message
-      });
-    }
-
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Bulk update failed'
     });
   }
 });

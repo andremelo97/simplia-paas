@@ -60,7 +60,42 @@ export interface CreatePricingResponse {
   };
 }
 
+export interface TenantLicensedApp {
+  slug: string;
+  name: string;
+  status: string;
+  userLimit: number | null;
+  seatsUsed: number;
+  expiresAt: string | null;
+}
+
 export const ApplicationsService = {
+  /**
+   * Get applications licensed to a specific tenant
+   */
+  async getTenantLicensedApps(tenantId: number): Promise<TenantLicensedApp[]> {
+    const response = await api.get(`/internal/api/v1/tenants/${tenantId}/applications`);
+
+    // Defensive check for response structure
+    if (!response) {
+      throw new Error('Invalid tenant apps API response structure');
+    }
+
+    // Handle different possible response structures
+    if (response.applications) {
+      // Direct structure: { applications: [...] }
+      return response.applications;
+    } else if (response.data?.applications) {
+      // Nested structure: { data: { applications: [...] } }
+      return response.data.applications;
+    } else if (Array.isArray(response.data)) {
+      // Array directly: { data: [...] }
+      return response.data;
+    } else {
+      throw new Error('Tenant applications data not found in response');
+    }
+  },
+
   /**
    * Get all applications
    */

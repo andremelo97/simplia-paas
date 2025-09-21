@@ -311,33 +311,18 @@ router.get('/', async (req, res) => {
  *                 success: { type: boolean }
  *                 data:
  *                   type: object
+ *                   description: |
+ *                     Basic tenant information only. For user metrics and application data,
+ *                     use dedicated endpoints: /users and /tenants/{tenantId}/applications
  *                   properties:
- *                     tenant:
- *                       type: object
- *                       properties:
- *                         id: { type: integer }
- *                         name: { type: string }
- *                         subdomain: { type: string }
- *                         schemaName: { type: string }
- *                         status: { type: string }
- *                         active: { type: boolean }
- *                         createdAt: { type: string }
- *                         updatedAt: { type: string }
- *                     metrics:
- *                       type: object
- *                       properties:
- *                         totalUsers: { type: integer }
- *                         activeUsers: { type: integer }
- *                         applications:
- *                           type: array
- *                           items:
- *                             type: object
- *                             properties:
- *                               slug: { type: string }
- *                               status: { type: string }
- *                               userLimit: { type: integer }
- *                               seatsUsed: { type: integer }
- *                               expiresAt: { type: string }
+ *                     id: { type: integer }
+ *                     name: { type: string }
+ *                     subdomain: { type: string }
+ *                     schemaName: { type: string }
+ *                     status: { type: string }
+ *                     active: { type: boolean }
+ *                     createdAt: { type: string }
+ *                     updatedAt: { type: string }
  *       404:
  *         description: Tenant not found
  *       401:
@@ -357,26 +342,9 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    // Get detailed metrics
-    const totalUsers = await User.countByTenant(tenant.id);
-    const activeUsers = await User.countByTenant(tenant.id, { status: 'active' });
-    const applications = await TenantApplication.findByTenant(tenant.id);
-
     res.json({
       success: true,
-      data: tenant.toJSON(),
-      metrics: {
-        totalUsers,
-        activeUsers,
-        applications: applications.map(app => ({
-          slug: app.application?.slug,
-          name: app.application?.name,
-          status: app.status,
-          userLimit: app.maxUsers,
-          seatsUsed: app.seatsUsed,
-          expiresAt: app.expiresAt
-        }))
-      }
+      data: tenant.toJSON()
     });
   } catch (error) {
     console.error('Error fetching tenant:', error);
@@ -1701,6 +1669,140 @@ router.delete('/:id/contacts/:contactId', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to delete contact'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /tenants/{id}/applications:
+ *   get:
+ *     tags: [Tenants]
+ *     summary: Get applications licensed to a specific tenant
+ *     description: |
+ *       **Scope:** Platform (Internal Admin)
+ *
+ *       Returns all applications that have active licenses for the specified tenant,
+ *       including seat usage, limits, and expiration information.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Numeric tenant ID
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, suspended, expired]
+ *           default: active
+ *         description: Filter by license status
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           maximum: 100
+ *         description: Maximum number of applications to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of applications to skip for pagination
+ *     responses:
+ *       200:
+ *         description: Successful response with tenant's licensed applications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 applications:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       slug:
+ *                         type: string
+ *                         description: Application unique identifier
+ *                         example: "tq"
+ *                       name:
+ *                         type: string
+ *                         description: Application display name
+ *                         example: "TQ - Quality Management"
+ *                       status:
+ *                         type: string
+ *                         description: License status for this tenant
+ *                         enum: [active, suspended, expired]
+ *                         example: "active"
+ *                       userLimit:
+ *                         type: integer
+ *                         nullable: true
+ *                         description: Maximum users allowed (null = unlimited)
+ *                         example: 50
+ *                       seatsUsed:
+ *                         type: integer
+ *                         description: Current number of seats occupied
+ *                         example: 12
+ *                       expiresAt:
+ *                         type: string
+ *                         format: date-time
+ *                         nullable: true
+ *                         description: License expiration date (null = never expires)
+ *                         example: "2024-12-31T23:59:59Z"
+ *                 tenantId:
+ *                   type: integer
+ *                   description: The tenant ID for which licenses were retrieved
+ *                   example: 2
+ *       400:
+ *         description: Bad Request - Invalid tenant ID
+ *       401:
+ *         description: Unauthorized - Invalid or missing authentication
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *       404:
+ *         description: Not Found - Tenant not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get('/:id/applications', async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id);
+    const { status = 'active', limit = 50, offset = 0 } = req.query;
+
+    if (!tenantId || isNaN(tenantId)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid tenant ID'
+      });
+    }
+
+    const licensedApps = await Application.findByTenant(tenantId, {
+      status,
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+
+    res.json({
+      applications: licensedApps.map(app => ({
+        slug: app.slug,
+        name: app.name,
+        status: app.tenantStatus || app.status,
+        userLimit: app.maxUsers,
+        seatsUsed: app.seatsUsed || 0,
+        expiresAt: app.expiresAt
+      })),
+      tenantId
+    });
+  } catch (error) {
+    console.error('Error fetching tenant applications:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch tenant applications'
     });
   }
 });

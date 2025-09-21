@@ -12,7 +12,7 @@ Este documento mapeia completamente o fluxo de **Applications** do Internal Admi
 
 ### Métricas do Sistema
 - **Componentes Frontend:** 3 arquivos principais
-- **Rotas API:** 13 endpoints ativos (100% platform-scoped)
+- **Rotas API:** 8 endpoints ativos (100% platform-scoped)
 - **Modelos de Dados:** 2 principais (Application, ApplicationPricing)
 - **Tipos TypeScript:** 8 interfaces/types
 - **Gestão de Pricing:** Sistema completo por user type
@@ -79,16 +79,11 @@ src/server/
 | `/applications` | GET | `services/applications.ts:getApplications` | `ApplicationsList.tsx` (useEffect) | Platform-scoped; lista catálogo completo |
 | `/applications/:id` | GET | `services/applications.ts:getById` | `ApplicationPricing.tsx` (loadData) | Platform-scoped; busca app específico |
 | `/applications/slug/:slug` | GET | `services/applications.ts:getBySlug` | Usado internamente pelo sistema | Platform-scoped; busca por slug |
-| `/applications` | POST | Não utilizado na UI | N/A | Platform-scoped; criação de apps |
-| `/applications/:id` | PUT | Não utilizado na UI | N/A | Platform-scoped; atualização de apps |
-| `/applications/:id` | DELETE | Não utilizado na UI | N/A | Platform-scoped; soft delete (deprecated) |
 | `/applications/:id/pricing` | GET | `services/applications.ts:getPricing` | `ApplicationPricing.tsx` (loadData) | Platform-scoped; lista pricing do app |
 | `/applications/:id/pricing` | POST | `services/applications.ts:createPricing` | `ApplicationPricing.tsx` (create modal) | Platform-scoped; criar novo pricing |
 | `/applications/:id/pricing/:pricingId` | PUT | `services/applications.ts:updatePricing` | `ApplicationPricing.tsx` (edit modal) | Platform-scoped; atualizar pricing |
 | `/applications/:id/pricing/:pricingId/end` | POST | `services/applications.ts:endPricing` | `ApplicationPricing.tsx` (disable action) | Platform-scoped; desativar pricing |
-| `/applications/:id/tenants` | GET | Não utilizado na UI | N/A | Platform-scoped; tenants com licença |
-| `/applications/tenant/licensed` | GET | Não utilizado na UI | N/A | Platform-scoped; apps licenciadas para tenant |
-| `/applications/user/accessible` | GET | Não utilizado na UI | N/A | Platform-scoped; apps acessíveis ao user |
+| `/tenants/:tenantId/applications` | GET | `services/applications.ts:getTenantLicensedApps` | `TenantLicensesTab.tsx` (fetchLicenses) | Platform-scoped; apps licenciadas para tenant específico |
 
 ### Fluxos de Uso dos Endpoints
 
@@ -112,21 +107,25 @@ src/server/
 - **Flow:** Modal → `ApplicationsService.updatePricing()` → `/applications/:id/pricing/:pricingId` → Database
 - **Platform-scoped:** Atualiza pricing existente
 
-### Endpoints Não Utilizados na UI
+**Get Tenant Licensed Applications:**
+- **Trigger:** Carregamento da tab Licenses no TenantLicensesTab
+- **Flow:** `TenantLicensesTab` → `ApplicationsService.getTenantLicensedApps()` → `/tenants/:tenantId/applications` → Database
+- **Platform-scoped:** Retorna SOMENTE apps licenciadas com seat data
 
-✅ **Identificados:** Os seguintes endpoints existem mas **não são utilizados** por componentes UI:
+### Endpoints Removidos
+
+✅ **Limpeza Realizada:** Os seguintes endpoints não utilizados foram **removidos** do sistema:
 
 - `POST /applications` - Criação de aplicações
 - `PUT /applications/:id` - Atualização de aplicações
 - `DELETE /applications/:id` - Soft delete de aplicações
 - `GET /applications/:id/tenants` - Tenants com licença da aplicação
-- `GET /applications/tenant/licensed` - Apps licenciadas para tenant específico
 - `GET /applications/user/accessible` - Apps acessíveis ao usuário logado
 
-**Justificativa:** Estes endpoints foram implementados para:
-1. **CRUD de Applications:** Funcionalidades administrativas futuras
-2. **Relatórios:** Endpoints para dashboards e analytics
-3. **API Pública:** Integração com outras partes do sistema
+**Justificativa da Remoção:** Endpoints não utilizados pela UI foram removidos para:
+1. **Simplificação:** Reduzir complexidade da API
+2. **Manutenibilidade:** Menos código para manter e testar
+3. **Segurança:** Reduzir superfície de ataque eliminando endpoints desnecessários
 
 ---
 
@@ -523,7 +522,7 @@ CREATE INDEX IF NOT EXISTS idx_app_pricing_active ON application_pricing(active)
 - **Integration Tests:** End-to-end pricing workflow
 
 ### Backend Testing
-- **API Endpoint Tests:** Todos os 13 endpoints
+- **API Endpoint Tests:** Todos os 8 endpoints ativos
 - **Model Tests:** Application e ApplicationPricing CRUD
 - **Business Logic Tests:** Duplicate checking, validation rules
 - **Performance Tests:** Query performance com grandes datasets
@@ -642,7 +641,7 @@ ORDER BY ut.hierarchy_level;
 
 ### 📊 Métricas Finais
 - **Componentes UI:** 3/3 (100%)
-- **APIs Funcionais:** 13/13 (100%)
+- **APIs Funcionais:** 8/8 (100%)
 - **Tipos TypeScript:** 8/8 (100%)
 - **Validações:** 100% implementadas
 - **Security:** Platform-scoped com role control

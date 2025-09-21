@@ -7,7 +7,6 @@ import { TenantLicensedApplicationsCard } from '../components/TenantLicensedAppl
 import { ActivateApplicationButton } from '../components/ActivateApplicationButton'
 import { AdjustSeatsModal } from '../modals/AdjustSeatsModal'
 import { ManageApplicationsModal } from '../modals/ManageApplicationsModal'
-import { tenantsService } from '../../../../services/tenants'
 import { ApplicationsService } from '../../../../services/applications'
 
 export const TenantLicensesTab: React.FC = () => {
@@ -69,7 +68,7 @@ export const TenantLicensesTab: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      console.log('🔄 [TenantLicensesTab] Fetching applications and tenant details for licenses:', numericTenantId)
+      console.log('🔄 [TenantLicensesTab] Fetching tenant licensed applications:', numericTenantId)
 
       // First, fetch all applications to get the ID mapping
       const allApplications = await ApplicationsService.getApplications()
@@ -79,13 +78,12 @@ export const TenantLicensesTab: React.FC = () => {
       // Create a slug-to-app mapping
       const appSlugMap = new Map(allApplications.map(app => [app.slug, app]))
 
-      // Use tenant details endpoint which includes applications in metrics
-      const response = await tenantsService.getTenant(numericTenantId)
-      
-      console.log('✅ [TenantLicensesTab] Tenant details fetched successfully:', response.data)
+      // Use specific tenant licensed applications endpoint
+      const tenantApplications = await ApplicationsService.getTenantLicensedApps(numericTenantId)
 
-      // Convert applications from tenant metrics to license format
-      const tenantApplications = response.metrics?.applications || []
+      console.log('✅ [TenantLicensesTab] Tenant licensed apps fetched successfully:', tenantApplications)
+
+      // Convert applications from tenant licensed apps to license format
       const convertedLicenses: TenantLicense[] = tenantApplications.map(app => {
         const fullAppData = appSlugMap.get(app.slug)
         return {

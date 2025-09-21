@@ -1,38 +1,12 @@
 import { api } from '@client/config/http'
-import { 
-  TenantLicensesResponse, 
-  TenantLicense, 
-  AdjustLicensePayload, 
+import {
+  TenantLicense,
+  AdjustLicensePayload,
   ActivateLicensePayload,
-  ActivateLicenseResponse 
+  ActivateLicenseResponse
 } from '../features/tenants/licenses/types'
 
 export class EntitlementsService {
-  /**
-   * Get all licenses for a tenant with enhanced data
-   */
-  static async getTenantLicenses(
-    tenantId: number,
-    options?: {
-      includeExpired?: boolean
-      status?: string
-      limit?: number
-      offset?: number
-    }
-  ): Promise<TenantLicensesResponse> {
-    const params = new URLSearchParams()
-    if (options?.includeExpired) params.set('includeExpired', 'true')
-    if (options?.status) params.set('status', options.status)
-    if (options?.limit) params.set('limit', String(options.limit))
-    if (options?.offset) params.set('offset', String(options.offset))
-
-    const url = `/internal/api/v1/entitlements${params.toString() ? `?${params.toString()}` : ''}`
-
-    const response = await api.get(url, {
-      'x-tenant-id': String(tenantId) // Always send numeric ID as string
-    })
-    return response
-  }
 
   /**
    * Adjust existing license settings (using Global Platform route)

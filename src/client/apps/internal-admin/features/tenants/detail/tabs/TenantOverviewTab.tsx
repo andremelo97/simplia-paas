@@ -27,7 +27,7 @@ export const TenantOverviewTab: React.FC = () => {
     const fetchTenant = async () => {
       try {
         setLoading(true)
-        const response = await tenantsService.getById(numericTenantId)
+        const response = await tenantsService.getTenant(numericTenantId)
         setTenant(response.data)
       } catch (error) {
         publishFeedback({

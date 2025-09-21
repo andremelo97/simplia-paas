@@ -333,12 +333,12 @@ export class TenantsService {
   }
 
   /**
-   * Get tenant by ID
-   * @param id - Tenant ID
+   * Get tenant by Id
+   * @param id - Tenant Id
    * @returns Promise with tenant data
    */
   async getTenant(id: number): Promise<TenantDetailsResponse> {
-    console.log('🏢 [TenantsService] Fetching tenant by ID:', id)
+    console.log('🏢 [TenantsService] Fetching tenant by Id:', id)
 
     try {
       const response = await api.get(`${this.baseEndpoint}/${id}`)
@@ -355,32 +355,10 @@ export class TenantsService {
     }
   }
 
-  /**
-   * Get tenant by ID (alias for backward compatibility)
-   * @param id - Tenant ID
-   * @returns Promise with tenant data
-   */
-  async getById(id: number): Promise<{ success: boolean; data: { tenant: TenantResponse } }> {
-    console.log('🏢 [TenantsService] Fetching tenant by ID (deprecated method):', id)
-
-    try {
-      const response = await api.get(`${this.baseEndpoint}/${id}`)
-      
-      console.log('✅ [TenantsService] Tenant fetched:', {
-        tenantId: response.data?.tenant?.id,
-        name: response.data?.tenant?.name
-      })
-
-      return response
-    } catch (error) {
-      console.error('❌ [TenantsService] Failed to fetch tenant:', error)
-      throw error
-    }
-  }
 
   /**
-   * Update tenant by ID
-   * @param id - Tenant ID
+   * Update tenant by Id
+   * @param id - Tenant Id
    * @param tenantData - Update data
    * @returns Promise with updated tenant data
    */
@@ -813,7 +791,7 @@ export class TenantsService {
   /**
    * Update tenant address
    * @param tenantId - Tenant ID
-   * @param addressId - Address ID
+   * @param addressId - Address Id
    * @param addressData - Updated address data
    * @returns Promise with updated address
    */
@@ -838,7 +816,7 @@ export class TenantsService {
   /**
    * Delete tenant address
    * @param tenantId - Tenant ID
-   * @param addressId - Address ID
+   * @param addressId - Address Id
    * @returns Promise with delete result
    */
   async deleteAddress(tenantId: number, addressId: number): Promise<DeleteResponse> {
@@ -883,7 +861,7 @@ export class TenantsService {
   /**
    * Update tenant contact
    * @param tenantId - Tenant ID
-   * @param contactId - Contact ID
+   * @param contactId - Contact Id
    * @param contactData - Updated contact data
    * @returns Promise with updated contact
    */
@@ -908,7 +886,7 @@ export class TenantsService {
   /**
    * Delete tenant contact
    * @param tenantId - Tenant ID
-   * @param contactId - Contact ID
+   * @param contactId - Contact Id
    * @returns Promise with delete result
    */
   async deleteContact(tenantId: number, contactId: number): Promise<DeleteResponse> {
@@ -975,31 +953,6 @@ export class TenantsService {
     }
   }
 
-  /**
-   * List assigned users for a specific application within a tenant
-   * @param tenantId - Tenant ID
-   * @param appSlug - Application slug
-   * @param options - Query options
-   * @returns Promise with assigned users list
-   */
-  async listApplicationUsers(
-    tenantId: number, 
-    appSlug: string, 
-    options: { limit?: number; offset?: number } = {}
-  ): Promise<AssignedUsersResponse> {
-    const { limit = 50, offset = 0 } = options
-    
-    try {
-      const response = await api.get(`${this.baseEndpoint}/${tenantId}/applications/${appSlug}/users`, {
-        params: { limit, offset }
-      })
-
-      return response
-    } catch (error: any) {
-      console.error('Failed to list application users:', error)
-      throw error
-    }
-  }
 }
 
 // Export singleton instance

@@ -21,7 +21,7 @@ export const TenantDetailLayout: React.FC = () => {
     const fetchTenantInfo = async () => {
       try {
         setLoading(true)
-        const response = await tenantsService.getById(numericTenantId)
+        const response = await tenantsService.getTenant(numericTenantId)
         setTenantInfo({
           id: response.data.id,
           name: response.data.name

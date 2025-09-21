@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { Skeleton, EmptyState, Alert, Button } from '@client/common/ui'
-import { TenantLicense, TenantLicensesResponse, Application } from '../../licenses/types'
+import { TenantLicense, Application } from '../../licenses/types'
 import { TenantLicenseCard } from '../components/TenantLicenseCard'
 import { TenantLicensedApplicationsCard } from '../components/TenantLicensedApplicationsCard'
 import { ActivateApplicationButton } from '../components/ActivateApplicationButton'

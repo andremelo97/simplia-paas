@@ -28,7 +28,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
       
       try {
         setLoadingUsers(true)
-        const response = await tenantsService.listApplicationUsers(tenantId, license.application.slug, {
+        const response = await tenantsService.listAppUsers(tenantId, license.application.slug, {
           limit: 10 // Show first 10 users
         })
         const users = response.data?.users || []

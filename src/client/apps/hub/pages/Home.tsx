@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
-import { ExternalLink, Lock, Grid3x3 } from 'lucide-react'
+import { ExternalLink, Grid3x3 } from 'lucide-react'
 import { Card, Button, StatusBadge, Badge } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
 import { publishFeedback } from '@client/common/feedback'
+import { TenantEntitlementsSection } from '../components/TenantEntitlementsSection'
 
 interface UserApp {
   slug: string
@@ -17,32 +18,21 @@ interface UserApp {
 }
 
 export const Home: React.FC = () => {
-  const { user, tenantName, loadUserProfile } = useAuthStore()
-  const [isLoading, setIsLoading] = useState(false)
+  const { user, tenantName, isLoading, loadUserProfile } = useAuthStore()
 
   // Get apps directly from user state
   const apps = user?.allowedApps || []
 
-  useEffect(() => {
-    // Load fresh data if apps are not available
-    if (!apps || apps.length === 0) {
-      loadUserApps()
-    }
-  }, [])
-
-  const loadUserApps = async () => {
+  const refreshApps = async () => {
     try {
-      setIsLoading(true)
       await loadUserProfile()
     } catch (error) {
       publishFeedback({
         kind: 'error',
         code: 'LOAD_APPS_ERROR',
         title: 'Error',
-        message: 'Failed to load your applications'
+        message: 'Failed to refresh your applications'
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -78,26 +68,8 @@ export const Home: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
-          </h1>
-          <p className="text-gray-600 mt-2">
-            {tenantName ? `Loading applications for ${tenantName}...` : 'Loading your available applications...'}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="p-6 animate-pulse">
-              <div className="w-8 h-8 bg-gray-300 rounded mb-4"></div>
-              <div className="h-4 bg-gray-300 rounded mb-2"></div>
-              <div className="h-3 bg-gray-300 rounded mb-4"></div>
-              <div className="h-8 bg-gray-300 rounded"></div>
-            </Card>
-          ))}
-        </div>
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-lg text-gray-600">Loading...</div>
       </div>
     )
   }
@@ -109,7 +81,7 @@ export const Home: React.FC = () => {
           Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
         </h1>
         <p className="text-gray-600 mt-1">
-          {tenantName ? `Your applications for ${tenantName}` : 'Your available applications'}
+          {tenantName ? `Your applications at ${tenantName}` : 'Your available applications'}
         </p>
       </div>
 
@@ -122,7 +94,7 @@ export const Home: React.FC = () => {
           <p className="text-gray-600 mb-6">
             Contact your administrator to get access to applications.
           </p>
-          <Button onClick={loadUserApps}>
+          <Button onClick={refreshApps}>
             Refresh
           </Button>
         </Card>
@@ -181,6 +153,9 @@ export const Home: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Admin Section - Only visible for admin users */}
+      <TenantEntitlementsSection userRole={user?.role || ''} />
     </div>
   )
 }

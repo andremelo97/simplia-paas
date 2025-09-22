@@ -47,6 +47,7 @@ interface AuthState {
   setUser: (user: User) => void
   setToken: (token: string) => void
   loadUserProfile: () => Promise<void>
+  loadEntitlements: () => Promise<void>
   initialize: () => void
 }
 
@@ -58,7 +59,7 @@ export const useAuthStore = create<AuthState>()(persist(
     tenantId: null,
     tenantName: undefined,
     tenantSlug: undefined,
-    isLoading: true, // Start with loading true until hydrated
+    isLoading: true, // Start with loading true until everything is ready
     error: null,
     isHydrated: false,
     
@@ -106,6 +107,10 @@ export const useAuthStore = create<AuthState>()(persist(
           isLoading: false,
           error: null
         })
+
+        // Load fresh profile data to get latest apps
+        const { loadUserProfile } = get()
+        loadUserProfile().catch(console.error)
       } catch (error: any) {
         console.error('❌ [Hub Auth] Login failed:', error)
         
@@ -142,7 +147,9 @@ export const useAuthStore = create<AuthState>()(persist(
       }
 
       try {
+        set({ isLoading: true })
         console.log('🔄 [Hub Auth] Loading user profile...')
+
         const response = await api.get('/internal/api/v1/auth/me')
         const { data } = response
 
@@ -161,11 +168,36 @@ export const useAuthStore = create<AuthState>()(persist(
           },
           tenantName: data.tenant?.name,
           tenantSlug: data.tenant?.slug,
+          isLoading: false,
         }))
+
+        // Load entitlements if user is admin
+        const currentState = get()
+        if (currentState.user?.role === 'admin') {
+          currentState.loadEntitlements()
+        }
       } catch (error) {
         console.error('❌ [Hub Auth] Failed to load profile:', error)
-        // Don't logout on profile load failure, just log the error
+        set({
+          isLoading: false,
+          error: {
+            kind: 'unknown',
+            message: 'Failed to load profile data',
+            code: 'PROFILE_LOAD_ERROR'
+          }
+        })
       }
+    },
+
+    loadEntitlements: async () => {
+      const { token, tenantId, user } = get()
+
+      if (!token || !tenantId || user?.role !== 'admin') {
+        return
+      }
+
+      // This is now handled by TenantEntitlementsSection component
+      // No global state tracking needed for entitlements loading
     },
 
     logout: () => {
@@ -179,7 +211,7 @@ export const useAuthStore = create<AuthState>()(persist(
         tenantName: undefined,
         tenantSlug: undefined,
         error: null,
-        isLoading: false
+        isLoading: false,
       })
     },
     
@@ -211,7 +243,7 @@ export const useAuthStore = create<AuthState>()(persist(
           token: session.token,
           tenantId: session.tenantId,
           isHydrated: true,
-          isLoading: false
+          isLoading: true
         })
 
         // Load fresh profile data to get latest apps and tenant info

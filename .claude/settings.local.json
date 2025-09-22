@@ -13,7 +13,8 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(npx vite:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

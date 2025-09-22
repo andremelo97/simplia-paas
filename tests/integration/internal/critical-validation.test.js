@@ -512,4 +512,32 @@ describe('Critical Authorization Validation', () => {
       expect(accessResult.rows[0].active).toBe(false);
     });
   });
+
+  describe('Entitlements Endpoint Security', () => {
+    test('should deny access without JWT token', async () => {
+      const response = await request(app)
+        .get(`${INTERNAL_API}/entitlements`)
+        .set('x-tenant-id', '1')
+        .expect(401);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should deny access without x-tenant-id header', async () => {
+      const adminToken = generateTestToken({
+        userId: 1,
+        tenantId: 1,
+        role: 'admin',
+        platformRole: null
+      });
+
+      const response = await request(app)
+        .get(`${INTERNAL_API}/entitlements`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error.message).toContain('tenant');
+    });
+  });
 });

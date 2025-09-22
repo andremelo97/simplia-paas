@@ -8,8 +8,8 @@
 **Primary Function:** Display and access user's authorized applications
 
 ### Key Metrics
-- **UI Components:** 7 core components
-- **API Endpoints:** 1 primary endpoint (`/auth/me`)
+- **UI Components:** 10 core components (including entitlements)
+- **API Endpoints:** 2 primary endpoints (`/auth/me`, `/entitlements`)
 - **Routes:** 2 main routes (`/`, `/login`)
 - **Authentication:** JWT with tenant-scoped headers
 - **External Dependencies:** Minimal (React Router, Zustand, Framer Motion)
@@ -29,6 +29,7 @@ The Hub application serves as a self-service portal where authenticated users ca
 | `/internal/api/v1/auth/login` | POST | `hubService.login()` | `Login.tsx` | User authentication | ✅ Active |
 | `/internal/api/v1/auth/refresh` | POST | `hubService.refreshToken()` | Auto-refresh | Token refresh | ✅ Active |
 | `/internal/api/v1/auth/logout` | POST | `hubService.logout()` | `Header.tsx` | User logout | ✅ Active |
+| `/internal/api/v1/entitlements` | GET | `hubService.getEntitlements()` | `TenantEntitlementsSection.tsx` | Get tenant licenses and user assignments (admin only) | ✅ Active |
 
 ### API Route Details
 
@@ -41,9 +42,13 @@ The Hub application serves as a self-service portal where authenticated users ca
 - **Response:** User profile data plus array of accessible applications with metadata
 
 **🔄 Recent Changes (September 2025):**
+- **NEW FEATURE:** Added tenant entitlements section for admin users
 - **Authentication Fix:** Resolved tenant context issue in `/auth/login` route
 - **UX Improvement:** Removed "Tenant:" label from header - now shows only tenant name
 - **Component Standardization:** Hub now uses common UI components (`StatusBadge`, `Badge`) for consistency
+- **Entitlements API:** New `/internal/api/v1/entitlements` endpoint for read-only license management
+- **Admin Dashboard:** Admin users can now view tenant licenses and user assignments
+- **Loading Experience:** Simplified global loading state with "Loading..." message
 - Consolidated `/me/apps` functionality into `/auth/me` endpoint
 - Removed `/me/apps` route and `me.js` file to simplify authentication flow
 - `/auth/me` now returns both user profile and accessible apps in a single call
@@ -67,6 +72,26 @@ SELECT a.id, a.slug, a.name,
    AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
 ```
 
+#### Entitlements Endpoint: `/internal/api/v1/entitlements`
+- **File:** `src/server/api/internal/routes/entitlements.js`
+- **Authentication:** Bearer token required
+- **Tenant Context:** Required via `x-tenant-id` header
+- **Access Control:** Admin users only
+- **Query Logic:** Joins `tenant_applications`, `applications`, and `user_application_access`
+- **Response:** Array of tenant licenses with assigned users and summary statistics
+
+```sql
+-- Core query for tenant entitlements
+SELECT ta.application_id_fk AS "applicationId",
+       a.slug, a.name,
+       ta.status, ta.activated_at AS "activatedAt",
+       ta.seats_used AS "seatsUsed", ta.max_users AS "maxUsers"
+  FROM public.tenant_applications ta
+  INNER JOIN public.applications a ON a.id = ta.application_id_fk
+ WHERE ta.tenant_id_fk = $1 AND ta.active = true
+ ORDER BY a.name
+```
+
 ---
 
 ## Frontend Architecture
@@ -83,7 +108,10 @@ src/client/apps/hub/
 ├── components/
 │   ├── Layout.tsx        # App layout wrapper
 │   ├── Header.tsx        # Navigation header
-│   └── Sidebar.tsx       # Navigation sidebar
+│   ├── Sidebar.tsx       # Navigation sidebar
+│   ├── TenantEntitlementsSection.tsx    # Admin entitlements container
+│   ├── EntitlementAppCard.tsx           # Individual license card
+│   └── EntitlementsSummaryCard.tsx      # Summary table
 ├── services/
 │   └── hub.ts            # API service layer
 └── store/
@@ -140,16 +168,55 @@ src/client/apps/hub/
 - **Purpose:** Main application portal interface
 - **Features:**
   - Grid layout for application cards
-  - Loading states with skeleton animations
+  - Simple global loading state with "Loading..." message
   - Empty state handling
   - Application launching via `window.open()`
   - Refresh capability
+  - Admin entitlements section (role-based visibility)
 - **Key Functions:**
-  - `loadUserApps()` - Fetch user's applications
+  - `refreshApps()` - Fetch user's applications via auth store
   - `handleAppClick()` - Launch application in new window
   - `getAppIcon()` - Application icon rendering
 
-#### 3. Layout Components
+#### 3. Tenant Entitlements Section (`components/TenantEntitlementsSection.tsx`)
+- **Purpose:** Admin-only view of tenant licenses and user assignments
+- **Access Control:** Only visible for users with `role === 'admin'`
+- **Features:**
+  - Section A: Individual application license cards with user details
+  - Section B: Summary table with seat usage statistics
+  - Independent loading state management
+  - Error handling with user feedback
+- **Key Functions:**
+  - `loadEntitlements()` - Fetch tenant entitlements via hub service
+  - Automatic loading on component mount
+  - Error handling with feedback system integration
+
+#### 4. Entitlement App Card (`components/EntitlementAppCard.tsx`)
+- **Purpose:** Individual license card with user assignment details
+- **Features:**
+  - Show/Hide Users toggle functionality
+  - User table with name, email, role, and granted date
+  - License information (activated date, status badge)
+  - Seat count display from database
+  - Role-based badge variants (admin=error, manager=warning, operations=info)
+- **Key Functions:**
+  - `getUserDisplayName()` - Display name logic (firstName lastName fallback to email prefix)
+  - `formatDate()` - Brazilian date formatting
+  - Toggle state management for user visibility
+
+#### 5. Entitlements Summary Card (`components/EntitlementsSummaryCard.tsx`)
+- **Purpose:** Summary table of all tenant licenses
+- **Features:**
+  - Tabular view of all applications
+  - Status badges with appropriate colors
+  - Seat usage display (used/total from database)
+  - Activation and expiry date columns
+- **Key Functions:**
+  - `getStatusColor()` - Badge variant mapping for license status
+  - `getTotalSeats()` - Format seat display with infinity symbol for unlimited
+  - `formatDate()` - Brazilian date formatting
+
+#### 6. Layout Components
 - **Layout.tsx:** Main app wrapper with header, sidebar, and outlet
 - **Header.tsx:** Uses common header component with Hub-specific config
 - **Sidebar.tsx:** Minimal navigation (only "Home" link)
@@ -194,6 +261,13 @@ sequenceDiagram
     H->>H: Save session to localStorage
     H->>H: Update auth store state
     H->>U: Redirect to home dashboard
+
+    Note over H,U: Admin Entitlements Flow (Admin Users Only)
+    H->>API: GET /entitlements (if user.role === 'admin')
+    API->>DB: Query tenant_applications with user assignments
+    DB-->>API: Return licenses + assigned users
+    API-->>H: Return entitlements data
+    H->>H: Render entitlements section below apps
 ```
 
 ### Session Management
@@ -227,6 +301,20 @@ flowchart TD
     F --> K[Show contact admin message]
     K --> L[Provide refresh button]
     L --> C
+
+    Note over A,L: Admin Entitlements Flow (Parallel)
+    A --> M{User is admin?}
+    M -->|Yes| N[Load tenant entitlements]
+    M -->|No| O[Skip entitlements]
+
+    N --> P[Display entitlements section]
+    P --> Q[Show license cards with user toggle]
+    P --> R[Show summary table]
+
+    Q --> S[User clicks Show/Hide Users]
+    S --> T[Toggle user table visibility]
+
+    O --> E
 ```
 
 ### Key User Interactions
@@ -242,7 +330,13 @@ flowchart TD
    - Click to launch in new window/tab
    - Fallback for unconfigured URLs
 
-3. **Error States**
+3. **Admin License Management** (Admin Users Only)
+   - View tenant application licenses and status
+   - Toggle visibility of assigned users per application
+   - View user details including name, email, role, and grant date
+   - Review seat usage and license limits in summary table
+
+4. **Error States**
    - Network errors with retry options
    - Empty states with clear messaging
    - Authentication errors with field-level feedback
@@ -381,6 +475,7 @@ CREATE TABLE tenant_applications (
 - **Application Details:** Expanded application information and screenshots
 
 ### Administrative Features
+- ✅ **License Management:** Read-only view of tenant licenses and user assignments (implemented)
 - **Usage Analytics:** Track application usage patterns
 - **Access Logs:** Audit trail for application access
 - **Bulk Operations:** Mass application management

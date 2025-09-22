@@ -13,10 +13,10 @@ const authRoutes = require('./api/internal/routes/auth');
 const platformAuthRoutes = require('./api/internal/routes/platform-auth');
 const userRoutes = require('./api/internal/routes/users');
 const applicationsRoutes = require('./api/internal/routes/applications');
-const entitlementsRoutes = require('./api/internal/routes/entitlements');
 const tenantsRoutes = require('./api/internal/routes/tenants');
 const auditRoutes = require('./api/internal/routes/audit');
 const metricsRoutes = require('./api/internal/routes/metrics');
+const entitlementsRoutes = require('./api/internal/routes/entitlements');
 
 // Public routes (no auth required)
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');

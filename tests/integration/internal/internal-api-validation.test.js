@@ -371,12 +371,47 @@ describe('Internal API Validation', () => {
     });
   });
 
+  describe('Entitlements Endpoint (Tenant-Scoped)', () => {
+    test('should return 200 with proper tenant context for entitlements', async () => {
+      const response = await request(app)
+        .get(`${INTERNAL_API}/entitlements`)
+        .set('Authorization', `Bearer ${validToken}`)
+        .set('x-tenant-id', '1')
+        .expect(200);
+
+      expect(response.body).toHaveProperty('data');
+      expect(response.body.data).toHaveProperty('licenses');
+      expect(response.body.data).toHaveProperty('summary');
+      expect(response.body).toHaveProperty('meta');
+      expect(response.body.meta.code).toBe('ENTITLEMENTS_OK');
+    });
+
+    test('should deny access without JWT token', async () => {
+      const response = await request(app)
+        .get(`${INTERNAL_API}/entitlements`)
+        .set('x-tenant-id', '1')
+        .expect(401);
+
+      expect(response.body).toHaveProperty('error');
+    });
+
+    test('should deny access without x-tenant-id header', async () => {
+      const response = await request(app)
+        .get(`${INTERNAL_API}/entitlements`)
+        .set('Authorization', `Bearer ${validToken}`)
+        .expect(400);
+
+      expect(response.body).toHaveProperty('error');
+      expect(response.body.error.message).toContain('tenant');
+    });
+  });
+
   describe('Health Check (Public)', () => {
     test('should allow health check without authentication', async () => {
       const response = await request(app)
         .get('/health')
         .expect(200);
-      
+
       expect(response.body).toHaveProperty('status', 'ok');
       expect(response.body).toHaveProperty('message', 'Server is running');
     });

@@ -27,6 +27,41 @@ interface UserProfileResponse {
   data: UserProfile
 }
 
+interface EntitlementUser {
+  email: string
+  firstName?: string
+  lastName?: string
+  role: 'operations' | 'manager' | 'admin'
+  grantedAt: string
+}
+
+interface EntitlementLicense {
+  applicationId: number
+  slug: string
+  name: string
+  status: 'active' | 'suspended' | 'expired'
+  activatedAt: string
+  seatsUsed: number
+  maxUsers: number | null
+  users: EntitlementUser[]
+}
+
+interface EntitlementsSummary {
+  apps: number
+  seatsUsed: number
+  seatsLimit: number | null
+}
+
+interface EntitlementsResponse {
+  data: {
+    licenses: EntitlementLicense[]
+    summary: EntitlementsSummary
+  }
+  meta: {
+    code: string
+  }
+}
+
 class HubService {
   async login(credentials: { email: string; password: string }) {
     const { tenantId } = useAuthStore.getState()
@@ -80,7 +115,7 @@ class HubService {
 
   async logout() {
     const { logout } = useAuthStore.getState()
-    
+
     try {
       // Call backend logout endpoint
       await api.post('/internal/api/v1/auth/logout', {})
@@ -91,6 +126,19 @@ class HubService {
       logout()
       localStorage.removeItem('hub-last-visited-apps')
     }
+  }
+
+  async getEntitlements(): Promise<EntitlementsResponse> {
+    const { tenantId } = useAuthStore.getState()
+
+    if (!tenantId) {
+      throw new Error('Tenant context not available')
+    }
+
+    // x-tenant-id header will be automatically injected by interceptor
+    const response = await api.get('/internal/api/v1/entitlements')
+
+    return response.data
   }
 }
 

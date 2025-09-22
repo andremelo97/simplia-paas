@@ -36,7 +36,6 @@ class TenantMiddleware {
     // Tenant-scoped routes that REQUIRE x-tenant-id header
     const tenantScopedPaths = [
       '/internal/api/v1/users', // tenant-scoped user routes (requires x-tenant-id)
-      '/internal/api/v1/entitlements',
     ];
     
     // Platform-scoped routes (no tenant header required)
@@ -46,6 +45,7 @@ class TenantMiddleware {
       '/internal/api/v1/tenants', // tenant management is platform-scoped
       '/internal/api/v1/audit',
       '/internal/api/v1/me', // self-service routes use public schema only
+      '/internal/api/v1/entitlements', // entitlements queries only public schema
       '/health',
       '/docs',
     ];
@@ -59,7 +59,7 @@ class TenantMiddleware {
     
     // Check tenant-scoped patterns
     for (const tenantPath of tenantScopedPaths) {
-      if (path.startsWith(tenantPath.replace('/:id', '')) || path.includes('/users') || path.includes('/entitlements')) {
+      if (path.startsWith(tenantPath.replace('/:id', '')) || path.includes('/users')) {
         return true;
       }
     }
@@ -241,17 +241,27 @@ class TenantMiddleware {
         return;
       }
 
-      // Set search_path to tenant schema first, then public for fallback
-      const searchPathQuery = `SET LOCAL search_path TO ${schemaName}, public`;
-      await database.query(searchPathQuery);
+      // Use a transaction to ensure SET LOCAL works properly
+      await database.query('BEGIN');
 
-      // Set timezone for the session if tenant has a timezone
-      if (tenantTimezone) {
-        const timezoneQuery = `SET LOCAL TIME ZONE '${tenantTimezone}'`;
-        await database.query(timezoneQuery);
-        console.log(`Applied timezone: ${tenantTimezone} and search_path: ${schemaName}, public`);
-      } else {
-        console.log(`Applied search_path: ${schemaName}, public (no timezone specified)`);
+      try {
+        // Set search_path to tenant schema first, then public for fallback
+        const searchPathQuery = `SET LOCAL search_path TO ${schemaName}, public`;
+        await database.query(searchPathQuery);
+
+        // Set timezone for the session if tenant has a timezone
+        if (tenantTimezone) {
+          const timezoneQuery = `SET LOCAL TIME ZONE '${tenantTimezone}'`;
+          await database.query(timezoneQuery);
+          console.log(`Applied timezone: ${tenantTimezone} and search_path: ${schemaName}, public`);
+        } else {
+          console.log(`Applied search_path: ${schemaName}, public (no timezone specified)`);
+        }
+
+        await database.query('COMMIT');
+      } catch (error) {
+        await database.query('ROLLBACK');
+        throw error;
       }
     } catch (error) {
       console.error(`Failed to apply tenant search_path/timezone for ${schemaName}:`, error);

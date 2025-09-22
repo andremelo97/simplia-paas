@@ -859,37 +859,62 @@ Atualizar preço.
 > **Headers**: `x-tenant-id` obrigatório
 
 ### GET `/entitlements`
-Licenças do tenant.
+Licenças do tenant com usuários assignados (read-only).
 
-**Acesso**: Manager/Admin  
+**Acesso**: Manager/Admin
+**Uso Principal**: Hub App para exibir licenças e usuários para admins
 **Parâmetros**: `includeExpired`, `status`, `limit`, `offset`
 
 **Resposta**:
 ```json
 {
-  "success": true,
   "data": {
     "licenses": [
       {
-        "applicationSlug": "tq",
-        "applicationName": "Transcription Quote",
+        "applicationId": 1,
+        "slug": "tq",
+        "name": "Transcription Quote",
         "status": "active",
-        "userLimit": 50,
-        "seatsUsed": 32,
-        "seatsAvailable": 18,
-        "expiryDate": "2024-12-31",
-        "pricing": {
-          "operations": 35.00,
-          "manager": 55.00,
-          "admin": 80.00
-        }
+        "activatedAt": "2024-01-15T10:30:00Z",
+        "seatsUsed": 3,
+        "maxUsers": 50,
+        "users": [
+          {
+            "email": "admin@tenant.com",
+            "firstName": "John",
+            "lastName": "Doe",
+            "role": "admin",
+            "grantedAt": "2024-01-15T14:20:00Z"
+          },
+          {
+            "email": "manager@tenant.com",
+            "firstName": "Jane",
+            "lastName": "Smith",
+            "role": "manager",
+            "grantedAt": "2024-01-16T09:15:00Z"
+          }
+        ]
       }
-    ]
+    ],
+    "summary": {
+      "apps": 2,
+      "seatsUsed": 5,
+      "seatsLimit": 100
+    }
+  },
+  "meta": {
+    "code": "ENTITLEMENTS_RETRIEVED"
   }
 }
 ```
 
 **Nota sobre filtros**: A rota `/entitlements` agora suporta filtro por `applicationSlug` via query parameter (ex: `/entitlements?applicationSlug=tq`), substituindo a rota específica `/entitlements/:applicationSlug` que foi removida para evitar duplicação.
+
+**Hub Integration**: Este endpoint é usado pelo Hub App para exibir a seção de entitlements para usuários admin, mostrando:
+- Cards individuais de licença com toggle Show/Hide Users
+- Tabela de usuários assignados com role badges
+- Tabela resumo com seat usage e status
+- Informações read-only (sem ações de modificação)
 
 **Nota**: As operações de ativação e ajuste de licenças são feitas através das rotas global-scoped em `/tenants/:tenantId/applications/:slug/activate` e `/tenants/:tenantId/applications/:slug/adjust`.
 
@@ -1081,14 +1106,20 @@ npm run db:drop:test
 
 # 📊 API Statistics
 
-- **Total Endpoints**: 95+ (estimated)
-- **Platform Admin**: 58 endpoints
-- **Tenant Admin**: 37 endpoints
-- **Authentication Endpoints**: 12 (platform + tenant auth)
+- **Total Endpoints**: 75+ (estimated)
+- **Platform Admin**: 58 endpoints (unchanged)
+- **Tenant Admin**: 5 endpoints (streamlined)
+- **Authentication Endpoints**: 8 (platform + tenant auth)
 - **Debug/Dev Endpoints**: 8 (development only)
 - **Rate Limited**: Authentication routes (10-15 req/15min)
 - **Multi-tenant**: Schema-per-tenant isolation
 - **Protection Levels**: 7 different auth requirements
+
+> **🔧 Cleanup (Janeiro 2025)**: Removidos endpoints desnecessários para simplificar API:
+> - Tenant user management movido para platform admin (`/tenants`)
+> - Entitlements/licenses consolidados em `/tenants` routes
+> - Endpoints de perfil de usuário e mudança de senha removidos
+> - Focus em operações essenciais apenas
 
 ## 📋 Complete Route Reference
 
@@ -1155,31 +1186,9 @@ npm run db:drop:test
 - `POST /auth/refresh` - Refresh tenant token
 - `POST /auth/logout` - Tenant user logout
 - `GET /auth/me` - Get current user profile with apps
-- `PUT /auth/change-password` - Change user password
-- `POST /auth/validate-token` - Validate JWT token
-- `GET /auth/tenant-info` - Get tenant information
-- `GET /auth/health` - Health check
 
 #### Tenant Users (`/users`)
 - `GET /users` - List users in tenant
-- `GET /users/stats` - Get user statistics
-- `POST /users` - Create new user
-- `GET /users/:userId` - Get user by ID
-- `PUT /users/:userId` - Update user
-- `DELETE /users/:userId` - Delete user
-- `POST /users/:userId/reset-password` - Reset password
-- `GET /users/me/profile` - Get current profile
-- `PUT /users/me/profile` - Update current profile
-- `GET /users/:userId/apps` - Get user app access
-- `GET /users/health` - Health check
-
-#### Entitlements/Licenses (`/entitlements`)
-- `GET /entitlements` - List tenant licenses
-- `GET /entitlements/users` - Get user application access
-- `POST /entitlements/users/:userId/grant` - Grant user app access
-- `PUT /entitlements/users/:userId/revoke` - Revoke user app access
-- `GET /entitlements/users/:userId/applications` - Get user applications
-- `GET /entitlements/logs` - Get access logs
 
 ### 🔧 Development Routes
 *Debug/development endpoints (no auth required)*

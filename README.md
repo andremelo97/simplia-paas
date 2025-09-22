@@ -90,17 +90,20 @@ simplia-paas/
 │   │   │   │   ├── 📁 components/     # Componentes específicos do Hub
 │   │   │   │   │   ├── Header.tsx     # Header com logout e tenant info
 │   │   │   │   │   ├── Layout.tsx     # Layout principal do Hub
-│   │   │   │   │   └── Sidebar.tsx    # Sidebar de navegação do Hub
+│   │   │   │   │   ├── Sidebar.tsx    # Sidebar de navegação do Hub
+│   │   │   │   │   ├── TenantEntitlementsSection.tsx    # **NOVO**: Seção de entitlements para admins
+│   │   │   │   │   ├── EntitlementAppCard.tsx           # **NOVO**: Card individual de licença com toggle de usuários
+│   │   │   │   │   └── EntitlementsSummaryCard.tsx      # **NOVO**: Tabela resumo de licenças
 │   │   │   │   ├── 📁 features/       # Funcionalidades específicas do Hub
 │   │   │   │   │   └── 📁 apps/       # Gestão de aplicações do usuário
 │   │   │   │   ├── 📁 pages/          # Páginas do Hub
-│   │   │   │   │   ├── Home.tsx       # Home com apps disponíveis
+│   │   │   │   │   ├── Home.tsx       # Home com apps disponíveis + entitlements (admin)
 │   │   │   │   │   └── Login.tsx      # Login com lookup de tenant
 │   │   │   │   ├── 📁 providers/      # Providers React do Hub
-│   │   │   │   ├── 📁 services/       # Cliente para /internal/api/v1/me
-│   │   │   │   │   └── hub.ts         # Serviço de apps do usuário
+│   │   │   │   ├── 📁 services/       # Cliente para /internal/api/v1
+│   │   │   │   │   └── hub.ts         # Serviço de apps + entitlements
 │   │   │   │   ├── 📁 store/          # Estado específico do Hub
-│   │   │   │   │   ├── auth.ts        # Autenticação do usuário final
+│   │   │   │   │   ├── auth.ts        # Autenticação com loading global simples
 │   │   │   │   │   └── ui.ts          # Estado da UI do Hub
 │   │   │   │   ├── index.html         # HTML específico do Hub
 │   │   │   │   ├── main.tsx           # Entry point do Hub
@@ -307,7 +310,7 @@ simplia-paas/
   - **`users.js`**: CRUD administrativo de usuários com bulk operations
   - **`tenant-users.js`**: **NOVO** - API tenant-scoped para operações de usuários por tenant
   - **`applications.js`**: Catálogo de aplicações e gestão
-  - **`entitlements.js`**: Gestão de licenças tenant e acesso de usuários
+  - **`entitlements.js`**: **NOVO** - Gestão de licenças read-only para Hub (admin users)
   - **`audit.js`**: Logs de auditoria e relatórios de compliance
   - **`platform-auth.js`**: Autenticação de plataforma
   - **`tenants.js`**: Gestão administrativa de tenants
@@ -1001,6 +1004,18 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 
 ### ✨ Implementações Recentes (Janeiro 2025)
 
+- **✅ 📊 Hub Entitlements Feature**: Sistema completo de visualização de licenças para usuários admin no Hub
+  - **Admin Dashboard**: Seção de entitlements visível apenas para usuários com `role === 'admin'`
+  - **Read-Only License Management**: Visualização de todas as licenças do tenant com usuários assignados
+  - **Show/Hide Users Toggle**: Funcionalidade para expandir/recolher lista de usuários por aplicação
+  - **Seat Usage Display**: Exibição de assentos usados/total diretamente do banco de dados
+  - **Role-Based Badges**: Badges coloridos por role (admin=error, manager=warning, operations=info)
+  - **API Endpoint**: Novo `/internal/api/v1/entitlements` para buscar licenças com contexto de usuários
+  - **Summary Table**: Tabela resumo com status, assentos e datas de ativação/expiração
+  - **Loading Experience**: Loading global simples com mensagem "Loading..." centralizada
+  - **Component Structure**: 3 novos componentes (TenantEntitlementsSection, EntitlementAppCard, EntitlementsSummaryCard)
+  - **Documentation Updated**: hub-audit.md e README.md atualizados com nova funcionalidade
+
 - **✅ 🔧 Hub Authentication Fix + UX Improvements**: Correção crítica do login do Hub e melhorias de interface
   - **Bug Fix Crítico**: Corrigido acesso ao tenant context na rota `/auth/login` (`req.tenantId` → `req.tenant.id`)
   - **Hub Login Working**: Usuários finais agora conseguem fazer login no Hub com sucesso
@@ -1009,6 +1024,14 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
   - **Documentation Updated**: Atualizadas documentações em `/docs/hub-audit.md` e `README.md`
   - **Technical Fix**: Tenant context agora é acessado via `req.tenant.id` em vez de `req.tenantId` diretamente
   - **Better UX**: Interface mais limpa e amigável para usuários finais (sem terminologia técnica)
+
+- **✅ 🧹 API Cleanup & Simplification**: Limpeza e simplificação de endpoints desnecessários
+  - **Tenant Auth Cleanup**: Removidos endpoints não utilizados (`/auth/health`, `/auth/validate-token`, `/auth/tenant-info`, `/auth/change-password`)
+  - **Users Routes Streamlined**: Mantido apenas `GET /users` para listagem - operações CRUD movidas para platform admin
+  - **Entitlements Removed**: Arquivo `/entitlements.js` removido completamente - funcionalidade consolidada em `/tenants` routes
+  - **Simplified Architecture**: API mais focada com separação clara entre platform admin e tenant operations
+  - **Reduced Complexity**: 75+ endpoints (vs 95+ anteriores) com foco em operações essenciais
+  - **Documentation Updated**: `INTERNAL-API.md` atualizado com nova estrutura simplificada
 
 - **✅ 🔐 API Security Enhancement**: Dedicated endpoint for tenant licensed applications
   - **Security Issue Identified**: `/licenses` tab was using `GET /tenants/{id}` which returned ALL tenant data
@@ -1132,8 +1155,8 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 ```
 
 ### 📈 Status de Desenvolvimento
-- 🟢 **Backend API**: 100% completo com documentação Swagger + pricing system + grant/revoke APIs + **métricas com cache**
-- 🟢 **Frontend Foundation**: Design system e error handling implementados  
+- 🟢 **Backend API**: 100% completo com documentação Swagger + pricing system + grant/revoke APIs + **métricas com cache** + **entitlements API**
+- 🟢 **Frontend Foundation**: Design system e error handling implementados
 - 🟢 **Dashboard**: **Métricas reais do backend** com 4 cards (Tenants, Users, Applications, Licenses) + filtros temporais + loading/error states
 - 🟢 **Tenant Management**: CRUD completo com addresses/contacts + status toggle + **página de licenças** + seat management visual
 - 🟢 **Users Management**: CRUD completo + modal Grant/Revoke com preview de preços
@@ -1141,6 +1164,7 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 - 🟢 **Pricing & Billing System**: Matriz App × UserType + snapshots + seat limits globais - 100% implementado
 - 🟢 **License Management**: Página completa de licenças por tenant com ações Adjust/Suspend/Resume
 - 🟢 **Admin Interface**: Dashboard, tenants, users, applications, **entitlements** - 100% completo
+- 🟢 **Hub App**: Portal completo com aplicações + **entitlements para admins** + loading global simples - 100% implementado
 - 🔴 **Product Apps**: Estrutura criada - desenvolvimento pendente
 - 🔴 **Public APIs**: Aguardando definição de requisitos dos produtos
 

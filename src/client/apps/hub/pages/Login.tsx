@@ -65,8 +65,7 @@ export const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    clearError()
-    
+
     if (!validateForm()) {
       return
     }
@@ -75,6 +74,8 @@ export const Login: React.FC = () => {
       await login(credentials)
     } catch (error) {
       console.error('Login failed:', error)
+      // Error is already set in the auth store by the login function
+      // Don't do anything else here - let the UI render the error
     }
   }
 

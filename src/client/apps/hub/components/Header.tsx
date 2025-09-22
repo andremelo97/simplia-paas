@@ -27,16 +27,22 @@ const getDisplayRole = (user: any) => {
 }
 
 export const Header: React.FC = () => {
-  const { user } = useAuthStore()
+  const { user, tenantName, tenantSlug } = useAuthStore()
 
   const handleLogout = () => {
     hubService.logout()
   }
 
+  // Create tenant object for header display
+  const tenant = tenantName ? {
+    name: tenantName,
+    slug: tenantSlug || '',
+  } : null
+
   return (
     <CommonHeader
       user={user}
-      tenant={null} // Hub doesn't show tenant info in header
+      tenant={tenant}
       onLogout={handleLogout}
       getBreadcrumbs={getBreadcrumbs}
       getDisplayRole={getDisplayRole}

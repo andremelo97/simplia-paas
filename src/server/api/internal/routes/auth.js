@@ -3,6 +3,7 @@ const authService = require('../../../infra/authService');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
 const { requireAuth, optionalAuth, createRateLimit } = require('../../../infra/middleware/auth');
 const { validatePassword, isValidEmail } = require('../../../../shared/types/user');
+const db = require('../../../infra/db/database');
 
 const router = express.Router();
 
@@ -13,8 +14,48 @@ router.use(tenantMiddleware);
 const authRateLimit = createRateLimit(15 * 60 * 1000, 10); // 10 requests per 15 minutes
 
 /**
- * POST /auth/refresh
- * Refresh JWT token
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Refresh tenant user token
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Refresh JWT token for tenant user session. Same functionality as platform-auth/refresh
+ *       but for tenant-scoped users.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [token]
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Current JWT token to refresh
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token: { type: string }
+ *                     expiresIn: { type: string }
+ *       401:
+ *         description: Invalid or expired token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 router.post('/refresh', authRateLimit, async (req, res) => {
   try {
@@ -40,6 +81,108 @@ router.post('/refresh', authRateLimit, async (req, res) => {
     return res.status(401).json({
       error: 'Unauthorized',
       message: 'Token refresh failed'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Authenticate tenant user
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Authenticate user within a specific tenant context.
+ *       Requires tenant to be resolved via x-tenant-id header.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *               password:
+ *                 type: string
+ *                 description: User's password
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user: { $ref: '#/components/schemas/User' }
+ *                     token: { type: string }
+ *                     expiresIn: { type: string }
+ *       401:
+ *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post('/login', authRateLimit, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Email and password are required'
+      });
+    }
+
+    // Get tenant context from middleware
+    const tenantContext = {
+      id: req.tenant?.id,
+      tenantId: req.tenant?.id,
+      slug: req.tenant?.slug,
+      schema: req.tenant?.schema
+    };
+
+    const result = await authService.login(tenantContext, {
+      email,
+      password
+    });
+
+    res.json({
+      success: true,
+      message: 'Authentication successful',
+      data: result
+    });
+  } catch (error) {
+    console.error('Tenant login error:', error);
+
+    let statusCode = 500;
+    let message = 'Authentication failed';
+
+    if (error.name === 'InvalidCredentialsError' || error.message.includes('Invalid')) {
+      statusCode = 401;
+      message = 'Invalid email or password';
+    }
+
+    res.status(statusCode).json({
+      error: 'Authentication Error',
+      message: message
     });
   }
 });
@@ -72,12 +215,13 @@ router.post('/logout', requireAuth, async (req, res) => {
  * @openapi
  * /auth/me:
  *   get:
- *     tags: [Auth]  
- *     summary: Get current user profile
+ *     tags: [Auth]
+ *     summary: Get current user profile with accessible apps
  *     description: |
  *       **Scope:** Tenant (x-tenant-id required)
  *
- *       Get authenticated user information and permissions
+ *       Get authenticated user information, tenant details, and applications the user can access.
+ *       This endpoint consolidates user profile and app access information for the Hub.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -89,7 +233,7 @@ router.post('/logout', requireAuth, async (req, res) => {
  *         description: Tenant identifier
  *     responses:
  *       200:
- *         description: User profile retrieved
+ *         description: User profile and apps retrieved
  *         content:
  *           application/json:
  *             schema:
@@ -99,21 +243,23 @@ router.post('/logout', requireAuth, async (req, res) => {
  *                 data:
  *                   type: object
  *                   properties:
- *                     user:
- *                       type: object
- *                       properties:
- *                         userId: { type: integer }
- *                         email: { type: string }
- *                         role: { type: string }
- *                         allowedApps: 
- *                           type: array
- *                           items:
- *                             type: string
+ *                     email: { type: string }
+ *                     role: { type: string }
+ *                     allowedApps:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           slug: { type: string }
+ *                           name: { type: string }
+ *                           roleInApp: { type: string }
+ *                           expiresAt: { type: string, nullable: true }
+ *                           licenseStatus: { type: string }
  *                     tenant:
  *                       type: object
  *                       properties:
- *                         id: { type: integer }
  *                         name: { type: string }
+ *                         slug: { type: string }
  *       401:
  *         description: Authentication required
  *         content:
@@ -123,11 +269,48 @@ router.post('/logout', requireAuth, async (req, res) => {
  */
 router.get('/me', requireAuth, async (req, res) => {
   try {
+    const userId = req.user?.userId;
+    const tenantId = req.tenant?.id;
+
+    if (!userId || !tenantId) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing user or tenant context'
+      });
+    }
+
+    // Get user's accessible apps (same query as /me/apps)
+    const { rows: allowedApps } = await db.query(
+      `SELECT a.slug,
+              a.name,
+              uaa.role_in_app   AS "roleInApp",
+              uaa.expires_at    AS "expiresAt",
+              ta.status         AS "licenseStatus"
+         FROM public.user_application_access uaa
+         JOIN public.applications a
+           ON a.id = uaa.application_id_fk
+         JOIN public.tenant_applications ta
+           ON ta.application_id_fk = uaa.application_id_fk
+          AND ta.tenant_id_fk   = uaa.tenant_id_fk
+        WHERE uaa.tenant_id_fk  = $1
+          AND uaa.user_id_fk    = $2
+          AND uaa.active = true
+          AND (uaa.expires_at IS NULL OR uaa.expires_at > NOW())
+          AND ta.active = true
+        ORDER BY a.name`,
+      [tenantId, userId]
+    );
+
     res.json({
       success: true,
       data: {
-        user: req.user,
-        tenant: req.tenant
+        email: req.user.email,
+        role: req.user.role,
+        allowedApps,
+        tenant: {
+          name: req.tenant.name,
+          slug: req.tenant.slug
+        }
       }
     });
   } catch (error) {

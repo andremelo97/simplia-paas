@@ -2,7 +2,7 @@
 
 **Docs: Multi-Tenancy Híbrido (Global vs Tenant-Scoped) — Setembro/2025**
 
-**Version**: 1.1.8  
+**Version**: 1.2.0  
 **Base URL**: `http://localhost:3001/internal/api/v1`  
 **Documentation**: `http://localhost:3001/docs/internal` (Swagger UI - Platform Admin Only)
 
@@ -38,6 +38,8 @@ A Simplia Internal API é uma API RESTful completa para administração da plata
 - **Escopo**: Limitado ao tenant específico
 - **Header Obrigatório**: `x-tenant-id`
 - **Uso**: Gerenciamento dentro do tenant (usuários, licenças)
+
+> **🔧 Bug Fix (Janeiro 2025)**: Corrigido acesso ao tenant context na rota `/auth/login`. O middleware de tenant agora é acessado via `req.tenant.id` em vez de `req.tenantId` diretamente. Esta correção resolve falhas de autenticação no Hub e garante que o contexto do tenant seja passado corretamente para o `authService.login()`.
 
 ### Hierarquia de Roles
 
@@ -1079,14 +1081,116 @@ npm run db:drop:test
 
 # 📊 API Statistics
 
-- **Total Endpoints**: 85
-- **Platform Admin**: 47 endpoints
-- **Tenant Admin**: 38 endpoints  
-- **OpenAPI Documented**: 47 endpoints (55%)
-- **AppFeedback Integrated**: 15 endpoints
-- **Rate Limited**: Authentication routes
+- **Total Endpoints**: 95+ (estimated)
+- **Platform Admin**: 58 endpoints
+- **Tenant Admin**: 37 endpoints
+- **Authentication Endpoints**: 12 (platform + tenant auth)
+- **Debug/Dev Endpoints**: 8 (development only)
+- **Rate Limited**: Authentication routes (10-15 req/15min)
 - **Multi-tenant**: Schema-per-tenant isolation
+- **Protection Levels**: 7 different auth requirements
+
+## 📋 Complete Route Reference
+
+### 🌐 Global (Platform-Scoped) Routes
+*Require platform admin authentication, NO x-tenant-id header*
+
+#### Platform Authentication (`/platform-auth`)
+- `POST /platform-auth/login` - Platform admin login
+- `GET /platform-auth/me` - Get platform admin profile
+- `POST /platform-auth/refresh` - Refresh platform token
+- `POST /platform-auth/logout` - Platform admin logout
+- `GET /platform-auth/audit` - Platform login audit logs
+
+#### Applications Management (`/applications`)
+- `GET /applications` - List application catalog
+- `GET /applications/:id` - Get application by ID
+- `GET /applications/slug/:slug` - Get application by slug
+- `GET /applications/:id/pricing` - Get pricing matrix
+- `POST /applications/:id/pricing` - Create/schedule pricing
+- `PUT /applications/:id/pricing/:pricingId` - Update pricing
+- `POST /applications/:id/pricing/:pricingId/end` - End pricing period
+
+#### Tenants Management (`/tenants`)
+- `GET /tenants` - List all tenants
+- `GET /tenants/:id` - Get tenant by ID
+- `POST /tenants` - Create new tenant
+- `PUT /tenants/:id` - Update tenant
+- `DELETE /tenants/:id` - Soft delete tenant
+- `GET /tenants/:id/addresses` - Get tenant addresses
+- `POST /tenants/:id/addresses` - Create address
+- `PUT /tenants/:id/addresses/:addressId` - Update address
+- `DELETE /tenants/:id/addresses/:addressId` - Delete address
+- `GET /tenants/:id/contacts` - Get tenant contacts
+- `POST /tenants/:id/contacts` - Create contact
+- `PUT /tenants/:id/contacts/:contactId` - Update contact
+- `DELETE /tenants/:id/contacts/:contactId` - Delete contact
+- `GET /tenants/:id/applications` - Get tenant licenses
+- `POST /tenants/:id/applications/:appSlug/activate` - Activate app for tenant
+- `PUT /tenants/:id/applications/:appSlug/adjust` - Adjust tenant app settings
+- `POST /tenants/:id/users/:userId/applications/:appSlug/grant` - Grant user access
+- `POST /tenants/:id/users/:userId/applications/:appSlug/revoke` - Revoke user access
+- `PUT /tenants/:id/users/:userId/applications/:appSlug/reactivate` - Reactivate access
+- `PUT /tenants/:id/users/:userId/applications/:appSlug/role` - Update user role
+- `GET /tenants/:id/applications/:appSlug/users` - Get app users
+
+#### Cross-Tenant User Management (`/tenant-users`)
+- `POST /tenants/:tenantId/users` - Create user in tenant
+- `GET /tenants/:tenantId/users/:userId` - Get tenant user
+- `PUT /tenants/:tenantId/users/:userId` - Update tenant user
+- `DELETE /tenants/:tenantId/users/:userId` - Deactivate tenant user
+- `POST /tenants/:tenantId/users/:userId/reset-password` - Reset password
+
+#### Audit & Metrics (`/audit`, `/metrics`)
+- `GET /audit/access-logs` - Query access logs
+- `GET /audit/access-summary` - Access summary stats
+- `GET /audit/security-alerts` - Security alerts
+- `GET /metrics/overview` - Platform overview metrics
+
+### 🏢 Tenant-Scoped Routes
+*Require x-tenant-id header and tenant authentication*
+
+#### Tenant Authentication (`/auth`)
+- `POST /auth/login` - Tenant user login
+- `POST /auth/refresh` - Refresh tenant token
+- `POST /auth/logout` - Tenant user logout
+- `GET /auth/me` - Get current user profile with apps
+- `PUT /auth/change-password` - Change user password
+- `POST /auth/validate-token` - Validate JWT token
+- `GET /auth/tenant-info` - Get tenant information
+- `GET /auth/health` - Health check
+
+#### Tenant Users (`/users`)
+- `GET /users` - List users in tenant
+- `GET /users/stats` - Get user statistics
+- `POST /users` - Create new user
+- `GET /users/:userId` - Get user by ID
+- `PUT /users/:userId` - Update user
+- `DELETE /users/:userId` - Delete user
+- `POST /users/:userId/reset-password` - Reset password
+- `GET /users/me/profile` - Get current profile
+- `PUT /users/me/profile` - Update current profile
+- `GET /users/:userId/apps` - Get user app access
+- `GET /users/health` - Health check
+
+#### Entitlements/Licenses (`/entitlements`)
+- `GET /entitlements` - List tenant licenses
+- `GET /entitlements/users` - Get user application access
+- `POST /entitlements/users/:userId/grant` - Grant user app access
+- `PUT /entitlements/users/:userId/revoke` - Revoke user app access
+- `GET /entitlements/users/:userId/applications` - Get user applications
+- `GET /entitlements/logs` - Get access logs
+
+### 🔧 Development Routes
+*Debug/development endpoints (no auth required)*
+- `GET /debug/routes` - Debug route list
+- `GET /debug/headers` - Debug headers
+- `GET /debug/check-user/:tenantId/:userId` - Check user existence
+- `GET /debug/auth` - Test auth middleware
+- `GET /debug/platform` - Test platform role
+- `GET /dev/tenants/:tenantId/users/:userId` - Dev get user
+- `POST /dev/tenants/:tenantId/users` - Dev create user
 
 ---
 
-**© 2024 Simplia - Internal API Documentation v1.1.4**
+**© 2025 Simplia - Internal API Documentation v1.2.0**

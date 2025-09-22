@@ -9,7 +9,7 @@
 
 ### Key Metrics
 - **UI Components:** 7 core components
-- **API Endpoints:** 1 primary endpoint (`/me/apps`)
+- **API Endpoints:** 1 primary endpoint (`/auth/me`)
 - **Routes:** 2 main routes (`/`, `/login`)
 - **Authentication:** JWT with tenant-scoped headers
 - **External Dependencies:** Minimal (React Router, Zustand, Framer Motion)
@@ -25,21 +25,33 @@ The Hub application serves as a self-service portal where authenticated users ca
 
 | Route | Method | Frontend Service | UI Component | Purpose | Status |
 |-------|--------|------------------|--------------|---------|--------|
-| `/internal/api/v1/me/apps` | GET | `hubService.getMyApps()` | `Home.tsx` | List user's accessible applications | ✅ Active |
+| `/internal/api/v1/auth/me` | GET | `hubService.getUserProfile()` | `Home.tsx` | Get user profile and accessible applications | ✅ Active |
 | `/internal/api/v1/auth/login` | POST | `hubService.login()` | `Login.tsx` | User authentication | ✅ Active |
-| `/internal/api/v1/auth/me` | GET | `hubService.getUserProfile()` | Not used | Get user profile | ⚠️ Unused |
-| `/internal/api/v1/auth/refresh` | POST | `hubService.refreshToken()` | Not used | Token refresh | ⚠️ Unused |
+| `/internal/api/v1/auth/refresh` | POST | `hubService.refreshToken()` | Auto-refresh | Token refresh | ✅ Active |
 | `/internal/api/v1/auth/logout` | POST | `hubService.logout()` | `Header.tsx` | User logout | ✅ Active |
 
 ### API Route Details
 
-#### Primary Endpoint: `/internal/api/v1/me/apps`
-- **File:** `src/server/api/internal/routes/me.js:31`
+#### Primary Endpoint: `/internal/api/v1/auth/me`
+- **File:** `src/server/api/internal/routes/auth.js:128`
 - **Authentication:** Bearer token required
 - **Tenant Context:** Required via `x-tenant-id` header
 - **Query Logic:** Joins `user_application_access`, `applications`, and `tenant_applications`
 - **Filters:** Active licenses, non-expired access, user permissions
-- **Response:** Array of user's accessible applications with metadata
+- **Response:** User profile data plus array of accessible applications with metadata
+
+**🔄 Recent Changes (September 2025):**
+- **Authentication Fix:** Resolved tenant context issue in `/auth/login` route
+- **UX Improvement:** Removed "Tenant:" label from header - now shows only tenant name
+- **Component Standardization:** Hub now uses common UI components (`StatusBadge`, `Badge`) for consistency
+- Consolidated `/me/apps` functionality into `/auth/me` endpoint
+- Removed `/me/apps` route and `me.js` file to simplify authentication flow
+- `/auth/me` now returns both user profile and accessible apps in a single call
+- `/auth/refresh` route is now fully functional and documented
+
+**🐛 Bug Fixes:**
+- Fixed authentication failure caused by incorrect tenant context access (`req.tenantId` → `req.tenant.id`)
+- Hub login now properly resolves tenant context and authenticates users
 
 ```sql
 -- Core query for user applications

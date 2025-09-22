@@ -17,7 +17,6 @@ const entitlementsRoutes = require('./api/internal/routes/entitlements');
 const tenantsRoutes = require('./api/internal/routes/tenants');
 const auditRoutes = require('./api/internal/routes/audit');
 const metricsRoutes = require('./api/internal/routes/metrics');
-const meRoutes = require('./api/internal/routes/me');
 
 // Public routes (no auth required)
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
@@ -102,9 +101,6 @@ internalRouter.use('/audit', auditRoutes);
 
 // Metrics routes (platform-scoped, for internal admins only)
 internalRouter.use('/metrics', metricsRoutes);
-
-// Self-service routes that need tenant context but NO search_path
-internalRouter.use('/me', tenantMiddleware, requireAuth, meRoutes);
 
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();

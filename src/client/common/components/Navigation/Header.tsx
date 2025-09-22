@@ -185,7 +185,7 @@ export const Header: React.FC<HeaderProps> = ({
           {tenant && (
             <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-500">
               <div className="w-1 h-1 bg-gray-300 rounded-full" />
-              <span>Tenant: {tenant.name}</span>
+              <span>{tenant.name}</span>
             </div>
           )}
         </div>

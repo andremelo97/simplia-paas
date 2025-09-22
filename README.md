@@ -1001,6 +1001,15 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 
 ### ✨ Implementações Recentes (Janeiro 2025)
 
+- **✅ 🔧 Hub Authentication Fix + UX Improvements**: Correção crítica do login do Hub e melhorias de interface
+  - **Bug Fix Crítico**: Corrigido acesso ao tenant context na rota `/auth/login` (`req.tenantId` → `req.tenant.id`)
+  - **Hub Login Working**: Usuários finais agora conseguem fazer login no Hub com sucesso
+  - **UX Improvement**: Removido label "Tenant:" do header - agora mostra apenas o nome do tenant
+  - **Component Standardization**: Hub agora usa componentes comuns (`StatusBadge`, `Badge`) para consistency
+  - **Documentation Updated**: Atualizadas documentações em `/docs/hub-audit.md` e `README.md`
+  - **Technical Fix**: Tenant context agora é acessado via `req.tenant.id` em vez de `req.tenantId` diretamente
+  - **Better UX**: Interface mais limpa e amigável para usuários finais (sem terminologia técnica)
+
 - **✅ 🔐 API Security Enhancement**: Dedicated endpoint for tenant licensed applications
   - **Security Issue Identified**: `/licenses` tab was using `GET /tenants/{id}` which returned ALL tenant data
   - **Principle of Least Privilege**: Implemented dedicated `GET /applications/tenant/{tenantId}/licensed` endpoint

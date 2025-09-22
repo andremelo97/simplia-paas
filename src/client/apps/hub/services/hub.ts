@@ -4,13 +4,27 @@ import { useAuthStore } from '../store/auth'
 interface UserApp {
   slug: string
   name: string
-  url: string
+  roleInApp: string
+  expiresAt: string | null
+  licenseStatus: string
+  url?: string
   iconUrl?: string
   description?: string
 }
 
-interface UserAppsResponse {
-  data: UserApp[]
+interface UserProfile {
+  email: string
+  role: string
+  allowedApps: UserApp[]
+  tenant: {
+    name: string
+    slug: string
+  }
+}
+
+interface UserProfileResponse {
+  success: boolean
+  data: UserProfile
 }
 
 class HubService {
@@ -28,9 +42,9 @@ class HubService {
     return response
   }
 
-  async getMyApps(): Promise<UserAppsResponse> {
+  async getUserProfile(): Promise<UserProfileResponse> {
     const { user, tenantId } = useAuthStore.getState()
-    
+
     if (!user?.userId && !user?.id) {
       throw new Error('User not authenticated')
     }
@@ -39,22 +53,28 @@ class HubService {
       throw new Error('Tenant context not available')
     }
 
-    // Use new self-service endpoint
+    // Use consolidated /auth/me endpoint that returns both profile and apps
     // x-tenant-id header will be automatically injected by interceptor
-    const response = await api.get('/internal/api/v1/me/apps')
-    
-    return response.data // This contains { apps: [...] }
-  }
-
-  async getUserProfile() {
     const response = await api.get('/internal/api/v1/auth/me')
-    
+
     return response.data
   }
 
+  // Legacy method for backward compatibility - now delegates to getUserProfile
+  async getMyApps(): Promise<{ apps: UserApp[] }> {
+    const profileResponse = await this.getUserProfile()
+    return { apps: profileResponse.data.allowedApps }
+  }
+
   async refreshToken() {
-    const response = await api.post('/internal/api/v1/auth/refresh', {})
-    
+    const { token } = useAuthStore.getState()
+
+    if (!token) {
+      throw new Error('No token available for refresh')
+    }
+
+    const response = await api.post('/internal/api/v1/auth/refresh', { token })
+
     return response.data
   }
 

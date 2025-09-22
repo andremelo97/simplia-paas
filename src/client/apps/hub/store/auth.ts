@@ -4,6 +4,14 @@ import { api } from '@client/config/http'
 import { AppError, isAppError } from '@client/common/feedback'
 import { tenantLookupByEmail, saveSession, readSession, clearSession, AuthSession } from '@client/common/auth'
 
+interface UserApp {
+  slug: string
+  name: string
+  roleInApp: string
+  expiresAt: string | null
+  licenseStatus: string
+}
+
 interface User {
   id: number
   email: string
@@ -13,7 +21,7 @@ interface User {
   role?: 'operations' | 'manager' | 'admin'
   tenantId?: number
   tenantSchema?: string
-  allowedApps?: string[]
+  allowedApps?: UserApp[]
   userType?: {
     id: number
     slug: string
@@ -28,6 +36,8 @@ interface AuthState {
   user: User | null
   token: string | null
   tenantId: number | null
+  tenantName?: string
+  tenantSlug?: string
   isLoading: boolean
   error: AppError | null
   isHydrated: boolean
@@ -36,6 +46,7 @@ interface AuthState {
   clearError: () => void
   setUser: (user: User) => void
   setToken: (token: string) => void
+  loadUserProfile: () => Promise<void>
   initialize: () => void
 }
 
@@ -45,6 +56,8 @@ export const useAuthStore = create<AuthState>()(persist(
     user: null,
     token: null,
     tenantId: null,
+    tenantName: undefined,
+    tenantSlug: undefined,
     isLoading: true, // Start with loading true until hydrated
     error: null,
     isHydrated: false,
@@ -119,7 +132,42 @@ export const useAuthStore = create<AuthState>()(persist(
         throw appError
       }
     },
-    
+
+    loadUserProfile: async () => {
+      const { token, tenantId } = get()
+
+      if (!token || !tenantId) {
+        console.warn('🔄 [Hub Auth] Cannot load profile: missing token or tenant context')
+        return
+      }
+
+      try {
+        console.log('🔄 [Hub Auth] Loading user profile...')
+        const response = await api.get('/internal/api/v1/auth/me')
+        const { data } = response
+
+        console.log('✅ [Hub Auth] Profile loaded:', {
+          email: data.email,
+          apps: data.allowedApps?.length || 0,
+          tenant: data.tenant?.name
+        })
+
+        set((state) => ({
+          user: {
+            ...state.user,
+            email: data.email,
+            role: data.role,
+            allowedApps: data.allowedApps,
+          },
+          tenantName: data.tenant?.name,
+          tenantSlug: data.tenant?.slug,
+        }))
+      } catch (error) {
+        console.error('❌ [Hub Auth] Failed to load profile:', error)
+        // Don't logout on profile load failure, just log the error
+      }
+    },
+
     logout: () => {
       console.log('🔄 [Hub Auth] Logging out...')
       clearSession()
@@ -128,6 +176,8 @@ export const useAuthStore = create<AuthState>()(persist(
         user: null,
         token: null,
         tenantId: null,
+        tenantName: undefined,
+        tenantSlug: undefined,
         error: null,
         isLoading: false
       })
@@ -148,13 +198,13 @@ export const useAuthStore = create<AuthState>()(persist(
     initialize: () => {
       // Try to restore session from storage
       const session = readSession()
-      
+
       if (session) {
-        console.log('🔄 [Hub Auth] Restoring session', { 
+        console.log('🔄 [Hub Auth] Restoring session', {
           user: session.user?.email,
           tenantId: session.tenantId
         })
-        
+
         set({
           isAuthenticated: true,
           user: session.user,
@@ -163,11 +213,15 @@ export const useAuthStore = create<AuthState>()(persist(
           isHydrated: true,
           isLoading: false
         })
+
+        // Load fresh profile data to get latest apps and tenant info
+        const { loadUserProfile } = get()
+        loadUserProfile().catch(console.error)
       } else {
         console.log('🔄 [Hub Auth] No session found, starting fresh')
-        
-        set({ 
-          isHydrated: true, 
+
+        set({
+          isHydrated: true,
           isLoading: false
         })
       }
@@ -179,7 +233,9 @@ export const useAuthStore = create<AuthState>()(persist(
       isAuthenticated: state.isAuthenticated,
       user: state.user,
       token: state.token,
-      tenantId: state.tenantId
+      tenantId: state.tenantId,
+      tenantName: state.tenantName,
+      tenantSlug: state.tenantSlug
     }),
     onRehydrateStorage: () => (state) => {
       // Initialize after rehydration

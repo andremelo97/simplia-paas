@@ -46,6 +46,8 @@ src/
 ```bash
 # Development
 npm run dev             # Start both server (3001) + internal-admin (3002)
+npm run dev:server      # Start server only (port 3001)
+npm run dev:client      # Start internal-admin only (port 3002)
 npm run dev:hub         # Start Hub app only (port 3003)
 npm run migrate         # Run database migrations (REQUIRED after schema changes)
 
@@ -53,10 +55,18 @@ npm run migrate         # Run database migrations (REQUIRED after schema changes
 npm test               # Run all tests (auto-creates test database)
 npm run test:watch      # Run tests in watch mode
 npx jest tests/integration/internal/critical-validation.test.js  # Run specific test
+npx jest tests/integration/internal/  # Run all internal API tests
 
 # Database
 npm run db:create:test  # Create test database
 npm run db:drop:test    # Drop test database completely
+
+# Type checking (Frontend only)
+npx tsc --noEmit --project src/client/  # Check TypeScript errors in frontend
+
+# Linting/Build verification
+npm run build          # Build both client and server
+npm run build:client   # Build frontend only
 ```
 
 ## Multi-App Architecture
@@ -140,12 +150,43 @@ async function withTenant(tenantSchema, fn) {
 ```
 
 ## Development Best Practices
-- **Type Check**: Frontend uses TypeScript - check for errors with `npx tsc --noEmit` in `src/client/`
+- **Type Check**: Frontend uses TypeScript - check for errors with `npx tsc --noEmit --project src/client/`
 - **Test First**: Always run `npm test` before making significant changes
 - **Database First**: Create migrations before changing models or adding features
 - **Numeric IDs Only**: ALL IDs must be numeric - no string IDs anywhere in the system
 - **FK Suffix**: All foreign keys must use `_fk` suffix for consistency
 - **Transaction Scope**: Use proper database transactions for multi-step operations
+
+## Common Development Workflows
+
+### Adding a New API Endpoint
+1. Create route in `src/server/api/internal/routes/[domain].js`
+2. Add model methods in `src/server/infra/models/[Entity].js` if needed
+3. Update Swagger documentation with proper tags (global vs tenant-scoped)
+4. Add integration tests in `tests/integration/internal/`
+5. Run `npm test` to verify implementation
+
+### Adding a New Frontend Feature
+1. Create components in `src/client/apps/[app]/features/[domain]/`
+2. Add service methods in `src/client/apps/[app]/services/`
+3. Update store in `src/client/apps/[app]/store/` if needed
+4. Use common UI components from `src/client/common/ui/`
+5. Run `npx tsc --noEmit --project src/client/` to check types
+
+### Database Schema Changes
+1. Create migration file in `src/server/infra/migrations/`
+2. Update model classes in `src/server/infra/models/`
+3. Run `npm run migrate` to apply changes
+4. Update tests with new schema expectations
+5. Run `npm test` to verify everything works
+
+### Grant/Revoke Implementation Pattern
+```javascript
+// ALWAYS follow this pattern for seat management
+// 1. Grant: TenantApplication.incrementSeat()
+// 2. Revoke: TenantApplication.decrementSeat()
+// 3. Reactivate: TenantApplication.incrementSeat()
+```
 
 ## Common Troubleshooting
 - **Test database issues**: Run `npm run db:drop:test` then `npm test` to recreate clean test DB
@@ -153,6 +194,8 @@ async function withTenant(tenantSchema, fn) {
 - **Multi-tenancy conflicts**: Ensure platform-scoped routes don't use `search_path`, tenant-scoped routes do
 - **Pricing not configured**: Add entries to `application_pricing` table before granting access
 - **Build failures**: Check for TypeScript errors in frontend, JavaScript syntax in backend
+- **TypeScript errors**: Run `npx tsc --noEmit --project src/client/` to see all type issues
+- **Migration failures**: Check if previous migrations ran successfully with `npm run migrate`
 
 ---
 

@@ -1,33 +1,39 @@
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ExternalLink, Lock, Grid3x3 } from 'lucide-react'
-import { Card, Button } from '@client/common/ui'
+import { Card, Button, StatusBadge, Badge } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
-import { hubService } from '../services/hub'
 import { publishFeedback } from '@client/common/feedback'
 
 interface UserApp {
   slug: string
   name: string
-  url: string
+  roleInApp: string
+  expiresAt: string | null
+  licenseStatus: string
+  url?: string
   iconUrl?: string
   description?: string
 }
 
 export const Home: React.FC = () => {
-  const { user } = useAuthStore()
-  const [apps, setApps] = useState<UserApp[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, tenantName, loadUserProfile } = useAuthStore()
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Get apps directly from user state
+  const apps = user?.allowedApps || []
 
   useEffect(() => {
-    loadUserApps()
+    // Load fresh data if apps are not available
+    if (!apps || apps.length === 0) {
+      loadUserApps()
+    }
   }, [])
 
   const loadUserApps = async () => {
     try {
       setIsLoading(true)
-      const response = await hubService.getMyApps()
-      setApps(response.apps || [])
+      await loadUserProfile()
     } catch (error) {
       publishFeedback({
         kind: 'error',
@@ -35,7 +41,6 @@ export const Home: React.FC = () => {
         title: 'Error',
         message: 'Failed to load your applications'
       })
-      setApps([]) // Ensure apps is always an array
     } finally {
       setIsLoading(false)
     }
@@ -79,7 +84,7 @@ export const Home: React.FC = () => {
             Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
           </h1>
           <p className="text-gray-600 mt-2">
-            Here are your available applications
+            {tenantName ? `Loading applications for ${tenantName}...` : 'Loading your available applications...'}
           </p>
         </div>
 
@@ -104,7 +109,7 @@ export const Home: React.FC = () => {
           Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
         </h1>
         <p className="text-gray-600 mt-1">
-          Here are your available applications
+          {tenantName ? `Your applications for ${tenantName}` : 'Your available applications'}
         </p>
       </div>
 
@@ -152,7 +157,19 @@ export const Home: React.FC = () => {
                 <h3 className="font-semibold text-gray-900 mb-2">
                   {app.name}
                 </h3>
-                
+
+                <div className="mb-3 space-x-2">
+                  <StatusBadge
+                    status={app.licenseStatus as 'active' | 'inactive' | 'suspended'}
+                    size="sm"
+                  />
+                  {app.roleInApp && (
+                    <Badge variant="secondary" size="sm">
+                      {app.roleInApp}
+                    </Badge>
+                  )}
+                </div>
+
                 {app.description && (
                   <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                     {app.description}

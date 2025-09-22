@@ -165,8 +165,10 @@ router.post('/login', authRateLimit, async (req, res) => {
     });
 
     res.json({
-      success: true,
-      message: 'Authentication successful',
+      meta: {
+        code: "LOGIN_SUCCESS",
+        message: "Signed in successfully."
+      },
       data: result
     });
   } catch (error) {

@@ -78,12 +78,27 @@ class HttpClient {
       
       // Intercept successful mutations with meta.code
       if (this.isMutativeMethod(options.method || 'GET') && responseData?.meta?.code) {
+        console.log('[HTTP] Intercepting feedback:', {
+          method: options.method,
+          path: endpoint,
+          code: responseData.meta.code,
+          message: responseData.meta.message
+        })
+
         const feedbackMessage = resolveFeedbackMessage(
           responseData.meta.code,
           responseData.meta.message,
           { method: options.method || 'GET', path: endpoint }
         )
-        
+
+        console.log('[HTTP] Publishing feedback:', {
+          kind: 'success',
+          code: responseData.meta.code,
+          title: feedbackMessage.title,
+          message: feedbackMessage.message,
+          path: endpoint
+        })
+
         publishFeedback({
           kind: 'success',
           code: responseData.meta.code,

@@ -6,7 +6,6 @@ const helmet = require('helmet');
 const { requireAuth } = require('./infra/middleware/auth');
 const { requirePlatformRole } = require('./infra/middleware/platformRole');
 const tenantMiddleware = require('./infra/middleware/tenant');
-const { requireTranscriptionQuoteAccess } = require('./infra/middleware/appAccess');
 
 // Routes
 const authRoutes = require('./api/internal/routes/auth');
@@ -18,8 +17,6 @@ const auditRoutes = require('./api/internal/routes/audit');
 const metricsRoutes = require('./api/internal/routes/metrics');
 const entitlementsRoutes = require('./api/internal/routes/entitlements');
 
-// TQ App Routes
-const tqRoutes = require('./api/tq');
 
 // Public routes (no auth required)
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
@@ -36,8 +33,7 @@ const DOCS_PATH = process.env.INTERNAL_DOCS_PATH || '/docs/internal';
 const ENABLE_DOCS = process.env.ENABLE_INTERNAL_DOCS === 'true';
 const ENABLE_HELMET = process.env.ENABLE_HELMET === 'true';
 const ADMIN_PANEL_ORIGIN = process.env.ADMIN_PANEL_ORIGIN;
-const HUB_ORIGIN = process.env.HUB_ORIGIN || 'http://localhost:3003';
-const TQ_ORIGIN = process.env.TQ_ORIGIN || 'http://localhost:3005';
+const HUB_ORIGIN = process.env.HUB_ORIGIN;
 
 // Global middlewares
 if (ENABLE_HELMET) {
@@ -68,12 +64,7 @@ const internalCorsOptions = {
     if (origin === HUB_ORIGIN) {
       return callback(null, true);
     }
-
-    // Allow TQ origin
-    if (origin === TQ_ORIGIN) {
-      return callback(null, true);
-    }
-
+    
     // Block other origins
     const error = new Error('Not allowed by CORS policy');
     error.status = 403;
@@ -117,9 +108,6 @@ tenantScopedRouter.use(tenantMiddleware, requireAuth);
 
 tenantScopedRouter.use('/users', userRoutes); // Re-enabled for pricing system grant/revoke functionality
 tenantScopedRouter.use('/entitlements', entitlementsRoutes);
-
-// TQ App API Routes (require TQ app access)
-tenantScopedRouter.use('/tq', requireTranscriptionQuoteAccess(), tqRoutes);
 
 // Mount tenant-scoped routes
 internalRouter.use(tenantScopedRouter);

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
-import { useAuthStore } from '../store/auth'
+import { useAuthStore } from '../../shared/store'
 import { Button, Input, Card, CardHeader, CardContent, CardTitle, CardDescription, Alert, AlertDescription } from '@client/common/ui'
 import { cn } from '@client/common/utils/cn'
 import { AppError } from '@client/common/feedback'
 import { shouldShowAsBanner, shouldShowFieldErrors } from '@client/common/feedback'
 import { publishFeedback, resolveFeedbackMessage } from '@client/common/feedback'
+import { consumeSso, hasSsoParams } from '../../lib/consumeSso'
 
 export const Login: React.FC = () => {
   const [credentials, setCredentials] = useState({
@@ -16,30 +17,52 @@ export const Login: React.FC = () => {
   })
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
+  const [isSsoLoading, setIsSsoLoading] = useState(false)
 
   const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore()
   const location = useLocation()
 
-  // Always redirect to home after login
-  const from = '/'
+  // Always redirect to TQ app root after login
+  const from = '/app'
 
   useEffect(() => {
     clearError()
+
+    // Check for SSO parameters and attempt SSO login
+    const attemptSso = async () => {
+      if (hasSsoParams()) {
+        setIsSsoLoading(true)
+        try {
+          const ssoAttempted = await consumeSso()
+          if (ssoAttempted) {
+            // SSO login successful, will redirect via isAuthenticated check
+            return
+          }
+        } catch (error) {
+          console.error('SSO login failed:', error)
+          // Error is handled by the auth store
+        } finally {
+          setIsSsoLoading(false)
+        }
+      }
+    }
+
+    attemptSso()
   }, [clearError])
 
   const validateForm = () => {
     const errors: Record<string, string> = {}
-    
+
     if (!credentials.email.trim()) {
       errors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email)) {
       errors.email = 'Please enter a valid email address'
     }
-    
+
     if (!credentials.password.trim()) {
       errors.password = 'Password is required'
     }
-    
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -65,6 +88,7 @@ export const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    clearError()
 
     if (!validateForm()) {
       return
@@ -74,8 +98,6 @@ export const Login: React.FC = () => {
       await login(credentials)
     } catch (error) {
       console.error('Login failed:', error)
-      // Error is already set in the auth store by the login function
-      // Don't do anything else here - let the UI render the error
     }
   }
 
@@ -86,7 +108,7 @@ export const Login: React.FC = () => {
       ...prev,
       [field]: e.target.value
     }))
-    
+
     // Clear client-side validation errors
     if (validationErrors[field]) {
       setValidationErrors(prev => ({
@@ -94,7 +116,7 @@ export const Login: React.FC = () => {
         [field]: ''
       }))
     }
-    
+
     // Clear server errors on input change to allow retry
     if (error) {
       clearError()
@@ -103,6 +125,25 @@ export const Login: React.FC = () => {
 
   if (isAuthenticated) {
     return <Navigate to={from} replace />
+  }
+
+  // Show loading during SSO attempt
+  if (isSsoLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#B725B7] via-purple-500 to-[#E91E63]">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="bg-white rounded-lg p-8 shadow-xl"
+        >
+          <div className="flex items-center justify-center space-x-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+            <span className="text-lg font-medium text-gray-700">Connecting to TQ...</span>
+          </div>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
@@ -121,15 +162,15 @@ export const Login: React.FC = () => {
                 <Building2 className="w-8 h-8 text-stone-600" />
               </div>
             </div>
-            
+
             <CardTitle className="text-2xl font-semibold text-stone-900">
-              Sign in to continue
+              Sign in to TQ
             </CardTitle>
             <CardDescription className="text-sm text-stone-700">
-              Access your applications portal
+              Access Transcription & Quote application
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6 px-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -199,9 +240,9 @@ export const Login: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Alert 
-                  variant="destructive" 
-                  role="alert" 
+                <Alert
+                  variant="destructive"
+                  role="alert"
                   aria-live="polite"
                   className="flex items-center gap-3 alert-destructive"
                 >
@@ -212,7 +253,7 @@ export const Login: React.FC = () => {
                 </Alert>
               </motion.div>
             )}
-            
+
             {/* Show validation summary if there are field errors from server */}
             {error && shouldShowFieldErrors(error.kind) && Object.keys(getFieldErrors(error)).length > 0 && (
               <motion.div
@@ -220,9 +261,9 @@ export const Login: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Alert 
-                  variant="destructive" 
-                  role="alert" 
+                <Alert
+                  variant="destructive"
+                  role="alert"
                   aria-live="polite"
                   className="flex items-center gap-3 alert-destructive"
                 >

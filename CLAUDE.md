@@ -49,6 +49,8 @@ npm run dev             # Start both server (3001) + internal-admin (3002)
 npm run dev:server      # Start server only (port 3001)
 npm run dev:client      # Start internal-admin only (port 3002)
 npm run dev:hub         # Start Hub app only (port 3003)
+npm run dev:tq-api      # Start TQ API server only (port 3004)
+npm run dev:tq-front    # Start TQ frontend only (port 3005)
 npm run migrate         # Run database migrations (REQUIRED after schema changes)
 
 # Testing
@@ -72,7 +74,7 @@ npm run build:client   # Build frontend only
 ## Multi-App Architecture
 - **Internal-Admin** (`/internal/api/v1`): Platform administration (tenants, users, apps, pricing) - **Global scope only**
 - **Hub App** (`/internal/api/v1/me`): Self-service portal for end users to access their apps
-- **Product Apps**: TQ, CRM, Automation clients (future development)
+- **Product Apps**: TQ (Transcription Quote) - active development, CRM, Automation clients (future development)
 
 ## API Route Categories
 - **Platform-Scoped** (no tenant header): `/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`, `/me/*`

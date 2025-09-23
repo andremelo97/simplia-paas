@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { api } from '@client/config/http'
 import { AppError, isAppError } from '@client/common/feedback'
-import { tenantLookupByEmail, saveSession, readSession, clearSession, AuthSession } from '@client/common/auth'
+import { tenantLookupByEmail, clearSession } from '@client/common/auth'
 
 interface UserApp {
   slug: string
@@ -42,12 +42,12 @@ interface AuthState {
   error: AppError | null
   isHydrated: boolean
   login: (credentials: { email: string; password: string }) => Promise<void>
+  loginWithToken: (token: string, tenantId: number) => Promise<void>
   logout: () => void
   clearError: () => void
   setUser: (user: User) => void
   setToken: (token: string) => void
   loadUserProfile: () => Promise<void>
-  loadEntitlements: () => Promise<void>
   initialize: () => void
 }
 
@@ -62,48 +62,40 @@ export const useAuthStore = create<AuthState>()(persist(
     isLoading: true, // Start with loading true until everything is ready
     error: null,
     isHydrated: false,
-    
+
     login: async (credentials) => {
       set({ isLoading: true, error: null })
-      
+
       try {
-        console.log('🔄 [Hub Auth] Starting two-step login...', credentials.email)
-        
-        // Step 1: Lookup tenant by email
-        console.log('🔍 [Hub Auth] Looking up tenant for user...')
+        console.log('🔄 [TQ Auth] Starting two-step login...', credentials.email)
+
+        // Step 1: Lookup tenant by email (same as Hub)
+        console.log('🔍 [TQ Auth] Looking up tenant for user...')
         const tenant = await tenantLookupByEmail(credentials.email)
-        console.log('🏢 [Hub Auth] Found tenant:', { id: tenant.id, name: tenant.name })
-        
-        // Step 2: Login with x-tenant-id header
-        console.log('🔑 [Hub Auth] Authenticating with tenant context...')
+        console.log('🏢 [TQ Auth] Found tenant:', { id: tenant.id, name: tenant.name })
+
+        // Step 2: Login with x-tenant-id header (same as Hub)
+        console.log('🔑 [TQ Auth] Authenticating with tenant context...')
         const response = await api.post('/internal/api/v1/auth/login', credentials, {
           'x-tenant-id': String(tenant.id)
         })
-        
+
         const { user, token } = response.data
-        
-        // Step 3: Save session with tenant info
-        const session: AuthSession = {
-          token,
-          tenantId: tenant.id,
-          user: {
-            ...user,
-            tenantId: tenant.id
-          }
-        }
-        saveSession(session)
-        
-        console.log('✅ [Hub Auth] Login successful', { 
-          user: user?.email, 
+
+        console.log('✅ [TQ Auth] Login successful', {
+          user: user?.email,
           tenant: tenant.name,
           tenantId: tenant.id
         })
-        
+
         set({
           isAuthenticated: true,
-          user: session.user,
-          token: session.token,
-          tenantId: session.tenantId,
+          user: {
+            ...user,
+            tenantId: tenant.id
+          },
+          token: token,
+          tenantId: tenant.id,
           isLoading: false,
           error: null
         })
@@ -112,8 +104,8 @@ export const useAuthStore = create<AuthState>()(persist(
         const { loadUserProfile } = get()
         loadUserProfile().catch(console.error)
       } catch (error: any) {
-        console.error('❌ [Hub Auth] Login failed:', error)
-        
+        console.error('❌ [TQ Auth] Login failed:', error)
+
         let appError: AppError
         if (isAppError(error)) {
           appError = error
@@ -124,7 +116,7 @@ export const useAuthStore = create<AuthState>()(persist(
             code: 'LOGIN_ERROR'
           }
         }
-        
+
         set({
           isAuthenticated: false,
           user: null,
@@ -133,7 +125,7 @@ export const useAuthStore = create<AuthState>()(persist(
           isLoading: false,
           error: appError
         })
-        
+
         throw appError
       }
     },
@@ -142,18 +134,18 @@ export const useAuthStore = create<AuthState>()(persist(
       const { token, tenantId } = get()
 
       if (!token || !tenantId) {
-        console.warn('🔄 [Hub Auth] Cannot load profile: missing token or tenant context')
+        console.warn('🔄 [TQ Auth] Cannot load profile: missing token or tenant context')
         return
       }
 
       try {
         set({ isLoading: true })
-        console.log('🔄 [Hub Auth] Loading user profile...')
+        console.log('🔄 [TQ Auth] Loading user profile...')
 
         const response = await api.get('/internal/api/v1/auth/me')
         const { data } = response
 
-        console.log('✅ [Hub Auth] Profile loaded:', {
+        console.log('✅ [TQ Auth] Profile loaded:', {
           email: data.email,
           apps: data.allowedApps?.length || 0,
           tenant: data.tenant?.name
@@ -170,14 +162,8 @@ export const useAuthStore = create<AuthState>()(persist(
           tenantSlug: data.tenant?.slug,
           isLoading: false,
         }))
-
-        // Load entitlements if user is admin
-        const currentState = get()
-        if (currentState.user?.role === 'admin') {
-          currentState.loadEntitlements()
-        }
       } catch (error: any) {
-        console.error('❌ [Hub Auth] Failed to load profile:', error)
+        console.error('❌ [TQ Auth] Failed to load profile:', error)
 
         // Check if this is an authentication error (401/403)
         const isAuthError = error?.status === 401 || error?.status === 403 ||
@@ -185,7 +171,7 @@ export const useAuthStore = create<AuthState>()(persist(
                            error?.httpStatus === 401 || error?.httpStatus === 403
 
         if (isAuthError) {
-          console.log('🔓 [Hub Auth] Authentication expired, clearing session')
+          console.log('🔓 [TQ Auth] Authentication expired, clearing session')
           // Clear the stuck session
           const { logout } = get()
           logout()
@@ -202,24 +188,61 @@ export const useAuthStore = create<AuthState>()(persist(
       }
     },
 
-    loadEntitlements: async () => {
-      const { token, tenantId, user } = get()
+    // SSO login method for token from Hub
+    loginWithToken: async (token: string, tenantId: number) => {
+      set({ isLoading: true, error: null })
+      try {
+        console.log('🔄 [TQ Auth] SSO login with token...')
 
-      if (!token || !tenantId || user?.role !== 'admin') {
-        return
+        // Decode JWT to get user info (no need to call /me again)
+        const payload = JSON.parse(atob(token.split('.')[1]))
+
+        set({
+          isAuthenticated: true,
+          user: {
+            id: payload.userId,
+            email: payload.email,
+            firstName: payload.name?.split(' ')[0],
+            lastName: payload.name?.split(' ').slice(1).join(' '),
+            role: payload.role,
+            tenantId: payload.tenantId,
+            allowedApps: payload.allowedApps?.map(slug => ({ slug, name: slug, roleInApp: 'user', licenseStatus: 'active', expiresAt: null }))
+          },
+          token: token,
+          tenantId: tenantId,
+          tenantName: `Tenant ${tenantId}`, // Could decode from JWT if needed
+          isLoading: false,
+          error: null
+        })
+
+        console.log('✅ [TQ Auth] SSO login successful - no /me call needed')
+      } catch (error: any) {
+        console.error('❌ [TQ Auth] SSO login failed:', error)
+        const appError = isAppError(error) ? error : {
+          kind: 'unknown' as const,
+          message: error?.message || 'SSO login failed'
+        }
+
+        set({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+          tenantId: null,
+          isLoading: false,
+          error: appError
+        })
+        throw appError
       }
-
-      // This is now handled by TenantEntitlementsSection component
-      // No global state tracking needed for entitlements loading
     },
 
     logout: () => {
-      console.log('🔄 [Hub Auth] Logging out...')
+      console.log('🔄 [TQ Auth] Logging out...')
       clearSession()
 
-      // Clear shared storage system
+      // Clear both storage systems to prevent conflicts
       try {
         localStorage.removeItem('auth-storage')
+        localStorage.removeItem('auth.session')
       } catch (e) {
         console.warn('Failed to clear storage:', e)
       }
@@ -235,44 +258,31 @@ export const useAuthStore = create<AuthState>()(persist(
         isLoading: false,
       })
     },
-    
+
     clearError: () => {
       set({ error: null })
     },
-    
+
     setUser: (user) => {
       set({ user })
     },
-    
+
     setToken: (token) => {
       set({ token, isAuthenticated: !!token })
     },
-    
+
     initialize: () => {
-      // Try to restore session from both storage systems
-      const manualSession = readSession()
-      const currentState = get()
+      // Don't try to read from manual session storage - just rely on Zustand persist
+      const state = get()
 
-      // If we have a token and tenantId from Zustand but no manual session, restore it
-      if (currentState.token && currentState.tenantId && currentState.user && !manualSession) {
-        console.log('🔄 [Hub Auth] Restoring manual session from Zustand storage')
-        const session: AuthSession = {
-          token: currentState.token,
-          tenantId: currentState.tenantId,
-          user: {
-            ...currentState.user,
-            tenantId: currentState.tenantId
-          }
-        }
-        saveSession(session)
-      }
+      console.log('🔄 [TQ Auth] Initializing auth state...', {
+        hasToken: !!state.token,
+        hasTenantId: !!state.tenantId,
+        hasUser: !!state.user
+      })
 
-      if (currentState.token && currentState.tenantId) {
-        console.log('🔄 [Hub Auth] Restoring session', {
-          user: currentState.user?.email,
-          tenantId: currentState.tenantId,
-          hasManualSession: !!manualSession
-        })
+      if (state.token && state.tenantId && state.user) {
+        console.log('🔄 [TQ Auth] Restoring session from Zustand persist')
 
         set({
           isAuthenticated: true,
@@ -285,14 +295,11 @@ export const useAuthStore = create<AuthState>()(persist(
         loadUserProfile()
           .catch(console.error)
           .finally(() => {
-            // Ensure loading is always set to false if not already cleared by logout
-            const currentState = get()
-            if (currentState.isAuthenticated) {
-              set({ isLoading: false })
-            }
+            // Ensure loading is always set to false
+            set({ isLoading: false })
           })
       } else {
-        console.log('🔄 [Hub Auth] No session found, starting fresh')
+        console.log('🔄 [TQ Auth] No session found, starting fresh')
 
         set({
           isHydrated: true,
@@ -302,7 +309,7 @@ export const useAuthStore = create<AuthState>()(persist(
     }
   }),
   {
-    name: 'auth-storage', // Same storage key as TQ for unified session
+    name: 'auth-storage', // Same storage key as Hub for unified session
     partialize: (state) => ({
       isAuthenticated: state.isAuthenticated,
       user: state.user,

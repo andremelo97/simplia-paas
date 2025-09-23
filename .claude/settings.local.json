@@ -14,7 +14,9 @@
       "Bash(findstr:*)",
       "Bash(npx vite:*)",
       "Bash(npx tsc:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(del:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []

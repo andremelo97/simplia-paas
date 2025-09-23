@@ -182,7 +182,7 @@ export const Login: React.FC = () => {
 
                 <Button
                   type="submit"
-                  variant="default"
+                  variant="primary"
                   style={{ width: '100%' }}
                   isLoading={isLoading}
                   disabled={isLoading}

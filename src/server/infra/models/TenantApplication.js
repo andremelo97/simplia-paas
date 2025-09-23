@@ -1,5 +1,6 @@
 const database = require('../db/database');
 const { Application, ApplicationNotFoundError } = require('./Application');
+const { provisionTQAppSchema, isTQAppProvisioned } = require('../provisioners/tq');
 
 class TenantApplicationNotFoundError extends Error {
   constructor(message) {
@@ -143,16 +144,17 @@ class TenantApplication {
 
   /**
    * Grant application license to tenant
+   * This method also provisions app-specific database schemas when needed
    */
   static async grantLicense(licenseData) {
     const { tenantId, applicationId, userLimit = null, expiryDate = null, status = 'active' } = licenseData;
-    
+
     console.log('🔄 [TenantApplication.grantLicense] Starting license creation:', { tenantId, applicationId, userLimit, expiryDate, status });
-    
-    // Verify application exists
-    await Application.findById(applicationId);
-    console.log('✅ [TenantApplication.grantLicense] Application verified');
-    
+
+    // Verify application exists and get app details
+    const application = await Application.findById(applicationId);
+    console.log('✅ [TenantApplication.grantLicense] Application verified:', application.slug);
+
     // Check if license already exists
     const existing = await TenantApplication.findByTenantAndApplication(tenantId, applicationId);
     console.log('🔍 [TenantApplication.grantLicense] Existing check result:', existing);
@@ -161,24 +163,59 @@ class TenantApplication {
       throw new Error(`License already exists for tenant ${tenantId} and application ${applicationId}`);
     }
     console.log('✅ [TenantApplication.grantLicense] No existing license found, proceeding with creation');
-    
+
+    // Get tenant schema for app provisioning
+    const tenantQuery = 'SELECT subdomain, timezone FROM tenants WHERE id = $1 AND active = true';
+    const tenantResult = await database.query(tenantQuery, [tenantId]);
+
+    if (tenantResult.rows.length === 0) {
+      throw new Error(`Active tenant not found: ${tenantId}`);
+    }
+
+    const tenantSlug = tenantResult.rows[0].subdomain;
+    const schemaName = `tenant_${tenantSlug.replace(/-/g, '_')}`;
+    console.log('🔍 [TenantApplication.grantLicense] Tenant schema:', schemaName);
+
     console.log('🔄 [TenantApplication.grantLicense] Inserting new license...');
     const query = `
       INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, max_users)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
-    
+
     try {
       const result = await database.query(query, [
-        tenantId, 
-        applicationId, 
-        status, 
-        expiryDate, 
+        tenantId,
+        applicationId,
+        status,
+        expiryDate,
         userLimit
       ]);
-      
+
       console.log('✅ [TenantApplication.grantLicense] License inserted successfully:', result.rows[0].id);
+
+      // Provision app-specific schemas based on application slug
+      if (application.slug === 'tq') {
+        console.log('🔄 [TenantApplication.grantLicense] Provisioning TQ app schema...');
+
+        const client = await database.getClient();
+        try {
+          // Check if already provisioned to avoid conflicts
+          const isProvisioned = await isTQAppProvisioned(client, schemaName);
+
+          if (!isProvisioned) {
+            // Get tenant timezone for timestamp defaults
+            const tenantTimezone = tenantResult.rows[0].timezone || 'UTC';
+            await provisionTQAppSchema(client, schemaName, tenantTimezone);
+            console.log('✅ [TenantApplication.grantLicense] TQ app schema provisioned successfully');
+          } else {
+            console.log('ℹ️  [TenantApplication.grantLicense] TQ app schema already provisioned, skipping');
+          }
+        } finally {
+          client.release();
+        }
+      }
+
       return await TenantApplication.findById(result.rows[0].id);
     } catch (insertError) {
       console.log('❌ [TenantApplication.grantLicense] Insert failed:', insertError.message);

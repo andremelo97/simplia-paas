@@ -29,8 +29,28 @@ export function installTenantInterceptor() {
  * @returns number | null - The tenant ID or null if not authenticated
  */
 export function getCurrentTenantId(): number | null {
+  // First try the manual session storage
   const session = readSession()
-  return session?.tenantId || null
+  if (session?.tenantId) {
+    return session.tenantId
+  }
+
+  // Fallback to shared Zustand storage (Hub and TQ use same key)
+  try {
+    const authStorage = localStorage.getItem('auth-storage')
+    if (authStorage) {
+      const parsed = JSON.parse(authStorage)
+      // Try tenantId directly (Hub/TQ format) or user.tenantId (internal-admin format)
+      const tenantId = parsed.state?.tenantId || parsed.state?.user?.tenantId
+      if (tenantId) {
+        return tenantId
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to read auth storage:', e)
+  }
+
+  return null
 }
 
 /**

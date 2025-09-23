@@ -37,6 +37,26 @@ export const Home: React.FC = () => {
   }
 
   const handleAppClick = (app: UserApp) => {
+    // Special handling for TQ app - SSO integration
+    if (app.slug === 'tq') {
+      const { token, tenantId } = useAuthStore.getState()
+
+      if (token && tenantId) {
+        // Open TQ with SSO parameters
+        const tqUrl = `http://localhost:3005/login?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
+        window.open(tqUrl, '_blank', 'noopener,noreferrer')
+      } else {
+        publishFeedback({
+          kind: 'error',
+          code: 'SSO_TOKEN_MISSING',
+          title: 'Error',
+          message: 'Unable to open TQ - authentication token missing.'
+        })
+      }
+      return
+    }
+
+    // Default handling for other apps
     if (app.url) {
       window.open(app.url, '_blank', 'noopener,noreferrer')
     } else {

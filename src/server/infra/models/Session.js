@@ -1,0 +1,253 @@
+const database = require('../db/database');
+
+class SessionNotFoundError extends Error {
+  constructor(message) {
+    super(`Session not found: ${message}`);
+    this.name = 'SessionNotFoundError';
+  }
+}
+
+class Session {
+  constructor(data) {
+    this.id = data.id;
+    this.createdAt = data.created_at;
+    this.updatedAt = data.updated_at;
+    this.patientId = data.patient_id;
+    this.transcription = data.transcription;
+    this.status = data.status;
+
+    // Include patient data if joined
+    if (data.patient_first_name) {
+      this.patient = {
+        id: data.patient_id,
+        firstName: data.patient_first_name,
+        lastName: data.patient_last_name,
+        email: data.patient_email
+      };
+    }
+  }
+
+  /**
+   * Find session by ID within a tenant schema
+   */
+  static async findById(id, schema, includePatient = false) {
+    let query = `
+      SELECT s.*
+    `;
+
+    if (includePatient) {
+      query += `, p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email`;
+    }
+
+    query += ` FROM ${schema}.session s`;
+
+    if (includePatient) {
+      query += ` LEFT JOIN ${schema}.patient p ON s.patient_id = p.id`;
+    }
+
+    query += ` WHERE s.id = $1`;
+
+    const result = await database.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      throw new SessionNotFoundError(`ID: ${id} in schema: ${schema}`);
+    }
+
+    return new Session(result.rows[0]);
+  }
+
+  /**
+   * Find all sessions within a tenant schema
+   */
+  static async findAll(schema, options = {}) {
+    const { limit = 50, offset = 0, patientId, status, includePatient = false } = options;
+
+    let query = `
+      SELECT s.*
+    `;
+
+    if (includePatient) {
+      query += `, p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email`;
+    }
+
+    query += ` FROM ${schema}.session s`;
+
+    if (includePatient) {
+      query += ` LEFT JOIN ${schema}.patient p ON s.patient_id = p.id`;
+    }
+
+    const params = [];
+    const conditions = [];
+
+    if (patientId) {
+      conditions.push(`s.patient_id = $${params.length + 1}`);
+      params.push(patientId);
+    }
+
+    if (status) {
+      conditions.push(`s.status = $${params.length + 1}`);
+      params.push(status);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    query += ` ORDER BY s.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+
+    const result = await database.query(query, params);
+    return result.rows.map(row => new Session(row));
+  }
+
+  /**
+   * Count sessions within a tenant schema
+   */
+  static async count(schema, options = {}) {
+    const { patientId, status } = options;
+
+    let query = `SELECT COUNT(*) as count FROM ${schema}.session`;
+    const params = [];
+    const conditions = [];
+
+    if (patientId) {
+      conditions.push(`patient_id = $${params.length + 1}`);
+      params.push(patientId);
+    }
+
+    if (status) {
+      conditions.push(`status = $${params.length + 1}`);
+      params.push(status);
+    }
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    const result = await database.query(query, params);
+    return parseInt(result.rows[0].count);
+  }
+
+  /**
+   * Create a new session within a tenant schema
+   */
+  static async create(sessionData, schema) {
+    const { patientId, transcription, status = 'draft' } = sessionData;
+
+    const query = `
+      INSERT INTO ${schema}.session (patient_id, transcription, status)
+      VALUES ($1, $2, $3)
+      RETURNING *
+    `;
+
+    const result = await database.query(query, [
+      patientId,
+      transcription,
+      status
+    ]);
+
+    return new Session(result.rows[0]);
+  }
+
+  /**
+   * Update an existing session within a tenant schema
+   */
+  static async update(id, updates, schema) {
+    const allowedUpdates = ['transcription', 'status'];
+    const updateFields = [];
+    const updateValues = [];
+    let paramIndex = 1;
+
+    for (const [key, value] of Object.entries(updates)) {
+      if (allowedUpdates.includes(key) && value !== undefined) {
+        updateFields.push(`${key} = $${paramIndex}`);
+        updateValues.push(value);
+        paramIndex++;
+      }
+    }
+
+    if (updateFields.length === 0) {
+      throw new Error('No valid fields to update');
+    }
+
+    const query = `
+      UPDATE ${schema}.session
+      SET ${updateFields.join(', ')}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await database.query(query, [
+      ...updateValues,
+      id
+    ]);
+
+    if (result.rows.length === 0) {
+      throw new SessionNotFoundError(`ID: ${id} in schema: ${schema}`);
+    }
+
+    return new Session(result.rows[0]);
+  }
+
+  /**
+   * Delete a session within a tenant schema (hard delete)
+   */
+  static async delete(id, schema) {
+    const query = `
+      DELETE FROM ${schema}.session
+      WHERE id = $1
+      RETURNING *
+    `;
+
+    const result = await database.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      throw new SessionNotFoundError(`ID: ${id} in schema: ${schema}`);
+    }
+
+    return new Session(result.rows[0]);
+  }
+
+  /**
+   * Find sessions by patient ID within a tenant schema
+   */
+  static async findByPatientId(patientId, schema, options = {}) {
+    const { limit = 50, offset = 0, status } = options;
+
+    let query = `
+      SELECT s.*, p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+      FROM ${schema}.session s
+      LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      WHERE s.patient_id = $1
+    `;
+    const params = [patientId];
+
+    if (status) {
+      query += ` AND s.status = $${params.length + 1}`;
+      params.push(status);
+    }
+
+    query += ` ORDER BY s.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    params.push(limit, offset);
+
+    const result = await database.query(query, params);
+    return result.rows.map(row => new Session(row));
+  }
+
+  /**
+   * Convert to JSON
+   */
+  toJSON() {
+    return {
+      id: this.id,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      patientId: this.patientId,
+      transcription: this.transcription,
+      status: this.status,
+      ...(this.patient && { patient: this.patient })
+    };
+  }
+}
+
+module.exports = { Session, SessionNotFoundError };

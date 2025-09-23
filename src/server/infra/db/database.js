@@ -77,12 +77,23 @@ class Database {
     });
   }
 
+  /**
+   * Creates an empty tenant schema (no app-specific tables)
+   *
+   * This function only creates the PostgreSQL schema itself.
+   * App-specific tables (like TQ's patient/session) should be created
+   * separately through their respective provisioner modules when
+   * the app is activated for the tenant.
+   *
+   * @param {string} schemaName - The schema name (e.g., 'tenant_clinic_a')
+   */
   async createSchema(schemaName) {
     const client = await this.getClient();
-    
+
     try {
+      // Create schema if it doesn't exist - that's all we do here
       await client.query(`CREATE SCHEMA IF NOT EXISTS ${schemaName}`);
-      console.log(`Schema created: ${schemaName}`);
+      console.log(`Empty tenant schema created: ${schemaName}`);
     } finally {
       client.release();
     }

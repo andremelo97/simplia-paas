@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { useUIStore } from '../store/ui'
+import { FeedbackHost } from '@client/common/feedback'
 
 export const Layout: React.FC = () => {
   const { sidebarOpen } = useUIStore()
@@ -36,6 +37,9 @@ export const Layout: React.FC = () => {
           <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
         </div>
       )}
+
+      {/* Global Feedback Host */}
+      <FeedbackHost />
     </div>
   )
 }

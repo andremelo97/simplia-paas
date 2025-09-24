@@ -98,8 +98,23 @@ async function requireAuth(req, res, next) {
       });
     }
     
+    // Get fresh allowedApps from database (for non-platform-admin users)
+    // This ensures grants/revokes are immediately effective without requiring new login
+    let allowedApps = payload.allowedApps || [];
+    if (payload.type !== 'platform_admin') {
+      try {
+        const tenantIdFk = payload.tenantId;
+        const freshEntitlements = await authService.getUserEntitlements(user, tenantIdFk);
+        allowedApps = freshEntitlements.allowedApps;
+        console.log('🔄 [AUTH] Refreshed allowedApps from database:', allowedApps);
+      } catch (error) {
+        console.warn('⚠️ [AUTH] Failed to refresh allowedApps, using JWT data:', error.message);
+        allowedApps = payload.allowedApps || [];
+      }
+    }
+
     // Add JWT payload data that isn't in the user context
-    userContext.allowedApps = payload.allowedApps || [];
+    userContext.allowedApps = allowedApps;
     userContext.userType = payload.userType;
     
     // Add platform role from database or JWT payload
@@ -178,8 +193,21 @@ async function optionalAuth(req, res, next) {
         });
       }
       
+      // Get fresh allowedApps from database (for non-platform-admin users)
+      let allowedApps = payload.allowedApps || [];
+      if (payload.type !== 'platform_admin') {
+        try {
+          const tenantIdFk = payload.tenantId;
+          const freshEntitlements = await authService.getUserEntitlements(user, tenantIdFk);
+          allowedApps = freshEntitlements.allowedApps;
+        } catch (error) {
+          console.warn('⚠️ [OPTIONAL_AUTH] Failed to refresh allowedApps:', error.message);
+          allowedApps = payload.allowedApps || [];
+        }
+      }
+
       // Add JWT payload data that isn't in the user context
-      userContext.allowedApps = payload.allowedApps || [];
+      userContext.allowedApps = allowedApps;
       userContext.userType = payload.userType;
       userContext.platformRole = user.platform_role || payload.platformRole;
       

@@ -57,17 +57,9 @@ function requireAppAccess(applicationSlug, options = {}) {
         });
       }
 
-      // LAYER 3: Seat Availability Check
+      // LAYER 3: Get Seat Information (for logging only - not for blocking access)
+      // Seat limits are enforced at grant time via Internal Admin, not at API usage time
       const seats = await TenantApplication.checkSeatAvailability(tenantIdFk, application.id);
-      if (seats && seats.seats_available <= 0) {
-        if (logAccess) {
-          await AccessLog.logDenied(userId, tenantIdFk, application.id, 'seat_limit_exceeded', req);
-        }
-        return res.status(403).json({
-          error: 'User seat limit exceeded for this application', 
-          message: `User limit exceeded for ${applicationSlug}`
-        });
-      }
 
       // LAYER 4: User Access Check (JWT first, DB fallback)
       let userAccess = null;

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Home, Plus, FileText, Users, Receipt } from 'lucide-react'
+import { Home, Plus, FileText, Users, Receipt, FileType, Settings } from 'lucide-react'
 import { useUIStore } from '../store/ui'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
 
@@ -15,19 +15,29 @@ const navigation: NavigationItem[] = [
     icon: Plus
   },
   {
-    name: 'Sessions',
-    href: '/sessions',
-    icon: FileText
-  },
-  {
     name: 'Patients',
     href: '/patients',
     icon: Users
   },
   {
+    name: 'Sessions',
+    href: '/sessions',
+    icon: FileText
+  },
+  {
     name: 'Quotes',
     href: '/quotes',
     icon: Receipt
+  },
+  {
+    name: 'Templates',
+    href: '/templates',
+    icon: FileType
+  },
+  {
+    name: 'Configurations',
+    href: '/configurations',
+    icon: Settings
   }
 ]
 

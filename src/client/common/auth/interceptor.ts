@@ -32,6 +32,7 @@ export function getCurrentTenantId(): number | null {
   // First try the manual session storage
   const session = readSession()
   if (session?.tenantId) {
+    console.log('🔍 [Tenant] Found tenant ID from session:', session.tenantId)
     return session.tenantId
   }
 
@@ -43,6 +44,7 @@ export function getCurrentTenantId(): number | null {
       // Try tenantId directly (Hub/TQ format) or user.tenantId (internal-admin format)
       const tenantId = parsed.state?.tenantId || parsed.state?.user?.tenantId
       if (tenantId) {
+        console.log('🔍 [Tenant] Found tenant ID from auth storage:', tenantId)
         return tenantId
       }
     }
@@ -50,6 +52,7 @@ export function getCurrentTenantId(): number | null {
     console.warn('Failed to read auth storage:', e)
   }
 
+  console.warn('🚨 [Tenant] No tenant ID found!')
   return null
 }
 
@@ -90,6 +93,6 @@ export function shouldInjectTenantHeader(url: string): boolean {
     return false
   }
   
-  // Inject for all other internal API calls
-  return url.includes('/internal/api/v1/')
+  // Inject for all internal API calls (internal-admin, hub, and product apps)
+  return url.includes('/internal/api/v1/') || url.includes('/api/tq/v1/')
 }

@@ -30,20 +30,28 @@ export const Login: React.FC = () => {
 
     // Check for SSO parameters and attempt SSO login
     const attemptSso = async () => {
-      if (hasSsoParams()) {
+      console.log('🔄 [TQ Login] Checking for SSO params...')
+      const hasParams = hasSsoParams()
+      console.log('🔍 [TQ Login] SSO params check result:', hasParams)
+
+      if (hasParams) {
+        console.log('🔄 [TQ Login] Starting SSO login process...')
         setIsSsoLoading(true)
         try {
           const ssoAttempted = await consumeSso()
+          console.log('✅ [TQ Login] SSO attempt result:', ssoAttempted)
           if (ssoAttempted) {
             // SSO login successful, will redirect via isAuthenticated check
             return
           }
         } catch (error) {
-          console.error('SSO login failed:', error)
+          console.error('❌ [TQ Login] SSO login failed:', error)
           // Error is handled by the auth store
         } finally {
           setIsSsoLoading(false)
         }
+      } else {
+        console.log('ℹ️ [TQ Login] No SSO params found, showing manual login form')
       }
     }
 

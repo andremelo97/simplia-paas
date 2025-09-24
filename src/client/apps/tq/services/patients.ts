@@ -1,22 +1,22 @@
 import { api } from '@client/config/http'
 
 export interface Patient {
-  id: number
-  name: string
+  id: string
+  firstName?: string
+  lastName?: string
   email?: string
   phone?: string
-  dateOfBirth?: string
-  address?: string
+  notes?: string
   createdAt: string
   updatedAt: string
 }
 
 export interface CreatePatientRequest {
-  name: string
+  firstName?: string
+  lastName?: string
   email?: string
   phone?: string
-  dateOfBirth?: string
-  address?: string
+  notes?: string
 }
 
 export interface SearchPatientsParams {
@@ -26,7 +26,12 @@ export interface SearchPatientsParams {
 
 export const patientsService = {
   async searchPatients(params: SearchPatientsParams = {}): Promise<Patient[]> {
-    const response = await api.get('/api/tq/v1/patients', { params })
+    const queryParams = new URLSearchParams()
+    if (params.search) queryParams.append('search', params.search)
+    if (params.limit) queryParams.append('limit', params.limit.toString())
+
+    const url = `/api/tq/v1/patients${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    const response = await api.get(url)
     return response.data
   },
 

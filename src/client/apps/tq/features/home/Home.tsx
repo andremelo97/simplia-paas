@@ -10,12 +10,14 @@ export const Home: React.FC = () => {
   // Handle SSO on home page load
   useEffect(() => {
     const handleSso = async () => {
-      if (hasSsoParams()) {
-        try {
-          await consumeSso()
-        } catch (error) {
-          console.error('SSO failed on home page:', error)
+      try {
+        console.log('🔄 [TQ Home] Checking for SSO params...')
+        const ssoAttempted = await consumeSso()
+        if (!ssoAttempted) {
+          console.log('ℹ️ [TQ Home] No SSO params found, using persisted session')
         }
+      } catch (error) {
+        console.error('❌ [TQ Home] SSO failed on home page:', error)
       }
     }
 

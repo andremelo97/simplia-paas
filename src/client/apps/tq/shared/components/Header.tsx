@@ -6,12 +6,12 @@ import { Header as CommonHeader } from '@client/common/components'
 const getBreadcrumbs = (pathname: string) => {
   const segments = pathname.split('/').filter(Boolean)
 
-  if (segments.length === 0 || pathname === '/app') {
-    return [{ label: 'Home', href: '/app' }]
+  if (segments.length === 0 || pathname === '/') {
+    return [{ label: 'Home', href: '/' }]
   }
 
   const breadcrumbs = [
-    { label: 'Home', href: '/app' }
+    { label: 'Home', href: '/' }
   ]
 
   // For TQ app, extend breadcrumbs as features are added
@@ -26,22 +26,16 @@ const getDisplayRole = (user: any) => {
 }
 
 export const Header: React.FC = () => {
-  const { user, tenantName, tenantSlug } = useAuthStore()
+  const { user } = useAuthStore()
 
   const handleLogout = () => {
     authService.logout()
   }
 
-  // Create tenant object for header display
-  const tenant = tenantName ? {
-    name: tenantName,
-    slug: tenantSlug || '',
-  } : null
-
   return (
     <CommonHeader
       user={user}
-      tenant={tenant}
+      tenant={null}
       onLogout={handleLogout}
       getBreadcrumbs={getBreadcrumbs}
       getDisplayRole={getDisplayRole}

@@ -42,8 +42,8 @@ export const Home: React.FC = () => {
       const { token, tenantId } = useAuthStore.getState()
 
       if (token && tenantId) {
-        // Open TQ with SSO parameters
-        const tqUrl = `http://localhost:3005/login?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
+        // Open TQ with SSO parameters - redirect directly to home after SSO
+        const tqUrl = `http://localhost:3005/?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
         window.open(tqUrl, '_blank', 'noopener,noreferrer')
       } else {
         publishFeedback({

@@ -158,8 +158,9 @@ export const useAuthStore = create<AuthState>()(persist(
             role: data.role,
             allowedApps: data.allowedApps,
           },
-          tenantName: data.tenant?.name,
-          tenantSlug: data.tenant?.slug,
+          // Preserve tenant name from JWT if already set, otherwise use API data
+          tenantName: state.tenantName || data.tenant?.name,
+          tenantSlug: state.tenantSlug || data.tenant?.slug,
           isLoading: false,
         }))
       } catch (error: any) {
@@ -194,28 +195,77 @@ export const useAuthStore = create<AuthState>()(persist(
       try {
         console.log('🔄 [TQ Auth] SSO login with token...')
 
-        // Decode JWT to get user info (no need to call /me again)
-        const payload = JSON.parse(atob(token.split('.')[1]))
+        // Get current state to preserve existing tenant info from Hub
+        const currentState = get()
+        console.log('🔍 [TQ Auth] Current tenant info before SSO:', {
+          tenantName: currentState.tenantName,
+          tenantSlug: currentState.tenantSlug
+        })
+
+        // Decode JWT to get user info with proper UTF-8 handling
+        const base64Payload = token.split('.')[1]
+
+        // Proper UTF-8 safe JWT decoding
+        function decodeJWTPayload(base64String) {
+          // Add padding if needed
+          const paddedBase64 = base64String + '==='.slice((base64String.length + 3) % 4)
+
+          try {
+            // Convert base64 to binary string
+            const binaryString = atob(paddedBase64)
+
+            // Convert binary string to UTF-8 encoded string
+            const utf8String = decodeURIComponent(
+              binaryString
+                .split('')
+                .map(char => '%' + ('00' + char.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+            )
+
+            return JSON.parse(utf8String)
+          } catch (error) {
+            console.warn('JWT decode failed, trying fallback method:', error)
+            // Fallback to standard method
+            return JSON.parse(atob(paddedBase64))
+          }
+        }
+
+        const payload = decodeJWTPayload(base64Payload)
+        console.log('🔍 [TQ Auth] Decoded payload:', payload)
+
+        // Use tenant name from current state (Hub) if available, otherwise from JWT/fallback
+        const tenantName = currentState.tenantName && !currentState.tenantName.startsWith('Tenant ')
+          ? currentState.tenantName
+          : payload.tenantName || payload.tenant?.name || `Tenant ${tenantId}`
+
+        const tenantSlug = currentState.tenantSlug || payload.tenantSlug || payload.tenant?.slug
+
+        console.log('🔍 [TQ Auth] Final tenant info:', {
+          fromState: currentState.tenantName,
+          fromJWT: payload.tenantName || payload.tenant?.name,
+          final: tenantName
+        })
 
         set({
           isAuthenticated: true,
           user: {
             id: payload.userId,
             email: payload.email,
-            firstName: payload.name?.split(' ')[0],
-            lastName: payload.name?.split(' ').slice(1).join(' '),
+            firstName: payload.firstName || payload.name?.split(' ')[0],
+            lastName: payload.lastName || payload.name?.split(' ').slice(1).join(' '),
             role: payload.role,
             tenantId: payload.tenantId,
             allowedApps: payload.allowedApps?.map(slug => ({ slug, name: slug, roleInApp: 'user', licenseStatus: 'active', expiresAt: null }))
           },
           token: token,
           tenantId: tenantId,
-          tenantName: `Tenant ${tenantId}`, // Could decode from JWT if needed
+          tenantName: tenantName,
+          tenantSlug: tenantSlug,
           isLoading: false,
           error: null
         })
 
-        console.log('✅ [TQ Auth] SSO login successful - no /me call needed')
+        console.log('✅ [TQ Auth] SSO login successful - final tenant name:', tenantName)
       } catch (error: any) {
         console.error('❌ [TQ Auth] SSO login failed:', error)
         const appError = isAppError(error) ? error : {
@@ -290,14 +340,19 @@ export const useAuthStore = create<AuthState>()(persist(
           isLoading: true
         })
 
-        // Load fresh profile data to get latest apps and tenant info
+        // Load fresh profile data only if we don't have tenant name (not from SSO)
         const { loadUserProfile } = get()
-        loadUserProfile()
-          .catch(console.error)
-          .finally(() => {
-            // Ensure loading is always set to false
-            set({ isLoading: false })
-          })
+        if (!state.tenantName || state.tenantName.startsWith('Tenant ')) {
+          console.log('🔄 [TQ Auth] Loading profile to get tenant info...')
+          loadUserProfile()
+            .catch(console.error)
+            .finally(() => {
+              set({ isLoading: false })
+            })
+        } else {
+          console.log('✅ [TQ Auth] Tenant info already available from JWT, skipping profile load')
+          set({ isLoading: false })
+        }
       } else {
         console.log('🔄 [TQ Auth] No session found, starting fresh')
 

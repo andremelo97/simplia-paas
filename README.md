@@ -108,12 +108,25 @@ simplia-paas/
 │   │   │   │   ├── index.html         # HTML específico do Hub
 │   │   │   │   ├── main.tsx           # Entry point do Hub
 │   │   │   │   └── routes.tsx         # Roteamento do Hub
-│   │   │   ├── 📁 tq-client/          # App do produto TQ (cliente final)
-│   │   │   │   ├── 📁 routes/         # rotas específicas do TQ
+│   │   │   ├── 📁 tq/                 # App do produto TQ (cliente final)
 │   │   │   │   ├── 📁 features/       # funcionalidades do TQ
-│   │   │   │   ├── 📁 components/     # componentes do TQ
-│   │   │   │   ├── 📁 services/       # cliente para /api/v1/tq
-│   │   │   │   └── app.tsx            # componente principal (placeholder)
+│   │   │   │   │   ├── 📁 auth/       # autenticação com SSO
+│   │   │   │   │   │   └── Login.tsx  # página de login (SSO)
+│   │   │   │   │   ├── 📁 home/       # página inicial
+│   │   │   │   │   │   └── Home.tsx   # dashboard principal do TQ
+│   │   │   │   │   └── 📁 session/    # gestão de sessões de transcrição
+│   │   │   │   │       └── NewSession.tsx # interface de nova sessão com split button
+│   │   │   │   ├── 📁 shared/         # componentes e stores compartilhados
+│   │   │   │   │   ├── 📁 components/ # Layout, Header, Sidebar, RouteGuard
+│   │   │   │   │   └── 📁 store/      # auth store, UI store
+│   │   │   │   ├── 📁 services/       # cliente para APIs
+│   │   │   │   │   ├── sessions.ts    # serviços de sessões (mock)
+│   │   │   │   │   └── patients.ts    # serviços de pacientes (mock)
+│   │   │   │   ├── 📁 lib/            # consumeSso para SSO
+│   │   │   │   ├── 📁 routes/         # roteamento do TQ
+│   │   │   │   ├── index.html         # HTML com fonte Montserrat
+│   │   │   │   ├── main.tsx           # entry point
+│   │   │   │   └── app.tsx            # componente principal
 │   │   │   ├── 📁 crm-client/         # App do produto CRM
 │   │   │   │   ├── 📁 routes/ features/ components/ services/
 │   │   │   │   └── app.tsx            # (placeholders)
@@ -124,7 +137,7 @@ simplia-paas/
 │   │   ├── 📁 common/                 # Reuso visual e utilidades de front
 │   │   │   ├── 📁 ui/                 # Design system components (Button, Input, Card, etc.)
 │   │   │   │   ├── Button.tsx         # Componente Button com loading states
-│   │   │   │   ├── Input.tsx          # Componente Input com validação
+│   │   │   │   ├── Input.tsx          # Componente Input com validação e borda roxa (#B725B7)
 │   │   │   │   ├── Select.tsx         # Componente Select padronizado
 │   │   │   │   ├── Textarea.tsx       # Componente Textarea consistente
 │   │   │   │   ├── Checkbox.tsx       # Componente Checkbox com brand primary
@@ -132,13 +145,14 @@ simplia-paas/
 │   │   │   │   ├── Badge.tsx          # Componente Badge com variants da marca (tertiary, success, etc.)
 │   │   │   │   ├── StatusBadge.tsx    # Componente StatusBadge para status tipados (active/inactive/suspended)
 │   │   │   │   ├── Card.tsx           # Componente Card refatorado
+│   │   │   │   ├── DropdownMenu.tsx   # **NOVO**: Sistema de dropdown completo (Trigger, Content, Item)
 │   │   │   │   ├── Toast.tsx          # Sistema de toasts
 │   │   │   │   ├── Toaster.tsx        # Host de toasts
 │   │   │   │   ├── FormSection.tsx    # Seção de formulário com botão add
 │   │   │   │   ├── FieldError.tsx     # Display de erro acessível
 │   │   │   │   ├── SelectCountry.tsx  # Seletor de país ISO-2
 │   │   │   │   ├── Tooltip.tsx        # **NOVO**: Componente de tooltip com suporte a disabled state
-│   │   │   │   └── index.ts           # Re-exports de componentes
+│   │   │   │   └── index.ts           # Re-exports de componentes incluindo DropdownMenu
 │   │   │   │
 │   │   │   ├── 📁 feedback/           # Sistema AppFeedback (novo)
 │   │   │   │   ├── types.ts           # Interfaces AppFeedback e AppError
@@ -363,12 +377,13 @@ Reservado para regras de negócio puras sem dependências de HTTP/Database
   - **`assets/`**: Assets específicos do painel
   - **`app.tsx`**: Componente principal (placeholder)
 
-- **`tq-client/`**: Aplicação do produto Transcription Quote
-  - **`routes/`**: Rotas específicas do produto TQ
-  - **`features/`**: Funcionalidades específicas do TQ
-  - **`components/`**: Componentes específicos do TQ
-  - **`services/`**: Cliente HTTP para `/api/v1/tq`
-  - **`app.tsx`**: Componente principal (placeholder)
+- **`tq/`**: Aplicação do produto Transcription Quote
+  - **`features/session/`**: Interface de nova sessão com split-button e controles de áudio
+  - **`features/auth/`**: Autenticação com SSO integrado ao Hub
+  - **`features/home/`**: Dashboard principal do TQ
+  - **`shared/components/`**: Layout, Header, Sidebar compartilhados
+  - **`services/`**: Serviços mock para sessions e patients
+  - **`app.tsx`**: Componente principal com roteamento
 
 - **`crm-client/`** e **`automation-client/`**: Estrutura similar para produtos CRM e Automation (placeholders)
 
@@ -1004,6 +1019,16 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 
 ### ✨ Implementações Recentes (Janeiro 2025)
 
+- **✅ 🎨 TQ App UI System**: Interface completa do NewSession com design refinado
+  - **Split Button Interface**: Botão principal com dropdown para "Start Transcribing" vs "Upload Audio"
+  - **Patient Management Compacto**: Input com largura fixa (w-80) e CTA "Create new patient" inline
+  - **Audio Controls Avançados**: Timer, VU meter em tempo real, seleção de microfone, estados de gravação
+  - **DropdownMenu Component**: Novo componente comum com Context API (Trigger/Content/Item)
+  - **Input Standardization**: Borda roxa (#B725B7) no foco para todos os inputs do sistema
+  - **Card Layout Refinado**: Padding consistente (px-6 py-4) em headers e conteúdo
+  - **Mock Implementation**: Interface funcional sem API calls para desenvolvimento de UI
+  - **Responsive Design**: Layouts compactos que não ocupam largura total desnecessariamente
+
 - **✅ 📊 Hub Entitlements Feature**: Sistema completo de visualização de licenças para usuários admin no Hub
   - **Admin Dashboard**: Seção de entitlements visível apenas para usuários com `role === 'admin'`
   - **Read-Only License Management**: Visualização de todas as licenças do tenant com usuários assignados
@@ -1165,7 +1190,8 @@ const { items, add, remove, update, setPrimary } = useRepeater<AddressFormValues
 - 🟢 **License Management**: Página completa de licenças por tenant com ações Adjust/Suspend/Resume
 - 🟢 **Admin Interface**: Dashboard, tenants, users, applications, **entitlements** - 100% completo
 - 🟢 **Hub App**: Portal completo com aplicações + **entitlements para admins** + loading global simples - 100% implementado
-- 🔴 **Product Apps**: Estrutura criada - desenvolvimento pendente
+- 🟡 **TQ App (Product)**: Interface NewSession implementada com split-button, controles de áudio, gestão de pacientes - UI completa (mock)
+- 🔴 **Product Apps (CRM/Automation)**: Estrutura criada - desenvolvimento pendente
 - 🔴 **Public APIs**: Aguardando definição de requisitos dos produtos
 
 ## 📖 Documentação Adicional

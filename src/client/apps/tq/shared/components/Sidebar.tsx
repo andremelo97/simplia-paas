@@ -1,13 +1,33 @@
 import React from 'react'
-import { Home } from 'lucide-react'
+import { Home, Plus, FileText, Users, Receipt } from 'lucide-react'
 import { useUIStore } from '../store/ui'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
 
 const navigation: NavigationItem[] = [
   {
     name: 'Home',
-    href: '/app',
+    href: '/',
     icon: Home
+  },
+  {
+    name: 'New session',
+    href: '/new-session',
+    icon: Plus
+  },
+  {
+    name: 'Sessions',
+    href: '/sessions',
+    icon: FileText
+  },
+  {
+    name: 'Patients',
+    href: '/patients',
+    icon: Users
+  },
+  {
+    name: 'Quotes',
+    href: '/quotes',
+    icon: Receipt
   }
 ]
 

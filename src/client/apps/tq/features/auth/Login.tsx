@@ -23,7 +23,7 @@ export const Login: React.FC = () => {
   const location = useLocation()
 
   // Always redirect to TQ app root after login
-  const from = '/app'
+  const from = '/'
 
   useEffect(() => {
     clearError()

@@ -74,7 +74,80 @@ npm run build:client   # Build frontend only
 ## Multi-App Architecture
 - **Internal-Admin** (`/internal/api/v1`): Platform administration (tenants, users, apps, pricing) - **Global scope only**
 - **Hub App** (`/internal/api/v1/me`): Self-service portal for end users to access their apps
-- **Product Apps**: TQ (Transcription Quote) - active development, CRM, Automation clients (future development)
+- **TQ App**: Transcription Quote system with session management, patient tracking, and audio recording features
+- **Product Apps**: CRM, Automation clients (future development)
+
+### Single Sign-On (SSO) Implementation
+The platform implements seamless SSO between Hub and TQ applications:
+
+**SSO Flow:**
+1. User logs in to Hub with JWT authentication
+2. When accessing TQ, Hub extracts JWT token and tenant ID from auth store
+3. TQ URL is opened with SSO parameters: `http://localhost:3005/login?token={JWT}&tenantId={ID}`
+4. TQ automatically validates token and logs user in without credentials
+5. Shared session state maintained via LocalStorage across applications
+
+**Technical Implementation:**
+```javascript
+// Hub: SSO initiation (src/client/apps/hub/pages/Home.tsx)
+if (app.slug === 'tq') {
+  const { token, tenantId } = useAuthStore.getState()
+  if (token && tenantId) {
+    const tqUrl = `http://localhost:3005/login?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
+    window.open(tqUrl, '_blank', 'noopener,noreferrer')
+  }
+}
+
+// TQ: SSO consumption (src/client/apps/tq/lib/consumeSso.ts)
+export const consumeSso = async (): Promise<boolean> => {
+  const params = new URLSearchParams(window.location.search)
+  const token = params.get('token')
+  const tenantId = params.get('tenantId')
+
+  if (token && tenantId) {
+    const { loginWithToken } = useAuthStore.getState()
+    await loginWithToken(token, parseInt(tenantId))
+    return true
+  }
+  return false
+}
+
+// Optimized token handling - decode JWT directly instead of API call
+loginWithToken: async (token: string, tenantId: number) => {
+  const payload = JSON.parse(atob(token.split('.')[1]))
+  set({
+    isAuthenticated: true,
+    user: {
+      id: payload.userId,
+      email: payload.email,
+      tenantId: payload.tenantId,
+      // ... extract all user data from JWT payload
+    },
+    token,
+    tenantId: payload.tenantId
+  })
+}
+```
+
+**CORS Configuration:**
+```javascript
+// src/server/app.js - Allow TQ origin for SSO
+const TQ_ORIGIN = process.env.TQ_ORIGIN || 'http://localhost:3005';
+if (origin === TQ_ORIGIN) {
+  return callback(null, true);
+}
+```
+
+**Vite Proxy for Development:**
+```javascript
+// vite.tq.config.ts - Proxy API calls to avoid CORS
+proxy: {
+  '/internal': {
+    target: 'http://localhost:3001',
+    changeOrigin: true
+  }
+}
+```
 
 ## API Route Categories
 - **Platform-Scoped** (no tenant header): `/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`, `/me/*`
@@ -126,6 +199,11 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - **Frontend Apps**: `src/client/apps/` - Multi-app architecture
 - **Tests**: `tests/integration/internal/` - Critical validation tests
 - **Hub App**: `src/client/apps/hub/` - Self-service portal for end users
+- **TQ App**: `src/client/apps/tq/` - Transcription Quote application with session management
+- **Common UI Components**: `src/client/common/ui/` - Shared design system components
+  - `DropdownMenu`: Context-based dropdown with trigger/content/item components
+  - `Input`: Standardized input with purple focus border (#B725B7)
+  - `Button`, `Card`, `Select`, `Textarea`: Core UI primitives
 
 ## Critical Seat Counting Rules
 - **Grant**: MUST call `TenantApplication.incrementSeat(tenantId, applicationId)`
@@ -171,9 +249,50 @@ async function withTenant(tenantSchema, fn) {
 ### Adding a New Frontend Feature
 1. Create components in `src/client/apps/[app]/features/[domain]/`
 2. Add service methods in `src/client/apps/[app]/services/`
-3. Update store in `src/client/apps/[app]/store/` if needed
-4. Use common UI components from `src/client/common/ui/`
-5. Run `npx tsc --noEmit --project src/client/` to check types
+3. Update store in `src/client/apps/[app]/shared/store/` if needed
+4. Use common UI components from `src/client/common/ui/` (Button, Input, Card, DropdownMenu, etc.)
+5. Follow design system: purple primary color (#B725B7), consistent spacing, Montserrat font
+6. Follow `/features` architecture pattern (not `/pages`)
+7. Run `npx tsc --noEmit --project src/client/` to check types
+
+### TQ Application Structure
+TQ follows the same `/features` architecture as internal-admin:
+
+#### Key TQ Features Implemented:
+- **NewSession**: Audio transcription interface with split-button design
+  - Split button for "Start Transcribing" vs "Upload Audio" mode selection
+  - Compact patient input field with inline "Create new patient" CTA
+  - Timer, VU meter, and microphone selection controls
+  - Large transcription textarea with auto-save simulation
+  - Mock implementation for UI development (no API calls yet)
+
+#### TQ UI Design Patterns:
+- **Split Button**: Main action + dropdown for mode selection using DropdownMenu component
+- **Compact Inputs**: Fixed-width inputs (w-80) instead of full-width for better UX
+- **Purple Primary**: Consistent #B725B7 color for focus states and primary actions
+- **Card Layouts**: Proper padding (px-6 py-4) for content spacing
+
+```
+src/client/apps/tq/
+├── features/           # Feature-based organization
+│   ├── auth/          # Authentication pages
+│   │   └── Login.tsx
+│   └── home/          # Home/Dashboard functionality
+│       └── Home.tsx
+├── shared/            # Shared TQ components/services
+│   ├── components/    # Layout, Sidebar, Header (copied from Hub)
+│   ├── store/         # Zustand stores (auth, ui)
+│   └── types/         # TypeScript interfaces
+├── services/          # API service layer
+├── lib/              # Utilities (SSO consumption)
+└── App.tsx           # TQ application root
+```
+
+**Key TQ Implementation Details:**
+- **Shared UI**: Identical Layout, Sidebar, Header components as Hub
+- **Simplified Navigation**: Only "Home" menu item in sidebar
+- **SSO Integration**: Automatic login via URL parameters from Hub
+- **Features Structure**: Follows enterprise `/features` pattern instead of `/pages`
 
 ### Database Schema Changes
 1. Create migration file in `src/server/infra/migrations/`
@@ -198,6 +317,9 @@ async function withTenant(tenantSchema, fn) {
 - **Build failures**: Check for TypeScript errors in frontend, JavaScript syntax in backend
 - **TypeScript errors**: Run `npx tsc --noEmit --project src/client/` to see all type issues
 - **Migration failures**: Check if previous migrations ran successfully with `npm run migrate`
+- **CORS issues**: Ensure TQ_ORIGIN is configured in server CORS settings for SSO
+- **SSO token errors**: Verify JWT token is valid and contains required payload (userId, tenantId)
+- **Vite proxy issues**: Check proxy configuration in vite.tq.config.ts for API routing
 
 ---
 

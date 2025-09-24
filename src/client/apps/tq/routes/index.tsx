@@ -4,6 +4,7 @@ import { RouteGuard } from '../shared/components/RouteGuard'
 import { Layout } from '../shared/components/Layout'
 import { Login } from '../features/auth/Login'
 import { Home } from '../features/home/Home'
+import { NewSession } from '../features/session/NewSession'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -47,7 +48,7 @@ export const AppRoutes: React.FC = () => {
       <Route path="/unauthorized" element={<Unauthorized />} />
 
       <Route
-        path="/app/*"
+        path="/*"
         element={
           <RouteGuard requireAuth requiredApp="tq">
             <Layout />
@@ -56,11 +57,12 @@ export const AppRoutes: React.FC = () => {
       >
         <Route index element={<Home />} />
         <Route path="home" element={<Home />} />
+        <Route path="new-session" element={<NewSession />} />
+        <Route path="sessions" element={<Home />} />
+        <Route path="patients" element={<Home />} />
+        <Route path="quotes" element={<Home />} />
         <Route path="*" element={<NotFound />} />
       </Route>
-
-      {/* Redirect root and direct access to Hub */}
-      <Route path="/" element={<RedirectToHub />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

@@ -1,10 +1,26 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@client/common/ui'
 import { FileText } from 'lucide-react'
 import { useAuthStore } from '../../shared/store'
+import { consumeSso, hasSsoParams } from '../../lib/consumeSso'
 
 export const Home: React.FC = () => {
-  const { user, tenantName } = useAuthStore()
+  const { user } = useAuthStore()
+
+  // Handle SSO on home page load
+  useEffect(() => {
+    const handleSso = async () => {
+      if (hasSsoParams()) {
+        try {
+          await consumeSso()
+        } catch (error) {
+          console.error('SSO failed on home page:', error)
+        }
+      }
+    }
+
+    handleSso()
+  }, [])
 
   return (
     <div className="space-y-6">
@@ -13,7 +29,7 @@ export const Home: React.FC = () => {
           Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
         </h1>
         <p className="text-gray-600 mt-1">
-          {tenantName ? `TQ Application at ${tenantName}` : 'TQ - Transcription Quote System'}
+          TQ - Transcription Quote System
         </p>
       </div>
 

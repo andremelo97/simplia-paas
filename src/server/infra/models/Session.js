@@ -10,10 +10,11 @@ class SessionNotFoundError extends Error {
 class Session {
   constructor(data) {
     this.id = data.id;
+    this.number = data.number;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
     this.patientId = data.patient_id;
-    this.transcription = data.transcription;
+    this.transcriptionId = data.transcription_id;
     this.status = data.status;
 
     // Include patient data if joined
@@ -23,6 +24,14 @@ class Session {
         firstName: data.patient_first_name,
         lastName: data.patient_last_name,
         email: data.patient_email
+      };
+    }
+
+    // Include transcription data if available
+    if (data.transcription_text !== undefined) {
+      this.transcription = {
+        text: data.transcription_text,
+        confidence: data.transcription_confidence
       };
     }
   }
@@ -39,11 +48,17 @@ class Session {
       query += `, p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email`;
     }
 
+    // Always include transcription data if available
+    query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence`;
+
     query += ` FROM ${schema}.session s`;
 
     if (includePatient) {
       query += ` LEFT JOIN ${schema}.patient p ON s.patient_id = p.id`;
     }
+
+    // Always left join transcription
+    query += ` LEFT JOIN ${schema}.transcription t ON s.transcription_id = t.id`;
 
     query += ` WHERE s.id = $1`;
 
@@ -70,11 +85,17 @@ class Session {
       query += `, p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email`;
     }
 
+    // Always include transcription data if available
+    query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence`;
+
     query += ` FROM ${schema}.session s`;
 
     if (includePatient) {
       query += ` LEFT JOIN ${schema}.patient p ON s.patient_id = p.id`;
     }
+
+    // Always left join transcription
+    query += ` LEFT JOIN ${schema}.transcription t ON s.transcription_id = t.id`;
 
     const params = [];
     const conditions = [];
@@ -132,17 +153,17 @@ class Session {
    * Create a new session within a tenant schema
    */
   static async create(sessionData, schema) {
-    const { patientId, transcription, status = 'draft' } = sessionData;
+    const { patientId, transcriptionId, status = 'draft' } = sessionData;
 
     const query = `
-      INSERT INTO ${schema}.session (patient_id, transcription, status)
+      INSERT INTO ${schema}.session (patient_id, transcription_id, status)
       VALUES ($1, $2, $3)
       RETURNING *
     `;
 
     const result = await database.query(query, [
       patientId,
-      transcription,
+      transcriptionId,
       status
     ]);
 
@@ -152,41 +173,89 @@ class Session {
   /**
    * Update an existing session within a tenant schema
    */
-  static async update(id, updates, schema) {
-    const allowedUpdates = ['transcription', 'status'];
-    const updateFields = [];
-    const updateValues = [];
-    let paramIndex = 1;
+  static async update(id, updates, schema, transcriptionText) {
+    if (Object.keys(updates).length === 0 && transcriptionText === undefined) {
+      throw new Error('No updates provided');
+    }
 
-    for (const [key, value] of Object.entries(updates)) {
-      if (allowedUpdates.includes(key) && value !== undefined) {
-        updateFields.push(`${key} = $${paramIndex}`);
-        updateValues.push(value);
-        paramIndex++;
+    // Start transaction to update both session and transcription
+    const client = await database.getClient();
+
+    try {
+      await client.query('BEGIN');
+
+      // Update session if there are updates
+      let session;
+      if (Object.keys(updates).length > 0) {
+        const allowedUpdates = ['transcription_id', 'status'];
+        const updateFields = [];
+        const updateValues = [];
+        let paramIndex = 1;
+
+        for (const [key, value] of Object.entries(updates)) {
+          if (allowedUpdates.includes(key) && value !== undefined) {
+            updateFields.push(`${key} = $${paramIndex}`);
+            updateValues.push(value);
+            paramIndex++;
+          }
+        }
+
+        if (updateFields.length === 0) {
+          throw new Error('No valid fields to update');
+        }
+
+        const sessionQuery = `
+          UPDATE ${schema}.session
+          SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $${paramIndex}
+          RETURNING *
+        `;
+
+        const sessionResult = await client.query(sessionQuery, [
+          ...updateValues,
+          id
+        ]);
+
+        if (sessionResult.rows.length === 0) {
+          throw new SessionNotFoundError(`ID: ${id} in schema: ${schema}`);
+        }
+
+        session = sessionResult.rows[0];
+      } else {
+        // Just get the session
+        const sessionResult = await client.query(
+          `SELECT * FROM ${schema}.session WHERE id = $1`,
+          [id]
+        );
+
+        if (sessionResult.rows.length === 0) {
+          throw new SessionNotFoundError(`ID: ${id} in schema: ${schema}`);
+        }
+
+        session = sessionResult.rows[0];
       }
+
+      // Update transcription text if provided
+      if (transcriptionText !== undefined && session.transcription_id) {
+        await client.query(
+          `UPDATE ${schema}.transcription
+           SET transcript = $1, updated_at = CURRENT_TIMESTAMP
+           WHERE id = $2`,
+          [transcriptionText, session.transcription_id]
+        );
+      }
+
+      await client.query('COMMIT');
+
+      // Fetch updated session with includes
+      return await Session.findById(id, schema, true);
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
     }
-
-    if (updateFields.length === 0) {
-      throw new Error('No valid fields to update');
-    }
-
-    const query = `
-      UPDATE ${schema}.session
-      SET ${updateFields.join(', ')}
-      WHERE id = $${paramIndex}
-      RETURNING *
-    `;
-
-    const result = await database.query(query, [
-      ...updateValues,
-      id
-    ]);
-
-    if (result.rows.length === 0) {
-      throw new SessionNotFoundError(`ID: ${id} in schema: ${schema}`);
-    }
-
-    return new Session(result.rows[0]);
   }
 
   /**
@@ -238,15 +307,34 @@ class Session {
    * Convert to JSON
    */
   toJSON() {
-    return {
+    const result = {
       id: this.id,
+      number: this.number,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       patientId: this.patientId,
-      transcription: this.transcription,
-      status: this.status,
-      ...(this.patient && { patient: this.patient })
+      transcriptionId: this.transcriptionId,
+      status: this.status
     };
+
+    // Include patient data if available
+    if (this.patient) {
+      result.patient = this.patient;
+      // Also include direct patient fields for compatibility
+      result.patient_first_name = this.patient.firstName;
+      result.patient_last_name = this.patient.lastName;
+      result.patient_email = this.patient.email;
+    }
+
+    // Include transcription data if available
+    if (this.transcription) {
+      result.transcription = this.transcription;
+      // Also include direct transcription fields for compatibility
+      result.transcription_text = this.transcription.text;
+      result.transcription_confidence = this.transcription.confidence;
+    }
+
+    return result;
   }
 }
 

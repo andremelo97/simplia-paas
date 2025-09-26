@@ -55,6 +55,26 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       END$$;
     `);
 
+    // Create session_status_enum if it doesn't exist
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'session_status_enum') THEN
+          CREATE TYPE session_status_enum AS ENUM ('draft','pending','completed','cancelled');
+        END IF;
+      END$$;
+    `);
+
+    // Create quote_status_enum if it doesn't exist
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'quote_status_enum') THEN
+          CREATE TYPE quote_status_enum AS ENUM ('draft','sent','approved','rejected','expired');
+        END IF;
+      END$$;
+    `);
+
     // Create transcription table for audio processing
     await client.query(`
       CREATE TABLE IF NOT EXISTS transcription (
@@ -71,15 +91,54 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       )
     `);
 
+    // Create session number sequence for unique incremental numbers
+    await client.query(`
+      CREATE SEQUENCE IF NOT EXISTS session_number_seq
+      START WITH 1
+      INCREMENT BY 1
+      NO MAXVALUE
+      CACHE 1
+    `);
+
     // Create session table (simplified, references transcription)
     await client.query(`
       CREATE TABLE IF NOT EXISTS session (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('SES' || LPAD(nextval('session_number_seq')::text, 6, '0')),
         patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
         transcription_id UUID REFERENCES transcription(id) ON DELETE SET NULL,
-        status TEXT DEFAULT 'draft'
+        status session_status_enum NOT NULL DEFAULT 'draft'
+      )
+    `);
+
+    // Create quote table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS quote (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
+        content TEXT,
+        total NUMERIC(12, 2) DEFAULT 0.00,
+        status quote_status_enum NOT NULL DEFAULT 'draft'
+      )
+    `);
+
+    // Create quote_item table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS quote_item (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        description TEXT,
+        base_price NUMERIC(10, 2) NOT NULL,
+        discount_amount NUMERIC(10, 2) DEFAULT 0.00,
+        final_price NUMERIC(10, 2) NOT NULL,
+        quantity INTEGER DEFAULT 1
       )
     `);
 
@@ -118,6 +177,30 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_session_status ON session(status)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_session_number ON session(number)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_session_id ON quote(session_id)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_created_at ON quote(created_at)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_status ON quote(status)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_item_quote_id ON quote_item(quote_id)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_item_created_at ON quote_item(created_at)
     `);
 
     // Create update triggers for updated_at timestamps
@@ -165,6 +248,28 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_quote_updated_at ON quote
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_quote_updated_at
+        BEFORE UPDATE ON quote
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_quote_item_updated_at ON quote_item
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_quote_item_updated_at
+        BEFORE UPDATE ON quote_item
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
     await client.query('COMMIT');
     console.log(`TQ app schema provisioned successfully for tenant schema: ${schema}`);
 
@@ -188,10 +293,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session')
+        AND table_name IN ('patient', 'transcription', 'session', 'quote', 'quote_item')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 3;
+    return parseInt(result.rows[0].table_count) === 5;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

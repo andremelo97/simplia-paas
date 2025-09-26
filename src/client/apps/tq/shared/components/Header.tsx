@@ -25,6 +25,7 @@ const getBreadcrumbs = (pathname: string) => {
       case 'patients': return 'Patients'
       case 'sessions': return 'Sessions'
       case 'quotes': return 'Quotes'
+      case 'clinical-reports': return 'Clinical Reports'
       case 'templates': return 'Templates'
       case 'configurations': return 'Configurations'
       case 'new-session': return 'New Session'

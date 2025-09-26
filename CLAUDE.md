@@ -209,7 +209,16 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - **Frontend Apps**: `src/client/apps/` - Multi-app architecture
 - **Tests**: `tests/integration/internal/` - Critical validation tests
 - **Hub App**: `src/client/apps/hub/` - Self-service portal for end users
-- **TQ App**: `src/client/apps/tq/` - Transcription Quote application with session management
+- **TQ App**: `src/client/apps/tq/` - Transcription Quote application with session management and quote system
+- **TQ API**: `src/server/api/tq/routes/` - TQ-specific backend routes
+  - `quotes.js`: Complete CRUD API for quotes and quote items (10 endpoints)
+  - `sessions.js`: Session management with transcription integration
+  - `patients.js`: Patient management for TQ workflow
+  - `transcription.js`: Deepgram transcription integration
+- **TQ Models**: `src/server/infra/models/` - TQ database models
+  - `Quote.js`: Quote management with automatic total calculation
+  - `QuoteItem.js`: Quote items with discount system and final price calculation
+  - `Session.js`: Session management with patient and transcription linking
 - **Common UI Components**: `src/client/common/ui/` - Shared design system components
   - `DropdownMenu`: Context-based dropdown with trigger/content/item components
   - `Input`: Standardized input with purple focus border (#B725B7)
@@ -217,6 +226,61 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - **Server Services**: `src/server/services/` - Third-party integrations
   - `deepgram.js`: Audio transcription service integration
   - `supabaseStorage.js`: File storage management
+
+## TQ Quote Management System
+
+### Database Schema
+The TQ application includes a complete quote management system:
+
+```sql
+-- Quote table with session relationship
+CREATE TABLE tenant_{slug}.quote (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
+  content TEXT,
+  total NUMERIC(12,2) DEFAULT 0.00,
+  status quote_status_enum NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Quote status enum
+CREATE TYPE quote_status_enum AS ENUM ('draft','sent','approved','rejected','expired');
+
+-- Quote items with discount system
+CREATE TABLE tenant_{slug}.quote_item (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  base_price NUMERIC(10,2) NOT NULL,
+  discount_amount NUMERIC(10,2) DEFAULT 0.00,
+  final_price NUMERIC(10,2) NOT NULL,
+  quantity INTEGER DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Quote API Endpoints
+Complete CRUD API available at `/api/tq/v1/quotes`:
+
+- **Quote Management**: GET, POST, PUT, DELETE quotes
+- **Quote Items**: CRUD operations for items within quotes
+- **Automatic Calculations**: POST `/quotes/{id}/calculate` for total recalculation
+- **Status Workflow**: Draft → Sent → Approved/Rejected/Expired
+
+### Pricing Logic
+- **Item-level discounts**: Each quote item has `base_price`, `discount_amount`, `final_price`
+- **Automatic calculation**: `final_price = (base_price - discount_amount) × quantity`
+- **Quote total**: Sum of all items' final prices
+- **Transparency**: Each discount is itemized for client visibility
+
+### Implementation Details
+- **Models**: `Quote.js` and `QuoteItem.js` with automatic total calculation
+- **API Routes**: 10 endpoints with full Swagger documentation
+- **Tenant isolation**: All quotes scoped to tenant schema
+- **Audit trail**: Complete created/updated timestamps with triggers
 
 ## Critical Seat Counting Rules
 - **Grant**: MUST call `TenantApplication.incrementSeat(tenantId, applicationId)`

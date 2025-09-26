@@ -20,7 +20,8 @@
       "Bash(npm install:*)",
       "Bash(move:*)",
       "Bash(psql:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(PGPASSWORD=1234 dropdb:*)"
     ],
     "deny": [],
     "ask": []

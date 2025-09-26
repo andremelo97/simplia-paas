@@ -5,6 +5,8 @@ import { Layout } from '../shared/components/Layout'
 import { Login } from '../features/auth/Login'
 import { Home } from '../features/home/Home'
 import { NewSession } from '../features/session/NewSession'
+import { Sessions } from '../features/session/Sessions'
+import { EditSession } from '../features/session/EditSession'
 import { Patients } from '../features/patients/Patients'
 import { CreatePatient } from '../features/patients/CreatePatient'
 import { EditPatient } from '../features/patients/EditPatient'
@@ -61,7 +63,8 @@ export const AppRoutes: React.FC = () => {
         <Route index element={<Home />} />
         <Route path="home" element={<Home />} />
         <Route path="new-session" element={<NewSession />} />
-        <Route path="sessions" element={<Home />} />
+        <Route path="sessions" element={<Sessions />} />
+        <Route path="sessions/:id/edit" element={<EditSession />} />
         <Route path="patients" element={<Patients />} />
         <Route path="patients/create" element={<CreatePatient />} />
         <Route path="patients/:id/edit" element={<EditPatient />} />

@@ -295,7 +295,7 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const { patientId, transcription, status = 'draft' } = req.body;
+    const { patientId, transcriptionId, status = 'draft' } = req.body;
 
     if (!patientId) {
       return res.status(400).json({
@@ -306,7 +306,7 @@ router.post('/', async (req, res) => {
 
     const sessionData = {
       patientId,
-      transcription,
+      transcriptionId,
       status
     };
 
@@ -411,20 +411,20 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    const { transcription, status } = req.body;
+    const { transcriptionId, status, transcriptionText } = req.body;
 
     const updates = {};
-    if (transcription !== undefined) updates.transcription = transcription;
+    if (transcriptionId !== undefined) updates.transcription_id = transcriptionId;
     if (status !== undefined) updates.status = status;
 
-    if (Object.keys(updates).length === 0) {
+    if (Object.keys(updates).length === 0 && transcriptionText === undefined) {
       return res.status(400).json({
         error: 'Validation Error',
         message: 'No valid fields to update'
       });
     }
 
-    const session = await Session.update(id, updates, schema);
+    const session = await Session.update(id, updates, schema, transcriptionText);
 
     res.json({
       data: session.toJSON(),

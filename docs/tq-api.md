@@ -169,6 +169,103 @@ Create new patient record.
 #### GET /patients/{patientId}
 Retrieve patient details.
 
+### Quotes
+
+Manage consultation quotes and pricing for services.
+
+#### GET /quotes
+List all quotes for the tenant.
+
+**Query Parameters:**
+- `sessionId` (UUID): Filter quotes by session
+- `status` (enum): Filter by quote status (draft, sent, approved, rejected, expired)
+- `includeSession` (boolean): Include session details in response
+- `limit` (integer): Maximum results per page (default: 50)
+- `offset` (integer): Pagination offset (default: 0)
+
+#### GET /quotes/{quoteId}
+Retrieve quote details.
+
+**Query Parameters:**
+- `includeItems` (boolean): Include quote items in response
+- `includeSession` (boolean): Include session details in response
+
+#### POST /quotes
+Create new quote for a session.
+
+**Request:**
+```json
+{
+  "sessionId": "uuid-string",
+  "content": "Initial quote for consultation services",
+  "status": "draft"
+}
+```
+
+#### PUT /quotes/{quoteId}
+Update quote information.
+
+**Request:**
+```json
+{
+  "content": "Updated quote description",
+  "total": 150.00,
+  "status": "sent"
+}
+```
+
+#### DELETE /quotes/{quoteId}
+Delete a quote.
+
+### Quote Items
+
+Manage individual services/products within quotes.
+
+#### GET /quotes/{quoteId}/items
+List all items for a quote.
+
+#### POST /quotes/{quoteId}/items
+Add new item to quote.
+
+**Request:**
+```json
+{
+  "name": "Initial Consultation",
+  "description": "60-minute initial patient consultation",
+  "basePrice": 200.00,
+  "discountAmount": 20.00,
+  "quantity": 1
+}
+```
+
+**Note:** `finalPrice` is automatically calculated as `(basePrice - discountAmount) × quantity`
+
+#### PUT /quotes/{quoteId}/items/{itemId}
+Update quote item.
+
+**Request:**
+```json
+{
+  "name": "Extended Consultation",
+  "basePrice": 250.00,
+  "discountAmount": 25.00,
+  "quantity": 1
+}
+```
+
+#### DELETE /quotes/{quoteId}/items/{itemId}
+Remove item from quote.
+
+#### POST /quotes/{quoteId}/calculate
+Recalculate quote total based on all items.
+
+**Response:**
+```json
+{
+  "total": 425.00
+}
+```
+
 ## Integration Details
 
 ### Deepgram AI Transcription
@@ -325,7 +422,113 @@ CREATE TABLE tenant_{slug}.patient (
 );
 ```
 
+### Quote Table
+```sql
+-- Per-tenant quote table
+CREATE TABLE tenant_{slug}.quote (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id UUID NOT NULL REFERENCES tenant_{slug}.session(id) ON DELETE CASCADE,
+  content TEXT NULL,
+  total NUMERIC(12,2) DEFAULT 0.00,
+  status quote_status_enum NOT NULL DEFAULT 'draft',
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Quote status enum
+CREATE TYPE quote_status_enum AS ENUM ('draft','sent','approved','rejected','expired');
+```
+
+### Quote Item Table
+```sql
+-- Per-tenant quote_item table
+CREATE TABLE tenant_{slug}.quote_item (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  quote_id UUID NOT NULL REFERENCES tenant_{slug}.quote(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT NULL,
+  base_price NUMERIC(10,2) NOT NULL,
+  discount_amount NUMERIC(10,2) DEFAULT 0.00,
+  final_price NUMERIC(10,2) NOT NULL,
+  quantity INTEGER DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+```
+
 ## Complete Workflow Example
+
+### Quote Creation Workflow
+```javascript
+// 1. Create quote for a session
+const quote = await fetch('/api/tq/v1/quotes', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    sessionId: sessionId,
+    content: 'Quote for consultation services',
+    status: 'draft'
+  })
+}).then(res => res.json());
+
+// 2. Add services/items to quote
+const items = [
+  {
+    name: 'Initial Consultation',
+    description: '60-minute consultation',
+    basePrice: 200.00,
+    discountAmount: 20.00,
+    quantity: 1
+  },
+  {
+    name: 'Follow-up Session',
+    description: '30-minute follow-up',
+    basePrice: 100.00,
+    discountAmount: 0.00,
+    quantity: 2
+  }
+];
+
+for (const item of items) {
+  await fetch(`/api/tq/v1/quotes/${quote.id}/items`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'x-tenant-id': tenantId,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(item)
+  });
+}
+
+// 3. Calculate final total (automatic)
+const finalQuote = await fetch(`/api/tq/v1/quotes/${quote.id}?includeItems=true`, {
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId
+  }
+}).then(res => res.json());
+
+console.log(`Quote total: $${finalQuote.total}`); // $380.00
+console.log(`Items: ${finalQuote.items.length}`); // 2 items
+
+// 4. Update quote status when ready to send
+await fetch(`/api/tq/v1/quotes/${quote.id}`, {
+  method: 'PUT',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    status: 'sent'
+  })
+});
+```
 
 ### Frontend Upload Process
 ```javascript

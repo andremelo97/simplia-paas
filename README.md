@@ -1019,14 +1019,19 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 
 ### ✨ Implementações Recentes (Janeiro 2025)
 
-- **✅ 🎨 TQ App UI System**: Interface completa do NewSession com design refinado
+- **✅ 🎨 TQ App UI System**: Interface completa com sistema de cotações implementado
   - **Split Button Interface**: Botão principal com dropdown para "Start Transcribing" vs "Upload Audio"
   - **Patient Management Compacto**: Input com largura fixa (w-80) e CTA "Create new patient" inline
   - **Audio Controls Avançados**: Timer, VU meter em tempo real, seleção de microfone, estados de gravação
+  - **Quote Management System**: Sistema completo de cotações e precificação
+    - **API Backend**: 10 endpoints para CRUD de quotes e quote items com Swagger completo
+    - **Database Schema**: Tabelas `quote` e `quote_item` com ENUMs de status e triggers automáticos
+    - **Automatic Pricing**: Cálculo automático de preços com descontos por item (transparência total)
+    - **Status Management**: Workflow de cotação (draft → sent → approved/rejected/expired)
+    - **Item-Level Discounts**: Sistema flexível de descontos específicos por produto/serviço
   - **DropdownMenu Component**: Novo componente comum com Context API (Trigger/Content/Item)
   - **Input Standardization**: Borda roxa (#B725B7) no foco para todos os inputs do sistema
   - **Card Layout Refinado**: Padding consistente (px-6 py-4) em headers e conteúdo
-  - **Mock Implementation**: Interface funcional sem API calls para desenvolvimento de UI
   - **Responsive Design**: Layouts compactos que não ocupam largura total desnecessariamente
 
 - **✅ 📊 Hub Entitlements Feature**: Sistema completo de visualização de licenças para usuários admin no Hub

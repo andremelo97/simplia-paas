@@ -51,6 +51,114 @@ const upload = multer({
 
 /**
  * @openapi
+ * /tq/transcriptions:
+ *   post:
+ *     tags: [TQ - Transcription]
+ *     summary: Create a text-only transcription
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Create a transcription record with text content directly (no audio file).
+ *       This is useful for manual transcriptions or when text is already available.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Numeric tenant identifier
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [transcript]
+ *             properties:
+ *               transcript:
+ *                 type: string
+ *                 description: The transcription text content
+ *               confidence_score:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 1
+ *                 description: Optional confidence score (0-1)
+ *     responses:
+ *       201:
+ *         description: Transcription created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 transcriptionId: { type: string }
+ *                 transcript: { type: string }
+ *                 status: { type: string, enum: [completed] }
+ *                 createdAt: { type: string }
+ *       400:
+ *         description: Invalid request (missing transcript, etc.)
+ */
+router.post('/', async (req, res) => {
+  const client = await db.getClient();
+
+  try {
+    const tenantId = req.headers['x-tenant-id'];
+
+    if (!tenantId) {
+      return res.status(400).json({ error: 'x-tenant-id header is required' });
+    }
+
+    const { transcript, confidence_score } = req.body;
+
+    if (!transcript || !transcript.trim()) {
+      return res.status(400).json({ error: 'Transcript text is required' });
+    }
+
+    await client.query('BEGIN');
+
+    // Use tenant schema from middleware
+    const tenantSchema = req.tenant?.schema || `tenant_${tenantId}`;
+
+    // Create transcription record with completed status
+    const transcriptionId = uuidv4();
+    const result = await client.query(
+      `INSERT INTO ${tenantSchema}.transcription (id, transcript, confidence_score, transcript_status)
+       VALUES ($1, $2, $3, 'completed')
+       RETURNING id, transcript, confidence_score, transcript_status, created_at`,
+      [transcriptionId, transcript.trim(), confidence_score || null]
+    );
+
+    await client.query('COMMIT');
+
+    const createdTranscription = result.rows[0];
+
+    console.log(`Text transcription created: ${transcriptionId}`);
+
+    res.status(201).json({
+      transcriptionId: createdTranscription.id,
+      transcript: createdTranscription.transcript,
+      confidenceScore: createdTranscription.confidence_score,
+      status: createdTranscription.transcript_status,
+      createdAt: createdTranscription.created_at
+    });
+
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Create transcription error:', error);
+
+    res.status(500).json({
+      error: 'Failed to create transcription',
+      details: error.message
+    });
+  } finally {
+    client.release();
+  }
+});
+
+/**
+ * @openapi
  * /tq/transcriptions/upload:
  *   post:
  *     tags: [TQ - Transcription]

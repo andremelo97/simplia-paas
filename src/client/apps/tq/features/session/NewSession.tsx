@@ -29,7 +29,8 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem
+  DropdownMenuItem,
+  SessionLinkToast
 } from '@client/common/ui'
 import { useAuthStore } from '../../shared/store'
 import { sessionsService, Session } from '../../services/sessions'
@@ -38,6 +39,7 @@ import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
 import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
 import { useTranscription } from '../../hooks/useTranscription'
+import { transcriptionService } from '../../services/transcriptionService'
 
 // Hook para debounce
 function useDebouncedValue<T>(value: T, delay: number): T {
@@ -136,6 +138,10 @@ export const NewSession: React.FC = () => {
 
   // Audio upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false)
+
+  // Session link toast state
+  const [showSessionToast, setShowSessionToast] = useState(false)
+  const [toastSessionData, setToastSessionData] = useState<{sessionId: string, sessionNumber: string} | null>(null)
 
   // UI state for dropdown and patient flow
   const [transcribeMode, setTranscribeMode] = useState<'start' | 'upload'>('start')
@@ -284,18 +290,34 @@ export const NewSession: React.FC = () => {
     try {
       setIsCreatingSession(true)
       const newSession = await sessionsService.createSession({
-        patientId,
+        patient_id: patientId,
         status: 'draft'
       })
       setSession(newSession)
       return newSession
     } catch (error) {
-      console.error('Failed to create session:', error)
-      publishFeedback({
-        kind: 'error',
-        code: 'CREATE_SESSION_FAILED',
-        message: 'Failed to create session'
+      console.error('❌ [CreateSession] Failed to create session:', error)
+      // Error feedback is handled automatically by HTTP interceptor
+      throw error
+    } finally {
+      setIsCreatingSession(false)
+    }
+  }
+
+  // Create session with transcription ID
+  const createSessionWithTranscription = async (patientId: string, transcriptionId: string) => {
+    try {
+      setIsCreatingSession(true)
+      const newSession = await sessionsService.createSession({
+        patient_id: patientId,
+        transcription_id: transcriptionId,
+        status: 'draft'
       })
+      setSession(newSession)
+      return newSession
+    } catch (error) {
+      console.error('❌ [CreateSession] Failed to create session with transcription:', error)
+      // Error feedback is handled automatically by HTTP interceptor
       throw error
     } finally {
       setIsCreatingSession(false)
@@ -320,27 +342,26 @@ export const NewSession: React.FC = () => {
     }
 
     try {
-      const newSession = await createSession(patient.id)
+      // First, create the transcription with the text
+      console.log('📝 [NewSession] Creating transcription with text:', transcription)
+      const createdTranscription = await transcriptionService.createTextTranscription(transcription)
+      console.log('✅ [NewSession] Transcription created:', createdTranscription.transcriptionId)
 
-      // Update the session with the transcription
-      await sessionsService.updateSession(newSession.id.toString(), {
-        transcription: transcription,
-        status: 'completed'
-      })
+      // Then create the session with the transcription ID
+      const newSession = await createSessionWithTranscription(patient.id, createdTranscription.transcriptionId)
+      console.log('✅ [NewSession] Session created successfully:', newSession.number)
+      // Success feedback is handled automatically by HTTP interceptor
 
-      publishFeedback({
-        kind: 'success',
-        code: 'SESSION_CREATED',
-        message: 'Session created and saved successfully'
+      // Show session link toast
+      setToastSessionData({
+        sessionId: newSession.id,
+        sessionNumber: newSession.number
       })
+      setShowSessionToast(true)
 
     } catch (error) {
-      console.error('Failed to create session:', error)
-      publishFeedback({
-        kind: 'error',
-        code: 'SESSION_CREATE_FAILED',
-        message: 'Failed to create session'
-      })
+      console.error('❌ [NewSession] Failed to create session and transcription:', error)
+      // Error feedback is handled automatically by HTTP interceptor
     }
   }
 
@@ -408,8 +429,8 @@ export const NewSession: React.FC = () => {
         const { firstName, lastName } = parsePatientName(patientName)
 
         const newPatient = await patientsService.createPatient({
-          firstName,
-          lastName
+          first_name: firstName,
+          last_name: lastName
         })
 
         publishFeedback({
@@ -816,6 +837,17 @@ export const NewSession: React.FC = () => {
         onClose={() => setShowUploadModal(false)}
         onTranscriptionComplete={handleTranscriptionComplete}
       />
+
+      {/* Session Link Toast */}
+      {toastSessionData && (
+        <SessionLinkToast
+          show={showSessionToast}
+          sessionNumber={toastSessionData.sessionNumber}
+          sessionId={toastSessionData.sessionId}
+          onClose={() => setShowSessionToast(false)}
+          type="session"
+        />
+      )}
     </div>
   )
 }

@@ -59,6 +59,36 @@ class TranscriptionService {
   private readonly baseUrl = '/api/tq/v1/transcriptions'
 
   /**
+   * Create a text-only transcription (no audio file)
+   */
+  async createTextTranscription(transcript: string, confidenceScore?: number): Promise<StatusResponse> {
+    if (!transcript || !transcript.trim()) {
+      throw new Error('Transcript text is required')
+    }
+
+    const response = await api.post(this.baseUrl, {
+      transcript: transcript.trim(),
+      confidence_score: confidenceScore
+    })
+
+    if (!response || !response.transcriptionId) {
+      throw new Error('Failed to create transcription')
+    }
+
+    return {
+      transcriptionId: response.transcriptionId,
+      status: response.status || TranscriptStatus.COMPLETED,
+      transcript: response.transcript,
+      confidenceScore: response.confidenceScore || null,
+      requestId: null,
+      processingDuration: null,
+      hasAudio: false,
+      createdAt: response.createdAt,
+      updatedAt: response.createdAt
+    }
+  }
+
+  /**
    * Upload audio file for transcription (independent of sessions)
    */
   async uploadAudio(audioFile: File): Promise<UploadResponse> {

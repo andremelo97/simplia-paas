@@ -36,6 +36,8 @@ import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
+import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
+import { useTranscription } from '../../hooks/useTranscription'
 
 // Hook para debounce
 function useDebouncedValue<T>(value: T, delay: number): T {
@@ -93,20 +95,17 @@ function useTimer(initialTime: number = 0) {
 
 export const NewSession: React.FC = () => {
   const { user } = useAuthStore()
+  const { state: transcriptionState, transcriptionId, actions: transcriptionActions } = useTranscription()
 
-  // Mock session data (static for now)
-  const [session] = useState<Session>({
-    id: 1,
-    status: 'draft',
-    transcription: '',
-    duration: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  })
+  // Session data - will be created when patient is selected
+  const [session, setSession] = useState<Session | null>(null)
+  const [isCreatingSession, setIsCreatingSession] = useState(false)
 
   const [isLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
-  const [transcription, setTranscription] = useState('')
+
+  // Transcription text state - independent from transcription hook
+  const [transcription, setTranscription] = useState<string>('')
   // Patient-related state removed - using simplified UI now
 
   // Mock audio devices (static for now)
@@ -135,6 +134,9 @@ export const NewSession: React.FC = () => {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
 
+  // Audio upload modal state
+  const [showUploadModal, setShowUploadModal] = useState(false)
+
   // UI state for dropdown and patient flow
   const [transcribeMode, setTranscribeMode] = useState<'start' | 'upload'>('start')
   const [patientMode, setPatientMode] = useState<'search' | 'create'>('search')
@@ -158,9 +160,26 @@ export const NewSession: React.FC = () => {
   // Debounced search query
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300)
 
+  // Handle transcription completion from hook
+  useEffect(() => {
+    if (transcriptionState.status === 'completed' && transcriptionState.transcript) {
+      publishFeedback({
+        kind: 'success',
+        code: 'TRANSCRIPTION_COMPLETED',
+        message: `Transcription completed with ${Math.round((transcriptionState.confidenceScore || 0) * 100)}% confidence`
+      })
+    } else if (transcriptionState.status === 'failed' && transcriptionState.error) {
+      publishFeedback({
+        kind: 'error',
+        code: 'TRANSCRIPTION_FAILED',
+        message: transcriptionState.error
+      })
+    }
+  }, [transcriptionState.status, transcriptionState.transcript, transcriptionState.error, transcriptionState.confidenceScore])
+
   // Simulate autosave feedback (for now)
   useEffect(() => {
-    if (!debouncedTranscription || debouncedTranscription === session.transcription) return
+    if (!debouncedTranscription || debouncedTranscription === session?.transcription) return
 
     // Simulate saving
     setIsSaving(true)
@@ -170,7 +189,7 @@ export const NewSession: React.FC = () => {
     }, 500)
 
     return () => clearTimeout(timeout)
-  }, [debouncedTranscription, session.transcription])
+  }, [debouncedTranscription, session?.transcription])
 
   // Patient search effect
   useEffect(() => {
@@ -260,11 +279,106 @@ export const NewSession: React.FC = () => {
     // In real implementation, this would call API
   }
 
+  // Create session for patient
+  const createSession = async (patientId: string) => {
+    try {
+      setIsCreatingSession(true)
+      const newSession = await sessionsService.createSession({
+        patientId,
+        status: 'draft'
+      })
+      setSession(newSession)
+      return newSession
+    } catch (error) {
+      console.error('Failed to create session:', error)
+      publishFeedback({
+        kind: 'error',
+        code: 'CREATE_SESSION_FAILED',
+        message: 'Failed to create session'
+      })
+      throw error
+    } finally {
+      setIsCreatingSession(false)
+    }
+  }
+
+
+  // Handle New Session button click
+  const handleNewSession = async () => {
+    if (!transcription.trim()) {
+      return
+    }
+
+    const patient = selectedPatient || createdPatient
+    if (!patient) {
+      publishFeedback({
+        kind: 'error',
+        code: 'PATIENT_REQUIRED',
+        message: 'Please select or create a patient before saving the session'
+      })
+      return
+    }
+
+    try {
+      const newSession = await createSession(patient.id)
+
+      // Update the session with the transcription
+      await sessionsService.updateSession(newSession.id.toString(), {
+        transcription: transcription,
+        status: 'completed'
+      })
+
+      publishFeedback({
+        kind: 'success',
+        code: 'SESSION_CREATED',
+        message: 'Session created and saved successfully'
+      })
+
+    } catch (error) {
+      console.error('Failed to create session:', error)
+      publishFeedback({
+        kind: 'error',
+        code: 'SESSION_CREATE_FAILED',
+        message: 'Failed to create session'
+      })
+    }
+  }
+
+  // Check if New Session button should be enabled
+  const isNewSessionEnabled = () => {
+    const hasTranscription = transcription.trim().length > 0
+    return hasTranscription && !isCreatingSession
+  }
+
+  // Check if buttons requiring both patient and transcription should be enabled
+  const isTranscriptionAndPatientReady = () => {
+    const hasTranscription = transcription.trim().length > 0
+    const hasPatient = selectedPatient !== null || createdPatient !== null
+    return hasTranscription && hasPatient
+  }
+
+  // Handle transcription completion callback from the modal
+  const handleTranscriptionComplete = useCallback((transcript: string, transcriptionId: string) => {
+    console.log('Transcription completed with ID:', transcriptionId)
+    console.log('Transcription text:', transcript)
+
+    // Update the transcription field with the result
+    setTranscription(transcript)
+
+    // Show success feedback
+    publishFeedback({
+      kind: 'success',
+      code: 'TRANSCRIPTION_COMPLETED',
+      title: 'Transcription Complete',
+      message: 'Audio file has been transcribed successfully.',
+      path: '/tq/new-session'
+    })
+  }, [])
+
   // New handlers for simplified UI
   const handleTranscribeModeSelect = (mode: 'start' | 'upload') => {
     setTranscribeMode(mode)
     console.log('Mock: Transcribe mode changed to:', mode)
-    // Just change the mode - user needs to click main button to start
   }
 
   const handlePatientModeToggle = async () => {
@@ -278,6 +392,7 @@ export const NewSession: React.FC = () => {
       setSelectedPatient(null)
     } else {
       // Create patient
+
       if (!patientName.trim()) {
         publishFeedback({
           kind: 'error',
@@ -307,6 +422,7 @@ export const NewSession: React.FC = () => {
         setCreatedPatient(newPatient)
         // Don't reset patientName - keep it showing the created patient
         // Don't change back to search mode - stay in create mode but disabled
+
 
         console.log('Patient created successfully:', newPatient)
 
@@ -419,7 +535,7 @@ export const NewSession: React.FC = () => {
             <div className="flex items-center bg-gray-900 hover:bg-gray-800 rounded-lg shadow-sm transition-colors">
               {/* Main Action Button */}
               <Button
-                onClick={toggleTranscribing}
+                onClick={transcribeMode === 'start' ? toggleTranscribing : () => setShowUploadModal(true)}
                 variant="primary"
                 size="lg"
                 className="font-semibold rounded-r-none border-r-0 bg-transparent hover:bg-transparent shadow-none border-0 text-white"
@@ -629,17 +745,39 @@ export const NewSession: React.FC = () => {
 
           {/* Right side: Action Buttons */}
           <div className="flex items-center gap-3">
-            <Button variant="primary" disabled className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              New Session
+            <Button
+              variant="primary"
+              disabled={!isTranscriptionAndPatientReady()}
+              onClick={handleNewSession}
+              className="flex items-center gap-2"
+            >
+              {isCreatingSession ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  New Session
+                </>
+              )}
             </Button>
 
-            <Button variant="primary" disabled className="flex items-center gap-2">
+            <Button
+              variant="primary"
+              disabled={!isTranscriptionAndPatientReady()}
+              className="flex items-center gap-2"
+            >
               <Plus className="w-4 h-4" />
               New Session & Quote
             </Button>
 
-            <Button variant="primary" disabled className="flex items-center gap-2">
+            <Button
+              variant="primary"
+              disabled={!isTranscriptionAndPatientReady()}
+              className="flex items-center gap-2"
+            >
               <Bot className="w-4 h-4" />
               Call AI Agent
             </Button>
@@ -647,6 +785,7 @@ export const NewSession: React.FC = () => {
         </div>
 
        </div>
+
 
       {/* Session Transcription */}
       <Card>
@@ -663,13 +802,20 @@ export const NewSession: React.FC = () => {
         </CardHeader>
         <CardContent className="px-6 pb-6"> {/* Added horizontal and bottom padding to match header */}
           <Textarea
-            placeholder="Start transcribing... Your text will be automatically saved."
+            placeholder="Upload an audio file or start transcribing... Text will appear here automatically."
             value={transcription}
             onChange={(e) => setTranscription(e.target.value)}
             className="min-h-96 resize-none font-mono"
           />
         </CardContent>
       </Card>
+
+      {/* Audio Upload Modal */}
+      <AudioUploadModal
+        open={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onTranscriptionComplete={handleTranscriptionComplete}
+      />
     </div>
   )
 }

@@ -6,8 +6,9 @@ import { shouldInjectTenantHeader, getCurrentTenantId } from '../common/auth/int
 // HTTP client configuration
 // For apps with Vite proxy (TQ, Hub), use relative paths
 // For apps without proxy (internal-admin), use full URL
+// TEMPORARY FIX: Force Hub to use direct URL until proxy issue is resolved
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL ||
-                     (window.location.port === '3005' || window.location.port === '3003' ? '' : 'http://localhost:3001')
+                     (window.location.port === '3005' ? '' : 'http://localhost:3001')
 
 class HttpClient {
   private baseURL: string
@@ -37,10 +38,14 @@ class HttpClient {
     const tenantId = getCurrentTenantId()
     const shouldInjectTenant = shouldInjectTenantHeader(endpoint)
     
+    // Check if body is FormData to handle multipart uploads
+    const isFormData = options.body instanceof FormData
+
     const config: RequestInit = {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        // Don't set Content-Type for FormData - let browser set it with boundary
+        ...(!isFormData && { 'Content-Type': 'application/json' }),
         ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...(shouldInjectTenant && tenantId ? { 'x-tenant-id': String(tenantId) } : {}),
         ...options.headers,
@@ -215,7 +220,7 @@ class HttpClient {
   async post(endpoint: string, data?: any, headers?: Record<string, string>) {
     return this.request(endpoint, {
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
       headers,
     })
   }
@@ -223,7 +228,7 @@ class HttpClient {
   async put(endpoint: string, data?: any, headers?: Record<string, string>) {
     return this.request(endpoint, {
       method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
       headers,
     })
   }
@@ -231,7 +236,7 @@ class HttpClient {
   async patch(endpoint: string, data?: any, headers?: Record<string, string>) {
     return this.request(endpoint, {
       method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
+      body: data instanceof FormData ? data : (data ? JSON.stringify(data) : undefined),
       headers,
     })
   }

@@ -1,0 +1,433 @@
+# TQ (Transcription & Quote) API Documentation
+
+## Overview
+
+The TQ API provides comprehensive audio transcription capabilities for medical consultations, integrated with Deepgram AI transcription services and Supabase Storage for secure file management.
+
+**Base URL:** `http://localhost:3004/api/tq/v1`
+**Authentication:** Bearer token + x-tenant-id header
+**Multi-tenancy:** All operations are tenant-scoped
+
+## Architecture
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   TQ Client │    │  TQ API     │    │  Supabase   │    │  Deepgram   │
+│ (Port 3005) │    │ (Port 3004) │    │   Storage   │    │     AI      │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │                   │
+       │ 1. Upload Audio   │                   │                   │
+       ├──────────────────►│                   │                   │
+       │                   │ 2. Store File     │                   │
+       │                   ├──────────────────►│                   │
+       │                   │ 3. Signed URL     │                   │
+       │                   │◄──────────────────┤                   │
+       │                   │ 4. Start Transcription                │
+       │                   ├───────────────────────────────────────►│
+       │                   │ 5. Request ID     │                   │
+       │                   │◄───────────────────────────────────────┤
+       │ 6. Processing...  │                   │                   │
+       │◄──────────────────┤                   │                   │
+       │                   │        7. Webhook Callback            │
+       │                   │◄───────────────────────────────────────┤
+       │ 8. Complete       │                   │                   │
+       │◄──────────────────┤                   │                   │
+```
+
+## Core Resources
+
+### Transcriptions
+
+Manage audio transcription lifecycle independent of sessions.
+
+#### POST /transcriptions/upload
+Upload audio file for transcription.
+
+**Request:**
+```http
+POST /api/tq/v1/transcriptions/upload
+Content-Type: multipart/form-data
+Authorization: Bearer {token}
+x-tenant-id: {numeric_tenant_id}
+
+Content-Disposition: form-data; name="audio"; filename="recording.mp3"
+Content-Type: audio/mpeg
+
+{binary_audio_data}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "transcriptionId": "uuid-string",
+  "audioUrl": "https://supabase.storage.url/tenant_2/uuid.mp3",
+  "fileName": "recording.mp3",
+  "fileSize": 15728640,
+  "status": "uploaded"
+}
+```
+
+**Supported Formats:**
+- `.webm` (preferred for web recordings)
+- `.mp3` (compressed audio)
+- `.mp4` (audio/video)
+- `.wav` (uncompressed audio)
+
+**File Limits:**
+- Maximum size: 100MB
+- Recommended duration: 30-120 minutes
+
+#### POST /transcriptions/{transcriptionId}/transcribe
+Start Deepgram transcription process.
+
+**Request:**
+```http
+POST /api/tq/v1/transcriptions/{transcriptionId}/transcribe
+Authorization: Bearer {token}
+x-tenant-id: {numeric_tenant_id}
+Content-Type: application/json
+
+{}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "transcriptionId": "uuid-string",
+  "requestId": "deepgram-request-id",
+  "status": "processing",
+  "estimatedProcessingTime": 1800
+}
+```
+
+#### GET /transcriptions/{transcriptionId}/status
+Check transcription status and retrieve results.
+
+**Request:**
+```http
+GET /api/tq/v1/transcriptions/{transcriptionId}/status
+Authorization: Bearer {token}
+x-tenant-id: {numeric_tenant_id}
+```
+
+**Response:**
+```json
+{
+  "transcriptionId": "uuid-string",
+  "status": "completed",
+  "transcript": "Patient reported symptoms of...",
+  "confidenceScore": 0.94,
+  "requestId": "deepgram-request-id",
+  "processingDuration": 45.2,
+  "hasAudio": true,
+  "createdAt": "2025-09-25T04:00:00Z",
+  "updatedAt": "2025-09-25T04:02:15Z"
+}
+```
+
+**Status Values:**
+- `created`: Initial state
+- `uploading`: File being uploaded
+- `uploaded`: Ready for transcription
+- `processing`: Deepgram is processing
+- `completed`: Transcription finished
+- `failed`: Error occurred
+
+### Sessions
+
+Manage patient consultation sessions.
+
+#### POST /sessions
+Create new consultation session.
+
+**Request:**
+```json
+{
+  "patientId": "uuid-string",
+  "transcription": "Initial consultation notes..."
+}
+```
+
+#### GET /sessions/{sessionId}
+Retrieve session details.
+
+#### PUT /sessions/{sessionId}
+Update session information.
+
+### Patients
+
+Manage patient records for consultations.
+
+#### GET /patients?search={query}&limit={number}
+Search patients by name or email.
+
+#### POST /patients
+Create new patient record.
+
+#### GET /patients/{patientId}
+Retrieve patient details.
+
+## Integration Details
+
+### Deepgram AI Transcription
+
+The TQ API integrates with Deepgram for high-quality medical transcription.
+
+#### Configuration
+```bash
+# Environment Variables
+DEEPGRAM_API_KEY=your-deepgram-api-key
+DEEPGRAM_WEBHOOK_SECRET=webhook-secret-for-validation
+API_BASE_URL=http://localhost:3004  # For webhook callbacks
+```
+
+#### Transcription Features
+- **Model**: Nova-2 (latest Deepgram model)
+- **Smart Formatting**: Automatic punctuation and capitalization
+- **Medical Accuracy**: Optimized for medical terminology
+- **Confidence Scoring**: Per-transcription confidence metrics
+- **Word Timestamps**: Precise timing for each word (stored for future features)
+
+#### Webhook Processing
+Deepgram delivers results via webhook callback:
+
+```http
+POST /api/tq/v1/transcriptions/webhook/deepgram
+x-deepgram-signature: {hmac_signature}
+Content-Type: application/json
+
+{
+  "request_id": "deepgram-request-id",
+  "metadata": {
+    "callback_metadata": "{\"transcriptionId\":\"uuid\",\"tenantId\":\"2\"}"
+  },
+  "results": {
+    "channels": [{
+      "alternatives": [{
+        "transcript": "Patient presented with...",
+        "confidence": 0.94,
+        "words": [...]
+      }]
+    }]
+  }
+}
+```
+
+#### Error Handling
+Common Deepgram errors and solutions:
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `REMOTE_CONTENT_ERROR` | Audio file not accessible | Check Supabase signed URL |
+| `Invalid callback URL` | Webhook URL unreachable | Use ngrok or deploy webhook |
+| `INVALID_MODEL` | Model not supported | Use supported model (nova-2) |
+| `FILE_TOO_LARGE` | File exceeds limits | Compress or split audio |
+
+### Supabase Storage
+
+Secure file storage for audio files with tenant isolation.
+
+#### Configuration
+```bash
+# Environment Variables
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET=tq-audio-files
+SUPABASE_STORAGE_PUBLIC_URL=https://your-project.supabase.co/storage/v1/s3
+```
+
+#### Storage Structure
+```
+tq-audio-files/
+├── tenant_1/
+│   ├── {transcription-uuid-1}.mp3
+│   └── {transcription-uuid-2}.webm
+├── tenant_2/
+│   ├── {transcription-uuid-3}.wav
+│   └── {transcription-uuid-4}.mp4
+└── tenant_n/
+    └── ...
+```
+
+#### URL Generation
+For external API access (like Deepgram):
+- **Signed URLs**: 24-hour expiry for external services
+- **Public URLs**: For internal application access
+- **Security**: Automatic tenant isolation in file paths
+
+#### File Management
+```javascript
+// Upload with automatic URL generation
+const result = await supabaseService.uploadAudioFile(
+  fileBuffer,
+  'recording.mp3',
+  transcriptionId,
+  tenantId,
+  'audio/mpeg'
+);
+
+// Returns:
+// {
+//   url: 'signed-url-for-deepgram',
+//   publicUrl: 'public-url-for-app',
+//   signedUrl: 'signed-url-24h-expiry',
+//   path: 'tenant_2/uuid.mp3',
+//   size: 15728640
+// }
+```
+
+## Database Schema
+
+### Transcription Table
+```sql
+-- Per-tenant transcription table
+CREATE TABLE tenant_{slug}.transcription (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  transcript_status VARCHAR(20) DEFAULT 'created',
+  transcript TEXT NULL,
+  confidence_score DECIMAL(4,3) NULL,
+  audio_url TEXT NULL,
+  deepgram_request_id TEXT NULL,
+  processing_duration_seconds INTEGER NULL,
+  word_timestamps JSONB NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Session Table
+```sql
+-- Per-tenant session table
+CREATE TABLE tenant_{slug}.session (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id_fk UUID NOT NULL REFERENCES tenant_{slug}.patient(id),
+  transcription TEXT NULL,
+  session_status VARCHAR(20) DEFAULT 'draft',
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Patient Table
+```sql
+-- Per-tenant patient table
+CREATE TABLE tenant_{slug}.patient (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  first_name VARCHAR(100) NULL,
+  last_name VARCHAR(100) NULL,
+  email VARCHAR(255) NULL,
+  phone VARCHAR(50) NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## Complete Workflow Example
+
+### Frontend Upload Process
+```javascript
+// 1. Upload audio file
+const uploadResult = await transcriptionService.processAudio(audioFile, {
+  onUploadComplete: (transcriptionId) => {
+    // File uploaded to Supabase
+    updateProgress('Upload complete');
+  },
+
+  onTranscriptionStarted: (transcriptionId) => {
+    // Deepgram processing started
+    updateProgress('Transcription started');
+  },
+
+  onProgress: (statusResponse) => {
+    // Polling status updates
+    if (statusResponse.status === 'completed') {
+      displayTranscript(statusResponse.transcript);
+    }
+  }
+});
+```
+
+### Backend Processing Flow
+```javascript
+// 1. Upload to Supabase Storage
+const uploadResult = await supabaseService.uploadAudioFile(/*...*/);
+// Returns signed URL accessible by Deepgram
+
+// 2. Start Deepgram transcription
+const transcriptionResult = await deepgramService.transcribeByUrl(
+  uploadResult.signedUrl,
+  webhookCallbackUrl,
+  { model: 'nova-2' }
+);
+// Returns request_id for tracking
+
+// 3. Update database status
+await db.query(`
+  UPDATE tenant_${tenantId}.transcription
+  SET deepgram_request_id = $1, transcript_status = 'processing'
+  WHERE id = $2
+`, [transcriptionResult.request_id, transcriptionId]);
+
+// 4. Webhook receives result (automatic)
+// 5. Database updated with transcript (automatic)
+```
+
+## Production Considerations
+
+### Security
+- **Webhook Validation**: HMAC signature verification for Deepgram callbacks
+- **File Access**: Signed URLs with limited expiry for external services
+- **Tenant Isolation**: All data stored with tenant prefixes
+- **Authentication**: JWT + tenant header required for all endpoints
+
+### Performance
+- **Async Processing**: Non-blocking transcription workflow
+- **File Limits**: 100MB upload limit with pre-validation
+- **Connection Pooling**: Database connections managed efficiently
+- **Storage Optimization**: Automatic file type validation and compression
+
+### Monitoring
+- **Request Tracking**: All Deepgram requests logged with IDs
+- **Error Handling**: Comprehensive error responses with request context
+- **Status Polling**: Frontend can poll for transcription completion
+- **Webhook Reliability**: Automatic retry logic for failed webhooks
+
+### Deployment
+- **Webhook URL**: Must be publicly accessible (use ngrok for development)
+- **Environment Variables**: All secrets properly configured
+- **Database Migrations**: Tenant schemas created automatically
+- **File Storage**: Supabase bucket configured with proper permissions
+
+## API Testing
+
+### Using curl
+```bash
+# Upload audio file
+curl -X POST http://localhost:3004/api/tq/v1/transcriptions/upload \
+  -H "Authorization: Bearer your-jwt-token" \
+  -H "x-tenant-id: 2" \
+  -F "audio=@recording.mp3"
+
+# Start transcription
+curl -X POST http://localhost:3004/api/tq/v1/transcriptions/{id}/transcribe \
+  -H "Authorization: Bearer your-jwt-token" \
+  -H "x-tenant-id: 2" \
+  -H "Content-Type: application/json" \
+  -d "{}"
+
+# Check status
+curl -X GET http://localhost:3004/api/tq/v1/transcriptions/{id}/status \
+  -H "Authorization: Bearer your-jwt-token" \
+  -H "x-tenant-id: 2"
+```
+
+### Swagger Documentation
+Interactive API documentation available at:
+`http://localhost:3004/docs`
+
+---
+
+**Note**: This documentation reflects the current development setup. For production deployment, webhook URLs must be publicly accessible and all environment variables properly configured.

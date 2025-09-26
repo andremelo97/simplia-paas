@@ -16,7 +16,11 @@
       "Bash(npx tsc:*)",
       "Bash(curl:*)",
       "Bash(del:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(npm install:*)",
+      "Bash(move:*)",
+      "Bash(psql:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

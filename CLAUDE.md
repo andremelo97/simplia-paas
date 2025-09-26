@@ -34,7 +34,10 @@ src/
 ├── server/           # Express.js backend (JavaScript .js)
 │   ├── api/         # Route handlers
 │   ├── infra/       # Database, middleware, models
-│   └── app.js       # Express config
+│   ├── services/    # Third-party integrations (Deepgram, Supabase)
+│   ├── app.js       # Express config
+│   ├── tq-api.js    # TQ-specific API server
+│   └── index.js     # Main server
 ├── client/          # React frontend (TypeScript .tsx/.ts)
 │   ├── apps/        # Multi-app architecture
 │   ├── common/      # Shared UI components
@@ -46,11 +49,13 @@ src/
 ```bash
 # Development
 npm run dev             # Start both server (3001) + internal-admin (3002)
-npm run dev:server      # Start server only (port 3001)
-npm run dev:client      # Start internal-admin only (port 3002)
+npm run dev:internal    # Start server only (port 3001)
+npm run dev:admin       # Start internal-admin only (port 3002)
 npm run dev:hub         # Start Hub app only (port 3003)
 npm run dev:tq-api      # Start TQ API server only (port 3004)
 npm run dev:tq-front    # Start TQ frontend only (port 3005)
+npm run dev:server      # Alias for dev:internal (nodemon server)
+npm run dev:client      # Alias for dev:admin (vite client)
 npm run migrate         # Run database migrations (REQUIRED after schema changes)
 
 # Testing
@@ -192,6 +197,11 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - PostgreSQL required for local development
 - Test database automatically created with `npm test`
 
+### Required Environment Variables for TQ
+- `DEEPGRAM_API_KEY`: Deepgram API key for transcription services
+- `DEEPGRAM_WEBHOOK_SECRET`: Webhook secret for Deepgram callbacks
+- `API_BASE_URL`: Base URL for API calls (default: http://localhost:3001)
+
 ## Important Files
 - **Migrations**: `src/server/infra/migrations/` - Database schema evolution
 - **API Routes**: `src/server/api/internal/routes/` - Express route handlers
@@ -203,7 +213,10 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - **Common UI Components**: `src/client/common/ui/` - Shared design system components
   - `DropdownMenu`: Context-based dropdown with trigger/content/item components
   - `Input`: Standardized input with purple focus border (#B725B7)
-  - `Button`, `Card`, `Select`, `Textarea`: Core UI primitives
+  - `Button`, `Card`, `Select`, `Textarea`, `Progress`: Core UI primitives
+- **Server Services**: `src/server/services/` - Third-party integrations
+  - `deepgram.js`: Audio transcription service integration
+  - `supabaseStorage.js`: File storage management
 
 ## Critical Seat Counting Rules
 - **Grant**: MUST call `TenantApplication.incrementSeat(tenantId, applicationId)`
@@ -264,7 +277,9 @@ TQ follows the same `/features` architecture as internal-admin:
   - Compact patient input field with inline "Create new patient" CTA
   - Timer, VU meter, and microphone selection controls
   - Large transcription textarea with auto-save simulation
-  - Mock implementation for UI development (no API calls yet)
+  - Pause/resume functionality for recordings
+- **Transcription Service**: `transcriptionService.ts` for API communication with Deepgram
+- **Audio Components**: AudioUploadModal for file uploads, recording controls
 
 #### TQ UI Design Patterns:
 - **Split Button**: Main action + dropdown for mode selection using DropdownMenu component

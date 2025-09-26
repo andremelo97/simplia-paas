@@ -45,14 +45,40 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       )
     `);
 
-    // Create session table with essential fields only
+    // Create transcript_status_enum if it doesn't exist
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'transcript_status_enum') THEN
+          CREATE TYPE transcript_status_enum AS ENUM ('created','uploading','uploaded','processing','completed','failed');
+        END IF;
+      END$$;
+    `);
+
+    // Create transcription table for audio processing
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS transcription (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        audio_url TEXT,
+        transcript_status transcript_status_enum NOT NULL DEFAULT 'created',
+        deepgram_request_id TEXT,
+        confidence_score NUMERIC(5,4),
+        processing_duration_seconds INTEGER,
+        word_timestamps JSONB,
+        transcript TEXT
+      )
+    `);
+
+    // Create session table (simplified, references transcription)
     await client.query(`
       CREATE TABLE IF NOT EXISTS session (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
-        transcription TEXT,
+        transcription_id UUID REFERENCES transcription(id) ON DELETE SET NULL,
         status TEXT DEFAULT 'draft'
       )
     `);
@@ -67,7 +93,23 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     `);
 
     await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_transcription_created_at ON transcription(created_at)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_transcription_status ON transcription(transcript_status)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_transcription_deepgram_id ON transcription(deepgram_request_id)
+    `);
+
+    await client.query(`
       CREATE INDEX IF NOT EXISTS idx_session_patient_id ON session(patient_id)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_session_transcription_id ON session(transcription_id)
     `);
 
     await client.query(`
@@ -97,6 +139,17 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TRIGGER update_patient_updated_at
         BEFORE UPDATE ON patient
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_transcription_updated_at ON transcription
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_transcription_updated_at
+        BEFORE UPDATE ON transcription
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column()
     `);
@@ -135,10 +188,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'session')
+        AND table_name IN ('patient', 'transcription', 'session')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 2;
+    return parseInt(result.rows[0].table_count) === 3;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

@@ -21,7 +21,8 @@
       "Bash(move:*)",
       "Bash(psql:*)",
       "Bash(mkdir:*)",
-      "Bash(PGPASSWORD=1234 dropdb:*)"
+      "Bash(PGPASSWORD=1234 dropdb:*)",
+      "Bash(cmd /c:*)"
     ],
     "deny": [],
     "ask": []

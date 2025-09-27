@@ -30,14 +30,16 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  SessionLinkToast
+  LinkToast
 } from '@client/common/ui'
 import { useAuthStore } from '../../shared/store'
 import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
+import { quotesService, CreateQuoteRequest } from '../../services/quotes'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
 import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
+import { AIAgentModal } from '../../components/ai-agent/AIAgentModal'
 import { useTranscription } from '../../hooks/useTranscription'
 import { transcriptionService } from '../../services/transcriptionService'
 
@@ -139,9 +141,12 @@ export const NewSession: React.FC = () => {
   // Audio upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false)
 
-  // Session link toast state
-  const [showSessionToast, setShowSessionToast] = useState(false)
-  const [toastSessionData, setToastSessionData] = useState<{sessionId: string, sessionNumber: string} | null>(null)
+  // AI Agent modal state
+  const [showAIAgentModal, setShowAIAgentModal] = useState(false)
+
+  // Link toast state
+  const [showLinkToast, setShowLinkToast] = useState(false)
+  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote'} | null>(null)
 
   // UI state for dropdown and patient flow
   const [transcribeMode, setTranscribeMode] = useState<'start' | 'upload'>('start')
@@ -353,14 +358,67 @@ export const NewSession: React.FC = () => {
       // Success feedback is handled automatically by HTTP interceptor
 
       // Show session link toast
-      setToastSessionData({
-        sessionId: newSession.id,
-        sessionNumber: newSession.number
+      setToastData({
+        itemId: newSession.id,
+        itemNumber: newSession.number,
+        type: 'session'
       })
-      setShowSessionToast(true)
+      setShowLinkToast(true)
 
     } catch (error) {
       console.error('❌ [NewSession] Failed to create session and transcription:', error)
+      // Error feedback is handled automatically by HTTP interceptor
+    }
+  }
+
+  // Handle New Session & Quote button click
+  const handleNewSessionAndQuote = async (aiSummary?: string) => {
+    if (!transcription.trim()) {
+      return
+    }
+
+    const patient = selectedPatient || createdPatient
+    if (!patient) {
+      publishFeedback({
+        kind: 'error',
+        code: 'PATIENT_REQUIRED',
+        message: 'Please select or create a patient before saving the session'
+      })
+      return
+    }
+
+    try {
+      // First, create the transcription with the text
+      console.log('📝 [NewSession] Creating transcription with text:', transcription)
+      const createdTranscription = await transcriptionService.createTextTranscription(transcription)
+      console.log('✅ [NewSession] Transcription created:', createdTranscription.transcriptionId)
+
+      // Then create the session with the transcription ID
+      const newSession = await createSessionWithTranscription(patient.id, createdTranscription.transcriptionId)
+      console.log('✅ [NewSession] Session created successfully:', newSession.number)
+
+      // Then create the quote using the session ID
+      console.log('💰 [NewSession] Creating quote for session:', newSession.id)
+      const quoteContent = aiSummary || transcription // Use AI summary if provided, otherwise fallback to transcription
+      console.log('📄 [NewSession] Quote content source:', aiSummary ? 'AI Summary' : 'Transcription')
+      const quoteData: CreateQuoteRequest = {
+        sessionId: newSession.id,
+        content: quoteContent,
+        status: 'draft'
+      }
+      const newQuote = await quotesService.createQuote(quoteData)
+      console.log('✅ [NewSession] Quote created successfully:', newQuote.number)
+
+      // Show quote link toast (redirects to /quotes)
+      setToastData({
+        itemId: newQuote.id,
+        itemNumber: newQuote.number,
+        type: 'quote'
+      })
+      setShowLinkToast(true)
+
+    } catch (error) {
+      console.error('❌ [NewSession] Failed to create session, transcription and quote:', error)
       // Error feedback is handled automatically by HTTP interceptor
     }
   }
@@ -788,6 +846,7 @@ export const NewSession: React.FC = () => {
             <Button
               variant="primary"
               disabled={!isTranscriptionAndPatientReady()}
+              onClick={handleNewSessionAndQuote}
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -797,6 +856,7 @@ export const NewSession: React.FC = () => {
             <Button
               variant="primary"
               disabled={!isTranscriptionAndPatientReady()}
+              onClick={() => setShowAIAgentModal(true)}
               className="flex items-center gap-2"
             >
               <Bot className="w-4 h-4" />
@@ -814,7 +874,7 @@ export const NewSession: React.FC = () => {
           <CardTitle className="flex items-center justify-between text-base"> {/* Reduced font size from default */}
             Session Transcription
             {isSaving && (
-              <div className="flex items-center text-sm text-blue-600">
+              <div className="flex items-center text-sm" style={{ color: 'var(--brand-primary)' }}>
                 <Save className="w-4 h-4 mr-1 animate-pulse" />
                 Saving...
               </div>
@@ -838,14 +898,23 @@ export const NewSession: React.FC = () => {
         onTranscriptionComplete={handleTranscriptionComplete}
       />
 
+      {/* AI Agent Modal */}
+      <AIAgentModal
+        open={showAIAgentModal}
+        onClose={() => setShowAIAgentModal(false)}
+        transcription={transcription}
+        patient={selectedPatient || createdPatient}
+        onCreateSessionAndQuote={handleNewSessionAndQuote}
+      />
+
       {/* Session Link Toast */}
-      {toastSessionData && (
-        <SessionLinkToast
-          show={showSessionToast}
-          sessionNumber={toastSessionData.sessionNumber}
-          sessionId={toastSessionData.sessionId}
-          onClose={() => setShowSessionToast(false)}
-          type="session"
+      {toastData && (
+        <LinkToast
+          show={showLinkToast}
+          itemNumber={toastData.itemNumber}
+          itemId={toastData.itemId}
+          onClose={() => setShowLinkToast(false)}
+          type={toastData.type}
         />
       )}
     </div>

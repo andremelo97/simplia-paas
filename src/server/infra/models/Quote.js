@@ -12,10 +12,12 @@ class Quote {
     this.id = data.id;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
+    this.number = data.number;
     this.sessionId = data.session_id;
     this.content = data.content;
     this.total = data.total;
     this.status = data.status;
+    this.expiresAt = data.expires_at;
 
     // Include session data if joined
     if (data.session_number) {
@@ -45,24 +47,15 @@ class Quote {
   /**
    * Find quote by ID within a tenant schema
    */
-  static async findById(id, schema, includeItems = false, includeSession = false) {
+  static async findById(id, schema, includeItems = false, includeSession = true) {
     let query = `
-      SELECT q.*
+      SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+      FROM ${schema}.quote q
+      LEFT JOIN ${schema}.session s ON q.session_id = s.id
+      LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      WHERE q.id = $1
     `;
-
-    if (includeSession) {
-      query += `, s.number as session_number, s.status as session_status, s.patient_id,
-                  p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email`;
-    }
-
-    query += ` FROM ${schema}.quote q`;
-
-    if (includeSession) {
-      query += ` LEFT JOIN ${schema}.session s ON q.session_id = s.id`;
-      query += ` LEFT JOIN ${schema}.patient p ON s.patient_id = p.id`;
-    }
-
-    query += ` WHERE q.id = $1`;
 
     const result = await database.query(query, [id]);
 
@@ -100,23 +93,15 @@ class Quote {
    * Find all quotes within a tenant schema
    */
   static async findAll(schema, options = {}) {
-    const { limit = 50, offset = 0, sessionId, status, includeSession = false } = options;
+    const { limit = 50, offset = 0, sessionId, status } = options;
 
     let query = `
-      SELECT q.*
+      SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+      FROM ${schema}.quote q
+      LEFT JOIN ${schema}.session s ON q.session_id = s.id
+      LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
     `;
-
-    if (includeSession) {
-      query += `, s.number as session_number, s.status as session_status, s.patient_id,
-                  p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email`;
-    }
-
-    query += ` FROM ${schema}.quote q`;
-
-    if (includeSession) {
-      query += ` LEFT JOIN ${schema}.session s ON q.session_id = s.id`;
-      query += ` LEFT JOIN ${schema}.patient p ON s.patient_id = p.id`;
-    }
 
     const params = [];
     const conditions = [];
@@ -174,18 +159,19 @@ class Quote {
    * Create a new quote within a tenant schema
    */
   static async create(quoteData, schema) {
-    const { sessionId, content, status = 'draft' } = quoteData;
+    const { sessionId, content, status = 'draft', expiresAt } = quoteData;
 
     const query = `
-      INSERT INTO ${schema}.quote (session_id, content, status)
-      VALUES ($1, $2, $3)
+      INSERT INTO ${schema}.quote (session_id, content, status, expires_at)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
 
     const result = await database.query(query, [
       sessionId,
       content,
-      status
+      status,
+      expiresAt
     ]);
 
     return new Quote(result.rows[0]);
@@ -199,7 +185,7 @@ class Quote {
       throw new Error('No updates provided');
     }
 
-    const allowedUpdates = ['content', 'total', 'status'];
+    const allowedUpdates = ['content', 'total', 'status', 'expires_at'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -279,10 +265,12 @@ class Quote {
       id: this.id,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      number: this.number,
       sessionId: this.sessionId,
       content: this.content,
       total: this.total ? parseFloat(this.total) : 0,
-      status: this.status
+      status: this.status,
+      expiresAt: this.expiresAt
     };
 
     // Include session data if available

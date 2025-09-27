@@ -10,6 +10,11 @@ import { EditSession } from '../features/session/EditSession'
 import { Patients } from '../features/patients/Patients'
 import { CreatePatient } from '../features/patients/CreatePatient'
 import { EditPatient } from '../features/patients/EditPatient'
+import { QuoteManagementLayout } from '../features/quotes/QuoteManagementLayout'
+import { QuotesTab } from '../features/quotes/tabs/QuotesTab'
+import { ItemsTab } from '../features/quotes/tabs/ItemsTab'
+import { CreateItem } from '../features/quotes/items/CreateItem'
+import { EditItem } from '../features/quotes/items/EditItem'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -46,6 +51,11 @@ const RedirectToHub: React.FC = () => {
   )
 }
 
+// Redirect to quotes overview
+const QuotesRedirect: React.FC = () => {
+  return <Navigate to="/quotes/overview" replace />
+}
+
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
@@ -68,7 +78,16 @@ export const AppRoutes: React.FC = () => {
         <Route path="patients" element={<Patients />} />
         <Route path="patients/create" element={<CreatePatient />} />
         <Route path="patients/:id/edit" element={<EditPatient />} />
-        <Route path="quotes" element={<Home />} />
+
+        {/* Quote Management with Tabs */}
+        <Route path="quotes" element={<QuoteManagementLayout />}>
+          <Route index element={<QuotesRedirect />} />
+          <Route path="overview" element={<QuotesTab />} />
+          <Route path="items" element={<ItemsTab />} />
+          <Route path="items/create" element={<CreateItem />} />
+          <Route path="items/:id/edit" element={<EditItem />} />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="*" element={<NotFound />} />

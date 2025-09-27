@@ -108,23 +108,15 @@ export const useAuthStore = create<AuthState>()(persist(
           error: null
         })
 
-        // Load fresh profile data to get latest apps
-        const { loadUserProfile } = get()
-        loadUserProfile().catch(console.error)
+        // Load user profile to get allowed apps
+        get().loadUserProfile()
       } catch (error: any) {
-        console.error('❌ [Hub Auth] Login failed:', error)
-        
-        let appError: AppError
-        if (isAppError(error)) {
-          appError = error
-        } else {
-          appError = {
-            kind: 'unknown',
-            message: error?.message || 'Login failed. Please try again.',
-            code: 'LOGIN_ERROR'
-          }
+        // HTTP client now returns AppError instances
+        const appError = isAppError(error) ? error : {
+          kind: 'unknown' as const,
+          message: error?.message || 'Login failed'
         }
-        
+
         set({
           isAuthenticated: false,
           user: null,
@@ -133,8 +125,6 @@ export const useAuthStore = create<AuthState>()(persist(
           isLoading: false,
           error: appError
         })
-        
-        throw appError
       }
     },
 
@@ -249,56 +239,14 @@ export const useAuthStore = create<AuthState>()(persist(
     },
     
     initialize: () => {
-      // Try to restore session from both storage systems
-      const manualSession = readSession()
-      const currentState = get()
-
-      // If we have a token and tenantId from Zustand but no manual session, restore it
-      if (currentState.token && currentState.tenantId && currentState.user && !manualSession) {
-        console.log('🔄 [Hub Auth] Restoring manual session from Zustand storage')
-        const session: AuthSession = {
-          token: currentState.token,
-          tenantId: currentState.tenantId,
-          user: {
-            ...currentState.user,
-            tenantId: currentState.tenantId
-          }
-        }
-        saveSession(session)
-      }
-
-      if (currentState.token && currentState.tenantId) {
-        console.log('🔄 [Hub Auth] Restoring session', {
-          user: currentState.user?.email,
-          tenantId: currentState.tenantId,
-          hasManualSession: !!manualSession
-        })
-
-        set({
-          isAuthenticated: true,
-          isHydrated: true,
-          isLoading: true
-        })
-
-        // Load fresh profile data to get latest apps and tenant info
-        const { loadUserProfile } = get()
-        loadUserProfile()
-          .catch(console.error)
-          .finally(() => {
-            // Ensure loading is always set to false if not already cleared by logout
-            const currentState = get()
-            if (currentState.isAuthenticated) {
-              set({ isLoading: false })
-            }
-          })
-      } else {
-        console.log('🔄 [Hub Auth] No session found, starting fresh')
-
-        set({
-          isHydrated: true,
-          isLoading: false
-        })
-      }
+      // This should be called once on app start after persist hydration
+      const state = get()
+      set({
+        isLoading: false,
+        isHydrated: true,
+        // If we have token and user but not authenticated, fix the state
+        isAuthenticated: !!(state.token && state.user)
+      })
     }
   }),
   {

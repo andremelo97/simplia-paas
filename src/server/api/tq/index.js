@@ -3,6 +3,8 @@ const patientsRoutes = require('./routes/patients');
 const sessionsRoutes = require('./routes/sessions');
 const transcriptionRoutes = require('./routes/transcription');
 const quotesRoutes = require('./routes/quotes');
+const itemsRoutes = require('./routes/items');
+const aiAgentRoutes = require('./routes/ai-agent');
 
 const router = express.Router();
 
@@ -21,9 +23,13 @@ const router = express.Router();
 router.use('/patients', patientsRoutes);
 router.use('/sessions', sessionsRoutes);
 router.use('/quotes', quotesRoutes);
+router.use('/items', itemsRoutes);
 
 // Mount transcription routes (Deepgram integration)
 router.use('/transcriptions', transcriptionRoutes);
+
+// Mount AI agent routes (OpenAI integration)
+router.use('/ai-agent', aiAgentRoutes);
 
 /**
  * @openapi

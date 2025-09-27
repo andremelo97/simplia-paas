@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Card, CardHeader, CardContent, Button, Input, Textarea } from '@client/common/ui'
 import { patientsService, Patient } from '../../services/patients'
-import { formatDate } from '../../hooks/usePatients'
+import { formatDate } from '@client/common/utils/dateUtils'
 
 interface PatientFormData {
   first_name: string

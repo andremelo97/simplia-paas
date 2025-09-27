@@ -100,6 +100,15 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       CACHE 1
     `);
 
+    // Create quote number sequence for unique incremental numbers
+    await client.query(`
+      CREATE SEQUENCE IF NOT EXISTS quote_number_seq
+      START WITH 1
+      INCREMENT BY 1
+      NO MAXVALUE
+      CACHE 1
+    `);
+
     // Create session table (simplified, references transcription)
     await client.query(`
       CREATE TABLE IF NOT EXISTS session (
@@ -113,32 +122,45 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       )
     `);
 
+    // Create item table (products/services catalog)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS item (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        name TEXT NOT NULL,
+        description TEXT,
+        base_price NUMERIC(10, 2) NOT NULL,
+        active BOOLEAN DEFAULT true
+      )
+    `);
+
     // Create quote table
     await client.query(`
       CREATE TABLE IF NOT EXISTS quote (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('QUO' || LPAD(nextval('quote_number_seq')::text, 6, '0')),
         session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
         content TEXT,
         total NUMERIC(12, 2) DEFAULT 0.00,
-        status quote_status_enum NOT NULL DEFAULT 'draft'
+        status quote_status_enum NOT NULL DEFAULT 'draft',
+        expires_at TIMESTAMPTZ DEFAULT NULL
       )
     `);
 
-    // Create quote_item table
+    // Create quote_item table (relationship between quotes and items)
     await client.query(`
       CREATE TABLE IF NOT EXISTS quote_item (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        description TEXT,
-        base_price NUMERIC(10, 2) NOT NULL,
+        item_id UUID NOT NULL REFERENCES item(id) ON DELETE CASCADE,
+        quantity INTEGER DEFAULT 1,
         discount_amount NUMERIC(10, 2) DEFAULT 0.00,
-        final_price NUMERIC(10, 2) NOT NULL,
-        quantity INTEGER DEFAULT 1
+        final_price NUMERIC(10, 2) NOT NULL
       )
     `);
 
@@ -196,11 +218,35 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     `);
 
     await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_item_name ON item(name)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_item_active ON item(active)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_item_created_at ON item(created_at)
+    `);
+
+    await client.query(`
       CREATE INDEX IF NOT EXISTS idx_quote_item_quote_id ON quote_item(quote_id)
     `);
 
     await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_item_item_id ON quote_item(item_id)
+    `);
+
+    await client.query(`
       CREATE INDEX IF NOT EXISTS idx_quote_item_created_at ON quote_item(created_at)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_number ON quote(number)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_quote_expires_at ON quote(expires_at)
     `);
 
     // Create update triggers for updated_at timestamps
@@ -260,6 +306,17 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     `);
 
     await client.query(`
+      DROP TRIGGER IF EXISTS update_item_updated_at ON item
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_item_updated_at
+        BEFORE UPDATE ON item
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
+    await client.query(`
       DROP TRIGGER IF EXISTS update_quote_item_updated_at ON quote_item
     `);
 
@@ -293,10 +350,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session', 'quote', 'quote_item')
+        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 5;
+    return parseInt(result.rows[0].table_count) === 6;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

@@ -20,12 +20,10 @@ export const Login: React.FC = () => {
   const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore()
   const location = useLocation()
 
+
   // Always redirect to home after login
   const from = '/'
 
-  useEffect(() => {
-    clearError()
-  }, [clearError])
 
   const validateForm = () => {
     const errors: Record<string, string> = {}
@@ -65,6 +63,7 @@ export const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    clearError()
 
     if (!validateForm()) {
       return
@@ -74,8 +73,6 @@ export const Login: React.FC = () => {
       await login(credentials)
     } catch (error) {
       console.error('Login failed:', error)
-      // Error is already set in the auth store by the login function
-      // Don't do anything else here - let the UI render the error
     }
   }
 

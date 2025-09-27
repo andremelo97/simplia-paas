@@ -169,6 +169,52 @@ Create new patient record.
 #### GET /patients/{patientId}
 Retrieve patient details.
 
+### AI Agent
+
+Generate intelligent medical summaries from transcriptions using OpenAI.
+
+#### POST /ai-agent/chat
+Send messages to AI Agent for creating medical summaries.
+
+**Request:**
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Below I'm sending a consultation transcription. Create a clear and comprehensive treatment summary..."
+    },
+    {
+      "role": "assistant",
+      "content": "Patient Name: John Doe\nDate of Visit: September 27, 2025..."
+    },
+    {
+      "role": "user",
+      "content": "Please add a section about follow-up care"
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "response": "Patient Name: John Doe\nDate of Visit: September 27, 2025\n\n## Treatment Summary\nDuring your consultation today...\n\n## Follow-up Care\nPlease schedule a follow-up appointment in 2 weeks..."
+  },
+  "meta": {
+    "code": "AI_RESPONSE_GENERATED",
+    "message": "AI response generated successfully"
+  }
+}
+```
+
+**Features:**
+- **Interactive Chat**: Users can iterate and refine summaries
+- **Medical Focus**: Optimized prompts for dental/medical summaries
+- **Template-Based**: Structured output format for consistency
+- **Integration**: Direct quote creation from AI summaries
+
 ### Quotes
 
 Manage consultation quotes and pricing for services.
@@ -278,6 +324,10 @@ The TQ API integrates with Deepgram for high-quality medical transcription.
 DEEPGRAM_API_KEY=your-deepgram-api-key
 DEEPGRAM_WEBHOOK_SECRET=webhook-secret-for-validation
 API_BASE_URL=http://localhost:3004  # For webhook callbacks
+
+# OpenAI Configuration for AI Agent
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-4o-mini
 ```
 
 #### Transcription Features
@@ -427,6 +477,7 @@ CREATE TABLE tenant_{slug}.patient (
 -- Per-tenant quote table
 CREATE TABLE tenant_{slug}.quote (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('QUO' || LPAD(nextval('quote_number_seq')::text, 6, '0')),
   session_id UUID NOT NULL REFERENCES tenant_{slug}.session(id) ON DELETE CASCADE,
   content TEXT NULL,
   total NUMERIC(12,2) DEFAULT 0.00,
@@ -434,6 +485,9 @@ CREATE TABLE tenant_{slug}.quote (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Quote number sequence
+CREATE SEQUENCE quote_number_seq START WITH 1 INCREMENT BY 1;
 
 -- Quote status enum
 CREATE TYPE quote_status_enum AS ENUM ('draft','sent','approved','rejected','expired');
@@ -526,6 +580,74 @@ await fetch(`/api/tq/v1/quotes/${quote.id}`, {
   },
   body: JSON.stringify({
     status: 'sent'
+  })
+});
+```
+
+### AI Agent Medical Summary Workflow
+```javascript
+// 1. Generate initial medical summary from transcription
+const messages = [
+  {
+    role: 'user',
+    content: `Below I'm sending a consultation transcription. Create a clear and comprehensive treatment summary written directly for the patient.
+
+Rules:
+• Write in 2nd person not 3rd person
+• Use only what is explicitly stated in the transcript. Do not invent, assume, or infer anything.
+• Do not include anything related to prices or costs.
+• Begin the summary with:
+Patient Name: ${patientName}
+Date of Visit: ${currentDate}
+• Structure the summary in clear sections
+
+Here is the transcription:
+${transcriptionText}`
+  }
+];
+
+const response = await fetch('/api/tq/v1/ai-agent/chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ messages })
+});
+
+const result = await response.json();
+const aiSummary = result.data.response;
+
+// 2. User can iterate and refine the summary
+const refinedMessages = [
+  ...messages,
+  { role: 'assistant', content: aiSummary },
+  { role: 'user', content: 'Please add a section about post-treatment care instructions' }
+];
+
+const refinedResponse = await fetch('/api/tq/v1/ai-agent/chat', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ messages: refinedMessages })
+});
+
+// 3. Create quote with AI-generated summary
+const quote = await fetch('/api/tq/v1/quotes', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    sessionId: sessionId,
+    content: aiSummary, // AI-generated summary, not original transcription
+    status: 'draft'
   })
 });
 ```

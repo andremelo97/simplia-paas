@@ -26,6 +26,9 @@ router.use(tqRateLimit);
  *         id:
  *           type: string
  *           format: uuid
+ *         number:
+ *           type: string
+ *           example: "QUO000001"
  *         sessionId:
  *           type: string
  *           format: uuid
@@ -37,6 +40,10 @@ router.use(tqRateLimit);
  *         status:
  *           type: string
  *           enum: [draft, sent, approved, rejected, expired]
+ *         expiresAt:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -117,7 +124,7 @@ router.use(tqRateLimit);
  */
 router.get('/', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const {
       sessionId,
       status,
@@ -177,7 +184,7 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { id } = req.params;
     const {
       includeItems = 'false',
@@ -224,6 +231,10 @@ router.get('/:id', async (req, res) => {
  *               status:
  *                 type: string
  *                 enum: [draft, sent, approved, rejected, expired]
+ *               expiresAt:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
  *     responses:
  *       201:
  *         description: Quote created successfully
@@ -234,8 +245,8 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
-    const { sessionId, content, status } = req.body;
+    const schema = req.tenant.schema;
+    const { sessionId, content, status, expiresAt } = req.body;
 
     if (!sessionId) {
       return res.status(400).json({ error: 'sessionId is required' });
@@ -244,7 +255,8 @@ router.post('/', async (req, res) => {
     const quote = await Quote.create({
       sessionId,
       content,
-      status
+      status,
+      expiresAt
     }, schema);
 
     res.status(201).json(quote.toJSON());
@@ -294,14 +306,15 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { id } = req.params;
-    const { content, total, status } = req.body;
+    const { content, total, status, expiresAt } = req.body;
 
     const updates = {};
     if (content !== undefined) updates.content = content;
     if (total !== undefined) updates.total = total;
     if (status !== undefined) updates.status = status;
+    if (expiresAt !== undefined) updates.expires_at = expiresAt;
 
     const quote = await Quote.update(id, updates, schema);
 
@@ -336,7 +349,7 @@ router.put('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { id } = req.params;
 
     await Quote.delete(id, schema);
@@ -376,7 +389,7 @@ router.delete('/:id', async (req, res) => {
  */
 router.get('/:id/items', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { id: quoteId } = req.params;
 
     const items = await QuoteItem.findByQuoteId(quoteId, schema);
@@ -434,7 +447,7 @@ router.get('/:id/items', async (req, res) => {
  */
 router.post('/:id/items', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { id: quoteId } = req.params;
     const { name, description, basePrice, discountAmount, quantity } = req.body;
 
@@ -511,7 +524,7 @@ router.post('/:id/items', async (req, res) => {
  */
 router.put('/:quoteId/items/:itemId', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { quoteId, itemId } = req.params;
     const { name, description, basePrice, discountAmount, quantity } = req.body;
 
@@ -564,7 +577,7 @@ router.put('/:quoteId/items/:itemId', async (req, res) => {
  */
 router.delete('/:quoteId/items/:itemId', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { quoteId, itemId } = req.params;
 
     await QuoteItem.delete(itemId, schema);
@@ -609,7 +622,7 @@ router.delete('/:quoteId/items/:itemId', async (req, res) => {
  */
 router.post('/:id/calculate', async (req, res) => {
   try {
-    const schema = req.tenantSchema;
+    const schema = req.tenant.schema;
     const { id: quoteId } = req.params;
 
     const result = await Quote.calculateTotal(quoteId, schema);

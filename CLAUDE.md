@@ -77,6 +77,17 @@ npm run build:client   # Build frontend only
 ```
 
 ## Multi-App Architecture
+
+### 🚀 Port Architecture (NEVER CHANGE!)
+```
+3001 - Internal API Server (Hub + Internal-Admin consume)
+3002 - Internal-Admin Frontend
+3003 - Hub Frontend
+3004 - TQ API Server (Dedicated TQ backend)
+3005 - TQ Frontend
+```
+
+### Applications
 - **Internal-Admin** (`/internal/api/v1`): Platform administration (tenants, users, apps, pricing) - **Global scope only**
 - **Hub App** (`/internal/api/v1/me`): Self-service portal for end users to access their apps
 - **TQ App**: Transcription Quote system with session management, patient tracking, and audio recording features
@@ -233,9 +244,10 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 The TQ application includes a complete quote management system:
 
 ```sql
--- Quote table with session relationship
+-- Quote table with session relationship and sequential numbering
 CREATE TABLE tenant_{slug}.quote (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('QUO' || LPAD(nextval('quote_number_seq')::text, 6, '0')),
   session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
   content TEXT,
   total NUMERIC(12,2) DEFAULT 0.00,
@@ -243,6 +255,9 @@ CREATE TABLE tenant_{slug}.quote (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Quote number sequence for unique incremental numbers (QUO000001, QUO000002, etc.)
+CREATE SEQUENCE quote_number_seq START WITH 1 INCREMENT BY 1;
 
 -- Quote status enum
 CREATE TYPE quote_status_enum AS ENUM ('draft','sent','approved','rejected','expired');
@@ -313,6 +328,7 @@ async function withTenant(tenantSchema, fn) {
 - **Numeric IDs Only**: ALL IDs must be numeric - no string IDs anywhere in the system
 - **FK Suffix**: All foreign keys must use `_fk` suffix for consistency
 - **Transaction Scope**: Use proper database transactions for multi-step operations
+- **Feedback via HTTP**: NEVER use `publishFeedback()` in components - feedback is handled automatically via HTTP interceptors. Only add manual feedback if explicitly requested.
 
 ## Common Development Workflows
 

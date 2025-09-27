@@ -3,19 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, X, ExternalLink } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-interface SessionLinkToastProps {
+interface LinkToastProps {
   show: boolean
-  sessionNumber: string
-  sessionId: string
+  itemNumber: string
+  itemId: string
   onClose: () => void
   type?: 'session' | 'quote'
   duration?: number // em millisegundos, default 10000
 }
 
-export const SessionLinkToast: React.FC<SessionLinkToastProps> = ({
+export const LinkToast: React.FC<LinkToastProps> = ({
   show,
-  sessionNumber,
-  sessionId,
+  itemNumber,
+  itemId,
   onClose,
   type = 'session',
   duration = 10000
@@ -56,8 +56,8 @@ export const SessionLinkToast: React.FC<SessionLinkToastProps> = ({
 
   const handleClick = () => {
     const path = type === 'session'
-      ? `/sessions/${sessionId}/edit`
-      : `/quotes/${sessionId}/edit`
+      ? `/sessions/${itemId}/edit`
+      : `/quotes/${itemId}/edit`
 
     navigate(path)
     onClose()
@@ -79,16 +79,18 @@ export const SessionLinkToast: React.FC<SessionLinkToastProps> = ({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          className="fixed top-0 left-0 right-0 z-[9999] w-full"
+          className="fixed top-0 left-0 right-0 w-full z-[10000]"
+          style={{ 
+            margin: 0,
+            padding: 0
+          }}
         >
           <div
             className="w-full bg-white border-b border-gray-200 shadow-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
             onClick={handleClick}
             style={{
               backgroundColor: 'var(--brand-tertiary-bg)',
-              borderColor: 'var(--brand-tertiary)',
-              marginTop: 0,
-              paddingTop: '1rem'
+              borderColor: 'var(--brand-tertiary)'
             }}
           >
             <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -100,7 +102,7 @@ export const SessionLinkToast: React.FC<SessionLinkToastProps> = ({
                 />
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-gray-900">
-                    {getTypeText()} {sessionNumber} created successfully!
+                    {getTypeText()} {itemNumber} created successfully!
                   </span>
                   <span className="text-gray-600">
                     Click to {getActionText().toLowerCase()}

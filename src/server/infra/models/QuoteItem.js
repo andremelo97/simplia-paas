@@ -13,12 +13,21 @@ class QuoteItem {
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
     this.quoteId = data.quote_id;
-    this.name = data.name;
-    this.description = data.description;
-    this.basePrice = data.base_price;
+    this.itemId = data.item_id;
+    this.quantity = data.quantity;
     this.discountAmount = data.discount_amount;
     this.finalPrice = data.final_price;
-    this.quantity = data.quantity;
+
+    // Include item data if joined
+    if (data.item_name) {
+      this.item = {
+        id: data.item_id,
+        name: data.item_name,
+        description: data.item_description,
+        basePrice: data.item_base_price,
+        active: data.item_active
+      };
+    }
   }
 
   /**
@@ -26,8 +35,14 @@ class QuoteItem {
    */
   static async findById(id, schema) {
     const query = `
-      SELECT * FROM ${schema}.quote_item
-      WHERE id = $1
+      SELECT qi.*,
+             i.name as item_name,
+             i.description as item_description,
+             i.base_price as item_base_price,
+             i.active as item_active
+      FROM ${schema}.quote_item qi
+      LEFT JOIN ${schema}.item i ON qi.item_id = i.id
+      WHERE qi.id = $1
     `;
 
     const result = await database.query(query, [id]);
@@ -44,9 +59,15 @@ class QuoteItem {
    */
   static async findByQuoteId(quoteId, schema) {
     const query = `
-      SELECT * FROM ${schema}.quote_item
-      WHERE quote_id = $1
-      ORDER BY created_at ASC
+      SELECT qi.*,
+             i.name as item_name,
+             i.description as item_description,
+             i.base_price as item_base_price,
+             i.active as item_active
+      FROM ${schema}.quote_item qi
+      LEFT JOIN ${schema}.item i ON qi.item_id = i.id
+      WHERE qi.quote_id = $1
+      ORDER BY qi.created_at ASC
     `;
 
     const result = await database.query(query, [quoteId]);
@@ -59,30 +80,35 @@ class QuoteItem {
   static async create(itemData, schema) {
     const {
       quoteId,
-      name,
-      description,
-      basePrice,
-      discountAmount = 0,
-      quantity = 1
+      itemId,
+      quantity = 1,
+      discountAmount = 0
     } = itemData;
 
-    // Calculate final price
+    // Get item data to calculate final price
+    const itemResult = await database.query(`
+      SELECT base_price FROM ${schema}.item WHERE id = $1
+    `, [itemId]);
+
+    if (itemResult.rows.length === 0) {
+      throw new Error('Item not found');
+    }
+
+    const basePrice = itemResult.rows[0].base_price;
     const finalPrice = (basePrice - discountAmount) * quantity;
 
     const query = `
-      INSERT INTO ${schema}.quote_item (quote_id, name, description, base_price, discount_amount, final_price, quantity)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO ${schema}.quote_item (quote_id, item_id, quantity, discount_amount, final_price)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
 
     const result = await database.query(query, [
       quoteId,
-      name,
-      description,
-      basePrice,
+      itemId,
+      quantity,
       discountAmount,
-      finalPrice,
-      quantity
+      finalPrice
     ]);
 
     return new QuoteItem(result.rows[0]);
@@ -99,7 +125,7 @@ class QuoteItem {
     // Get current item data to recalculate final price if needed
     const currentItem = await this.findById(id, schema);
 
-    const allowedUpdates = ['name', 'description', 'base_price', 'discount_amount', 'quantity'];
+    const allowedUpdates = ['quantity', 'discount_amount'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -118,12 +144,13 @@ class QuoteItem {
     }
 
     // Recalculate final price if any pricing field changed
-    if (['base_price', 'discount_amount', 'quantity'].some(field => updates[field] !== undefined)) {
-      const newBasePrice = updates.base_price !== undefined ? updates.base_price : currentItem.basePrice;
+    if (['discount_amount', 'quantity'].some(field => updates[field] !== undefined)) {
+      // Get current item base price
+      const basePrice = currentItem.item ? currentItem.item.basePrice : 0;
       const newDiscountAmount = updates.discount_amount !== undefined ? updates.discount_amount : currentItem.discountAmount;
       const newQuantity = updates.quantity !== undefined ? updates.quantity : currentItem.quantity;
 
-      const newFinalPrice = (newBasePrice - newDiscountAmount) * newQuantity;
+      const newFinalPrice = (basePrice - newDiscountAmount) * newQuantity;
 
       updateFields.push(`final_price = $${paramIndex}`);
       updateValues.push(newFinalPrice);

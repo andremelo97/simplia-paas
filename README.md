@@ -672,6 +672,18 @@ ADMIN_PANEL_ORIGIN=http://localhost:5173
 # Security
 ENABLE_HELMET=true
 
+# TQ Application Configuration
+DEEPGRAM_API_KEY=your-deepgram-api-key
+DEEPGRAM_WEBHOOK_SECRET=webhook-secret-for-validation
+API_BASE_URL=http://localhost:3004
+OPENAI_API_KEY=your-openai-api-key
+OPENAI_MODEL=gpt-4o-mini
+
+# Supabase Storage Configuration for TQ
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET=tq-audio-files
+
 # Frontend Environment Variables (Vite)
 VITE_INTERNAL_API_BASE_URL=/internal/api/v1
 VITE_TQ_API_BASE_URL=/api/v1/tq
@@ -1019,10 +1031,16 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
 
 ### ✨ Implementações Recentes (Janeiro 2025)
 
-- **✅ 🎨 TQ App UI System**: Interface completa com sistema de cotações implementado
+- **✅ 🎨 TQ App UI System**: Interface completa com sistema de cotações e AI Agent implementado
   - **Split Button Interface**: Botão principal com dropdown para "Start Transcribing" vs "Upload Audio"
   - **Patient Management Compacto**: Input com largura fixa (w-80) e CTA "Create new patient" inline
   - **Audio Controls Avançados**: Timer, VU meter em tempo real, seleção de microfone, estados de gravação
+  - **AI Agent for Medical Summaries**: Sistema completo de IA para geração de sumários médicos
+    - **OpenAI Integration**: Chat iterativo usando GPT-4o-mini para geração de sumários
+    - **Medical-Focused Prompts**: Templates otimizados para sumários médicos em 2ª pessoa
+    - **Interactive Refinement**: Usuários podem iterar e refinar sumários via chat
+    - **Direct Quote Creation**: Botão "+ New Session & Quote" em cada resposta AI
+    - **Quote Content = AI Summary**: Quotes criados com sumário AI, não transcrição original
   - **Quote Management System**: Sistema completo de cotações e precificação
     - **API Backend**: 10 endpoints para CRUD de quotes e quote items com Swagger completo
     - **Database Schema**: Tabelas `quote` e `quote_item` com ENUMs de status e triggers automáticos

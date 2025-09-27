@@ -45,3 +45,5 @@ export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 export { Progress } from './Progress'
 export { Paginator, type PaginatorProps } from './Paginator'
 export { LinkToast } from './LinkToast'
+export { RichTextEditor } from './RichTextEditor'
+export { TemplateEditor } from './TemplateEditor'

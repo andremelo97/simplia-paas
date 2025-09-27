@@ -15,6 +15,9 @@ import { QuotesTab } from '../features/quotes/tabs/QuotesTab'
 import { ItemsTab } from '../features/quotes/tabs/ItemsTab'
 import { CreateItem } from '../features/quotes/items/CreateItem'
 import { EditItem } from '../features/quotes/items/EditItem'
+import { Templates } from '../features/templates/Templates'
+import { CreateTemplate } from '../features/templates/CreateTemplate'
+import { EditTemplate } from '../features/templates/EditTemplate'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -78,6 +81,9 @@ export const AppRoutes: React.FC = () => {
         <Route path="patients" element={<Patients />} />
         <Route path="patients/create" element={<CreatePatient />} />
         <Route path="patients/:id/edit" element={<EditPatient />} />
+        <Route path="templates" element={<Templates />} />
+        <Route path="templates/create" element={<CreateTemplate />} />
+        <Route path="templates/:id/edit" element={<EditTemplate />} />
 
         {/* Quote Management with Tabs */}
         <Route path="quotes" element={<QuoteManagementLayout />}>

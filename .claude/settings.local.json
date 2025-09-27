@@ -22,7 +22,8 @@
       "Bash(psql:*)",
       "Bash(mkdir:*)",
       "Bash(PGPASSWORD=1234 dropdb:*)",
-      "Bash(cmd /c:*)"
+      "Bash(cmd /c:*)",
+      "Bash(npx kill-port:*)"
     ],
     "deny": [],
     "ask": []

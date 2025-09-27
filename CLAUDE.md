@@ -212,6 +212,11 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - `DEEPGRAM_API_KEY`: Deepgram API key for transcription services
 - `DEEPGRAM_WEBHOOK_SECRET`: Webhook secret for Deepgram callbacks
 - `API_BASE_URL`: Base URL for API calls (default: http://localhost:3001)
+- `OPENAI_API_KEY`: OpenAI API key for AI agent medical summaries
+- `OPENAI_MODEL`: OpenAI model to use (default: gpt-4o-mini)
+- `SUPABASE_URL`: Supabase project URL for audio file storage
+- `SUPABASE_SERVICE_ROLE_KEY`: Service role key for Supabase storage
+- `SUPABASE_STORAGE_BUCKET`: Storage bucket name for audio files (default: tq-audio-files)
 
 ## Important Files
 - **Migrations**: `src/server/infra/migrations/` - Database schema evolution
@@ -226,14 +231,18 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
   - `sessions.js`: Session management with transcription integration
   - `patients.js`: Patient management for TQ workflow
   - `transcription.js`: Deepgram transcription integration
+  - `templates.js`: Template management with TipTap integration (7 endpoints)
 - **TQ Models**: `src/server/infra/models/` - TQ database models
   - `Quote.js`: Quote management with automatic total calculation
   - `QuoteItem.js`: Quote items with discount system and final price calculation
   - `Session.js`: Session management with patient and transcription linking
+  - `Template.js`: Template management with usage tracking and search
 - **Common UI Components**: `src/client/common/ui/` - Shared design system components
   - `DropdownMenu`: Context-based dropdown with trigger/content/item components
   - `Input`: Standardized input with purple focus border (#B725B7)
   - `Button`, `Card`, `Select`, `Textarea`, `Progress`: Core UI primitives
+  - `RichTextEditor`: Generic TipTap wrapper for rich text editing
+  - `TemplateEditor`: Template-specific editor with syntax highlighting and variables palette
 - **Server Services**: `src/server/services/` - Third-party integrations
   - `deepgram.js`: Audio transcription service integration
   - `supabaseStorage.js`: File storage management
@@ -297,6 +306,93 @@ Complete CRUD API available at `/api/tq/v1/quotes`:
 - **Tenant isolation**: All quotes scoped to tenant schema
 - **Audit trail**: Complete created/updated timestamps with triggers
 
+## TQ Template Management System
+
+### Database Schema
+The TQ application includes a complete template management system for clinical documentation:
+
+```sql
+-- Template table for AI-powered clinical documentation
+CREATE TABLE tenant_{slug}.template (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  description TEXT,
+  active BOOLEAN DEFAULT true,
+  usage_count INTEGER DEFAULT 0
+);
+
+-- Indexes for performance
+CREATE INDEX idx_template_title ON template(title);
+CREATE INDEX idx_template_active ON template(active);
+CREATE INDEX idx_template_created_at ON template(created_at);
+
+-- Automatic timestamp updates
+CREATE TRIGGER update_template_updated_at
+  BEFORE UPDATE ON template
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+```
+
+### Template Syntax Support
+Templates support rich syntax for dynamic content generation:
+- **Placeholders**: `[patient_name]`, `[date]`, `[symptoms]` - User input fields
+- **Variables**: `$current_date$`, `$doctor_name$`, `$clinic_name$` - System variables
+- **Instructions**: `(Ask about medication history)` - AI guidance notes
+
+### Template API Endpoints
+Complete CRUD API available at `/api/tq/v1/templates`:
+
+- **Template Management**: GET, POST, PUT, DELETE templates
+- **Search & Pagination**: Full-text search in title and description
+- **Usage Tracking**: Automatic increment of usage_count when templates are used
+- **Most Used**: GET `/templates/most-used` for popular templates
+- **Active Filtering**: Filter by active status for template availability
+
+### Template Editor Implementation
+- **TipTap Editor**: Rich text editing with custom extensions
+- **Syntax Highlighting**: Visual differentiation of placeholders, variables, instructions
+- **Variables Palette**: Quick insertion of available system variables
+- **Help Panel**: Contextual guidance for template syntax
+- **Live Preview**: Real-time rendering of template content
+
+### Frontend Implementation
+- **Templates Page**: Full CRUD interface following TQ design patterns
+- **TipTap Integration**: Custom `TemplateEditor` component with syntax support
+- **Design Consistency**: Matches Patients/Sessions pages (variant="primary", space-y-8)
+- **Empty States**: User-friendly empty states without action buttons
+- **Search & Filters**: Simple Card-based filtering like other TQ features
+
+### API Response Format
+Templates follow the standard TQ API response format:
+```json
+{
+  "data": [...],
+  "meta": {
+    "total": 0,
+    "limit": 50,
+    "offset": 0
+  }
+}
+```
+
+### Implementation Details
+- **Model**: `Template.js` with full CRUD operations and usage tracking
+- **API Routes**: 7 endpoints with complete OpenAPI documentation
+- **Tenant Isolation**: All templates scoped to tenant schema via `req.tenant?.schema`
+- **Frontend Service**: `templatesService.ts` with proper TQ API URL paths (`/api/tq/v1/templates`)
+- **Robust Error Handling**: Defensive programming for API response variations
+- **Usage Analytics**: Automatic tracking of template usage for insights
+
+### Common Issues & Solutions
+- **Route Registration**: Templates router mounted at `/templates` in TQ API
+- **URL Paths**: Frontend must use full TQ API paths (`/api/tq/v1/templates`)
+- **Tenant Schema**: Use `req.tenant?.schema` (not `req.tenantSchema`) for consistency
+- **Response Format**: Backend returns `data/meta` structure, frontend handles gracefully
+- **Middleware**: Global TQ middlewares handle auth/tenant - no individual route middleware needed
+
 ## Critical Seat Counting Rules
 - **Grant**: MUST call `TenantApplication.incrementSeat(tenantId, applicationId)`
 - **Revoke**: MUST call `TenantApplication.decrementSeat(tenantId, applicationId)`
@@ -358,6 +454,16 @@ TQ follows the same `/features` architecture as internal-admin:
   - Timer, VU meter, and microphone selection controls
   - Large transcription textarea with auto-save simulation
   - Pause/resume functionality for recordings
+- **Quote Management System**: Complete CRUD system for quotes and quote items
+  - 10 API endpoints for quotes and quote items with automatic pricing calculation
+  - Database schema with `quote` and `quote_item` tables, status ENUMs, and triggers
+  - Item-level discount system with transparent final pricing
+- **AI Agent Integration**: Medical summary generation using OpenAI GPT-4o-mini
+  - Interactive chat interface for iterative summary refinement
+  - Medical-focused prompts optimized for 2nd person summaries
+  - Direct quote creation from AI-generated summaries
+- **Patient Management**: Complete CRUD system for patient records
+- **Session Management**: Audio session tracking with transcription integration
 - **Transcription Service**: `transcriptionService.ts` for API communication with Deepgram
 - **Audio Components**: AudioUploadModal for file uploads, recording controls
 
@@ -372,22 +478,35 @@ src/client/apps/tq/
 ├── features/           # Feature-based organization
 │   ├── auth/          # Authentication pages
 │   │   └── Login.tsx
-│   └── home/          # Home/Dashboard functionality
-│       └── Home.tsx
+│   ├── home/          # Home/Dashboard functionality
+│   │   └── Home.tsx
+│   ├── patients/      # Patient management
+│   ├── session/       # Session management and transcription
+│   ├── quotes/        # Quote management system
+│   └── templates/     # Template management with TipTap editor
+│       ├── Templates.tsx    # Main listing page
+│       ├── CreateTemplate.tsx  # Template creation
+│       └── EditTemplate.tsx    # Template editing
 ├── shared/            # Shared TQ components/services
 │   ├── components/    # Layout, Sidebar, Header (copied from Hub)
 │   ├── store/         # Zustand stores (auth, ui)
 │   └── types/         # TypeScript interfaces
 ├── services/          # API service layer
+│   ├── templates.ts   # Template API service with TQ API integration
+│   ├── patients.ts    # Patient API service
+│   └── sessions.ts    # Session API service
 ├── lib/              # Utilities (SSO consumption)
 └── App.tsx           # TQ application root
 ```
 
 **Key TQ Implementation Details:**
 - **Shared UI**: Identical Layout, Sidebar, Header components as Hub
-- **Simplified Navigation**: Only "Home" menu item in sidebar
+- **Simplified Navigation**: Menu includes Home, Patients, Sessions, Quotes
 - **SSO Integration**: Automatic login via URL parameters from Hub
 - **Features Structure**: Follows enterprise `/features` pattern instead of `/pages`
+- **Dedicated TQ API**: Separate API server on port 3004 with tenant-scoped routes
+- **Complete Backend**: Full CRUD APIs for patients, sessions, quotes, and AI agent integration
+- **Medical Workflow**: End-to-end transcription → AI summary → quote generation workflow
 
 ### Database Schema Changes
 1. Create migration file in `src/server/infra/migrations/`
@@ -415,6 +534,11 @@ src/client/apps/tq/
 - **CORS issues**: Ensure TQ_ORIGIN is configured in server CORS settings for SSO
 - **SSO token errors**: Verify JWT token is valid and contains required payload (userId, tenantId)
 - **Vite proxy issues**: Check proxy configuration in vite.tq.config.ts for API routing
+- **TQ API routing errors**: Ensure frontend services use full paths (`/api/tq/v1/templates` not `/templates`)
+- **Template API errors**: Use `req.tenant?.schema` (not `req.tenantSchema`) for tenant context
+- **API response format**: TQ APIs should return `{data: [...], meta: {...}}` format consistently
+- **Route duplication**: Don't add route prefixes in individual route files if already mounted with prefix
+- **Port conflicts (Windows)**: Use `netstat -ano | findstr :PORT` and `taskkill /PID X /F` to free ports
 
 ---
 

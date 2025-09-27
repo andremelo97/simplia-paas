@@ -164,6 +164,20 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       )
     `);
 
+    // Create template table for AI template filling
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS template (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        description TEXT,
+        active BOOLEAN DEFAULT true,
+        usage_count INTEGER DEFAULT 0
+      )
+    `);
+
     // Create indexes for better performance
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_patient_email ON patient(email)
@@ -249,6 +263,18 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       CREATE INDEX IF NOT EXISTS idx_quote_expires_at ON quote(expires_at)
     `);
 
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_template_title ON template(title)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_template_active ON template(active)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_template_created_at ON template(created_at)
+    `);
+
     // Create update triggers for updated_at timestamps
     // Note: Function will be created in public schema if it doesn't exist
     await client.query(`
@@ -327,6 +353,17 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_template_updated_at ON template
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_template_updated_at
+        BEFORE UPDATE ON template
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
     await client.query('COMMIT');
     console.log(`TQ app schema provisioned successfully for tenant schema: ${schema}`);
 
@@ -350,10 +387,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item')
+        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 6;
+    return parseInt(result.rows[0].table_count) === 7;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

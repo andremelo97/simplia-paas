@@ -3,6 +3,8 @@ const { Template, TemplateNotFoundError } = require('../../../infra/models/Templ
 
 const router = express.Router();
 
+console.log('🔧 [Templates Router] Templates router loaded and initialized');
+
 /**
  * @openapi
  * /tq/templates:
@@ -77,6 +79,17 @@ const router = express.Router();
  *                   type: string
  *                   example: "Internal server error"
  */
+// Add middleware to log all template route hits
+router.use((req, res, next) => {
+  console.log('🎯 [Templates Router] Route hit:', {
+    method: req.method,
+    url: req.url,
+    originalUrl: req.originalUrl,
+    path: req.path
+  });
+  next();
+});
+
 router.get('/', async (req, res) => {
   try {
     const schema = req.tenant?.schema;
@@ -105,6 +118,72 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error fetching templates:', error);
     res.status(500).json({ error: 'Failed to fetch templates' });
+  }
+});
+
+/**
+ * @openapi
+ * /tq/templates/most-used:
+ *   get:
+ *     tags: [TQ - Templates]
+ *     summary: Get most used templates
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Get templates ordered by usage count (most used first).
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of templates to return
+ *     responses:
+ *       200:
+ *         description: Most used templates retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Template'
+ *       401:
+ *         description: Authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+router.get('/most-used', async (req, res) => {
+  try {
+    const schema = req.tenant?.schema;
+    const { limit } = req.query;
+
+    const options = {
+      limit: limit ? parseInt(limit) : 10
+    };
+
+    const templates = await Template.findMostUsed(schema, options);
+    res.json(templates);
+  } catch (error) {
+    console.error('Error fetching most used templates:', error);
+    res.status(500).json({ error: 'Failed to fetch most used templates' });
   }
 });
 
@@ -159,13 +238,23 @@ router.get('/', async (req, res) => {
  *                   example: "Internal server error"
  */
 router.get('/:id', async (req, res) => {
+  console.log('🔍 [Templates] GET /:id route reached!', {
+    id: req.params.id,
+    schema: req.tenant?.schema,
+    url: req.url,
+    originalUrl: req.originalUrl
+  });
+
   try {
     const { id } = req.params;
     const schema = req.tenant?.schema;
 
+    console.log('🔍 [Templates] Calling Template.findById with:', { id, schema });
     const template = await Template.findById(id, schema);
+    console.log('🔍 [Templates] Template found:', template ? 'YES' : 'NO', template);
     res.json(template);
   } catch (error) {
+    console.log('🔍 [Templates] Error occurred:', error.message);
     if (error instanceof TemplateNotFoundError) {
       return res.status(404).json({ error: 'Template not found' });
     }
@@ -453,71 +542,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-/**
- * @openapi
- * /tq/templates/most-used:
- *   get:
- *     tags: [TQ - Templates]
- *     summary: Get most used templates
- *     description: |
- *       **Scope:** Tenant (x-tenant-id required)
- *
- *       Get templates ordered by usage count (most used first).
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 10
- *         description: Number of templates to return
- *     responses:
- *       200:
- *         description: Most used templates retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Template'
- *       401:
- *         description: Authentication required
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Unauthorized"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "Internal server error"
- */
-router.get('/most-used', async (req, res) => {
-  try {
-    const schema = req.tenant?.schema;
-    const { limit } = req.query;
-
-    const options = {
-      limit: limit ? parseInt(limit) : 10
-    };
-
-    const templates = await Template.findMostUsed(schema, options);
-    res.json(templates);
-  } catch (error) {
-    console.error('Error fetching most used templates:', error);
-    res.status(500).json({ error: 'Failed to fetch most used templates' });
-  }
-});
 
 /**
  * @openapi

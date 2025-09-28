@@ -25,7 +25,7 @@
   },
   "include": [
     "src/client/**/*"
-  ],
+, "src/shared/lib", "src/shared/hooks", "src/shared/tiptap-icons"  ],
   "exclude": [
     "node_modules",
     "dist",

@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import {
   Card,
   CardHeader,
   CardContent,
-  CardTitle,
   Button,
   Input,
-  TemplateEditor,
-  Alert,
-  AlertDescription
+  TemplateEditor
 } from '@client/common/ui'
 import { templatesService, UpdateTemplateRequest } from '../../services/templates'
-import { useTemplate } from '../../hooks/useTemplates'
 
 interface TemplateFormData {
   title: string
@@ -26,8 +22,6 @@ export const EditTemplate: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const { data: template, loading, error } = useTemplate(id!)
-
   const [formData, setFormData] = useState<TemplateFormData>({
     title: '',
     content: '',
@@ -36,34 +30,45 @@ export const EditTemplate: React.FC = () => {
   })
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const [hasChanges, setHasChanges] = useState(false)
+  const [showVariables, setShowVariables] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
-  // Initialize form data when template loads
+  // Load existing template data
   useEffect(() => {
-    if (template) {
-      const initialData = {
-        title: template.title,
-        content: template.content,
-        description: template.description || '',
-        active: template.active
+    const loadTemplateData = async () => {
+      if (!id) {
+        setLoadError('Template ID is required')
+        setIsLoading(false)
+        return
       }
-      setFormData(initialData)
-    }
-  }, [template])
 
-  // Track changes
-  useEffect(() => {
-    if (template) {
-      const hasChanged =
-        formData.title !== template.title ||
-        formData.content !== template.content ||
-        formData.description !== (template.description || '') ||
-        formData.active !== template.active
+      try {
+        setIsLoading(true)
 
-      setHasChanges(hasChanged)
+        console.log('📄 [EditTemplate] Loading template data for ID:', id)
+        const template = await templatesService.getById(id)
+        console.log('✅ [EditTemplate] Template data loaded:', template)
+
+        // Initialize form data
+        setFormData({
+          title: template.title,
+          content: template.content,
+          description: template.description || '',
+          active: template.active
+        })
+
+        setLoadError(null)
+      } catch (error) {
+        console.error('❌ [EditTemplate] Failed to load template:', error)
+        setLoadError(error instanceof Error ? error.message : 'Failed to load template')
+      } finally {
+        setIsLoading(false)
+      }
     }
-  }, [formData, template])
+
+    loadTemplateData()
+  }, [id])
 
   const handleInputChange = (field: keyof TemplateFormData) => (
     e: React.ChangeEvent<HTMLInputElement>
@@ -124,7 +129,6 @@ export const EditTemplate: React.FC = () => {
     }
 
     setIsSubmitting(true)
-    setSubmitError(null)
 
     try {
       const requestData: UpdateTemplateRequest = {
@@ -136,11 +140,25 @@ export const EditTemplate: React.FC = () => {
 
       await templatesService.update(id, requestData)
       navigate('/templates')
-    } catch (error) {
-      console.error('Error updating template:', error)
-      setSubmitError(
-        error instanceof Error ? error.message : 'Failed to update template. Please try again.'
-      )
+    } catch (error: any) {
+      console.error('❌ [EditTemplate] Failed to update template:', error)
+
+      // Error handling is now managed by HTTP interceptor
+      let errorMessage = 'Failed to update template. Please try again.'
+
+      if (error.message?.includes('Validation Error')) {
+        errorMessage = 'Please check your input and try again.'
+      } else if (error.status === 409) {
+        errorMessage = 'Template already exists. Please check the information.'
+      } else if (error.status === 403) {
+        errorMessage = 'You do not have permission to update templates.'
+      } else if (error.status === 401) {
+        errorMessage = 'Your session has expired. Please log in again.'
+      } else if (error.status >= 500) {
+        errorMessage = 'Server error occurred. Please try again later.'
+      }
+
+      console.error('❌ [EditTemplate] Update error:', errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -150,209 +168,231 @@ export const EditTemplate: React.FC = () => {
     navigate('/templates')
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" disabled>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Templates
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
-            <p className="text-gray-600">Loading template...</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+          <p className="text-gray-600 mt-1">
+            Loading template...
+          </p>
         </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-10 bg-gray-200 rounded"></div>
-              <div className="h-32 bg-gray-200 rounded"></div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-3">
+            <Card>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                  <div className="h-32 bg-gray-200 rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     )
   }
 
-  if (error || !template) {
+  if (loadError) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={handleCancel}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Templates
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+          <p className="text-gray-600 mt-1">
+            {loadError}
+          </p>
         </div>
-
-        <Alert variant="destructive">
-          <AlertDescription>
-            {error || 'Template not found'}
-          </AlertDescription>
-        </Alert>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          onClick={handleCancel}
-          disabled={isSubmitting}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Templates
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
-          <p className="text-gray-600">
-            Editing: {template.title}
-          </p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+        <p className="text-gray-600 mt-1">
+          Editing: {formData.title || 'Template'}
+        </p>
       </div>
 
-      {/* Unsaved Changes Warning */}
-      {hasChanges && (
-        <Alert>
-          <AlertDescription>
-            You have unsaved changes. Make sure to save before leaving this page.
-          </AlertDescription>
-        </Alert>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Main Form - 60% */}
+        <div className="lg:col-span-3">
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-8">
+              {/* Template Information */}
+              <Card>
+                <CardHeader className="p-6 pb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Template Information</h2>
+                </CardHeader>
 
-      {/* Error Alert */}
-      {submitError && (
-        <Alert variant="destructive">
-          <AlertDescription>{submitError}</AlertDescription>
-        </Alert>
-      )}
+                <CardContent className="space-y-6 px-6 pb-6">
+                  <div className="space-y-6">
+                    <Input
+                      label="Title"
+                      value={formData.title}
+                      onChange={handleInputChange('title')}
+                      error={validationErrors.title}
+                      placeholder="e.g., Dental Consultation Summary"
+                      helperText="Descriptive name for this template (required)"
+                      required
+                      disabled={isSubmitting}
+                    />
 
-      {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Template Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Title */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
-              </label>
-              <Input
-                value={formData.title}
-                onChange={handleInputChange('title')}
-                placeholder="Enter template title"
-                error={validationErrors.title}
-                disabled={isSubmitting}
-              />
-              {validationErrors.title && (
-                <p className="text-sm text-red-600 mt-1">{validationErrors.title}</p>
-              )}
+                    <Input
+                      label="Description"
+                      value={formData.description}
+                      onChange={handleInputChange('description')}
+                      placeholder="Optional description to help identify this template"
+                      helperText="Brief description of template purpose (optional)"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Template Content *
+                    </label>
+                    <TemplateEditor
+                      content={formData.content}
+                      onChange={handleContentChange}
+                      placeholder="Create your template using [placeholders], $variables$, and (instructions)..."
+                      readonly={isSubmitting}
+                    />
+                    {validationErrors.content && (
+                      <p className="text-sm text-red-600 mt-1">{validationErrors.content}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="active"
+                      checked={formData.active}
+                      onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
+                      disabled={isSubmitting}
+                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="active" className="text-sm font-medium text-gray-700">
+                      Template is active and available for use
+                    </label>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <Input
-                value={formData.description}
-                onChange={handleInputChange('description')}
-                placeholder="Optional description to help identify this template"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            {/* Template Content */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Template Content *
-              </label>
-              <TemplateEditor
-                content={formData.content}
-                onChange={handleContentChange}
-                placeholder="Create your template using [placeholders], $variables$, and (instructions)..."
-                readonly={isSubmitting}
-              />
-              {validationErrors.content && (
-                <p className="text-sm text-red-600 mt-1">{validationErrors.content}</p>
-              )}
-              <p className="text-xs text-gray-500 mt-2">
-                Use [placeholders] for information to be filled from dialogue,
-                $variables$ for system data, and (instructions) to guide the AI.
-              </p>
-            </div>
-
-            {/* Active Toggle */}
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="active"
-                checked={formData.active}
-                onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
-                disabled={isSubmitting}
-                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-              />
-              <label htmlFor="active" className="text-sm font-medium text-gray-700">
-                Template is active and available for use
-              </label>
-            </div>
-
-            {/* Template Stats */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-2">Template Statistics</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">Usage Count:</span>
-                  <span className="ml-2 font-medium">{template.usageCount}</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Created:</span>
-                  <span className="ml-2 font-medium">
-                    {new Date(template.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Last Updated:</span>
-                  <span className="ml-2 font-medium">
-                    {new Date(template.updatedAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
               <Button
                 type="submit"
-                loading={isSubmitting}
-                disabled={!formData.title.trim() || !formData.content.trim() || !hasChanges}
+                variant="default"
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
               >
-                {hasChanges ? 'Save Changes' : 'No Changes'}
+                {isSubmitting ? 'Updating Template...' : 'Update Template'}
               </Button>
+
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={handleCancel}
                 disabled={isSubmitting}
+                style={{ height: '32px', minHeight: '32px' }}
               >
                 Cancel
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </form>
+          </form>
+        </div>
+
+        {/* Template Creation Guide - 40% */}
+        <div className="lg:col-span-2">
+          <Card className="sticky top-6">
+            <CardHeader className="p-6 pb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Template Creation Guide</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                How to create dynamic templates for clinical documentation
+              </p>
+            </CardHeader>
+
+            <CardContent className="px-6 pb-6 space-y-6">
+              {/* Placeholders */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Placeholders:</h3>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                  <code className="text-sm text-blue-800 font-mono">[placeholder]</code>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Wrapped in square brackets. These will be filled with information from the session dialogue, clinical notes, or contextual notes.
+                </p>
+              </div>
+
+              {/* Instructions */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Instructions:</h3>
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-2">
+                  <code className="text-sm text-amber-800 font-mono">(instruction)</code>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Wrapped in round brackets. These guide the AI on how to behave when information is missing. Instructions will not appear in the final output.
+                </p>
+              </div>
+
+              {/* System Variables */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">System Variables:</h3>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
+                  <code className="text-sm text-green-800 font-mono">$variable$</code>
+                </div>
+                <p className="text-xs text-gray-600 mb-3">
+                  Wrapped in double dollar signs. These are filled with database values when the quote/report is created.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setShowVariables(!showVariables)}
+                  className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700"
+                >
+                  {showVariables ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                  Click here to see the available variables
+                </button>
+
+                {showVariables && (
+                  <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div className="space-y-2 text-xs">
+                      <div><code className="font-mono text-green-700">$patient.name$</code> - Patient's full name</div>
+                      <div><code className="font-mono text-green-700">$patient.first_name$</code> - Patient's first name</div>
+                      <div><code className="font-mono text-green-700">$patient.email$</code> - Patient's email</div>
+                      <div><code className="font-mono text-green-700">$date.now$</code> - Current date</div>
+                      <div><code className="font-mono text-green-700">$date.session$</code> - Session date</div>
+                      <div><code className="font-mono text-green-700">$profile.name$</code> - Doctor's name</div>
+                      <div><code className="font-mono text-green-700">$clinic.name$</code> - Clinic name</div>
+                      <div><code className="font-mono text-green-700">$session.number$</code> - Session number</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Example */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Example:</h3>
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <code className="text-xs text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
+{`Dear $patient.name$, your appointment on $date.session$ was [summarize findings].
+
+Dr. $profile.name$ recommends [treatment plan]. (Only include if mentioned in transcript)
+
+Next appointment: [next appointment details]`}
+                  </code>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

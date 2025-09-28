@@ -30,14 +30,14 @@ const navigation: NavigationItem[] = [
     icon: Receipt
   },
   {
-    name: 'Templates',
-    href: '/templates',
-    icon: FileType
-  },
-  {
     name: 'Clinical Reports',
     href: '/clinical-reports',
     icon: ClipboardList
+  },
+  {
+    name: 'Templates',
+    href: '/templates',
+    icon: FileType
   },
   {
     name: 'Configurations',

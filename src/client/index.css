@@ -1,3 +1,6 @@
+@import '../shared/styles/_variables.scss';
+@import '../shared/styles/_keyframe-animations.scss';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -87,4 +90,79 @@ button[data-variant="secondary"] {
 
 .action-link:hover {
   color: var(--brand-primary-hover) !important;
+}
+
+/* Template Editor Constraints */
+.template-editor-constrained .simple-editor-wrapper {
+  width: 100% !important;
+  height: auto !important;
+  max-height: 500px !important;
+  overflow: auto !important;
+}
+
+.template-editor-constrained .simple-editor-content {
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 400px !important;
+  margin-top: 1px !important;
+}
+
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  padding: 1rem !important;
+  min-height: 350px !important;
+  max-height: 400px !important;
+  overflow-y: auto !important;
+  background-color: white !important;
+  color: #333 !important;
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-radius: 0 !important;
+}
+
+/* Dark mode support for editor content */
+.dark .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+/* Fix line spacing - reduce paragraph margins */
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor p,
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor .editor-paragraph {
+  margin: 0 0 0.5rem 0 !important;
+  line-height: 1.5 !important;
+  padding: 0 !important;
+}
+
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor p:first-child,
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor .editor-paragraph:first-child {
+  margin-top: 0 !important;
+}
+
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor p:last-child,
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor .editor-paragraph:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Remove excessive spacing between elements */
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor > * + * {
+  margin-top: 0.5rem !important;
+}
+
+/* Improve selection visibility */
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor ::selection {
+  background-color: var(--brand-primary) !important;
+  color: white !important;
+}
+
+/* Fix selection styling */
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor .ProseMirror-selectednode {
+  outline: 2px solid var(--brand-primary) !important;
+}
+
+/* Ensure focus styling */
+.template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor:focus {
+  outline: none !important;
+  border-color: var(--brand-primary) !important;
+  box-shadow: 0 0 0 1px var(--brand-primary) !important;
 }

@@ -360,10 +360,13 @@ Complete CRUD API available at `/api/tq/v1/templates`:
 
 ### Frontend Implementation
 - **Templates Page**: Full CRUD interface following TQ design patterns
+- **2-Column Create Layout**: 60% main form, 40% creation guide with sticky sidebar
+- **Template Creation Guide**: Comprehensive guide with syntax examples and system variables
 - **TipTap Integration**: Custom `TemplateEditor` component with syntax support
 - **Design Consistency**: Matches Patients/Sessions pages (variant="primary", space-y-8)
 - **Empty States**: User-friendly empty states without action buttons
 - **Search & Filters**: Simple Card-based filtering like other TQ features
+- **Responsive Design**: Mobile-friendly interface with collapsible guide
 
 ### API Response Format
 Templates follow the standard TQ API response format:
@@ -385,6 +388,15 @@ Templates follow the standard TQ API response format:
 - **Frontend Service**: `templatesService.ts` with proper TQ API URL paths (`/api/tq/v1/templates`)
 - **Robust Error Handling**: Defensive programming for API response variations
 - **Usage Analytics**: Automatic tracking of template usage for insights
+
+### AI Agent Integration (Planned)
+The template system is designed for future AI agent integration:
+- **Template Filling**: AI agent will automatically fill templates using session transcription data
+- **Context Analysis**: Parse transcription for relevant clinical information
+- **Variable Substitution**: Replace system variables with database values
+- **Instruction Processing**: Follow template instructions for content formatting
+- **Usage Tracking**: Automatic increment of template usage via POST `/templates/:id/increment-usage`
+- **Integration Points**: Deepgram transcription → AI analysis → Template filling → Clinical note
 
 ### Common Issues & Solutions
 - **Route Registration**: Templates router mounted at `/templates` in TQ API

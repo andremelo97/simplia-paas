@@ -19,6 +19,7 @@ import { Template } from '../../services/templates'
 
 export const Templates: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
   const navigate = useNavigate()
 
   const {
@@ -30,16 +31,22 @@ export const Templates: React.FC = () => {
     error,
     setPage,
     setSearch,
+    setActive,
     refetch
   } = useTemplatesList({
     search: searchQuery,
-    active: true,
+    active: statusFilter === 'all' ? undefined : statusFilter === 'active',
     pageSize: 10
   })
 
   const handleSearchChange = (search: string) => {
     setSearchQuery(search)
     setSearch(search)
+  }
+
+  const handleStatusFilterChange = (status: 'all' | 'active' | 'inactive') => {
+    setStatusFilter(status)
+    setActive(status === 'all' ? undefined : status === 'active')
   }
 
   const handleEditTemplate = (template: Template) => {
@@ -74,16 +81,9 @@ export const Templates: React.FC = () => {
       <TemplateFilters
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
+        statusFilter={statusFilter}
+        onStatusFilterChange={handleStatusFilterChange}
       />
-
-      {/* Error State */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>
-            Error loading templates: {error}
-          </AlertDescription>
-        </Alert>
-      )}
 
       {/* Content */}
       <Card>
@@ -93,6 +93,22 @@ export const Templates: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
+          {/* Error State */}
+          {error && (
+            <Alert className="mb-4">
+              <AlertDescription>
+                {error}{' '}
+                <button
+                  onClick={refetch}
+                  className="text-purple-600 hover:text-purple-800 underline"
+                >
+                  Try again
+                </button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Loading State */}
           {loading ? (
             <div className="space-y-1">
               {[...Array(6)].map((_, i) => (
@@ -109,7 +125,17 @@ export const Templates: React.FC = () => {
             />
           ) : (
             <>
-              <div className="space-y-4">
+              {/* Header Row */}
+              <div className="flex items-center gap-6 py-2 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+                <div className="w-24">Created</div>
+                <div className="flex-1">Title</div>
+                <div className="flex-1">Description</div>
+                <div className="w-20">Usage</div>
+                <div className="w-24"></div> {/* Space for actions */}
+              </div>
+
+              {/* Template Rows */}
+              <div className="divide-y divide-gray-100">
                 {templates.map((template) => (
                   <TemplateRow
                     key={template.id}
@@ -121,47 +147,16 @@ export const Templates: React.FC = () => {
               </div>
 
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-6 flex justify-center">
-                  <Paginator
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setPage}
-                  />
-                </div>
-              )}
+              <Paginator
+                currentPage={currentPage}
+                totalItems={total}
+                onPageChange={setPage}
+              />
             </>
           )}
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
-      {!loading && total > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-gray-900">{total}</div>
-              <div className="text-sm text-gray-600">Total Templates</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-green-600">
-                {templates.filter(t => t.active).length}
-              </div>
-              <div className="text-sm text-gray-600">Active Templates</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-purple-600">
-                {templates.reduce((sum, t) => sum + t.usageCount, 0)}
-              </div>
-              <div className="text-sm text-gray-600">Total Usage</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   )
 }

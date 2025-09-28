@@ -97,8 +97,18 @@ export const templatesService = {
     const response = await api.get<any>('/api/tq/v1/templates', { params })
 
     // Handle both possible response formats
-    const data = response.data.data || response.data.templates || []
-    const meta = response.data.meta || response.data
+    let data, meta;
+
+    if (Array.isArray(response.data)) {
+      // API returns array directly (current TQ API format)
+      data = response.data;
+      meta = { total: response.data.length, limit: 50, offset: 0 };
+    } else {
+      // API returns object with data/meta properties
+      data = response.data.data || response.data.templates || [];
+      meta = response.data.meta || response.data;
+    }
+
 
     return {
       templates: data.map(convertToCamelCase),
@@ -112,8 +122,11 @@ export const templatesService = {
    * Get template by ID
    */
   async getById(id: string): Promise<Template> {
+    console.log('🌐 [TemplatesService] Making API call to:', `/api/tq/v1/templates/${id}`)
     const response = await api.get<ApiTemplate>(`/api/tq/v1/templates/${id}`)
-    return convertToCamelCase(response.data)
+    console.log('🌐 [TemplatesService] API response:', response)
+    console.log('🌐 [TemplatesService] Response data:', response.data)
+    return convertToCamelCase(response.data || response)
   },
 
   /**

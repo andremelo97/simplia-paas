@@ -23,7 +23,11 @@
       "Bash(mkdir:*)",
       "Bash(PGPASSWORD=1234 dropdb:*)",
       "Bash(cmd /c:*)",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(npx @tiptap/cli@latest add:*)",
+      "Bash(npx:*)",
+      "Bash(tree:*)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

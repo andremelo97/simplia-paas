@@ -114,14 +114,34 @@ simplia-paas/
 │   │   │   │   │   │   └── Login.tsx  # página de login (SSO)
 │   │   │   │   │   ├── 📁 home/       # página inicial
 │   │   │   │   │   │   └── Home.tsx   # dashboard principal do TQ
+│   │   │   │   │   ├── 📁 templates/  # gestão de templates clínicos
+│   │   │   │   │   │   ├── Templates.tsx      # listagem com busca e paginação
+│   │   │   │   │   │   ├── CreateTemplate.tsx # criação com layout 2-colunas e guia
+│   │   │   │   │   │   ├── EditTemplate.tsx   # edição de templates
+│   │   │   │   │   │   └── ViewTemplate.tsx   # visualização/detalhes
+│   │   │   │   │   ├── 📁 patients/   # gestão de pacientes
+│   │   │   │   │   ├── 📁 sessions/   # gestão de sessões
+│   │   │   │   │   ├── 📁 quotes/     # sistema de cotações
 │   │   │   │   │   └── 📁 session/    # gestão de sessões de transcrição
 │   │   │   │   │       └── NewSession.tsx # interface de nova sessão com split button
+│   │   │   │   ├── 📁 components/     # componentes específicos do TQ
+│   │   │   │   │   └── 📁 templates/  # componentes de templates
+│   │   │   │   │       ├── TemplateRow.tsx         # item da lista de templates
+│   │   │   │   │       ├── TemplateFilters.tsx     # busca e filtros
+│   │   │   │   │       ├── TemplatesEmpty.tsx      # estado vazio
+│   │   │   │   │       └── TemplatePreview.tsx     # preview/modal de templates
+│   │   │   │   ├── 📁 hooks/          # hooks específicos do TQ
+│   │   │   │   │   ├── useTemplates.ts    # hooks para template operations
+│   │   │   │   │   ├── useTemplatesList.ts # hook para lista paginada
+│   │   │   │   │   └── useTemplate.ts     # hook para template individual
 │   │   │   │   ├── 📁 shared/         # componentes e stores compartilhados
 │   │   │   │   │   ├── 📁 components/ # Layout, Header, Sidebar, RouteGuard
 │   │   │   │   │   └── 📁 store/      # auth store, UI store
 │   │   │   │   ├── 📁 services/       # cliente para APIs
-│   │   │   │   │   ├── sessions.ts    # serviços de sessões (mock)
-│   │   │   │   │   └── patients.ts    # serviços de pacientes (mock)
+│   │   │   │   │   ├── templates.ts   # serviços de templates com TQ API
+│   │   │   │   │   ├── sessions.ts    # serviços de sessões
+│   │   │   │   │   ├── patients.ts    # serviços de pacientes
+│   │   │   │   │   └── quotes.ts      # serviços de cotações
 │   │   │   │   ├── 📁 lib/            # consumeSso para SSO
 │   │   │   │   ├── 📁 routes/         # roteamento do TQ
 │   │   │   │   ├── index.html         # HTML com fonte Montserrat
@@ -146,6 +166,8 @@ simplia-paas/
 │   │   │   │   ├── StatusBadge.tsx    # Componente StatusBadge para status tipados (active/inactive/suspended)
 │   │   │   │   ├── Card.tsx           # Componente Card refatorado
 │   │   │   │   ├── DropdownMenu.tsx   # **NOVO**: Sistema de dropdown completo (Trigger, Content, Item)
+│   │   │   │   ├── RichTextEditor.tsx # **NOVO**: Editor TipTap genérico para reuso
+│   │   │   │   ├── TemplateEditor.tsx # **NOVO**: Editor específico para templates com syntax highlighting
 │   │   │   │   ├── Toast.tsx          # Sistema de toasts
 │   │   │   │   ├── Toaster.tsx        # Host de toasts
 │   │   │   │   ├── FormSection.tsx    # Seção de formulário com botão add
@@ -202,6 +224,11 @@ simplia-paas/
 │   │   │   │       └── me.js          # **NOVO**: Endpoints self-service para Hub (/me/apps)
 │   │   │   ├── 📁 tq/                 # API do produto Transcription Quote
 │   │   │   │   └── 📁 routes/         # Rotas específicas do TQ
+│   │   │   │       ├── templates.js   # CRUD completo de templates clínicos
+│   │   │   │       ├── sessions.js    # gestão de sessões
+│   │   │   │       ├── patients.js    # gestão de pacientes
+│   │   │   │       ├── quotes.js      # sistema de cotações
+│   │   │   │       └── transcription.js # integração Deepgram
 │   │   │   ├── 📁 crm/                # API do produto CRM
 │   │   │   │   └── 📁 routes/         # Rotas específicas do CRM
 │   │   │   └── 📁 automation/         # API do produto Automation
@@ -228,7 +255,12 @@ simplia-paas/
 │   │   │   │   ├── UserType.js        # Tipos de usuário com hierarquia
 │   │   │   │   ├── ApplicationPricing.js # Pricing matrix App × UserType com overlap prevention
 │   │   │   │   ├── AccessLog.js       # Auditoria detalhada para compliance
-│   │   │   │   └── PlatformLoginAudit.js # **NOVO**: Auditoria de logins da plataforma
+│   │   │   │   ├── PlatformLoginAudit.js # **NOVO**: Auditoria de logins da plataforma
+│   │   │   │   ├── Template.js        # **NOVO**: Templates clínicos para TQ com usage tracking
+│   │   │   │   ├── Quote.js           # Sistema de cotações do TQ
+│   │   │   │   ├── QuoteItem.js       # Itens de cotação com desconto
+│   │   │   │   ├── Session.js         # Sessões de transcrição
+│   │   │   │   └── Patient.js         # Gestão de pacientes
 │   │   │   │
 │   │   │   ├── 📁 utils/
 │   │   │   │   └── datetime.js        # **NOVO**: Utilidades de overlap detection com semântica [start, end)
@@ -283,6 +315,8 @@ simplia-paas/
 │
 ├── 📁 docs/                           # Documentação técnica do projeto
 │   ├── INTERNAL-API.md               # Documentação completa da API interna
+│   ├── tq-api.md                     # **ATUALIZADA**: Documentação TQ API com templates
+│   ├── tq-templates.md               # **NOVA**: Documentação completa do sistema de templates
 │   ├── MIGRATIONS.md                 # Documentação de migrações de banco
 │   ├── TESTING-QA.md                 # Documentação de testes e QA
 │   ├── internal-dashboard-audit.md   # Auditoria do dashboard interno

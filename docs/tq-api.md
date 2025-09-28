@@ -312,6 +312,62 @@ Recalculate quote total based on all items.
 }
 ```
 
+### Templates
+
+Clinical documentation templates for AI-powered note generation.
+
+#### GET /templates
+List all templates with optional filtering and pagination.
+
+**Query Parameters:**
+- `limit` (integer): Number of templates to return (default: 50)
+- `offset` (integer): Number of templates to skip (default: 0)
+- `active` (boolean): Filter by active status
+- `search` (string): Search in title and description
+
+**Response:**
+```json
+{
+  "data": [...],
+  "meta": {
+    "total": 25,
+    "limit": 50,
+    "offset": 0
+  }
+}
+```
+
+#### GET /templates/{templateId}
+Retrieve a specific template by ID.
+
+#### POST /templates
+Create a new template.
+
+**Request Body:**
+```json
+{
+  "title": "Dental Consultation Summary",
+  "content": "Patient $patient.name$ visited on $date.session$ for [reason for visit]. Clinical findings: [examination results]. (Only include if mentioned in transcript)",
+  "description": "Standard template for dental consultations",
+  "active": true
+}
+```
+
+#### PUT /templates/{templateId}
+Update an existing template.
+
+#### DELETE /templates/{templateId}
+Soft delete a template (sets active to false).
+
+#### GET /templates/most-used
+Get templates ordered by usage count.
+
+**Query Parameters:**
+- `limit` (integer): Number of templates to return (default: 10)
+
+#### POST /templates/{templateId}/increment-usage
+Increment the usage count for a template (called by AI agent).
+
 ## Integration Details
 
 ### Deepgram AI Transcription
@@ -508,6 +564,36 @@ CREATE TABLE tenant_{slug}.quote_item (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+```
+
+### Template Table
+```sql
+-- Per-tenant template table for AI-powered clinical documentation
+CREATE TABLE tenant_{slug}.template (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  description TEXT,
+  active BOOLEAN NOT NULL DEFAULT true,
+  usage_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for performance
+CREATE INDEX template_active_idx ON tenant_{slug}.template(active);
+CREATE INDEX template_usage_count_idx ON tenant_{slug}.template(usage_count DESC);
+CREATE INDEX template_title_idx ON tenant_{slug}.template(title);
+
+-- Full-text search index
+CREATE INDEX template_search_idx ON tenant_{slug}.template
+USING gin(to_tsvector('english', title || ' ' || COALESCE(description, '')));
+
+-- Auto-update timestamp trigger
+CREATE TRIGGER template_updated_at_trigger
+    BEFORE UPDATE ON tenant_{slug}.template
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
 ```
 
 ## Complete Workflow Example

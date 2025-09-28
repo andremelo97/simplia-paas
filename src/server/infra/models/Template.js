@@ -247,6 +247,26 @@ class Template {
   /**
    * Convert to JSON
    */
+  /**
+   * Increment usage count for a template
+   */
+  static async incrementUsage(id, schema) {
+    const query = `
+      UPDATE ${schema}.template
+      SET usage_count = usage_count + 1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `;
+
+    const result = await database.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      throw new TemplateNotFoundError(`ID: ${id} in schema: ${schema}`);
+    }
+
+    return new Template(result.rows[0]);
+  }
+
   toJSON() {
     return {
       id: this.id,

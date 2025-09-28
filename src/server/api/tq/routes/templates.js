@@ -79,16 +79,6 @@ console.log('🔧 [Templates Router] Templates router loaded and initialized');
  *                   type: string
  *                   example: "Internal server error"
  */
-// Add middleware to log all template route hits
-router.use((req, res, next) => {
-  console.log('🎯 [Templates Router] Route hit:', {
-    method: req.method,
-    url: req.url,
-    originalUrl: req.originalUrl,
-    path: req.path
-  });
-  next();
-});
 
 router.get('/', async (req, res) => {
   try {
@@ -98,9 +88,10 @@ router.get('/', async (req, res) => {
     const options = {
       limit: limit ? parseInt(limit) : 50,
       offset: offset ? parseInt(offset) : 0,
-      active: active !== undefined ? active === 'true' : undefined,
+      active: active !== undefined ? (active === 'true') : undefined,
       search
     };
+
 
     const [templates, total] = await Promise.all([
       Template.findAll(schema, options),
@@ -238,23 +229,15 @@ router.get('/most-used', async (req, res) => {
  *                   example: "Internal server error"
  */
 router.get('/:id', async (req, res) => {
-  console.log('🔍 [Templates] GET /:id route reached!', {
-    id: req.params.id,
-    schema: req.tenant?.schema,
-    url: req.url,
-    originalUrl: req.originalUrl
-  });
-
   try {
     const { id } = req.params;
     const schema = req.tenant?.schema;
 
-    console.log('🔍 [Templates] Calling Template.findById with:', { id, schema });
     const template = await Template.findById(id, schema);
-    console.log('🔍 [Templates] Template found:', template ? 'YES' : 'NO', template);
-    res.json(template);
+    res.json({
+      data: template
+    });
   } catch (error) {
-    console.log('🔍 [Templates] Error occurred:', error.message);
     if (error instanceof TemplateNotFoundError) {
       return res.status(404).json({ error: 'Template not found' });
     }
@@ -353,7 +336,13 @@ router.post('/', async (req, res) => {
     };
 
     const template = await Template.create(templateData, schema);
-    res.status(201).json(template);
+    res.status(201).json({
+      data: template,
+      meta: {
+        code: 'TEMPLATE_CREATED',
+        message: 'Template created successfully'
+      }
+    });
   } catch (error) {
     console.error('Error creating template:', error);
     res.status(500).json({ error: 'Failed to create template' });
@@ -466,7 +455,13 @@ router.put('/:id', async (req, res) => {
     }
 
     const template = await Template.update(id, updates, schema);
-    res.json(template);
+    res.json({
+      data: template,
+      meta: {
+        code: 'TEMPLATE_UPDATED',
+        message: 'Template updated successfully'
+      }
+    });
   } catch (error) {
     if (error instanceof TemplateNotFoundError) {
       return res.status(404).json({ error: 'Template not found' });
@@ -532,7 +527,13 @@ router.delete('/:id', async (req, res) => {
     const schema = req.tenant?.schema;
 
     const template = await Template.delete(id, schema);
-    res.json(template);
+    res.json({
+      data: template,
+      meta: {
+        code: 'TEMPLATE_DELETED',
+        message: 'Template deleted successfully'
+      }
+    });
   } catch (error) {
     if (error instanceof TemplateNotFoundError) {
       return res.status(404).json({ error: 'Template not found' });

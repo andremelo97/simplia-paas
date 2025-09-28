@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Textarea, PriceInput } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Textarea, PriceInput, Checkbox } from '@client/common/ui'
 import { itemsService, CreateItemRequest, Item } from '../../../services/items'
 import { formatDate } from '@client/common/utils/dateUtils'
 
@@ -67,6 +67,13 @@ export const EditItem: React.FC = () => {
     if (validationErrors.base_price) {
       setValidationErrors(prev => ({ ...prev, base_price: '' }))
     }
+  }
+
+  const handleActiveChange = (checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      active: checked
+    }))
   }
 
   const validateForm = () => {
@@ -213,6 +220,16 @@ export const EditItem: React.FC = () => {
                   placeholder="Describe what this service or product includes (optional)"
                   helperText="Additional details about the item (optional)"
                   rows={4}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div>
+                <Checkbox
+                  label="Active"
+                  description="When checked, this item will be available for use in quotes"
+                  checked={formData.active}
+                  onChange={(e) => handleActiveChange(e.target.checked)}
                   disabled={isSubmitting}
                 />
               </div>

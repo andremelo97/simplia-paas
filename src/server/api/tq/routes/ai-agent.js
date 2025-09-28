@@ -1,6 +1,10 @@
 const express = require('express');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
 const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth');
+const { resolveTemplateVariables } = require('../../../services/templateVariableResolver');
+const { Template, TemplateNotFoundError } = require('../../../infra/models/Template');
+const { Patient, PatientNotFoundError } = require('../../../infra/models/Patient');
+const { Session, SessionNotFoundError } = require('../../../infra/models/Session');
 
 const router = express.Router();
 
@@ -195,6 +199,231 @@ router.post('/chat', async (req, res) => {
       error: 'Internal Server Error',
       message: 'Failed to process AI chat request'
     });
+  }
+});
+
+/**
+ * @openapi
+ * /tq/ai-agent/fill-template:
+ *   post:
+ *     tags: [TQ - AI Agent]
+ *     summary: Fill template with AI using session transcription
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Uses AI to fill a template with information from session transcription and system variables.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - templateId
+ *               - sessionId
+ *             properties:
+ *               templateId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Template to fill
+ *               sessionId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Session with transcription data
+ *               patientId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Patient ID (optional, will use session's patient if not provided)
+ *     responses:
+ *       200:
+ *         description: Template filled successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     originalTemplate:
+ *                       type: string
+ *                       description: Original template content
+ *                     filledTemplate:
+ *                       type: string
+ *                       description: Template filled with AI and system variables
+ *                     systemVariablesResolved:
+ *                       type: object
+ *                       description: System variables that were resolved
+ *                     aiPrompt:
+ *                       type: string
+ *                       description: The prompt sent to AI
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: "TEMPLATE_FILLED"
+ *                     message:
+ *                       type: string
+ *                       example: "Template filled successfully"
+ *       400:
+ *         description: Invalid input data
+ *       404:
+ *         description: Template, session, or patient not found
+ *       429:
+ *         description: Rate limit exceeded
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/fill-template', async (req, res) => {
+  try {
+    const schema = req.tenant?.schema;
+    const { templateId, sessionId, patientId } = req.body;
+    const userId = req.user?.id;
+
+    // Validation
+    if (!templateId || !sessionId) {
+      return res.status(400).json({
+        error: 'Template ID and Session ID are required'
+      });
+    }
+
+    // Load template
+    const template = await Template.findById(templateId, schema);
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+
+    // Load session
+    const session = await Session.findById(sessionId, schema);
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Load patient (from session or provided patientId)
+    const targetPatientId = patientId || session.patient_id;
+    let patient = null;
+    if (targetPatientId) {
+      try {
+        patient = await Patient.findById(targetPatientId, schema);
+      } catch (error) {
+        // Patient not found is not critical for template filling
+        console.warn('Patient not found for template filling:', targetPatientId);
+      }
+    }
+
+    // Get current user data for "me" variables
+    // TODO: Load user profile data properly
+    const currentUser = {
+      id: userId,
+      first_name: req.user?.first_name || '',
+      last_name: req.user?.last_name || '',
+      clinic: req.user?.clinic || '' // TODO: Define clinic field structure
+    };
+
+    // Step 1: Resolve system variables
+    const variableContext = {
+      patient,
+      session,
+      user: currentUser,
+      tenantId: req.tenant?.id
+    };
+
+    const templateWithVariables = resolveTemplateVariables(template.content, variableContext);
+
+    // Step 2: Prepare AI prompt for template filling
+    const systemMessage = `You are a clinical documentation assistant. Fill the provided template using ONLY information from the dialogue/transcription.
+
+Template Syntax:
+- [placeholder] = Fill with dialogue content or clinical information
+- (instruction) = Behavior guide (REMOVE from output completely)
+- System variables like $patient.first_name$ have already been filled
+
+Rules:
+- Use ONLY explicit information from the transcription
+- Never invent medical details not mentioned
+- Remove empty placeholders or leave them as [not mentioned]
+- Remove all instructions in parentheses from final output
+- Maintain template structure exactly
+- Be concise and professional
+
+Output: Complete filled template ready for clinical use.`;
+
+    const userPrompt = `Session Transcription:
+"""
+${session.transcription || 'No transcription available'}
+"""
+
+Template to fill:
+"""
+${templateWithVariables}
+"""
+
+Please fill this template using only the information from the transcription above.`;
+
+    // TODO: Step 3: Call OpenAI API to fill template
+    // For now, return template with variables resolved as a placeholder
+    const filledTemplate = templateWithVariables; // This will be replaced with AI-filled content
+
+    // Increment template usage count
+    await Template.incrementUsage(templateId, schema);
+
+    const response = {
+      data: {
+        originalTemplate: template.content,
+        filledTemplate,
+        systemVariablesResolved: {
+          'patient.first_name': patient?.first_name || '',
+          'patient.last_name': patient?.last_name || '',
+          'date.now': new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          'session.created_at': session?.created_at ?
+            new Date(session.created_at).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }) : '',
+          'me.first_name': currentUser.first_name,
+          'me.last_name': currentUser.last_name,
+          'me.clinic': currentUser.clinic
+        },
+        aiPrompt: userPrompt,
+        systemMessage
+      },
+      meta: {
+        code: 'TEMPLATE_FILLED',
+        message: 'Template filled successfully'
+      }
+    };
+
+    res.json(response);
+
+  } catch (error) {
+    if (error instanceof TemplateNotFoundError) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    if (error instanceof SessionNotFoundError) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    if (error instanceof PatientNotFoundError) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    console.error('Error filling template:', error);
+    res.status(500).json({ error: 'Failed to fill template' });
   }
 });
 

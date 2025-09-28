@@ -17,8 +17,21 @@ class HttpClient {
     this.baseURL = baseURL
   }
 
-  private async request(endpoint: string, options: RequestInit = {}) {
-    const url = `${this.baseURL}${endpoint}`
+  private async request(endpoint: string, options: RequestInit & { params?: Record<string, any> } = {}) {
+    // Handle query parameters
+    let url = `${this.baseURL}${endpoint}`
+    if (options.params) {
+      const searchParams = new URLSearchParams()
+      Object.entries(options.params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value))
+        }
+      })
+      const queryString = searchParams.toString()
+      if (queryString) {
+        url += `?${queryString}`
+      }
+    }
     
     // Get auth token from localStorage (persisted by Zustand)
     // Hub and TQ share the same 'auth-storage' key
@@ -210,11 +223,11 @@ class HttpClient {
     }, 1000)
   }
 
-  async get(endpoint: string, headers?: Record<string, string>) {
+  async get(endpoint: string, options?: { headers?: Record<string, string>, params?: Record<string, any> }) {
     // GET requests handle tenant headers explicitly per endpoint
     // Platform-scoped endpoints (applications) don't need tenant headers
     // Tenant-scoped endpoints (entitlements, users) pass headers explicitly
-    return this.request(endpoint, { method: 'GET', headers })
+    return this.request(endpoint, { method: 'GET', headers: options?.headers, params: options?.params })
   }
 
   async post(endpoint: string, data?: any, headers?: Record<string, string>) {

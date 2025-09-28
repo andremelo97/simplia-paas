@@ -7,7 +7,8 @@ import {
   CardContent,
   Button,
   Input,
-  TemplateEditor
+  TemplateEditor,
+  Checkbox
 } from '@client/common/ui'
 import { templatesService, CreateTemplateRequest } from '../../services/templates'
 
@@ -189,18 +190,13 @@ export const CreateTemplate: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="active"
+                  <div>
+                    <Checkbox
+                      label="Template is active and available for use"
                       checked={formData.active}
                       onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
                       disabled={isSubmitting}
-                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="active" className="text-sm font-medium text-gray-700">
-                      Template is active and available for use
-                    </label>
                   </div>
                 </CardContent>
               </Card>
@@ -284,14 +280,13 @@ export const CreateTemplate: React.FC = () => {
                 {showVariables && (
                   <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <div className="space-y-2 text-xs">
-                      <div><code className="font-mono text-green-700">$patient.name$</code> - Patient's full name</div>
                       <div><code className="font-mono text-green-700">$patient.first_name$</code> - Patient's first name</div>
-                      <div><code className="font-mono text-green-700">$patient.email$</code> - Patient's email</div>
+                      <div><code className="font-mono text-green-700">$patient.last_name$</code> - Patient's last name</div>
                       <div><code className="font-mono text-green-700">$date.now$</code> - Current date</div>
-                      <div><code className="font-mono text-green-700">$date.session$</code> - Session date</div>
-                      <div><code className="font-mono text-green-700">$profile.name$</code> - Doctor's name</div>
-                      <div><code className="font-mono text-green-700">$clinic.name$</code> - Clinic name</div>
-                      <div><code className="font-mono text-green-700">$session.number$</code> - Session number</div>
+                      <div><code className="font-mono text-green-700">$session.created_at$</code> - Session creation date</div>
+                      <div><code className="font-mono text-green-700">$me.first_name$</code> - Your first name</div>
+                      <div><code className="font-mono text-green-700">$me.last_name$</code> - Your last name</div>
+                      <div><code className="font-mono text-green-700">$me.clinic$</code> - Your clinic name</div>
                     </div>
                   </div>
                 )}
@@ -302,9 +297,9 @@ export const CreateTemplate: React.FC = () => {
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">Example:</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <code className="text-xs text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
-{`Dear $patient.name$, your appointment on $date.session$ was [summarize findings].
+{`Dear $patient.first_name$ $patient.last_name$, your appointment on $session.created_at$ was [summarize findings].
 
-Dr. $profile.name$ recommends [treatment plan]. (Only include if mentioned in transcript)
+Dr. $me.first_name$ $me.last_name$ from $me.clinic$ recommends [treatment plan]. (Only include if mentioned in transcript)
 
 Next appointment: [next appointment details]`}
                   </code>

@@ -19,7 +19,7 @@ import { Template } from '../../services/templates'
 
 export const Templates: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [includeInactive, setIncludeInactive] = useState(false)
   const navigate = useNavigate()
 
   const {
@@ -34,8 +34,6 @@ export const Templates: React.FC = () => {
     setActive,
     refetch
   } = useTemplatesList({
-    search: searchQuery,
-    active: statusFilter === 'all' ? undefined : statusFilter === 'active',
     pageSize: 10
   })
 
@@ -44,9 +42,10 @@ export const Templates: React.FC = () => {
     setSearch(search)
   }
 
-  const handleStatusFilterChange = (status: 'all' | 'active' | 'inactive') => {
-    setStatusFilter(status)
-    setActive(status === 'all' ? undefined : status === 'active')
+  const handleIncludeInactiveChange = (include: boolean) => {
+    setIncludeInactive(include)
+    // If including inactive, show all (undefined), otherwise show only active (true)
+    setActive(include ? undefined : true)
   }
 
   const handleEditTemplate = (template: Template) => {
@@ -81,8 +80,8 @@ export const Templates: React.FC = () => {
       <TemplateFilters
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
-        statusFilter={statusFilter}
-        onStatusFilterChange={handleStatusFilterChange}
+        includeInactive={includeInactive}
+        onIncludeInactiveChange={handleIncludeInactiveChange}
       />
 
       {/* Content */}

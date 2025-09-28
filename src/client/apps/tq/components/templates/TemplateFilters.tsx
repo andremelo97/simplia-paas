@@ -1,25 +1,19 @@
 import React from 'react'
-import { Card, CardHeader, CardContent, CardTitle, Input, Select } from '@client/common/ui'
+import { Card, CardHeader, CardContent, CardTitle, Input, Checkbox } from '@client/common/ui'
 
 interface TemplateFiltersProps {
   searchQuery: string
   onSearchChange: (query: string) => void
-  statusFilter: 'all' | 'active' | 'inactive'
-  onStatusFilterChange: (status: 'all' | 'active' | 'inactive') => void
+  includeInactive: boolean
+  onIncludeInactiveChange: (include: boolean) => void
 }
 
 export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
   searchQuery,
   onSearchChange,
-  statusFilter,
-  onStatusFilterChange
+  includeInactive,
+  onIncludeInactiveChange
 }) => {
-  const statusOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'active', label: 'Active' },
-    { value: 'inactive', label: 'Inactive' }
-  ]
-
   return (
     <Card>
       <CardHeader className="py-4 px-6">
@@ -40,13 +34,11 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
             />
           </div>
 
-          <div className="col-span-1">
-            <Select
-              label="Status"
-              value={statusFilter}
-              onChange={(e) => onStatusFilterChange(e.target.value as 'all' | 'active' | 'inactive')}
-              options={statusOptions}
-              className="w-full"
+          <div className="col-span-1 flex items-center">
+            <Checkbox
+              label="Include inactive templates"
+              checked={includeInactive}
+              onChange={(e) => onIncludeInactiveChange(e.target.checked)}
             />
           </div>
         </div>

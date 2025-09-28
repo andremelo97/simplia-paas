@@ -19,6 +19,7 @@ import { Item } from '../../../services/items'
 
 export const ItemsTab: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
+  const [includeInactive, setIncludeInactive] = useState(false)
   const navigate = useNavigate()
 
   const {
@@ -30,14 +31,21 @@ export const ItemsTab: React.FC = () => {
     error,
     setPage,
     setQuery,
+    setActiveOnly,
     refresh
   } = useItemsList({
-    query: searchQuery
+    query: searchQuery,
+    activeOnly: !includeInactive
   })
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     setQuery(query)
+  }
+
+  const handleIncludeInactiveChange = (include: boolean) => {
+    setIncludeInactive(include)
+    setActiveOnly(!include)
   }
 
   const handleCreateItem = () => {
@@ -60,6 +68,8 @@ export const ItemsTab: React.FC = () => {
       <ItemFilters
         searchQuery={searchQuery}
         onSearchChange={handleSearch}
+        includeInactive={includeInactive}
+        onIncludeInactiveChange={handleIncludeInactiveChange}
       />
 
       {/* Items List */}

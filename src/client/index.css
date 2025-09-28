@@ -121,7 +121,7 @@ button[data-variant="secondary"] {
 
 /* Dark mode support for editor content */
 .dark .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor {
-  background-color: #1f2937 !important;
+  background-color: #0E0E11 !important;
   color: #f9fafb !important;
   border-color: #374151 !important;
 }
@@ -151,8 +151,14 @@ button[data-variant="secondary"] {
 
 /* Improve selection visibility */
 .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor ::selection {
-  background-color: var(--brand-primary) !important;
-  color: white !important;
+  background-color: color-mix(in srgb, var(--brand-primary) 30%, white) !important;
+  color: inherit !important;
+}
+
+/* Improve selection visibility dark mode */
+.dark .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor ::selection {
+  background-color: color-mix(in srgb, var(--brand-primary) 30%, black) !important;
+  color: inherit !important;
 }
 
 /* Fix selection styling */

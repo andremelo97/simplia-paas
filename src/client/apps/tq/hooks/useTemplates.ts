@@ -38,7 +38,7 @@ export const useTemplatesList = (initialParams?: Partial<UseTemplatesListParams>
     page: 1,
     pageSize: 10,
     search: '',
-    active: true,
+    active: true, // Por padrão mostra apenas templates ativos
     ...initialParams
   })
 
@@ -49,7 +49,10 @@ export const useTemplatesList = (initialParams?: Partial<UseTemplatesListParams>
       const apiParams: GetTemplatesParams = {
         limit: params.pageSize,
         offset: (params.page - 1) * params.pageSize,
-        active: params.active,
+      }
+
+      if (params.active !== undefined) {
+        apiParams.active = params.active
       }
 
       if (params.search.trim()) {

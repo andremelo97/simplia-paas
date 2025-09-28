@@ -7,7 +7,8 @@ import {
   CardContent,
   Button,
   Input,
-  TemplateEditor
+  TemplateEditor,
+  Checkbox
 } from '@client/common/ui'
 import { templatesService, UpdateTemplateRequest } from '../../services/templates'
 
@@ -36,38 +37,54 @@ export const EditTemplate: React.FC = () => {
 
   // Load existing template data
   useEffect(() => {
+    console.log('🔍 [EditTemplate] useEffect triggered with id:', id)
+
+    // Skip if already loaded or loading
+    if (!id || (!isLoading && formData.title)) {
+      console.log('🔍 [EditTemplate] Skipping useEffect - already loaded or no ID')
+      return
+    }
+
+    let isCancelled = false
+
     const loadTemplateData = async () => {
-      if (!id) {
-        setLoadError('Template ID is required')
-        setIsLoading(false)
-        return
-      }
+      console.log('🔍 [EditTemplate] Starting loadTemplateData')
 
       try {
-        setIsLoading(true)
+        if (!isCancelled) {
+          setIsLoading(true)
+        }
 
-        console.log('📄 [EditTemplate] Loading template data for ID:', id)
         const template = await templatesService.getById(id)
-        console.log('✅ [EditTemplate] Template data loaded:', template)
 
-        // Initialize form data
-        setFormData({
-          title: template.title,
-          content: template.content,
-          description: template.description || '',
-          active: template.active
-        })
+        if (!isCancelled) {
+          console.log('🔍 [EditTemplate] Setting form data from template')
+          // Initialize form data
+          setFormData({
+            title: template.title,
+            content: template.content,
+            description: template.description || '',
+            active: template.active
+          })
 
-        setLoadError(null)
+          setLoadError(null)
+        }
       } catch (error) {
-        console.error('❌ [EditTemplate] Failed to load template:', error)
-        setLoadError(error instanceof Error ? error.message : 'Failed to load template')
+        if (!isCancelled) {
+          setLoadError(error instanceof Error ? error.message : 'Failed to load template')
+        }
       } finally {
-        setIsLoading(false)
+        if (!isCancelled) {
+          setIsLoading(false)
+        }
       }
     }
 
     loadTemplateData()
+
+    return () => {
+      isCancelled = true
+    }
   }, [id])
 
   const handleInputChange = (field: keyof TemplateFormData) => (
@@ -123,8 +140,25 @@ export const EditTemplate: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    e.stopPropagation()
+
+    console.log('🔍 [EditTemplate] handleSubmit called by:', e.target, 'Type:', e.type, 'nativeEvent:', e.nativeEvent)
+
+    // Check if this is triggered by the dark mode toggle
+    if (e.target && (e.target as any).className?.includes('theme') ||
+        (e.target as any).getAttribute?.('aria-label')?.includes('theme') ||
+        (e.target as any).getAttribute?.('aria-label')?.includes('dark')) {
+      console.log('🚫 [EditTemplate] Submit triggered by theme toggle, ignoring')
+      return
+    }
 
     if (!validateForm() || !id) {
+      console.log('🔍 [EditTemplate] Validation failed or no ID')
+      return
+    }
+
+    if (isSubmitting) {
+      console.log('🔍 [EditTemplate] Already submitting, ignoring')
       return
     }
 
@@ -138,10 +172,12 @@ export const EditTemplate: React.FC = () => {
         active: formData.active
       }
 
+      console.log('🔍 [EditTemplate] Submitting update request')
       await templatesService.update(id, requestData)
+      console.log('✅ [EditTemplate] Update successful, navigating')
       navigate('/templates')
     } catch (error: any) {
-      console.error('❌ [EditTemplate] Failed to update template:', error)
+      console.error('❌ [EditTemplate] Update failed:', error)
 
       // Error handling is now managed by HTTP interceptor
       let errorMessage = 'Failed to update template. Please try again.'
@@ -165,6 +201,7 @@ export const EditTemplate: React.FC = () => {
   }
 
   const handleCancel = () => {
+    console.log('🔍 [EditTemplate] handleCancel called')
     navigate('/templates')
   }
 
@@ -268,18 +305,13 @@ export const EditTemplate: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id="active"
+                  <div>
+                    <Checkbox
+                      label="Template is active and available for use"
                       checked={formData.active}
                       onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
                       disabled={isSubmitting}
-                      className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="active" className="text-sm font-medium text-gray-700">
-                      Template is active and available for use
-                    </label>
                   </div>
                 </CardContent>
               </Card>
@@ -363,14 +395,13 @@ export const EditTemplate: React.FC = () => {
                 {showVariables && (
                   <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <div className="space-y-2 text-xs">
-                      <div><code className="font-mono text-green-700">$patient.name$</code> - Patient's full name</div>
                       <div><code className="font-mono text-green-700">$patient.first_name$</code> - Patient's first name</div>
-                      <div><code className="font-mono text-green-700">$patient.email$</code> - Patient's email</div>
+                      <div><code className="font-mono text-green-700">$patient.last_name$</code> - Patient's last name</div>
                       <div><code className="font-mono text-green-700">$date.now$</code> - Current date</div>
-                      <div><code className="font-mono text-green-700">$date.session$</code> - Session date</div>
-                      <div><code className="font-mono text-green-700">$profile.name$</code> - Doctor's name</div>
-                      <div><code className="font-mono text-green-700">$clinic.name$</code> - Clinic name</div>
-                      <div><code className="font-mono text-green-700">$session.number$</code> - Session number</div>
+                      <div><code className="font-mono text-green-700">$session.created_at$</code> - Session creation date</div>
+                      <div><code className="font-mono text-green-700">$me.first_name$</code> - Your first name</div>
+                      <div><code className="font-mono text-green-700">$me.last_name$</code> - Your last name</div>
+                      <div><code className="font-mono text-green-700">$me.clinic$</code> - Your clinic name</div>
                     </div>
                   </div>
                 )}
@@ -381,9 +412,9 @@ export const EditTemplate: React.FC = () => {
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">Example:</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <code className="text-xs text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
-{`Dear $patient.name$, your appointment on $date.session$ was [summarize findings].
+{`Dear $patient.first_name$ $patient.last_name$, your appointment on $session.created_at$ was [summarize findings].
 
-Dr. $profile.name$ recommends [treatment plan]. (Only include if mentioned in transcript)
+Dr. $me.first_name$ $me.last_name$ from $me.clinic$ recommends [treatment plan]. (Only include if mentioned in transcript)
 
 Next appointment: [next appointment details]`}
                   </code>

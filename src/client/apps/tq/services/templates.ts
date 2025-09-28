@@ -94,7 +94,7 @@ export const templatesService = {
    * Get all templates with optional filtering and pagination
    */
   async getAll(params: GetTemplatesParams = {}): Promise<{ templates: Template[], total: number, limit: number, offset: number }> {
-    const response = await api.get<any>('/api/tq/v1/templates', { params })
+    const response = await api.get('/api/tq/v1/templates', { params })
 
     // Handle both possible response formats
     let data, meta;
@@ -122,11 +122,8 @@ export const templatesService = {
    * Get template by ID
    */
   async getById(id: string): Promise<Template> {
-    console.log('🌐 [TemplatesService] Making API call to:', `/api/tq/v1/templates/${id}`)
-    const response = await api.get<ApiTemplate>(`/api/tq/v1/templates/${id}`)
-    console.log('🌐 [TemplatesService] API response:', response)
-    console.log('🌐 [TemplatesService] Response data:', response.data)
-    return convertToCamelCase(response.data || response)
+    const response = await api.get<{ data: ApiTemplate }>(`/api/tq/v1/templates/${id}`)
+    return convertToCamelCase(response.data.data || response.data)
   },
 
   /**
@@ -134,8 +131,8 @@ export const templatesService = {
    */
   async create(data: CreateTemplateRequest): Promise<Template> {
     const snakeCaseData = convertToSnakeCase(data)
-    const response = await api.post<ApiTemplate>('/api/tq/v1/templates', snakeCaseData)
-    return convertToCamelCase(response.data)
+    const response = await api.post<{ data: ApiTemplate }>('/api/tq/v1/templates', snakeCaseData)
+    return convertToCamelCase(response.data.data)
   },
 
   /**
@@ -143,26 +140,26 @@ export const templatesService = {
    */
   async update(id: string, data: UpdateTemplateRequest): Promise<Template> {
     const snakeCaseData = convertToSnakeCase(data)
-    const response = await api.put<ApiTemplate>(`/api/tq/v1/templates/${id}`, snakeCaseData)
-    return convertToCamelCase(response.data)
+    const response = await api.put<{ data: ApiTemplate }>(`/api/tq/v1/templates/${id}`, snakeCaseData)
+    return convertToCamelCase(response.data.data)
   },
 
   /**
    * Delete a template (soft delete)
    */
   async delete(id: string): Promise<Template> {
-    const response = await api.delete<ApiTemplate>(`/api/tq/v1/templates/${id}`)
-    return convertToCamelCase(response.data)
+    const response = await api.delete<{ data: ApiTemplate }>(`/api/tq/v1/templates/${id}`)
+    return convertToCamelCase(response.data.data)
   },
 
   /**
    * Get most used templates
    */
   async getMostUsed(limit: number = 10): Promise<Template[]> {
-    const response = await api.get<ApiTemplate[]>('/api/tq/v1/templates/most-used', {
+    const response = await api.get('/api/tq/v1/templates/most-used', {
       params: { limit }
     })
-    return response.data.map(convertToCamelCase)
+    return response.data ? response.data.map(convertToCamelCase) : response.map(convertToCamelCase)
   },
 
   /**

@@ -2,19 +2,39 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Quick Start for Development
-- Backend is **JavaScript only** (.js files) with Express + PostgreSQL
-- Frontend is **TypeScript** (.tsx/.ts files) with React + Vite
-- Use `npm run dev` to run both server and client concurrently
-- All database changes require migrations in `src/server/infra/migrations/`
-- Always run tests before making significant changes: `npm test`
+## 🚨 Critical Rules (Breaking These Causes Bugs)
 
-## Critical Development Rules
-- **ALL IDs are numeric**: Use numeric IDs everywhere (PKs, FKs, headers, JWT tokens)
-- **FK naming convention**: All foreign keys use `_fk` suffix (`tenant_id_fk`, `user_id_fk`)
-- **Multi-tenancy**: Each user belongs to exactly one tenant via `users.tenant_id_fk`
-- **Seat counting**: MUST call `TenantApplication.incrementSeat()` on grant, `decrementSeat()` on revoke
-- **No TypeScript in backend**: Server code is JavaScript only (.js files)
+### ID Conventions
+- **ALL IDs are numeric**: PKs, FKs, headers, JWT tokens, route params - NO EXCEPTIONS
+- **FK naming**: ALL foreign keys MUST use `_fk` suffix (`tenant_id_fk`, `user_id_fk`, `application_id_fk`)
+- **Source of truth**: Always use `req.tenant.id` (numeric), never `req.tenant.slug` for DB operations
+- **JWT tokens**: Only numeric IDs (`{userId: 123, tenantId: 456}`)
+- **x-tenant-id header**: Only accepts numeric values as strings
+
+### Language Split
+- **Backend**: JavaScript ONLY (.js files) - NO TypeScript in `src/server/`
+- **Frontend**: TypeScript (.tsx/.ts files) in `src/client/`
+
+### Multi-Tenancy
+- **User-Tenant relationship**: 1:1 via `users.tenant_id_fk INTEGER NOT NULL`
+- **Schema isolation**: Use `SET LOCAL search_path TO tenant_<slug>, public` ONLY for tenant-scoped routes
+- **Platform routes**: `/platform-auth/*`, `/applications`, `/tenants`, `/metrics`, `/me/*` are platform-scoped (NO search_path)
+- **Tenant routes**: `/auth/*`, `/users`, `/entitlements` require `x-tenant-id` header and search_path
+
+### Seat Counting (CRITICAL)
+```javascript
+// ALWAYS maintain seat consistency:
+// Grant/Reactivate: TenantApplication.incrementSeat(tenantId, applicationId)
+// Revoke: TenantApplication.decrementSeat(tenantId, applicationId)
+// Interface MUST always reflect database state
+```
+
+### Database Migrations
+- All schema changes MUST have a migration in `src/server/infra/migrations/`
+- Run `npm run migrate` after creating new migrations
+- Run `npm test` to verify migrations don't break existing functionality
+
+## Quick Start Commands
 
 ## Tech Stack
 - **Backend**: Node.js + Express + PostgreSQL (JavaScript only - .js files)
@@ -249,6 +269,14 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 
 ## TQ Quote Management System
 
+### Quote CRUD Interface
+Complete quote management with full CRUD operations:
+- **Quote Listing**: `/quotes` - Overview page with patient/session data
+- **Quote Creation**: Via AI agent template filling in NewSession
+- **Quote Editing**: `/quotes/:id/edit` - 60/40 layout (quote details + patient/session info)
+- **Automatic Feedback**: All mutations return `meta.code` for HTTP interceptor feedback
+- **Stay on Page**: Edit page doesn't navigate away after save - updates local state
+
 ### Database Schema
 The TQ application includes a complete quote management system:
 
@@ -394,12 +422,33 @@ The template system is fully integrated with AI agent functionality:
 - **TemplateQuoteModal**: NewSession modal for template-based quote creation with AI filling
 - **Complete Workflow**: transcription creation → session creation → AI template filling → quote creation
 - **Template Filling**: AI agent automatically fills templates using session transcription data via OpenAI GPT-4o-mini
+- **HTML Preservation**: AI receives HTML templates directly and preserves all formatting (bold, spacing, lists)
+- **Critical Content Rules**: AI can only modify content inside `[placeholders]` and `(instructions)` - never changes resolved variables
 - **Context Analysis**: Parse transcription for relevant clinical information
-- **Variable Substitution**: Replace system variables with database values
+- **Variable Substitution**: Replace system variables with database values before sending to AI
 - **Instruction Processing**: Follow template instructions for content formatting
 - **Usage Tracking**: Automatic increment of template usage when quotes are created
 - **Success Feedback**: Toast notifications with clickable quote navigation
 - **Integration Points**: Session text → Transcription → Session → AI fill template → Quote
+
+**AI Agent Prompt Architecture:**
+```javascript
+// System variables resolved first (patient name, doctor name, dates from database)
+const templateWithVariables = resolveTemplateVariables(template.content, variableContext)
+
+// HTML sent directly to AI (no stripping)
+const templateForAI = templateWithVariables // Use HTML directly
+
+// Explicit HTML preservation rules in prompt
+CRITICAL HTML PRESERVATION RULES:
+1. Return COMPLETE HTML exactly as provided, with ALL tags preserved
+2. DO NOT modify, add, or remove ANY HTML tags
+3. DO NOT change text OUTSIDE of [brackets] or (parentheses)
+4. Patient names, doctor names, dates are REAL DATA from database - never change them
+
+// AI response used directly as HTML (no conversion)
+const filledTemplateHtml = filledTemplate // Already HTML from AI
+```
 
 ### Common Issues & Solutions
 - **Route Registration**: Templates router mounted at `/templates` in TQ API
@@ -440,6 +489,55 @@ async function withTenant(tenantSchema, fn) {
 - **FK Suffix**: All foreign keys must use `_fk` suffix for consistency
 - **Transaction Scope**: Use proper database transactions for multi-step operations
 - **Feedback via HTTP**: NEVER use `publishFeedback()` in components - feedback is handled automatically via HTTP interceptors. Only add manual feedback if explicitly requested.
+
+## Automatic Feedback System
+
+### HTTP Interceptor Feedback
+All API responses with `meta.code` trigger automatic feedback toasts:
+
+**Backend Response Format:**
+```javascript
+res.json({
+  data: { ...entity },
+  meta: {
+    code: 'ENTITY_UPDATED',  // Must be in FEEDBACK_CATALOG
+    message: 'Entity updated successfully'  // Fallback message
+  }
+})
+```
+
+**How it works:**
+1. HTTP client (`src/client/config/http.ts`) intercepts all responses
+2. For mutative methods (POST, PUT, PATCH, DELETE), checks for `meta.code`
+3. Looks up message in `FEEDBACK_CATALOG` (`src/client/common/feedback/catalog.ts`)
+4. Publishes feedback automatically - NO manual `publishFeedback()` needed in components
+5. Toast appears with title and message from catalog
+
+**Feedback Catalog Entries (TQ):**
+```typescript
+// src/client/common/feedback/catalog.ts
+QUOTE_CREATED: { title: "Quote Created", message: "Quote created successfully." }
+QUOTE_UPDATED: { title: "Quote Updated", message: "Quote updated successfully." }
+SESSION_UPDATED: { title: "Session Updated", message: "Session updated successfully." }
+PATIENT_CREATED: { title: "Patient Created", message: "Patient created successfully." }
+TEMPLATE_FILLED: { title: "Template Filled", message: "Template filled successfully with AI." }
+```
+
+**Component Implementation:**
+```typescript
+// ❌ WRONG - Manual feedback
+const handleSave = async () => {
+  await quotesService.updateQuote(id, data)
+  publishFeedback({ kind: 'success', message: 'Saved!' })  // DON'T DO THIS
+}
+
+// ✅ CORRECT - Automatic feedback via interceptor
+const handleSave = async () => {
+  const updated = await quotesService.updateQuote(id, data)
+  setQuote(updated)  // Just update local state
+  // Success feedback is handled automatically by HTTP interceptor
+}
+```
 
 ## Common Development Workflows
 

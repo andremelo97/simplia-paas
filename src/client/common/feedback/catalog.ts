@@ -113,6 +113,66 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   SESSION_EXPIRED: {
     title: "Session Expired",
     message: "Your session has expired. Please sign in again."
+  },
+
+  // TQ - Quote operations
+  QUOTE_CREATED: {
+    title: "Quote Created",
+    message: "Quote created successfully."
+  },
+  QUOTE_UPDATED: {
+    title: "Quote Updated",
+    message: "Quote updated successfully."
+  },
+  QUOTE_DELETED: {
+    title: "Quote Deleted",
+    message: "Quote deleted successfully."
+  },
+
+  // TQ - Session operations
+  SESSION_CREATED: {
+    title: "Session Created",
+    message: "Session created successfully."
+  },
+  SESSION_UPDATED: {
+    title: "Session Updated",
+    message: "Session updated successfully."
+  },
+  SESSION_DELETED: {
+    title: "Session Deleted",
+    message: "Session deleted successfully."
+  },
+
+  // TQ - Patient operations
+  PATIENT_CREATED: {
+    title: "Patient Created",
+    message: "Patient created successfully."
+  },
+  PATIENT_UPDATED: {
+    title: "Patient Updated",
+    message: "Patient updated successfully."
+  },
+  PATIENT_DELETED: {
+    title: "Patient Deleted",
+    message: "Patient deleted successfully."
+  },
+
+  // TQ - Template operations
+  TEMPLATE_CREATED: {
+    title: "Template Created",
+    message: "Template created successfully."
+  },
+  TEMPLATE_UPDATED: {
+    title: "Template Updated",
+    message: "Template updated successfully."
+  },
+  TEMPLATE_DELETED: {
+    title: "Template Deleted",
+    message: "Template deleted successfully."
+  },
+  TEMPLATE_FILLED: {
+    title: "Template Filled",
+    message: "Template filled successfully with AI."
   }
 }
 

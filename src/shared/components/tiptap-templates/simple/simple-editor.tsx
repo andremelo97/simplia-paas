@@ -217,6 +217,26 @@ export function SimpleEditor({
     overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
   })
 
+  // Update editor content when prop changes
+  React.useEffect(() => {
+    if (editor && content !== null && content !== undefined) {
+      const currentContent = editor.getHTML()
+      if (currentContent !== content) {
+        console.log('🔄 [SimpleEditor] Updating content from prop')
+        console.log('🔄 [SimpleEditor] Content preview:', content?.substring(0, 100))
+        console.log('🔄 [SimpleEditor] Current editor content:', currentContent?.substring(0, 100))
+
+        try {
+          editor.commands.setContent(content)
+          console.log('✅ [SimpleEditor] Content updated successfully')
+          console.log('✅ [SimpleEditor] New editor HTML:', editor.getHTML()?.substring(0, 100))
+        } catch (error) {
+          console.error('❌ [SimpleEditor] Failed to set content:', error)
+        }
+      }
+    }
+  }, [editor, content])
+
   React.useEffect(() => {
     if (!isMobile && mobileView !== "main") {
       setMobileView("main")

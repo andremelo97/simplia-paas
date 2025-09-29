@@ -1072,6 +1072,8 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
   - **AI Agent for Medical Summaries**: Sistema completo de IA para geração de sumários médicos
     - **OpenAI Integration**: Chat iterativo usando GPT-4o-mini para geração de sumários
     - **Medical-Focused Prompts**: Templates otimizados para sumários médicos em 2ª pessoa
+    - **HTML Preservation**: AI recebe e retorna HTML diretamente mantendo toda formatação
+    - **Variable Protection**: Sistema variables (nomes, datas) resolvidos antes da IA e protegidos de alteração
     - **Interactive Refinement**: Usuários podem iterar e refinar sumários via chat
     - **Direct Quote Creation**: Botão "+ New Session & Quote" em cada resposta AI
     - **Quote Content = AI Summary**: Quotes criados com sumário AI, não transcrição original
@@ -1087,6 +1089,9 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
     - **Automatic Pricing**: Cálculo automático de preços com descontos por item (transparência total)
     - **Status Management**: Workflow de cotação (draft → sent → approved/rejected/expired)
     - **Item-Level Discounts**: Sistema flexível de descontos específicos por produto/serviço
+    - **Edit Quote Page**: Interface 60/40 com edição de conteúdo e visualização de patient/session
+    - **Automatic Feedback**: Todas mutações retornam `meta.code` para toasts automáticos via HTTP interceptor
+    - **Stay on Page**: Edições mantém usuário na página com atualização local de estado
   - **DropdownMenu Component**: Novo componente comum com Context API (Trigger/Content/Item)
   - **Input Standardization**: Borda roxa (#B725B7) no foco para todos os inputs do sistema
   - **Card Layout Refinado**: Padding consistente (px-6 py-4) em headers e conteúdo

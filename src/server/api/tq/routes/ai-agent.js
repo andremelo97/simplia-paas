@@ -2,6 +2,7 @@ const express = require('express');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
 const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth');
 const { resolveTemplateVariables } = require('../../../services/templateVariableResolver');
+const { stripHtmlToText, textToHtml } = require('../../../infra/utils/htmlConverter');
 const { Template, TemplateNotFoundError } = require('../../../infra/models/Template');
 const { Patient, PatientNotFoundError } = require('../../../infra/models/Patient');
 const { Session, SessionNotFoundError } = require('../../../infra/models/Session');
@@ -356,11 +357,10 @@ router.post('/fill-template', async (req, res) => {
     }
 
     // Get current user data for "me" variables
-    // TODO: Load user profile data properly
     const currentUser = {
       id: userId,
-      first_name: req.user?.first_name || '',
-      last_name: req.user?.last_name || '',
+      first_name: req.user?.firstName || '',  // User model uses camelCase
+      last_name: req.user?.lastName || '',    // User model uses camelCase
       clinic: req.user?.clinic || '' // TODO: Define clinic field structure
     };
 
@@ -372,47 +372,81 @@ router.post('/fill-template', async (req, res) => {
       tenantId: req.tenant?.id
     };
 
+    // Debug logging
+    console.log('🔍 [AI Agent] Variable Context:', {
+      patient: patient ? `${patient.firstName} ${patient.lastName}` : 'NO PATIENT',
+      sessionCreatedAt: session?.createdAt || 'NO SESSION DATE',
+      user: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : 'NO USER',
+      templateId: templateId
+    });
+
     const templateWithVariables = resolveTemplateVariables(template.content, variableContext);
 
-    // Step 2: Prepare AI prompt for template filling
-    const systemMessage = `You are a clinical documentation assistant. Fill the provided template using ONLY information from the dialogue/transcription. You may note receive the transcription formatted as a perfect dialogue, so try to guess it: there are at least 2 personas.
+    console.log('📝 [AI Agent] Template after variable resolution (first 200 chars):',
+      templateWithVariables.substring(0, 200));
+
+    // Step 2: Keep HTML template as-is for AI processing
+    // COMMENTED OUT: Old approach that stripped HTML
+    // const templateForAI = stripHtmlToText(templateWithVariables);
+    const templateForAI = templateWithVariables; // Use HTML directly
+
+    // Step 2: Prepare AI prompt for template filling with HTML preservation
+    const systemMessage = `You are a clinical documentation assistant. Fill the provided HTML template using ONLY information from the dialogue/transcription. You may note receive the transcription formatted as a perfect dialogue, so try to guess it: there are at least 2 personas.
+
+CRITICAL HTML PRESERVATION RULES:
+1. Return the COMPLETE HTML exactly as provided, with ALL tags preserved (<p>, <strong>, <br>, etc.)
+2. DO NOT modify, add, or remove ANY HTML tags
+3. DO NOT escape HTML (no &lt; or &gt;)
+4. DO NOT add markdown formatting (**, ##, -, etc.)
+5. Keep ALL empty paragraphs <p></p> for spacing
+6. Keep ALL <strong> tags and other formatting tags
+
+CRITICAL CONTENT RULES - WHAT YOU CAN AND CANNOT CHANGE:
+
+✅ YOU CAN ONLY CHANGE:
+- Content inside [square brackets] - these are placeholders to fill with transcription data
+- Content inside (round brackets) - these are instructions, follow them and remove the brackets
+
+❌ YOU MUST NEVER CHANGE:
+- Any text OUTSIDE of [brackets] or (parentheses)
+- Patient names, doctor names, dates, or any other data already filled in the template
+- These are REAL DATA from the system database, NOT from the transcription
+- Even if the transcription mentions different names, DO NOT change what's already in the template
+
+Example:
+Template: "<strong>Patient Name:</strong> John Smith <strong>Doctor:</strong> Dr. Jane Doe [Chief Complaint]"
+Transcription: "Hi, I'm Bob. Dr. Sarah told me to come in. I have tooth pain."
+Correct Output: "<strong>Patient Name:</strong> John Smith <strong>Doctor:</strong> Dr. Jane Doe tooth pain"
+WRONG Output: "<strong>Patient Name:</strong> Bob <strong>Doctor:</strong> Dr. Sarah tooth pain"
 
 Template Syntax:
-- Placeholders are wrapped in **square brackets [ ]**. Your job is to fill in these brackets using ONLY the information present in the provided **dialogue**, **clinical note**, or **contextual notes**.
-- Instructions are wrapped in **round brackets ( )**. These guide how you should behave, especially when information is missing — but you must **never include the instructions themselves** in your output.
+- Placeholders are wrapped in **square brackets [ ]**. Replace ONLY the content inside brackets with real information from the dialogue.
+- Instructions are wrapped in **round brackets ( )**. Follow the instruction, then REMOVE the parentheses and instruction text from output.
+- System variables like $variable$ are already replaced, leave any remaining as-is.
 
 Rules:
-- Never invent or assume medical information.
-- Only include content explicitly found in the dialogue or contextual notes.
-- If a placeholder cannot be filled based on the available information, simply leave the placeholder text as-is or remove it entirely.
-- Do not say "this was not mentioned" or "no data available" — just leave the section incomplete or omit the line.
-- Use **structured, complete sentences** when replacing placeholders.
-- Maintain the structure, bullet points, and paragraph breaks of the template exactly as given.
+- Never invent or assume medical information
+- Only include content explicitly found in the dialogue or contextual notes
+- If a placeholder cannot be filled, leave it as-is or remove just that placeholder (keep surrounding HTML)
+- Do not say "this was not mentioned" or "no data available"
+- Use structured, complete sentences when replacing placeholders
+- Maintain ALL HTML structure exactly as given
 
-Example of expected transformation:
-Input:
-- I’m here for a check-up and some gum pain.
-- Alright, let me take a look. I see some inflammation on your lower molars.
-
-Template:
-[Reason for consultation] → output: "check-up and gum pain"
-[Clinical examination] → output: "inflammation observed on lower molars"
-
-Output: Complete filled template ready for clinical use.`;
+CRITICAL: Return ONLY the filled HTML template. No explanations, no code blocks, no wrapping.`;
 
     const userPrompt = `Session Transcription:
 """
-${session.transcription || 'No transcription available'}
+${session.transcription?.text || 'No transcription available'}
 """
 
-Template to fill:
+HTML Template to fill:
 """
-${templateWithVariables}
+${templateForAI}
 """
 
 Note: You may receive dialogue and template in languages other than English, so do not assume all input will be in English. Always process the content exactly as written in the original input.
 
-Please fill this template using only the information from the transcription above.`;
+Please fill this HTML template using only the information from the transcription above. Return the complete filled HTML.`;
 
     // Step 3: Call OpenAI API to fill template
     // Check if OpenAI is configured
@@ -502,16 +536,24 @@ Please fill this template using only the information from the transcription abov
       });
     }
 
+    // Step 4: Use AI response directly (already HTML)
+    // COMMENTED OUT: Old approach that converted plain text to HTML
+    // const filledTemplateHtml = textToHtml(filledTemplate);
+    const filledTemplateHtml = filledTemplate; // Already HTML from AI
+
     // Increment template usage count
     await Template.incrementUsage(templateId, schema);
 
     const response = {
       data: {
         originalTemplate: template.content,
-        filledTemplate,
+        filledTemplate: filledTemplateHtml,
         systemVariablesResolved: {
-          'patient.first_name': patient?.first_name || '',
-          'patient.last_name': patient?.last_name || '',
+          'patient.first_name': patient?.firstName || '',
+          'patient.last_name': patient?.lastName || '',
+          'patient.fullName': patient ?
+            `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Patient'
+            : '',
           'date.now': new Date().toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -525,6 +567,9 @@ Please fill this template using only the information from the transcription abov
             }) : '',
           'me.first_name': currentUser.first_name,
           'me.last_name': currentUser.last_name,
+          'me.fullName': currentUser ?
+            `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim() || 'Doctor'
+            : '',
           'me.clinic': currentUser.clinic
         },
         aiPrompt: userPrompt,

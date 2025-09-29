@@ -163,7 +163,7 @@ export const quotesService = {
   async getQuote(id: string): Promise<Quote> {
     console.log('🔍 [Quotes Service] Fetching quote:', id)
     const response = await api.get(`/api/tq/v1/quotes/${id}?includeSession=true&includeItems=true`)
-    console.log('🔍 [Quotes Service] API Response:', response.data)
+    console.log('🔍 [Quotes Service] API Response:', response)
 
     if (!response.data) {
       throw new Error('No data received from API')
@@ -172,6 +172,7 @@ export const quotesService = {
     const apiQuote = response.data
 
     if (!apiQuote || !apiQuote.id) {
+      console.error('❌ [Quotes Service] Invalid response:', apiQuote)
       throw new Error('Quote data is invalid in API response')
     }
 

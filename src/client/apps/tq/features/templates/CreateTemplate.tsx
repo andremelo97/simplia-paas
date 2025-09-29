@@ -282,10 +282,12 @@ export const CreateTemplate: React.FC = () => {
                     <div className="space-y-2 text-xs">
                       <div><code className="font-mono text-green-700">$patient.first_name$</code> - Patient's first name</div>
                       <div><code className="font-mono text-green-700">$patient.last_name$</code> - Patient's last name</div>
+                      <div><code className="font-mono text-green-700">$patient.fullName$</code> - Patient's full name (first + last)</div>
                       <div><code className="font-mono text-green-700">$date.now$</code> - Current date</div>
                       <div><code className="font-mono text-green-700">$session.created_at$</code> - Session creation date</div>
                       <div><code className="font-mono text-green-700">$me.first_name$</code> - Your first name</div>
                       <div><code className="font-mono text-green-700">$me.last_name$</code> - Your last name</div>
+                      <div><code className="font-mono text-green-700">$me.fullName$</code> - Your full name (first + last)</div>
                       <div><code className="font-mono text-green-700">$me.clinic$</code> - Your clinic name</div>
                     </div>
                   </div>
@@ -297,9 +299,9 @@ export const CreateTemplate: React.FC = () => {
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">Example:</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <code className="text-xs text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
-{`Dear $patient.first_name$ $patient.last_name$, your appointment on $session.created_at$ was [summarize findings].
+{`Dear $patient.fullName$, your appointment on $session.created_at$ was [summarize findings].
 
-Dr. $me.first_name$ $me.last_name$ from $me.clinic$ recommends [treatment plan]. (Only include if mentioned in transcript)
+Dr. $me.fullName$ from $me.clinic$ recommends [treatment plan]. (Only include if mentioned in transcript)
 
 Next appointment: [next appointment details]`}
                   </code>

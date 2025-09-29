@@ -25,8 +25,11 @@ function resolveTemplateVariables(template, context) {
   // Define variable resolvers
   const variables = {
     // Patient variables
-    'patient.first_name': patient?.first_name || '',
-    'patient.last_name': patient?.last_name || '',
+    'patient.first_name': patient?.firstName || '',
+    'patient.last_name': patient?.lastName || '',
+    'patient.fullName': patient ?
+      `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Patient'
+      : '',
 
     // Date variables
     'date.now': new Date().toLocaleDateString('en-US', {
@@ -36,8 +39,8 @@ function resolveTemplateVariables(template, context) {
     }),
 
     // Session variables
-    'session.created_at': session?.created_at ?
-      new Date(session.created_at).toLocaleDateString('en-US', {
+    'session.created_at': session?.createdAt ?
+      new Date(session.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -46,6 +49,9 @@ function resolveTemplateVariables(template, context) {
     // Current user (me) variables
     'me.first_name': user?.first_name || '',
     'me.last_name': user?.last_name || '',
+    'me.fullName': user ?
+      `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Doctor'
+      : '',
     'me.clinic': user?.clinic || '' // TODO: Define how clinic name is stored
   }
 
@@ -90,10 +96,12 @@ function validateTemplateVariables(template) {
   const supportedVariables = [
     'patient.first_name',
     'patient.last_name',
+    'patient.fullName',
     'date.now',
     'session.created_at',
     'me.first_name',
     'me.last_name',
+    'me.fullName',
     'me.clinic'
   ]
 

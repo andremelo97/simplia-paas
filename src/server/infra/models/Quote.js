@@ -161,20 +161,34 @@ class Quote {
   static async create(quoteData, schema) {
     const { sessionId, content, status = 'draft', expiresAt } = quoteData;
 
-    const query = `
+    const insertQuery = `
       INSERT INTO ${schema}.quote (session_id, content, status, expires_at)
       VALUES ($1, $2, $3, $4)
-      RETURNING *
+      RETURNING id
     `;
 
-    const result = await database.query(query, [
+    const insertResult = await database.query(insertQuery, [
       sessionId,
       content,
       status,
       expiresAt
     ]);
 
-    return new Quote(result.rows[0]);
+    const quoteId = insertResult.rows[0].id;
+
+    // Fetch the created quote with all joined data (session + patient)
+    const selectQuery = `
+      SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+      FROM ${schema}.quote q
+      LEFT JOIN ${schema}.session s ON q.session_id = s.id
+      LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      WHERE q.id = $1
+    `;
+
+    const selectResult = await database.query(selectQuery, [quoteId]);
+
+    return new Quote(selectResult.rows[0]);
   }
 
   /**
@@ -202,23 +216,35 @@ class Quote {
       throw new Error('No valid fields to update');
     }
 
-    const query = `
+    const updateQuery = `
       UPDATE ${schema}.quote
       SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $${paramIndex}
-      RETURNING *
+      RETURNING id
     `;
 
-    const result = await database.query(query, [
+    const updateResult = await database.query(updateQuery, [
       ...updateValues,
       id
     ]);
 
-    if (result.rows.length === 0) {
+    if (updateResult.rows.length === 0) {
       throw new QuoteNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    return new Quote(result.rows[0]);
+    // Fetch the updated quote with all joined data (session + patient)
+    const selectQuery = `
+      SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+      FROM ${schema}.quote q
+      LEFT JOIN ${schema}.session s ON q.session_id = s.id
+      LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      WHERE q.id = $1
+    `;
+
+    const selectResult = await database.query(selectQuery, [id]);
+
+    return new Quote(selectResult.rows[0]);
   }
 
   /**
@@ -273,14 +299,18 @@ class Quote {
       expiresAt: this.expiresAt
     };
 
-    // Include session data if available
+    // Include session data if available (flat fields for frontend compatibility)
     if (this.session) {
-      result.session = this.session;
+      result.session_number = this.session.number;
+      result.session_status = this.session.status;
     }
 
-    // Include patient data if available
+    // Include patient data if available (flat fields for frontend compatibility)
     if (this.patient) {
-      result.patient = this.patient;
+      result.patient_id = this.patient.id;
+      result.patient_first_name = this.patient.firstName;
+      result.patient_last_name = this.patient.lastName;
+      result.patient_email = this.patient.email;
     }
 
     // Include items if available

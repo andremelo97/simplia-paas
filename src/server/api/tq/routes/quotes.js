@@ -198,7 +198,9 @@ router.get('/:id', async (req, res) => {
       includeSession === 'true'
     );
 
-    res.json(quote.toJSON());
+    res.json({
+      data: quote.toJSON()
+    });
   } catch (error) {
     if (error instanceof QuoteNotFoundError) {
       return res.status(404).json({ error: error.message });
@@ -318,7 +320,13 @@ router.put('/:id', async (req, res) => {
 
     const quote = await Quote.update(id, updates, schema);
 
-    res.json(quote.toJSON());
+    res.json({
+      data: quote.toJSON(),
+      meta: {
+        code: 'QUOTE_UPDATED',
+        message: 'Quote updated successfully'
+      }
+    });
   } catch (error) {
     if (error instanceof QuoteNotFoundError) {
       return res.status(404).json({ error: error.message });

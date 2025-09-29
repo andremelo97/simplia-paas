@@ -109,7 +109,6 @@ export const templatesService = {
       meta = response.data.meta || response.data;
     }
 
-
     return {
       templates: data.map(convertToCamelCase),
       total: meta.total || 0,

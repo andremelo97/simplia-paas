@@ -18,6 +18,7 @@ import { EditItem } from '../features/quotes/items/EditItem'
 import { Templates } from '../features/templates/Templates'
 import { CreateTemplate } from '../features/templates/CreateTemplate'
 import { EditTemplate } from '../features/templates/EditTemplate'
+import { EditQuote } from '../features/quotes/EditQuote'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -93,6 +94,9 @@ export const AppRoutes: React.FC = () => {
           <Route path="items/create" element={<CreateItem />} />
           <Route path="items/:id/edit" element={<EditItem />} />
         </Route>
+
+        {/* Edit Quote - Outside QuoteManagementLayout for full page layout */}
+        <Route path="quotes/:id/edit" element={<EditQuote />} />
 
         <Route path="*" element={<NotFound />} />
       </Route>

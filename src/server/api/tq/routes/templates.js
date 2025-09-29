@@ -92,7 +92,6 @@ router.get('/', async (req, res) => {
       search
     };
 
-
     const [templates, total] = await Promise.all([
       Template.findAll(schema, options),
       Template.count(schema, { active: options.active, search })

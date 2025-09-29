@@ -260,6 +260,31 @@ Update quote information.
 }
 ```
 
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "number": "QUO000001",
+    "sessionId": "uuid-string",
+    "content": "Updated quote description",
+    "total": 150.00,
+    "status": "sent",
+    "createdAt": "2025-09-29T10:00:00Z",
+    "updatedAt": "2025-09-29T10:30:00Z",
+    "patient_first_name": "John",
+    "patient_last_name": "Doe",
+    "session_number": "SES000001"
+  },
+  "meta": {
+    "code": "QUOTE_UPDATED",
+    "message": "Quote updated successfully"
+  }
+}
+```
+
+**Note:** The `meta.code` triggers automatic success feedback toast in the frontend via HTTP interceptor.
+
 #### DELETE /quotes/{quoteId}
 Delete a quote.
 
@@ -785,6 +810,72 @@ await db.query(`
 // 4. Webhook receives result (automatic)
 // 5. Database updated with transcript (automatic)
 ```
+
+## Automatic Feedback System
+
+All TQ API mutation endpoints (POST, PUT, PATCH, DELETE) return standardized responses with `meta.code` that trigger automatic success feedback toasts in the frontend.
+
+### Backend Response Format
+
+**Standard Success Response:**
+```json
+{
+  "data": { /* entity data */ },
+  "meta": {
+    "code": "OPERATION_CODE",  // Must be in FEEDBACK_CATALOG
+    "message": "Operation completed successfully"  // Fallback message
+  }
+}
+```
+
+### Supported Feedback Codes
+
+| Code | Title | Message |
+|------|-------|---------|
+| `QUOTE_CREATED` | Quote Created | Quote created successfully. |
+| `QUOTE_UPDATED` | Quote Updated | Quote updated successfully. |
+| `QUOTE_DELETED` | Quote Deleted | Quote deleted successfully. |
+| `SESSION_CREATED` | Session Created | Session created successfully. |
+| `SESSION_UPDATED` | Session Updated | Session updated successfully. |
+| `PATIENT_CREATED` | Patient Created | Patient created successfully. |
+| `PATIENT_UPDATED` | Patient Updated | Patient updated successfully. |
+| `TEMPLATE_CREATED` | Template Created | Template created successfully. |
+| `TEMPLATE_UPDATED` | Template Updated | Template updated successfully. |
+| `TEMPLATE_FILLED` | Template Filled | Template filled successfully with AI. |
+
+### How It Works
+
+1. **Backend**: Returns `meta.code` in response
+2. **HTTP Interceptor** (`src/client/config/http.ts`): Detects mutative method + `meta.code`
+3. **Feedback Catalog** (`src/client/common/feedback/catalog.ts`): Maps code to title/message
+4. **Toast Notification**: Appears automatically - no manual `publishFeedback()` needed
+
+### Frontend Implementation
+
+**❌ Wrong - Manual feedback:**
+```typescript
+const handleSave = async () => {
+  await quotesService.updateQuote(id, data)
+  publishFeedback({ kind: 'success', message: 'Saved!' })  // DON'T DO THIS
+}
+```
+
+**✅ Correct - Automatic feedback:**
+```typescript
+const handleSave = async () => {
+  const updated = await quotesService.updateQuote(id, data)
+  setQuote(updated)  // Just update local state
+  // Success feedback is handled automatically by HTTP interceptor
+}
+```
+
+### Quote Edit Page Behavior
+
+The quote edit page (`/quotes/:id/edit`) follows best practices:
+- ✅ Stays on page after save (doesn't navigate away)
+- ✅ Updates local state with server response
+- ✅ Shows automatic success feedback toast
+- ✅ Allows continued editing or manual navigation via "Cancel"
 
 ## Production Considerations
 

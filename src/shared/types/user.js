@@ -77,8 +77,8 @@ function createJwtPayload(user, tenant, allowedApps = [], userType = null) {
  */
 function createUserContext(user, tenant) {
   // ALWAYS use numeric tenant ID (_fk) - no legacy string support
-  const numericTenantId = user.tenantIdFk || tenant.id;
-  if (!numericTenantId || typeof numericTenantId !== 'number') {
+  const numericTenantId = user.tenantIdFk || tenant?.id;
+  if (tenant && (!numericTenantId || typeof numericTenantId !== 'number')) {
     throw new Error(`User context requires numeric tenant ID, got: ${numericTenantId}`);
   }
 
@@ -87,6 +87,8 @@ function createUserContext(user, tenant) {
     tenantId: numericTenantId, // ALWAYS numeric tenant ID (_fk)
     email: user.email,
     name: user.name,
+    firstName: user.firstName,  // Add for template variables (camelCase from User model)
+    lastName: user.lastName,    // Add for template variables (camelCase from User model)
     role: user.role,
     tenant: tenant
   };

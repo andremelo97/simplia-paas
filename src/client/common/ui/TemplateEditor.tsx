@@ -19,6 +19,8 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
   readonly = false,
   minHeight = "400px"
 }) => {
+  console.log('🔍 [TemplateEditor] Received content length:', content?.length, 'First 100 chars:', content?.substring(0, 100))
+
   return (
     <div className={cn("w-full", className)} style={{ minHeight }}>
       <div className="template-editor-constrained">

@@ -13,6 +13,20 @@ export interface AIChatResponse {
   response: string
 }
 
+export interface FillTemplateRequest {
+  templateId: string
+  sessionId: string
+  patientId?: string
+}
+
+export interface FillTemplateResponse {
+  originalTemplate: string
+  filledTemplate: string
+  systemVariablesResolved: Record<string, string>
+  aiPrompt: string
+  systemMessage: string
+}
+
 export interface Patient {
   firstName?: string
   lastName?: string
@@ -55,6 +69,8 @@ Rules:
 • Write in 2nd person not 3rd person
 • Use only what is explicitly stated in the transcript. Do not invent, assume, or infer anything.
 • Do not include anything related to prices or costs.
+• Do not send your response in markdown or html format. Use plain text only.
+• Do not use special characters like emojis, special symbols, * etc. Use plain text only.
 • Begin the summary with:
 Patient Name: ${patientName}
 Date of Visit: ${today}
@@ -100,5 +116,18 @@ ${transcription}`
         content: aiResponse
       }
     ]
+  },
+
+  /**
+   * Fill template with AI using session transcription
+   */
+  async fillTemplate(request: FillTemplateRequest): Promise<FillTemplateResponse> {
+    const response = await api.post('/api/tq/v1/ai-agent/fill-template', request)
+
+    if (!response.data || !response.data.filledTemplate) {
+      throw new Error('Invalid template fill response format')
+    }
+
+    return response.data
   }
 }

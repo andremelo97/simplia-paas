@@ -389,14 +389,17 @@ Templates follow the standard TQ API response format:
 - **Robust Error Handling**: Defensive programming for API response variations
 - **Usage Analytics**: Automatic tracking of template usage for insights
 
-### AI Agent Integration (Planned)
-The template system is designed for future AI agent integration:
-- **Template Filling**: AI agent will automatically fill templates using session transcription data
+### AI Agent Integration
+The template system is fully integrated with AI agent functionality:
+- **TemplateQuoteModal**: NewSession modal for template-based quote creation with AI filling
+- **Complete Workflow**: transcription creation → session creation → AI template filling → quote creation
+- **Template Filling**: AI agent automatically fills templates using session transcription data via OpenAI GPT-4o-mini
 - **Context Analysis**: Parse transcription for relevant clinical information
 - **Variable Substitution**: Replace system variables with database values
 - **Instruction Processing**: Follow template instructions for content formatting
-- **Usage Tracking**: Automatic increment of template usage via POST `/templates/:id/increment-usage`
-- **Integration Points**: Deepgram transcription → AI analysis → Template filling → Clinical note
+- **Usage Tracking**: Automatic increment of template usage when quotes are created
+- **Success Feedback**: Toast notifications with clickable quote navigation
+- **Integration Points**: Session text → Transcription → Session → AI fill template → Quote
 
 ### Common Issues & Solutions
 - **Route Registration**: Templates router mounted at `/templates` in TQ API

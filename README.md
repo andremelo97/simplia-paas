@@ -1075,6 +1075,12 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
     - **Interactive Refinement**: Usuários podem iterar e refinar sumários via chat
     - **Direct Quote Creation**: Botão "+ New Session & Quote" em cada resposta AI
     - **Quote Content = AI Summary**: Quotes criados com sumário AI, não transcrição original
+  - **Template Management System**: Sistema completo de gestão de templates clínicos
+    - **Rich Text Editor**: Editor TipTap integrado com sintaxe de templates (placeholders, variáveis, instruções)
+    - **Template Quote Modal**: Modal integrado ao NewSession para criação de quotes via templates
+    - **AI Template Filling**: Preenchimento automático de templates usando IA com contexto da sessão
+    - **End-to-End Workflow**: Fluxo completo transcription → session → AI fill → quote creation
+    - **Success Feedback**: Toast notifications com navegação direta para quotes criadas
   - **Quote Management System**: Sistema completo de cotações e precificação
     - **API Backend**: 10 endpoints para CRUD de quotes e quote items com Swagger completo
     - **Database Schema**: Tabelas `quote` e `quote_item` com ENUMs de status e triggers automáticos

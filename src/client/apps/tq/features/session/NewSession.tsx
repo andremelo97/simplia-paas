@@ -39,6 +39,7 @@ import { quotesService, CreateQuoteRequest } from '../../services/quotes'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
 import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
+import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 import { AIAgentModal } from '../../components/ai-agent/AIAgentModal'
 import { useTranscription } from '../../hooks/useTranscription'
 import { transcriptionService } from '../../services/transcriptionService'
@@ -143,6 +144,9 @@ export const NewSession: React.FC = () => {
 
   // AI Agent modal state
   const [showAIAgentModal, setShowAIAgentModal] = useState(false)
+
+  // Template Quote modal state
+  const [showTemplateQuoteModal, setShowTemplateQuoteModal] = useState(false)
 
   // Link toast state
   const [showLinkToast, setShowLinkToast] = useState(false)
@@ -434,6 +438,33 @@ export const NewSession: React.FC = () => {
     const hasTranscription = transcription.trim().length > 0
     const hasPatient = selectedPatient !== null || createdPatient !== null
     return hasTranscription && hasPatient
+  }
+
+  // Handle Template Quote Modal actions
+  const handleTemplateCreateQuote = async (templateId: string) => {
+    console.log('💰 [NewSession] Creating quote with template:', templateId)
+    // TODO: Implement template-based quote creation
+    // This will use the AI Template Filler endpoint to fill the template
+    // and then create a quote with the filled content
+  }
+
+  // Handle Template Quote creation callback
+  const handleTemplateQuoteCreated = (quoteId: string, quoteNumber: string) => {
+    console.log('✅ [NewSession] Template quote created:', quoteNumber)
+    // Show quote link toast (redirects to /quotes)
+    setToastData({
+      itemId: quoteId,
+      itemNumber: quoteNumber,
+      type: 'quote'
+    })
+    setShowLinkToast(true)
+  }
+
+  const handleTemplateCreateClinicalReport = async (templateId: string) => {
+    console.log('📄 [NewSession] Creating clinical report with template:', templateId)
+    // TODO: Implement template-based clinical report creation
+    // This will use the AI Template Filler endpoint to fill the template
+    // and then create a clinical report/document with the filled content
   }
 
   // Handle transcription completion callback from the modal
@@ -846,7 +877,7 @@ export const NewSession: React.FC = () => {
             <Button
               variant="primary"
               disabled={!isTranscriptionAndPatientReady()}
-              onClick={handleNewSessionAndQuote}
+              onClick={() => setShowTemplateQuoteModal(true)}
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -905,6 +936,17 @@ export const NewSession: React.FC = () => {
         transcription={transcription}
         patient={selectedPatient || createdPatient}
         onCreateSessionAndQuote={handleNewSessionAndQuote}
+      />
+
+      {/* Template Quote Modal */}
+      <TemplateQuoteModal
+        open={showTemplateQuoteModal}
+        onClose={() => setShowTemplateQuoteModal(false)}
+        transcription={transcription}
+        patient={selectedPatient || createdPatient}
+        onCreateQuote={handleTemplateCreateQuote}
+        onCreateClinicalReport={handleTemplateCreateClinicalReport}
+        onQuoteCreated={handleTemplateQuoteCreated}
       />
 
       {/* Session Link Toast */}

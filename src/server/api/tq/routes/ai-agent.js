@@ -28,7 +28,7 @@ router.use(aiRateLimit);
  *       **Scope:** Tenant (x-tenant-id required)
  *
  *       Send messages to AI Agent for creating medical summaries from transcriptions.
- *       Uses OpenAI GPT-4o-mini model.
+ *       Uses OpenAI Responses API with gpt-5-mini model.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -130,8 +130,8 @@ router.post('/chat', async (req, res) => {
       });
     }
 
-    // Call OpenAI API
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+    // Call OpenAI Responses API
+    const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -139,12 +139,7 @@ router.post('/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-        messages: messages,
-        temperature: 0.3, // Lower temperature for more consistent medical summaries
-        max_tokens: 2000,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0
+        input: messages // Array estruturado mantendo contexto clínico
       })
     });
 
@@ -164,15 +159,52 @@ router.post('/chat', async (req, res) => {
 
     const openaiData = await openaiResponse.json();
 
-    if (!openaiData.choices || !openaiData.choices[0] || !openaiData.choices[0].message) {
-      console.error('Invalid OpenAI Response:', openaiData);
+    // Extract text from Responses API format
+    let aiResponse = '';
+
+    // Check if response is complete
+    if (openaiData.status !== 'completed') {
+      console.error('OpenAI Response incomplete:', openaiData);
       return res.status(500).json({
         error: 'OpenAI Response Error',
-        message: 'Invalid response format from OpenAI'
+        message: `OpenAI response is ${openaiData.status}. Reason: ${openaiData.incomplete_details?.reason || 'unknown'}`
       });
     }
 
-    const aiResponse = openaiData.choices[0].message.content;
+    // Try to extract text from various possible locations
+    if (openaiData.output && openaiData.output.length > 0) {
+      // Look for message type in output array
+      for (const output of openaiData.output) {
+        // Check for message type with content array
+        if (output.type === 'message' && output.content && Array.isArray(output.content)) {
+          for (const content of output.content) {
+            if ((content.type === 'text' || content.type === 'output_text') && content.text) {
+              aiResponse = content.text;
+              break;
+            }
+          }
+          if (aiResponse) break;
+        }
+        // Check for direct text type
+        if (output.type === 'text' && output.content) {
+          aiResponse = typeof output.content === 'string' ? output.content : output.content.text || '';
+          break;
+        }
+      }
+    }
+
+    // Fallback to direct text property
+    if (!aiResponse && openaiData.text) {
+      aiResponse = openaiData.text;
+    }
+
+    if (!aiResponse || typeof aiResponse !== 'string') {
+      console.error('Invalid OpenAI Response:', openaiData);
+      return res.status(500).json({
+        error: 'OpenAI Response Error',
+        message: 'Could not extract text content from OpenAI response'
+      });
+    }
 
     res.json({
       data: {
@@ -212,6 +244,7 @@ router.post('/chat', async (req, res) => {
  *       **Scope:** Tenant (x-tenant-id required)
  *
  *       Uses AI to fill a template with information from session transcription and system variables.
+ *       Uses OpenAI Responses API with gpt-5-mini model.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -342,20 +375,28 @@ router.post('/fill-template', async (req, res) => {
     const templateWithVariables = resolveTemplateVariables(template.content, variableContext);
 
     // Step 2: Prepare AI prompt for template filling
-    const systemMessage = `You are a clinical documentation assistant. Fill the provided template using ONLY information from the dialogue/transcription.
+    const systemMessage = `You are a clinical documentation assistant. Fill the provided template using ONLY information from the dialogue/transcription. You may note receive the transcription formatted as a perfect dialogue, so try to guess it: there are at least 2 personas.
 
 Template Syntax:
-- [placeholder] = Fill with dialogue content or clinical information
-- (instruction) = Behavior guide (REMOVE from output completely)
-- System variables like $patient.first_name$ have already been filled
+- Placeholders are wrapped in **square brackets [ ]**. Your job is to fill in these brackets using ONLY the information present in the provided **dialogue**, **clinical note**, or **contextual notes**.
+- Instructions are wrapped in **round brackets ( )**. These guide how you should behave, especially when information is missing — but you must **never include the instructions themselves** in your output.
 
 Rules:
-- Use ONLY explicit information from the transcription
-- Never invent medical details not mentioned
-- Remove empty placeholders or leave them as [not mentioned]
-- Remove all instructions in parentheses from final output
-- Maintain template structure exactly
-- Be concise and professional
+- Never invent or assume medical information.
+- Only include content explicitly found in the dialogue or contextual notes.
+- If a placeholder cannot be filled based on the available information, simply leave the placeholder text as-is or remove it entirely.
+- Do not say "this was not mentioned" or "no data available" — just leave the section incomplete or omit the line.
+- Use **structured, complete sentences** when replacing placeholders.
+- Maintain the structure, bullet points, and paragraph breaks of the template exactly as given.
+
+Example of expected transformation:
+Input:
+- I’m here for a check-up and some gum pain.
+- Alright, let me take a look. I see some inflammation on your lower molars.
+
+Template:
+[Reason for consultation] → output: "check-up and gum pain"
+[Clinical examination] → output: "inflammation observed on lower molars"
 
 Output: Complete filled template ready for clinical use.`;
 
@@ -369,11 +410,97 @@ Template to fill:
 ${templateWithVariables}
 """
 
+Note: You may receive dialogue and template in languages other than English, so do not assume all input will be in English. Always process the content exactly as written in the original input.
+
 Please fill this template using only the information from the transcription above.`;
 
-    // TODO: Step 3: Call OpenAI API to fill template
-    // For now, return template with variables resolved as a placeholder
-    const filledTemplate = templateWithVariables; // This will be replaced with AI-filled content
+    // Step 3: Call OpenAI API to fill template
+    // Check if OpenAI is configured
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        error: 'Configuration Error',
+        message: 'OpenAI API key is not configured'
+      });
+    }
+
+    // Consolidate prompt for Responses API
+    const consolidatedInput = `${systemMessage}\n\n${userPrompt}`;
+
+    // Call OpenAI Responses API
+    const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+        input: consolidatedInput // Prompt consolidado com regras + transcrição + template
+      })
+    });
+
+    if (!openaiResponse.ok) {
+      const errorData = await openaiResponse.json().catch(() => null);
+      console.error('OpenAI API Error:', {
+        status: openaiResponse.status,
+        statusText: openaiResponse.statusText,
+        error: errorData
+      });
+
+      return res.status(500).json({
+        error: 'OpenAI API Error',
+        message: `Failed to get response from OpenAI: ${openaiResponse.status} ${openaiResponse.statusText}`
+      });
+    }
+
+    const openaiData = await openaiResponse.json();
+
+    // Extract text from Responses API format
+    let filledTemplate = '';
+
+    // Check if response is complete
+    if (openaiData.status !== 'completed') {
+      console.error('OpenAI Response incomplete:', openaiData);
+      return res.status(500).json({
+        error: 'OpenAI Response Error',
+        message: `OpenAI response is ${openaiData.status}. Reason: ${openaiData.incomplete_details?.reason || 'unknown'}`
+      });
+    }
+
+    // Try to extract text from various possible locations
+    if (openaiData.output && openaiData.output.length > 0) {
+      // Look for message type in output array
+      for (const output of openaiData.output) {
+        // Check for message type with content array
+        if (output.type === 'message' && output.content && Array.isArray(output.content)) {
+          for (const content of output.content) {
+            if ((content.type === 'text' || content.type === 'output_text') && content.text) {
+              filledTemplate = content.text;
+              break;
+            }
+          }
+          if (filledTemplate) break;
+        }
+        // Check for direct text type
+        if (output.type === 'text' && output.content) {
+          filledTemplate = typeof output.content === 'string' ? output.content : output.content.text || '';
+          break;
+        }
+      }
+    }
+
+    // Fallback to direct text property
+    if (!filledTemplate && openaiData.text) {
+      filledTemplate = openaiData.text;
+    }
+
+    if (!filledTemplate || typeof filledTemplate !== 'string') {
+      console.error('Invalid OpenAI Response:', openaiData);
+      return res.status(500).json({
+        error: 'OpenAI Response Error',
+        message: 'Could not extract text content from OpenAI response'
+      });
+    }
 
     // Increment template usage count
     await Template.incrementUsage(templateId, schema);
@@ -423,7 +550,19 @@ Please fill this template using only the information from the transcription abov
     }
 
     console.error('Error filling template:', error);
-    res.status(500).json({ error: 'Failed to fill template' });
+
+    // Handle specific error types
+    if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
+      return res.status(500).json({
+        error: 'Network Error',
+        message: 'Unable to connect to OpenAI API'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fill template'
+    });
   }
 });
 

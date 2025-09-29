@@ -199,6 +199,9 @@ src/client/apps/tq/components/templates/
 ├── TemplatesEmpty.tsx      # Empty state component
 └── TemplatePreview.tsx     # Template preview modal
 
+src/client/apps/tq/components/new-session/
+└── TemplateQuoteModal.tsx  # AI-powered template quote creation modal
+
 src/client/apps/tq/services/
 └── templates.ts            # API service layer
 
@@ -251,11 +254,44 @@ The template editor is built on TipTap's Simple Editor template with customizati
 />
 ```
 
-## AI Agent Integration (Planned)
+### TemplateQuoteModal Component
+
+The TemplateQuoteModal is a specialized component that integrates template selection with AI-powered quote generation directly from the NewSession workflow.
+
+#### Features
+
+- **Template Selection**: Dropdown with all active templates and preview
+- **AI Integration**: Automatic template filling using OpenAI GPT-4o-mini
+- **Complete Workflow**: End-to-end quote creation from transcription text
+- **Success Feedback**: Toast notification with clickable quote number
+- **Loading States**: Real-time progress indicators during processing
+
+#### Component Usage
+
+```tsx
+<TemplateQuoteModal
+  open={showTemplateQuoteModal}
+  onClose={() => setShowTemplateQuoteModal(false)}
+  transcription={transcription}
+  patient={selectedPatient || createdPatient}
+  onQuoteCreated={handleTemplateQuoteCreated}
+/>
+```
+
+#### Processing Flow
+
+1. **Template Selection**: User selects template from active templates dropdown
+2. **Create Transcription**: System creates transcription record from session text
+3. **Create Session**: System creates session linked to transcription and patient
+4. **AI Template Filling**: OpenAI processes template with session context
+5. **Quote Creation**: System creates quote with AI-filled template content
+6. **Success Feedback**: Shows toast with quote number and navigation link
+
+## AI Agent Integration
 
 ### Overview
 
-The AI Agent will be responsible for automatically filling templates using session transcription data, patient information, and clinical context. This feature will significantly reduce documentation time and improve consistency.
+The AI Agent is fully integrated and responsible for automatically filling templates using session transcription data, patient information, and clinical context. This feature significantly reduces documentation time and improves consistency through automated quote generation from templates.
 
 ### Integration Points
 
@@ -385,14 +421,28 @@ src/client/
 4. Soft delete templates using the trash icon
 5. View usage statistics and popular templates
 
-### 3. Template Filling (AI Agent - Planned)
+### 3. Template Filling with AI Agent
 
-1. Complete a patient session with transcription
-2. AI Agent analyzes transcription content
-3. System selects appropriate template(s)
-4. Template placeholders are filled automatically
-5. Generated clinical note is presented for review
-6. Template usage count is incremented
+#### NewSession Template Quote Modal
+
+1. **Template Selection**: Use "New Session & Quote" button to open TemplateQuoteModal
+2. **Choose Template**: Select from active templates in dropdown with preview
+3. **Automatic Processing**: Click "Create Quote" to trigger AI filling
+4. **Complete Workflow**: System automatically:
+   - Creates transcription from session text
+   - Creates session with transcription reference
+   - Fills template using AI agent with session context
+   - Creates quote with filled template content
+   - Shows success toast with clickable quote number
+5. **Navigation**: Click toast link to navigate directly to created quote
+
+#### AI Processing Flow
+
+1. Session transcription is analyzed by OpenAI GPT-4o-mini
+2. Template placeholders are mapped to transcription content
+3. System variables are replaced with database values
+4. Generated content follows template instructions
+5. Template usage count is automatically incremented
 
 ### 4. Template Analytics
 

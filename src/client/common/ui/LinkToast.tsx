@@ -8,7 +8,7 @@ interface LinkToastProps {
   itemNumber: string
   itemId: string
   onClose: () => void
-  type?: 'session' | 'quote'
+  type?: 'session' | 'quote' | 'clinical-report'
   duration?: number // em millisegundos, default 10000
 }
 
@@ -55,20 +55,34 @@ export const LinkToast: React.FC<LinkToastProps> = ({
   }, [show, duration])
 
   const handleClick = () => {
-    const path = type === 'session'
-      ? `/sessions/${itemId}/edit`
-      : `/quotes/${itemId}/edit`
+    let path: string
+
+    if (type === 'session') {
+      path = `/sessions/${itemId}/edit`
+    } else if (type === 'quote') {
+      path = `/quotes/${itemId}/edit`
+    } else if (type === 'clinical-report') {
+      path = `/clinical-reports/${itemId}/edit`
+    } else {
+      path = '/'
+    }
 
     navigate(path)
     onClose()
   }
 
   const getTypeText = () => {
-    return type === 'session' ? 'Session' : 'Quote'
+    if (type === 'session') return 'Session'
+    if (type === 'quote') return 'Quote'
+    if (type === 'clinical-report') return 'Clinical Report'
+    return 'Item'
   }
 
   const getActionText = () => {
-    return type === 'session' ? 'Edit Session' : 'Edit Quote'
+    if (type === 'session') return 'Edit Session'
+    if (type === 'quote') return 'Edit Quote'
+    if (type === 'clinical-report') return 'Edit Clinical Report'
+    return 'View Item'
   }
 
   return (

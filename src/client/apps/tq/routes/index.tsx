@@ -19,6 +19,9 @@ import { Templates } from '../features/templates/Templates'
 import { CreateTemplate } from '../features/templates/CreateTemplate'
 import { EditTemplate } from '../features/templates/EditTemplate'
 import { EditQuote } from '../features/quotes/EditQuote'
+import { ClinicalReports } from '../features/clinical-reports/ClinicalReports'
+import { EditClinicalReport } from '../features/clinical-reports/EditClinicalReport'
+import { ViewClinicalReport } from '../features/clinical-reports/ViewClinicalReport'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -85,6 +88,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="templates" element={<Templates />} />
         <Route path="templates/create" element={<CreateTemplate />} />
         <Route path="templates/:id/edit" element={<EditTemplate />} />
+
+        {/* Clinical Reports */}
+        <Route path="clinical-reports" element={<ClinicalReports />} />
+        <Route path="clinical-reports/:id/view" element={<ViewClinicalReport />} />
+        <Route path="clinical-reports/:id/edit" element={<EditClinicalReport />} />
 
         {/* Quote Management with Tabs */}
         <Route path="quotes" element={<QuoteManagementLayout />}>

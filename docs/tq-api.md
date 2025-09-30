@@ -337,6 +337,124 @@ Recalculate quote total based on all items.
 }
 ```
 
+### Clinical Reports
+
+Manage clinical reports for patient sessions with AI-powered content generation.
+
+#### GET /clinical-reports
+List all clinical reports with optional filtering and pagination.
+
+**Query Parameters:**
+- `limit` (integer): Number of reports to return (default: 50)
+- `offset` (integer): Number of reports to skip (default: 0)
+- `sessionId` (UUID): Filter by session ID
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "uuid-string",
+      "number": "CLR000001",
+      "session_id": "uuid-string",
+      "content": "<p>Clinical report content...</p>",
+      "created_at": "2025-09-30T10:00:00Z",
+      "updated_at": "2025-09-30T10:00:00Z",
+      "session_number": "SES000001",
+      "session_status": "completed",
+      "patient_id": "uuid-string",
+      "patient_first_name": "John",
+      "patient_last_name": "Doe",
+      "patient_email": "john@example.com",
+      "patient_phone": "+1234567890"
+    }
+  ],
+  "meta": {
+    "total": 5,
+    "limit": 50,
+    "offset": 0
+  }
+}
+```
+
+#### GET /clinical-reports/{reportId}
+Retrieve a specific clinical report by ID.
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "number": "CLR000001",
+    "session_id": "uuid-string",
+    "content": "<p>Clinical report content...</p>",
+    "created_at": "2025-09-30T10:00:00Z",
+    "updated_at": "2025-09-30T10:00:00Z",
+    "session_number": "SES000001",
+    "patient_first_name": "John",
+    "patient_last_name": "Doe"
+  }
+}
+```
+
+#### POST /clinical-reports
+Create a new clinical report for a session.
+
+**Request:**
+```json
+{
+  "sessionId": "uuid-string",
+  "content": "<p>Clinical report content filled by AI...</p>"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "number": "CLR000001",
+    "session_id": "uuid-string",
+    "content": "<p>Clinical report content...</p>",
+    "created_at": "2025-09-30T10:00:00Z",
+    "updated_at": "2025-09-30T10:00:00Z"
+  },
+  "meta": {
+    "code": "CLINICAL_REPORT_CREATED",
+    "message": "Clinical report created successfully"
+  }
+}
+```
+
+#### PUT /clinical-reports/{reportId}
+Update clinical report content.
+
+**Request:**
+```json
+{
+  "content": "<p>Updated clinical report content...</p>"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "number": "CLR000001",
+    "content": "<p>Updated content...</p>",
+    "updated_at": "2025-09-30T11:00:00Z"
+  },
+  "meta": {
+    "code": "CLINICAL_REPORT_UPDATED",
+    "message": "Clinical report updated successfully"
+  }
+}
+```
+
+#### DELETE /clinical-reports/{reportId}
+Delete a clinical report.
+
 ### Templates
 
 Clinical documentation templates for AI-powered note generation.
@@ -621,6 +739,32 @@ CREATE TRIGGER template_updated_at_trigger
     EXECUTE FUNCTION update_updated_at_column();
 ```
 
+### Clinical Report Table
+```sql
+-- Per-tenant clinical_report table for medical documentation
+CREATE TABLE tenant_{slug}.clinical_report (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('CLR' || LPAD(nextval('clinical_report_number_seq')::text, 6, '0')),
+  session_id UUID NOT NULL REFERENCES tenant_{slug}.session(id) ON DELETE CASCADE,
+  content TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Clinical report number sequence
+CREATE SEQUENCE clinical_report_number_seq START WITH 1 INCREMENT BY 1;
+
+-- Indexes for performance
+CREATE INDEX clinical_report_session_idx ON tenant_{slug}.clinical_report(session_id);
+CREATE INDEX clinical_report_created_at_idx ON tenant_{slug}.clinical_report(created_at DESC);
+
+-- Auto-update timestamp trigger
+CREATE TRIGGER clinical_report_updated_at_trigger
+    BEFORE UPDATE ON tenant_{slug}.clinical_report
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+```
+
 ## Complete Workflow Example
 
 ### Quote Creation Workflow
@@ -842,6 +986,9 @@ All TQ API mutation endpoints (POST, PUT, PATCH, DELETE) return standardized res
 | `TEMPLATE_CREATED` | Template Created | Template created successfully. |
 | `TEMPLATE_UPDATED` | Template Updated | Template updated successfully. |
 | `TEMPLATE_FILLED` | Template Filled | Template filled successfully with AI. |
+| `CLINICAL_REPORT_CREATED` | Clinical Report Created | Clinical report created successfully. |
+| `CLINICAL_REPORT_UPDATED` | Clinical Report Updated | Clinical report updated successfully. |
+| `CLINICAL_REPORT_DELETED` | Clinical Report Deleted | Clinical report deleted successfully. |
 
 ### How It Works
 

@@ -5,7 +5,8 @@ import {
   Send,
   Bot,
   User,
-  Plus,
+  Receipt,
+  FileText,
   Loader2
 } from 'lucide-react'
 import {
@@ -24,6 +25,7 @@ interface AIAgentModalProps {
   transcription: string
   patient: Patient | null
   onCreateSessionAndQuote: (aiSummary: string) => void
+  onCreateClinicalReport: (aiSummary: string) => void
 }
 
 export const AIAgentModal: React.FC<AIAgentModalProps> = ({
@@ -31,7 +33,8 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
   onClose,
   transcription,
   patient,
-  onCreateSessionAndQuote
+  onCreateSessionAndQuote,
+  onCreateClinicalReport
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -137,7 +140,12 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
 
   const handleCreateSessionAndQuote = (aiSummary: string) => {
     onCreateSessionAndQuote(aiSummary)
-    onClose()
+    // Keep modal open so user can continue using AI Agent
+  }
+
+  const handleCreateClinicalReport = (aiSummary: string) => {
+    onCreateClinicalReport(aiSummary)
+    // Keep modal open so user can continue using AI Agent
   }
 
 
@@ -214,15 +222,29 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                           </pre>
                         </div>
 
-                        {/* Action button for every AI response */}
-                        <div className="mt-4 pt-4 border-t border-gray-100">
+                        {/* Action buttons for every AI response */}
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
                           <Button
-                            onClick={() => handleCreateSessionAndQuote(message.content)}
+                            onClick={() => {
+                              console.log('🟣 [AIAgentModal] Create Quote button clicked')
+                              handleCreateSessionAndQuote(message.content)
+                            }}
                             variant="primary"
                             className="flex items-center gap-2"
                           >
-                            <Plus className="w-4 h-4" />
-                            New Session & Quote
+                            <Receipt className="w-4 h-4" />
+                            Create Quote
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              console.log('🟣 [AIAgentModal] Create Clinical Report button clicked')
+                              handleCreateClinicalReport(message.content)
+                            }}
+                            variant="outline"
+                            className="flex items-center gap-2"
+                          >
+                            <FileText className="w-4 h-4" />
+                            Create Clinical Report
                           </Button>
                         </div>
                       </CardContent>

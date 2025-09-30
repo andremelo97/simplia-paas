@@ -9,20 +9,18 @@ import {
   AlertDescription,
   Paginator
 } from '@client/common/ui'
-import { useQuotesList } from '../../../hooks/useQuotes'
-import { QuoteRow } from '../../../components/quotes/QuoteRow'
-import { QuotesEmpty } from '../../../components/quotes/QuotesEmpty'
-import { QuoteFilters } from '../../../components/quotes/QuoteFilters'
-import { Quote } from '../../../services/quotes'
-import { QuoteStatus } from '../../../types/quoteStatus'
+import { useClinicalReportsList } from '../../hooks/useClinicalReports'
+import { ClinicalReportRow } from '../../components/clinical-reports/ClinicalReportRow'
+import { ClinicalReportsEmpty } from '../../components/clinical-reports/ClinicalReportsEmpty'
+import { ClinicalReportsFilters } from '../../components/clinical-reports/ClinicalReportsFilters'
+import { ClinicalReport } from '../../services/clinicalReports'
 
-export const QuotesTab: React.FC = () => {
+export const ClinicalReports: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>('all')
   const navigate = useNavigate()
 
   const {
-    data: quotes,
+    data: reports,
     total,
     currentPage,
     totalPages,
@@ -30,11 +28,9 @@ export const QuotesTab: React.FC = () => {
     error,
     setPage,
     setQuery,
-    setStatusFilter: setHookStatusFilter,
     refresh
-  } = useQuotesList({
-    query: searchQuery,
-    statusFilter: statusFilter
+  } = useClinicalReportsList({
+    query: searchQuery
   })
 
   const handleSearch = (query: string) => {
@@ -42,40 +38,42 @@ export const QuotesTab: React.FC = () => {
     setQuery(query)
   }
 
-  const handleStatusFilterChange = (status: QuoteStatus | 'all') => {
-    setStatusFilter(status)
-    setHookStatusFilter(status)
+  const handleEditReport = (report: ClinicalReport) => {
+    navigate(`/clinical-reports/${report.id}/edit`)
   }
 
-  const handleEditQuote = (quote: Quote) => {
-    navigate(`/quotes/${quote.id}/edit`)
+  const handleViewReport = (report: ClinicalReport) => {
+    navigate(`/clinical-reports/${report.id}/view`)
   }
 
-  const handleDuplicateQuote = (quote: Quote) => {
+  const handleDeleteReport = (report: ClinicalReport) => {
     // Placeholder: Will be implemented later
-    console.log('Duplicate quote:', quote)
-  }
-
-  const handleDeleteQuote = (quote: Quote) => {
-    // Placeholder: Will be implemented later
-    console.log('Delete quote:', quote)
+    console.log('Delete report:', report)
   }
 
   return (
     <div className="space-y-8">
+      {/* Header with Title */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Clinical Reports</h1>
+          <p className="text-gray-600 mt-1">
+            View and manage clinical reports for your patients
+          </p>
+        </div>
+      </div>
+
       {/* Search and Filters */}
-      <QuoteFilters
+      <ClinicalReportsFilters
         searchQuery={searchQuery}
         onSearchChange={handleSearch}
-        statusFilter={statusFilter}
-        onStatusFilterChange={handleStatusFilterChange}
       />
 
-      {/* Quote List */}
+      {/* Reports List */}
       <Card>
         <CardHeader className="py-4 px-6">
           <CardTitle className="text-base">
-            Quotes list ({quotes?.length || 0} of {total} quotes)
+            Reports List ({reports?.length || 0} of {total} reports)
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
@@ -107,36 +105,34 @@ export const QuotesTab: React.FC = () => {
           )}
 
           {/* Empty State */}
-          {!loading && !error && (quotes?.length || 0) === 0 && (
-            <QuotesEmpty
+          {!loading && !error && (reports?.length || 0) === 0 && (
+            <ClinicalReportsEmpty
               hasQuery={!!searchQuery}
               query={searchQuery}
             />
           )}
 
-          {/* Quote List */}
-          {!loading && !error && (quotes?.length || 0) > 0 && (
+          {/* Reports List */}
+          {!loading && !error && (reports?.length || 0) > 0 && (
             <>
               {/* Header Row */}
               <div className="flex items-center gap-6 py-2 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
                 <div className="w-24">Created</div>
-                <div className="flex-1">Quote</div>
+                <div className="flex-1">Report</div>
                 <div className="flex-1">Session</div>
-                <div className="flex-1">Status</div>
                 <div className="flex-1">Patient</div>
-                <div className="w-24">Total</div>
                 <div className="w-24"></div> {/* Space for actions */}
               </div>
 
-              {/* Quote Rows */}
+              {/* Report Rows */}
               <div className="divide-y divide-gray-100">
-                {quotes.map((quote) => (
-                  <QuoteRow
-                    key={quote.id}
-                    quote={quote}
-                    onEdit={handleEditQuote}
-                    onDuplicate={handleDuplicateQuote}
-                    onDelete={handleDeleteQuote}
+                {reports.map((report) => (
+                  <ClinicalReportRow
+                    key={report.id}
+                    report={report}
+                    onEdit={handleEditReport}
+                    onView={handleViewReport}
+                    onDelete={handleDeleteReport}
                   />
                 ))}
               </div>

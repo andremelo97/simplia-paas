@@ -8,6 +8,86 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <title>TQ - Transcription & Quote</title>
+    <style>
+      /* Print styles for Clinical Reports */
+      @media print {
+        /* Page setup */
+        @page {
+          margin: 1.5cm;
+          size: A4;
+        }
+
+        /* Hide everything by default */
+        body * {
+          visibility: hidden;
+        }
+
+        /* Show only the report card and its contents */
+        .print-report-card,
+        .print-report-card * {
+          visibility: visible;
+        }
+
+        /* Position the card at top left */
+        .print-report-card {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+          box-shadow: none !important;
+          border: none !important;
+          margin: 0 !important;
+          background: white !important;
+        }
+
+        /* Reset body */
+        body {
+          margin: 0;
+          padding: 0;
+          background: white;
+        }
+
+        /* Ensure proper page breaks */
+        h1, h2, h3 {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+          page-break-inside: avoid;
+          break-inside: avoid;
+        }
+
+        p {
+          orphans: 3;
+          widows: 3;
+        }
+
+        /* Allow page breaks in long content */
+        .prose {
+          page-break-inside: auto;
+          break-inside: auto;
+        }
+
+        /* Preserve text colors for print */
+        * {
+          color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        /* Remove any max-width constraints */
+        .max-w-7xl,
+        .max-w-6xl,
+        .max-w-5xl,
+        .max-w-4xl,
+        .max-w-3xl,
+        .max-w-2xl,
+        .max-w-xl {
+          max-width: none !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

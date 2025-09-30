@@ -6,6 +6,7 @@ const quotesRoutes = require('./routes/quotes');
 const itemsRoutes = require('./routes/items');
 const templatesRoutes = require('./routes/templates');
 const aiAgentRoutes = require('./routes/ai-agent');
+const clinicalReportsRoutes = require('./routes/clinical-reports');
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.use('/sessions', sessionsRoutes);
 router.use('/quotes', quotesRoutes);
 router.use('/items', itemsRoutes);
 router.use('/templates', templatesRoutes);
+router.use('/clinical-reports', clinicalReportsRoutes);
 
 // Mount transcription routes (Deepgram integration)
 router.use('/transcriptions', transcriptionRoutes);

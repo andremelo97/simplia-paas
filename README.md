@@ -120,20 +120,44 @@ simplia-paas/
 │   │   │   │   │   │   ├── EditTemplate.tsx   # edição de templates
 │   │   │   │   │   │   └── ViewTemplate.tsx   # visualização/detalhes
 │   │   │   │   │   ├── 📁 patients/   # gestão de pacientes
-│   │   │   │   │   ├── 📁 sessions/   # gestão de sessões
+│   │   │   │   │   │   ├── Patients.tsx       # listagem com busca
+│   │   │   │   │   │   ├── CreatePatient.tsx  # criação
+│   │   │   │   │   │   └── EditPatient.tsx    # edição
+│   │   │   │   │   ├── 📁 session/    # gestão de sessões de transcrição
+│   │   │   │   │   │   ├── NewSession.tsx     # interface de nova sessão com split button
+│   │   │   │   │   │   ├── Sessions.tsx       # listagem de sessões
+│   │   │   │   │   │   └── EditSession.tsx    # edição de sessão com TemplateQuoteModal
 │   │   │   │   │   ├── 📁 quotes/     # sistema de cotações
-│   │   │   │   │   └── 📁 session/    # gestão de sessões de transcrição
-│   │   │   │   │       └── NewSession.tsx # interface de nova sessão com split button
+│   │   │   │   │   │   ├── QuoteManagementLayout.tsx # layout com tabs
+│   │   │   │   │   │   ├── EditQuote.tsx      # edição 60/40 layout
+│   │   │   │   │   │   └── 📁 tabs/           # tabs de quotes e items
+│   │   │   │   │   └── 📁 clinical-reports/   # **NOVO**: relatórios clínicos
+│   │   │   │   │       ├── ClinicalReports.tsx    # listagem com busca
+│   │   │   │   │       └── EditClinicalReport.tsx # edição 60/40 layout (sem quote items)
 │   │   │   │   ├── 📁 components/     # componentes específicos do TQ
-│   │   │   │   │   └── 📁 templates/  # componentes de templates
-│   │   │   │   │       ├── TemplateRow.tsx         # item da lista de templates
-│   │   │   │   │       ├── TemplateFilters.tsx     # busca e filtros
-│   │   │   │   │       ├── TemplatesEmpty.tsx      # estado vazio
-│   │   │   │   │       └── TemplatePreview.tsx     # preview/modal de templates
+│   │   │   │   │   ├── 📁 templates/  # componentes de templates
+│   │   │   │   │   │   ├── TemplateRow.tsx         # item da lista de templates
+│   │   │   │   │   │   ├── TemplateFilters.tsx     # busca e filtros
+│   │   │   │   │   │   ├── TemplatesEmpty.tsx      # estado vazio
+│   │   │   │   │   │   └── TemplatePreview.tsx     # preview/modal de templates
+│   │   │   │   │   ├── 📁 clinical-reports/ # componentes de clinical reports
+│   │   │   │   │   │   ├── ClinicalReportRow.tsx   # item da lista de reports
+│   │   │   │   │   │   ├── ClinicalReportsEmpty.tsx # estado vazio
+│   │   │   │   │   │   └── ClinicalReportsFilters.tsx # busca e filtros
+│   │   │   │   │   ├── 📁 quotes/     # componentes de quotes
+│   │   │   │   │   │   ├── QuoteRow.tsx            # item da lista de quotes
+│   │   │   │   │   │   ├── QuotesEmpty.tsx         # estado vazio
+│   │   │   │   │   │   └── QuoteFilters.tsx        # busca e filtros
+│   │   │   │   │   └── 📁 new-session/ # componentes de nova sessão
+│   │   │   │   │       ├── AIAgentModal.tsx        # modal de AI agent
+│   │   │   │   │       └── TemplateQuoteModal.tsx  # modal de templates
 │   │   │   │   ├── 📁 hooks/          # hooks específicos do TQ
-│   │   │   │   │   ├── useTemplates.ts    # hooks para template operations
-│   │   │   │   │   ├── useTemplatesList.ts # hook para lista paginada
-│   │   │   │   │   └── useTemplate.ts     # hook para template individual
+│   │   │   │   │   ├── useTemplates.ts       # hooks para template operations
+│   │   │   │   │   ├── useTemplatesList.ts   # hook para lista paginada
+│   │   │   │   │   ├── useTemplate.ts        # hook para template individual
+│   │   │   │   │   ├── useClinicalReports.ts # **NOVO**: hook para clinical reports
+│   │   │   │   │   ├── useQuotes.ts          # hook para quotes
+│   │   │   │   │   └── usePatients.ts        # hook para patients
 │   │   │   │   ├── 📁 shared/         # componentes e stores compartilhados
 │   │   │   │   │   ├── 📁 components/ # Layout, Header, Sidebar, RouteGuard
 │   │   │   │   │   └── 📁 store/      # auth store, UI store
@@ -141,7 +165,10 @@ simplia-paas/
 │   │   │   │   │   ├── templates.ts   # serviços de templates com TQ API
 │   │   │   │   │   ├── sessions.ts    # serviços de sessões
 │   │   │   │   │   ├── patients.ts    # serviços de pacientes
-│   │   │   │   │   └── quotes.ts      # serviços de cotações
+│   │   │   │   │   ├── quotes.ts      # serviços de cotações
+│   │   │   │   │   ├── clinicalReports.ts # **NOVO**: serviços de clinical reports
+│   │   │   │   │   ├── aiAgentService.ts  # serviços de AI agent
+│   │   │   │   │   └── transcriptionService.ts # serviços de transcrição
 │   │   │   │   ├── 📁 lib/            # consumeSso para SSO
 │   │   │   │   ├── 📁 routes/         # roteamento do TQ
 │   │   │   │   ├── index.html         # HTML com fonte Montserrat

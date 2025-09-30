@@ -36,6 +36,8 @@ import { useAuthStore } from '../../shared/store'
 import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
 import { quotesService, CreateQuoteRequest } from '../../services/quotes'
+import { clinicalReportsService } from '../../services/clinicalReports'
+import { aiAgentService } from '../../services/aiAgentService'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
 import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
@@ -102,9 +104,21 @@ export const NewSession: React.FC = () => {
   const { user } = useAuthStore()
   const { state: transcriptionState, transcriptionId, actions: transcriptionActions } = useTranscription()
 
-  // Session data - will be created when patient is selected
+  // Session State Management - single session per patient + transcription context
   const [session, setSession] = useState<Session | null>(null)
   const [isCreatingSession, setIsCreatingSession] = useState(false)
+
+  // Session context - tracks current patient and transcription for session reuse
+  const [sessionContext, setSessionContext] = useState<{
+    patientId: string | null
+    transcriptionId: string | null
+  }>({
+    patientId: null,
+    transcriptionId: null
+  })
+
+  // Transcription ID created (before session)
+  const [createdTranscriptionId, setCreatedTranscriptionId] = useState<string | null>(null)
 
   const [isLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -150,7 +164,7 @@ export const NewSession: React.FC = () => {
 
   // Link toast state
   const [showLinkToast, setShowLinkToast] = useState(false)
-  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote'} | null>(null)
+  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report'} | null>(null)
 
   // UI state for dropdown and patient flow
   const [transcribeMode, setTranscribeMode] = useState<'start' | 'upload'>('start')
@@ -270,6 +284,31 @@ export const NewSession: React.FC = () => {
     }
   }, [])
 
+  // Context change detection - reset session when patient or transcription changes
+  useEffect(() => {
+    if (!session) return // No session to reset
+
+    const patient = selectedPatient || createdPatient
+    const currentPatientId = patient?.id || null
+    const currentTranscriptionId = createdTranscriptionId
+
+    // Check if patient changed
+    if (sessionContext.patientId !== currentPatientId && currentPatientId !== null) {
+      console.log('🔄 [NewSession] Patient changed - resetting session')
+      setSession(null)
+      setSessionContext({ patientId: null, transcriptionId: null })
+      setCreatedTranscriptionId(null)
+      return
+    }
+
+    // Check if transcription changed significantly (only if we have a transcription ID)
+    if (currentTranscriptionId && sessionContext.transcriptionId !== currentTranscriptionId) {
+      console.log('🔄 [NewSession] Transcription changed - resetting session')
+      setSession(null)
+      setSessionContext({ patientId: null, transcriptionId: null })
+    }
+  }, [selectedPatient, createdPatient, createdTranscriptionId, session, sessionContext])
+
   // Audio devices are now mocked above - no API calls needed
 
   // Mock VU meter
@@ -333,6 +372,56 @@ export const NewSession: React.FC = () => {
     }
   }
 
+  // Ensure Session - Central function to reuse or create session
+  const ensureSession = async (): Promise<Session> => {
+    const patient = selectedPatient || createdPatient
+    if (!patient) {
+      throw new Error('Patient required')
+    }
+
+    // Get or create transcription ID
+    let currentTranscriptionId = createdTranscriptionId
+
+    if (!currentTranscriptionId && transcription.trim()) {
+      console.log('📝 [ensureSession] Creating transcription...')
+      const newTranscription = await transcriptionService.createTextTranscription(transcription)
+      currentTranscriptionId = newTranscription.transcriptionId
+      setCreatedTranscriptionId(currentTranscriptionId)
+    }
+
+    if (!currentTranscriptionId) {
+      throw new Error('Transcription required')
+    }
+
+    // Check if context changed (patient or transcription different)
+    const contextChanged =
+      !session ||
+      sessionContext.patientId !== patient.id ||
+      sessionContext.transcriptionId !== currentTranscriptionId
+
+    if (contextChanged) {
+      console.log('🔄 [ensureSession] Context changed, creating new session...')
+      console.log('  Patient:', patient.id, '(previous:', sessionContext.patientId, ')')
+      console.log('  Transcription:', currentTranscriptionId, '(previous:', sessionContext.transcriptionId, ')')
+
+      // Create new session
+      const newSession = await createSessionWithTranscription(patient.id, currentTranscriptionId)
+
+      // Update context
+      setSessionContext({
+        patientId: patient.id,
+        transcriptionId: currentTranscriptionId
+      })
+
+      console.log('✅ [ensureSession] New session created:', newSession.number)
+      return newSession
+    }
+
+    // Reuse existing session
+    console.log('♻️  [ensureSession] Reusing existing session:', session.number)
+    return session
+  }
+
 
   // Handle New Session button click
   const handleNewSession = async () => {
@@ -350,14 +439,9 @@ export const NewSession: React.FC = () => {
       return
     }
 
+    setIsCreatingSession(true)
     try {
-      // First, create the transcription with the text
-      console.log('📝 [NewSession] Creating transcription with text:', transcription)
-      const createdTranscription = await transcriptionService.createTextTranscription(transcription)
-      console.log('✅ [NewSession] Transcription created:', createdTranscription.transcriptionId)
-
-      // Then create the session with the transcription ID
-      const newSession = await createSessionWithTranscription(patient.id, createdTranscription.transcriptionId)
+      const newSession = await ensureSession()
       console.log('✅ [NewSession] Session created successfully:', newSession.number)
       // Success feedback is handled automatically by HTTP interceptor
 
@@ -370,19 +454,29 @@ export const NewSession: React.FC = () => {
       setShowLinkToast(true)
 
     } catch (error) {
-      console.error('❌ [NewSession] Failed to create session and transcription:', error)
+      console.error('❌ [NewSession] Failed to create session:', error)
       // Error feedback is handled automatically by HTTP interceptor
+    } finally {
+      setIsCreatingSession(false)
     }
   }
 
   // Handle New Session & Quote button click
   const handleNewSessionAndQuote = async (aiSummary?: string) => {
-    if (!transcription.trim()) {
+    console.log('🟢 [NewSession] handleNewSessionAndQuote called')
+    console.log('  - transcription:', transcription.substring(0, 50))
+    console.log('  - aiSummary:', aiSummary ? aiSummary.substring(0, 50) : 'none')
+
+    // If called from AI Agent, aiSummary will be provided and we should use it
+    // If called from button, transcription should exist
+    if (!transcription.trim() && !aiSummary) {
+      console.log('⚠️ [NewSession] No transcription or AI summary available')
       return
     }
 
     const patient = selectedPatient || createdPatient
     if (!patient) {
+      console.log('⚠️ [NewSession] No patient selected')
       publishFeedback({
         kind: 'error',
         code: 'PATIENT_REQUIRED',
@@ -392,17 +486,12 @@ export const NewSession: React.FC = () => {
     }
 
     try {
-      // First, create the transcription with the text
-      console.log('📝 [NewSession] Creating transcription with text:', transcription)
-      const createdTranscription = await transcriptionService.createTextTranscription(transcription)
-      console.log('✅ [NewSession] Transcription created:', createdTranscription.transcriptionId)
+      // Ensure session exists (reuse or create)
+      const currentSession = await ensureSession()
+      console.log('✅ [NewSession] Using session:', currentSession.number)
 
-      // Then create the session with the transcription ID
-      const newSession = await createSessionWithTranscription(patient.id, createdTranscription.transcriptionId)
-      console.log('✅ [NewSession] Session created successfully:', newSession.number)
-
-      // Then create the quote using the session ID
-      console.log('💰 [NewSession] Creating quote for session:', newSession.id)
+      // Create the quote using the session ID
+      console.log('💰 [NewSession] Creating quote for session:', currentSession.id)
       const rawContent = aiSummary || transcription // Use AI summary if provided, otherwise fallback to transcription
       console.log('📄 [NewSession] Quote content source:', aiSummary ? 'AI Summary' : 'Transcription')
 
@@ -420,7 +509,7 @@ export const NewSession: React.FC = () => {
         .join('')
 
       const quoteData: CreateQuoteRequest = {
-        sessionId: newSession.id,
+        sessionId: currentSession.id,
         content: quoteContent,
         status: 'draft'
       }
@@ -436,22 +525,95 @@ export const NewSession: React.FC = () => {
       setShowLinkToast(true)
 
     } catch (error) {
-      console.error('❌ [NewSession] Failed to create session, transcription and quote:', error)
+      console.error('❌ [NewSession] Failed to create quote:', error)
       // Error feedback is handled automatically by HTTP interceptor
     }
   }
 
-  // Check if New Session button should be enabled
-  const isNewSessionEnabled = () => {
-    const hasTranscription = transcription.trim().length > 0
-    return hasTranscription && !isCreatingSession
+  // Handle Clinical Report creation from AI Agent
+  const handleNewClinicalReport = async (aiSummary: string) => {
+    console.log('🟢 [NewSession] handleNewClinicalReport called')
+    console.log('  - transcription:', transcription.substring(0, 50))
+    console.log('  - aiSummary:', aiSummary ? aiSummary.substring(0, 50) : 'none')
+
+    // If called from AI Agent, aiSummary will be provided and we should use it
+    // If called from button, transcription should exist
+    if (!transcription.trim() && !aiSummary) {
+      console.log('⚠️ [NewSession] No transcription or AI summary available')
+      return
+    }
+
+    const patient = selectedPatient || createdPatient
+    if (!patient) {
+      console.log('⚠️ [NewSession] No patient selected')
+      publishFeedback({
+        kind: 'error',
+        code: 'PATIENT_REQUIRED',
+        message: 'Please select or create a patient before creating clinical report'
+      })
+      return
+    }
+
+    try {
+      // Ensure session exists (reuse or create)
+      const currentSession = await ensureSession()
+      console.log('✅ [NewSession] Using session:', currentSession.number)
+
+      // Create the clinical report using the session ID
+      console.log('📋 [NewSession] Creating clinical report for session:', currentSession.id)
+      const rawContent = aiSummary || transcription
+      console.log('📄 [NewSession] Clinical report content source:', aiSummary ? 'AI Summary' : 'Transcription')
+
+      // Convert plain text with line breaks to HTML paragraphs
+      const reportContent = rawContent
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(line => {
+          // Convert markdown bold (**text**) to HTML <strong>
+          const htmlLine = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          return `<p class="editor-paragraph" style="text-align: left;">${htmlLine}</p>`
+        })
+        .join('')
+
+      const reportData = {
+        sessionId: currentSession.id,
+        content: reportContent
+      }
+      const newReport = await clinicalReportsService.create(reportData)
+      console.log('✅ [NewSession] Clinical report created successfully:', newReport)
+
+      // Defensive: check if report has required fields
+      if (!newReport || !newReport.id || !newReport.number) {
+        console.error('⚠️ [NewSession] Invalid report response:', newReport)
+        throw new Error('Invalid clinical report response from API')
+      }
+
+      // Show LinkToast for navigation (not publishFeedback - feedback is automatic)
+      setToastData({
+        itemId: newReport.id,
+        itemNumber: newReport.number,
+        type: 'clinical-report'
+      })
+      setShowLinkToast(true)
+
+    } catch (error) {
+      console.error('❌ [NewSession] Failed to create clinical report:', error)
+      // Error feedback is handled automatically by HTTP interceptor
+    }
   }
 
-  // Check if buttons requiring both patient and transcription should be enabled
-  const isTranscriptionAndPatientReady = () => {
+  // Check if New Session button should be enabled (requires patient + transcription, no session yet)
+  const isNewSessionEnabled = () => {
     const hasTranscription = transcription.trim().length > 0
     const hasPatient = selectedPatient !== null || createdPatient !== null
-    return hasTranscription && hasPatient
+    const noSessionYet = !session
+    return hasTranscription && hasPatient && noSessionYet && !isCreatingSession
+  }
+
+  // Check if Quote/Clinical Report buttons should be enabled (requires existing session)
+  const isQuoteOrReportEnabled = () => {
+    return session !== null
   }
 
   // Handle Template Quote Modal actions
@@ -476,9 +638,66 @@ export const NewSession: React.FC = () => {
 
   const handleTemplateCreateClinicalReport = async (templateId: string) => {
     console.log('📄 [NewSession] Creating clinical report with template:', templateId)
-    // TODO: Implement template-based clinical report creation
-    // This will use the AI Template Filler endpoint to fill the template
-    // and then create a clinical report/document with the filled content
+
+    const patient = selectedPatient || createdPatient
+    if (!patient) {
+      publishFeedback({
+        kind: 'error',
+        code: 'PATIENT_REQUIRED',
+        message: 'Please select or create a patient before creating clinical report'
+      })
+      return
+    }
+
+    if (!session) {
+      publishFeedback({
+        kind: 'error',
+        code: 'SESSION_REQUIRED',
+        message: 'Please create a session first'
+      })
+      return
+    }
+
+    try {
+      // Fill template with AI using session transcription
+      const fillTemplateRequest = {
+        templateId,
+        sessionId: session.id,
+        patientId: patient.id
+      }
+
+      console.log('🔮 [NewSession] Filling template with AI for clinical report:', fillTemplateRequest)
+      const filledTemplateResponse = await aiAgentService.fillTemplate(fillTemplateRequest)
+      console.log('✅ [NewSession] Template filled successfully')
+
+      // Create clinical report with filled template content
+      const reportData = {
+        sessionId: session.id,
+        content: filledTemplateResponse.filledTemplate
+      }
+
+      console.log('📋 [NewSession] Creating clinical report with filled template')
+      const newReport = await clinicalReportsService.create(reportData)
+      console.log('✅ [NewSession] Clinical report created successfully:', newReport)
+
+      // Defensive: check if report has required fields
+      if (!newReport || !newReport.id || !newReport.number) {
+        console.error('⚠️ [NewSession] Invalid report response:', newReport)
+        throw new Error('Invalid clinical report response from API')
+      }
+
+      // Show LinkToast for navigation
+      setToastData({
+        itemId: newReport.id,
+        itemNumber: newReport.number,
+        type: 'clinical-report'
+      })
+      setShowLinkToast(true)
+
+    } catch (error) {
+      console.error('❌ [NewSession] Failed to create clinical report with template:', error)
+      // Error feedback is handled automatically by HTTP interceptor
+    }
   }
 
   // Handle transcription completion callback from the modal
@@ -869,39 +1088,77 @@ export const NewSession: React.FC = () => {
 
           {/* Right side: Action Buttons */}
           <div className="flex items-center gap-3">
-            <Button
-              variant="primary"
-              disabled={!isTranscriptionAndPatientReady()}
-              onClick={handleNewSession}
-              className="flex items-center gap-2"
-            >
-              {isCreatingSession ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  New Session
-                </>
+            {/* New Session - Primary action with animated gradient border when enabled */}
+            <div className="relative inline-block">
+              {isNewSessionEnabled() && (
+                <div
+                  className="absolute -inset-[3px] rounded-md animate-pulse"
+                  style={{
+                    background: 'linear-gradient(90deg, #B725B7, #E91E63, #B725B7)',
+                    backgroundSize: '200% 100%',
+                    animation: 'gradient-shift 3s ease infinite, pulse 2s ease-in-out infinite',
+                    zIndex: 0
+                  }}
+                />
               )}
-            </Button>
+              <Button
+                variant="primary"
+                disabled={!isNewSessionEnabled()}
+                onClick={handleNewSession}
+                className="flex items-center gap-2 relative z-10"
+              >
+                {isCreatingSession ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    New Session
+                  </>
+                )}
+              </Button>
+            </div>
 
+            <style dangerouslySetInnerHTML={{
+              __html: `
+                @keyframes gradient-shift {
+                  0% {
+                    background-position: 0% 50%;
+                  }
+                  50% {
+                    background-position: 100% 50%;
+                  }
+                  100% {
+                    background-position: 0% 50%;
+                  }
+                }
+              `
+            }} />
+
+            {/* New Quote or Clinical Report - Only enabled after session created */}
             <Button
               variant="primary"
-              disabled={!isTranscriptionAndPatientReady()}
-              onClick={() => setShowTemplateQuoteModal(true)}
+              disabled={!isQuoteOrReportEnabled()}
+              onClick={() => {
+                console.log('🔵 [NewSession] Opening Template Quote Modal')
+                setShowTemplateQuoteModal(true)
+              }}
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              New Session & Quote
+              New Quote or Clinical
             </Button>
 
+            {/* Call AI Agent - Only enabled after session created */}
             <Button
               variant="primary"
-              disabled={!isTranscriptionAndPatientReady()}
-              onClick={() => setShowAIAgentModal(true)}
+              disabled={!isQuoteOrReportEnabled()}
+              onClick={() => {
+                console.log('🔵 [NewSession] Opening AI Agent Modal')
+                setShowAIAgentModal(true)
+              }}
               className="flex items-center gap-2"
             >
               <Bot className="w-4 h-4" />
@@ -950,6 +1207,7 @@ export const NewSession: React.FC = () => {
         transcription={transcription}
         patient={selectedPatient || createdPatient}
         onCreateSessionAndQuote={handleNewSessionAndQuote}
+        onCreateClinicalReport={handleNewClinicalReport}
       />
 
       {/* Template Quote Modal */}
@@ -958,6 +1216,7 @@ export const NewSession: React.FC = () => {
         onClose={() => setShowTemplateQuoteModal(false)}
         transcription={transcription}
         patient={selectedPatient || createdPatient}
+        sessionId={session?.id}
         onCreateQuote={handleTemplateCreateQuote}
         onCreateClinicalReport={handleTemplateCreateClinicalReport}
         onQuoteCreated={handleTemplateQuoteCreated}

@@ -42,6 +42,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [isCreatingQuote, setIsCreatingQuote] = useState(false)
+  const [isCreatingClinicalReport, setIsCreatingClinicalReport] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Load active templates when modal opens
@@ -76,7 +77,15 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   }
 
   const handleCreateQuote = async () => {
-    if (!selectedTemplateId || !transcription.trim() || !patient) return
+    console.log('🟣 [TemplateQuoteModal] Create Quote button clicked')
+    console.log('  - templateId:', selectedTemplateId)
+    console.log('  - transcription:', transcription ? transcription.substring(0, 50) : 'none')
+    console.log('  - patient:', patient?.id)
+
+    if (!selectedTemplateId || !transcription.trim() || !patient) {
+      console.log('⚠️ [TemplateQuoteModal] Validation failed - missing required data')
+      return
+    }
 
     try {
       setIsCreatingQuote(true)
@@ -144,10 +153,30 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
     }
   }
 
-  const handleCreateClinicalReport = () => {
-    if (selectedTemplateId && onCreateClinicalReport) {
-      onCreateClinicalReport(selectedTemplateId)
+  const handleCreateClinicalReport = async () => {
+    console.log('🟣 [TemplateQuoteModal] Create Clinical Report button clicked')
+    console.log('  - templateId:', selectedTemplateId)
+    console.log('  - onCreateClinicalReport callback:', onCreateClinicalReport ? 'exists' : 'missing')
+
+    if (!selectedTemplateId || !onCreateClinicalReport) {
+      console.log('⚠️ [TemplateQuoteModal] Cannot create - missing template or callback')
+      return
+    }
+
+    try {
+      setIsCreatingClinicalReport(true)
+      setError(null)
+
+      // Call the parent handler and wait for it to complete
+      await onCreateClinicalReport(selectedTemplateId)
+
+      // Close modal after successful creation
       onClose()
+    } catch (error) {
+      console.error('❌ [TemplateQuoteModal] Failed to create clinical report:', error)
+      setError(error instanceof Error ? error.message : 'Failed to create clinical report')
+    } finally {
+      setIsCreatingClinicalReport(false)
     }
   }
 
@@ -242,11 +271,15 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
             <Button
               variant="outline"
               onClick={handleCreateClinicalReport}
-              disabled={!selectedTemplateId || isLoading}
+              disabled={!selectedTemplateId || isLoading || isCreatingQuote || isCreatingClinicalReport}
               className="flex-1 flex items-center justify-center gap-2"
             >
-              <FileText className="w-4 h-4" />
-              Create Clinical Report
+              {isCreatingClinicalReport ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileText className="w-4 h-4" />
+              )}
+              {isCreatingClinicalReport ? 'Creating Clinical Report...' : 'Create Clinical Report'}
             </Button>
           </div>
 

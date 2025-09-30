@@ -1,0 +1,158 @@
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Printer, Edit } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  Button,
+  Alert,
+  AlertDescription
+} from '@client/common/ui'
+import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
+
+export const ViewClinicalReport: React.FC = () => {
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+
+  const [report, setReport] = useState<ClinicalReport | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!id) return
+
+    const loadReport = async () => {
+      try {
+        setIsLoading(true)
+        const reportData = await clinicalReportsService.getById(id)
+        setReport(reportData)
+        setLoadError(null)
+      } catch (error) {
+        console.error('Failed to load clinical report:', error)
+        setLoadError(error instanceof Error ? error.message : 'Failed to load clinical report')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadReport()
+  }, [id])
+
+  const handlePrint = () => {
+    window.print()
+  }
+
+  const handleEdit = () => {
+    navigate(`/clinical-reports/${id}/edit`)
+  }
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A'
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Clinical Report</h1>
+          <p className="text-gray-600 mt-1">Loading...</p>
+        </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B725B7]"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (loadError || !report) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Clinical Report</h1>
+        </div>
+        <Alert variant="destructive">
+          <AlertDescription>
+            {loadError || 'Clinical report not found'}
+          </AlertDescription>
+        </Alert>
+        <Button variant="secondary" onClick={handleBack}>
+          Back to Clinical Reports
+        </Button>
+      </div>
+    )
+  }
+
+  const patientName = report.patient_first_name || report.patient_last_name
+    ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim()
+    : 'Unknown Patient'
+
+  return (
+    <div className="space-y-6">
+      {/* Header - Hide on print */}
+      <div className="flex items-center justify-between print:hidden">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Clinical Report {report.number}</h1>
+          <p className="text-gray-600 mt-1">Patient: {patientName}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            onClick={handleEdit}
+            className="flex items-center gap-2"
+          >
+            <Edit className="w-4 h-4" />
+            Edit
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handlePrint}
+            className="flex items-center gap-2"
+          >
+            <Printer className="w-4 h-4" />
+            Print/Save as PDF
+          </Button>
+        </div>
+      </div>
+
+      {/* Report Content Card */}
+      <Card className="print-report-card">
+        <CardContent className="p-8">
+          {/* Report Header */}
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              Clinical Report {report.number}
+            </h2>
+            <p className="text-gray-700 mb-1">
+              <strong>Patient:</strong> {patientName}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Generated on:</strong> {formatDate(report.created_at)}
+            </p>
+          </div>
+
+          <hr className="my-6 border-gray-200" />
+
+          {/* Report Content */}
+          <div>
+            <div
+              className="prose prose-sm max-w-none text-gray-800 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: report.content || '<p>No content available</p>' }}
+            />
+          </div>
+
+          {/* Footer disclaimer */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-500 italic">
+              This clinical report was generated automatically. Please verify all information before use.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

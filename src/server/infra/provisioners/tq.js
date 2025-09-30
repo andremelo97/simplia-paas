@@ -109,6 +109,15 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       CACHE 1
     `);
 
+    // Create clinical report number sequence for unique incremental numbers
+    await client.query(`
+      CREATE SEQUENCE IF NOT EXISTS clinical_report_number_seq
+      START WITH 1
+      INCREMENT BY 1
+      NO MAXVALUE
+      CACHE 1
+    `);
+
     // Create session table (simplified, references transcription)
     await client.query(`
       CREATE TABLE IF NOT EXISTS session (
@@ -179,6 +188,18 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         description TEXT,
         active BOOLEAN DEFAULT true,
         usage_count INTEGER DEFAULT 0
+      )
+    `);
+
+    // Create clinical_report table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS clinical_report (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('CLR' || LPAD(nextval('clinical_report_number_seq')::text, 6, '0')),
+        session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
+        content TEXT NOT NULL
       )
     `);
 
@@ -279,6 +300,18 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       CREATE INDEX IF NOT EXISTS idx_template_created_at ON template(created_at)
     `);
 
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_clinical_report_session_id ON clinical_report(session_id)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_clinical_report_created_at ON clinical_report(created_at)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_clinical_report_number ON clinical_report(number)
+    `);
+
     // Create update triggers for updated_at timestamps
     // Note: Function will be created in public schema if it doesn't exist
     await client.query(`
@@ -368,6 +401,17 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_clinical_report_updated_at ON clinical_report
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_clinical_report_updated_at
+        BEFORE UPDATE ON clinical_report
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
     await client.query('COMMIT');
     console.log(`TQ app schema provisioned successfully for tenant schema: ${schema}`);
 
@@ -391,10 +435,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template')
+        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_report')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 7;
+    return parseInt(result.rows[0].table_count) === 8;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

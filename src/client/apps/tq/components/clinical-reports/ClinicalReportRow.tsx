@@ -1,42 +1,33 @@
 import React, { useState } from 'react'
-import { Edit, Copy, Trash2 } from 'lucide-react'
-import { Button, Badge } from '@client/common/ui'
-import { Quote } from '../../services/quotes'
-import { formatQuoteStatus } from '../../hooks/useQuotes'
-import { getQuoteStatusColor } from '../../types/quoteStatus'
+import { Edit, FileText, Trash2 } from 'lucide-react'
+import { Button } from '@client/common/ui'
+import { ClinicalReport } from '../../services/clinicalReports'
 
-interface QuoteRowProps {
-  quote: Quote
-  onEdit?: (quote: Quote) => void
-  onDuplicate?: (quote: Quote) => void
-  onDelete?: (quote: Quote) => void
+interface ClinicalReportRowProps {
+  report: ClinicalReport
+  onEdit?: (report: ClinicalReport) => void
+  onView?: (report: ClinicalReport) => void
+  onDelete?: (report: ClinicalReport) => void
 }
 
-export const QuoteRow: React.FC<QuoteRowProps> = ({
-  quote,
+export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
+  report,
   onEdit,
-  onDuplicate,
+  onView,
   onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false)
 
   const handleEdit = () => {
-    onEdit?.(quote)
+    onEdit?.(report)
   }
 
-  const handleDuplicate = () => {
-    onDuplicate?.(quote)
+  const handleView = () => {
+    onView?.(report)
   }
 
   const handleDelete = () => {
-    onDelete?.(quote)
-  }
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
+    onDelete?.(report)
   }
 
   return (
@@ -49,7 +40,7 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         {/* Created At */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
-            {new Date(quote.created_at).toLocaleDateString('pt-BR', {
+            {new Date(report.created_at).toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: '2-digit',
               year: 'numeric'
@@ -57,41 +48,27 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
           </span>
         </div>
 
-        {/* Quote Number */}
+        {/* Report Number */}
         <div className="min-w-0 flex-1">
           <span className="font-medium text-gray-900 truncate">
-            {quote.number}
+            {report.number}
           </span>
         </div>
 
         {/* Session Number */}
         <div className="min-w-0 flex-1">
           <span className="text-gray-600 truncate">
-            {quote.session_number || '—'}
+            {report.session_number || '—'}
           </span>
-        </div>
-
-        {/* Status */}
-        <div className="min-w-0 flex-1">
-          <Badge className={getQuoteStatusColor(quote.status)}>
-            {formatQuoteStatus(quote.status)}
-          </Badge>
         </div>
 
         {/* Patient Name */}
         <div className="min-w-0 flex-1">
           <span className="text-gray-600 truncate">
-            {quote.patient_first_name || quote.patient_last_name
-              ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim()
+            {report.patient_first_name || report.patient_last_name
+              ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim()
               : '—'
             }
-          </span>
-        </div>
-
-        {/* Total */}
-        <div className="w-24">
-          <span className="text-sm font-medium text-gray-900">
-            {formatCurrency(quote.total || 0)}
           </span>
         </div>
       </div>
@@ -103,9 +80,19 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         <Button
           variant="ghost"
           size="sm"
+          onClick={handleView}
+          className="h-8 w-8 p-0 hover:bg-purple-100"
+          aria-label={`View ${report.number}`}
+        >
+          <FileText className="w-4 h-4 text-purple-600" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleEdit}
           className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Edit ${quote.number}`}
+          aria-label={`Edit ${report.number}`}
         >
           <Edit className="w-4 h-4 text-gray-600" />
         </Button>
@@ -113,19 +100,9 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleDuplicate}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Duplicate ${quote.number}`}
-        >
-          <Copy className="w-4 h-4 text-gray-600" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
           onClick={handleDelete}
           className="h-8 w-8 p-0 hover:bg-red-100"
-          aria-label={`Delete ${quote.number}`}
+          aria-label={`Delete ${report.number}`}
         >
           <Trash2 className="w-4 h-4 text-red-600" />
         </Button>

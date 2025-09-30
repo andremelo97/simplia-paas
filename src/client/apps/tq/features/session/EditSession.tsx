@@ -18,6 +18,8 @@ import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
 import { getSessionStatusColor, getSessionStatusLabel, SESSION_STATUS_OPTIONS, SessionStatus } from '../../types/sessionStatus'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
+import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentService'
+import { clinicalReportsService, CreateClinicalReportRequest } from '../../services/clinicalReports'
 
 export const EditSession: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -32,7 +34,7 @@ export const EditSession: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showLinkToast, setShowLinkToast] = useState(false)
-  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote'} | null>(null)
+  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report'} | null>(null)
 
   useEffect(() => {
     const loadSession = async () => {
@@ -125,6 +127,54 @@ export const EditSession: React.FC = () => {
 
   const handleStatusChange = (newStatus: SessionStatus) => {
     setStatus(newStatus)
+  }
+
+  const handleCreateClinicalReport = async (templateId: string) => {
+    console.log('🟣 [EditSession] Create Clinical Report handler called')
+    console.log('  - templateId:', templateId)
+    console.log('  - sessionId:', session?.id)
+    console.log('  - patientId:', patient?.id)
+
+    if (!templateId || !session || !patient) {
+      console.log('⚠️ [EditSession] Missing required data for clinical report')
+      return
+    }
+
+    try {
+      // Step 1: Fill template with AI using session transcription
+      const fillTemplateRequest: FillTemplateRequest = {
+        templateId: templateId,
+        sessionId: session.id,
+        patientId: patient.id
+      }
+
+      console.log('🔮 [EditSession] Filling template with AI:', fillTemplateRequest)
+      const filledTemplateResponse = await aiAgentService.fillTemplate(fillTemplateRequest)
+      console.log('✅ [EditSession] Template filled successfully')
+
+      // Step 2: Create clinical report with filled template content
+      const reportData: CreateClinicalReportRequest = {
+        sessionId: session.id,
+        content: filledTemplateResponse.filledTemplate
+      }
+
+      console.log('📋 [EditSession] Creating clinical report with filled template')
+      const newReport = await clinicalReportsService.create(reportData)
+      console.log('✅ [EditSession] Clinical report created successfully:', newReport.number)
+
+      // Show report link toast
+      setToastData({
+        itemId: newReport.id,
+        itemNumber: newReport.number,
+        type: 'clinical-report'
+      })
+      setShowLinkToast(true)
+
+      // Success feedback is handled automatically by HTTP interceptor
+    } catch (error) {
+      console.error('❌ [EditSession] Failed to create clinical report:', error)
+      throw error // Re-throw so TemplateQuoteModal can handle it
+    }
   }
 
   // Loading state
@@ -325,6 +375,7 @@ export const EditSession: React.FC = () => {
           })
           setShowLinkToast(true)
         }}
+        onCreateClinicalReport={handleCreateClinicalReport}
       />
 
       {/* Quote Link Toast */}

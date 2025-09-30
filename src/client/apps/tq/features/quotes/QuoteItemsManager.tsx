@@ -152,11 +152,13 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
 
   return (
     <Card>
-      <CardHeader className="p-6 pb-4 flex justify-between items-center">
-        <h2 className="text-lg font-semibold text-gray-900">Quote Items</h2>
+      <CardHeader className="p-6 pb-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">Quote Items</h2>
+        </div>
         <button
           onClick={handleAddRow}
-          className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors"
+          className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors mt-3"
         >
           <Plus className="w-4 h-4" />
           <span>Add Item</span>

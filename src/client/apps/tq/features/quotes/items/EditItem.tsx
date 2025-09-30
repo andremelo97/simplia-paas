@@ -8,7 +8,7 @@ export const EditItem: React.FC = () => {
   const [formData, setFormData] = useState<CreateItemRequest>({
     name: '',
     description: '',
-    base_price: 0,
+    basePrice: 0,
     active: true
   })
   const [originalItem, setOriginalItem] = useState<Item | null>(null)
@@ -33,7 +33,7 @@ export const EditItem: React.FC = () => {
       setFormData({
         name: item.name,
         description: item.description || '',
-        base_price: typeof item.base_price === 'string' ? parseFloat(item.base_price) : (item.base_price || 0),
+        basePrice: typeof item.basePrice === 'string' ? parseFloat(item.basePrice) : item.basePrice,
         active: item.active
       })
     } catch (error) {
@@ -61,11 +61,11 @@ export const EditItem: React.FC = () => {
   const handlePriceChange = (value: number) => {
     setFormData(prev => ({
       ...prev,
-      base_price: value
+      basePrice: value
     }))
 
-    if (validationErrors.base_price) {
-      setValidationErrors(prev => ({ ...prev, base_price: '' }))
+    if (validationErrors.basePrice) {
+      setValidationErrors(prev => ({ ...prev, basePrice: '' }))
     }
   }
 
@@ -87,8 +87,8 @@ export const EditItem: React.FC = () => {
       errors.name = 'Item name must be less than 100 characters'
     }
 
-    if (formData.base_price <= 0) {
-      errors.base_price = 'Base price must be greater than 0'
+    if (formData.basePrice <= 0) {
+      errors.basePrice = 'Base price must be greater than 0'
     }
 
     setValidationErrors(errors)
@@ -203,9 +203,9 @@ export const EditItem: React.FC = () => {
 
                 <PriceInput
                   label="Base Price"
-                  value={formData.base_price}
+                  value={formData.basePrice}
                   onChange={handlePriceChange}
-                  error={validationErrors.base_price}
+                  error={validationErrors.basePrice}
                   helperText="Standard price before discounts (required)"
                   disabled={isSubmitting}
                 />
@@ -247,14 +247,14 @@ export const EditItem: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     label="Created At"
-                    value={formatDate(originalItem.created_at)}
+                    value={formatDate(originalItem.createdAt)}
                     disabled
                     helperText="When this item record was created"
                   />
 
                   <Input
                     label="Updated At"
-                    value={formatDate(originalItem.updated_at)}
+                    value={formatDate(originalItem.updatedAt)}
                     disabled
                     helperText="When this item record was last updated"
                   />

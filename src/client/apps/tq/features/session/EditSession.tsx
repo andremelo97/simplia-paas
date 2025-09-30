@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Save } from 'lucide-react'
+import { Save, FileText } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -11,21 +11,28 @@ import {
   Badge,
   Alert,
   AlertDescription,
-  Select
+  Select,
+  LinkToast
 } from '@client/common/ui'
 import { sessionsService, Session } from '../../services/sessions'
+import { patientsService, Patient } from '../../services/patients'
 import { getSessionStatusColor, getSessionStatusLabel, SESSION_STATUS_OPTIONS, SessionStatus } from '../../types/sessionStatus'
+import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 
 export const EditSession: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
   const [session, setSession] = useState<Session | null>(null)
+  const [patient, setPatient] = useState<Patient | null>(null)
   const [transcription, setTranscription] = useState('')
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.DRAFT)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
+  const [showLinkToast, setShowLinkToast] = useState(false)
+  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote'} | null>(null)
 
   useEffect(() => {
     const loadSession = async () => {
@@ -46,6 +53,16 @@ export const EditSession: React.FC = () => {
         setTranscription(sessionData.transcription_text || '')
         // Load status
         setStatus(sessionData.status as SessionStatus)
+
+        // Load patient data if available
+        if (sessionData.patient_id) {
+          try {
+            const patientData = await patientsService.getPatient(sessionData.patient_id)
+            setPatient(patientData)
+          } catch (error) {
+            console.warn('Failed to load patient data:', error)
+          }
+        }
       } catch (err: any) {
         console.error('❌ [EditSession] Failed to load session:', err)
 
@@ -171,13 +188,28 @@ export const EditSession: React.FC = () => {
     ? `${session.patient_first_name || ''} ${session.patient_last_name || ''}`.trim()
     : 'Unknown Patient'
 
+  const hasTranscription = Boolean(transcription && transcription.trim().length > 0)
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Session</h1>
-        <p className="text-gray-600 mt-1">
-          Session {session.number} • {patientName}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Session</h1>
+          <p className="text-gray-600 mt-1">
+            Session {session.number} • {patientName}
+          </p>
+        </div>
+
+        {hasTranscription && (
+          <Button
+            variant="primary"
+            onClick={() => setShowTemplateModal(true)}
+            disabled={isSubmitting}
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Create Documents
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -275,6 +307,36 @@ export const EditSession: React.FC = () => {
           </Button>
         </div>
       </form>
+
+      {/* Template Quote Modal */}
+      <TemplateQuoteModal
+        open={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        transcription={transcription}
+        patient={patient}
+        sessionId={session.id}
+        onQuoteCreated={(quoteId, quoteNumber) => {
+          setShowTemplateModal(false)
+          // Show quote link toast
+          setToastData({
+            itemId: quoteId,
+            itemNumber: quoteNumber,
+            type: 'quote'
+          })
+          setShowLinkToast(true)
+        }}
+      />
+
+      {/* Quote Link Toast */}
+      {toastData && (
+        <LinkToast
+          show={showLinkToast}
+          itemNumber={toastData.itemNumber}
+          itemId={toastData.itemId}
+          onClose={() => setShowLinkToast(false)}
+          type={toastData.type}
+        />
+      )}
     </div>
   )
 }

@@ -14,35 +14,21 @@ class QuoteItem {
     this.updatedAt = data.updated_at;
     this.quoteId = data.quote_id;
     this.itemId = data.item_id;
+    this.name = data.name;
+    this.basePrice = data.base_price;
     this.quantity = data.quantity;
     this.discountAmount = data.discount_amount;
     this.finalPrice = data.final_price;
-
-    // Include item data if joined
-    if (data.item_name) {
-      this.item = {
-        id: data.item_id,
-        name: data.item_name,
-        description: data.item_description,
-        basePrice: data.item_base_price,
-        active: data.item_active
-      };
-    }
   }
 
   /**
    * Find quote item by ID within a tenant schema
+   * name and base_price are stored directly in quote_item table
    */
   static async findById(id, schema) {
     const query = `
-      SELECT qi.*,
-             i.name as item_name,
-             i.description as item_description,
-             i.base_price as item_base_price,
-             i.active as item_active
-      FROM ${schema}.quote_item qi
-      LEFT JOIN ${schema}.item i ON qi.item_id = i.id
-      WHERE qi.id = $1
+      SELECT * FROM ${schema}.quote_item
+      WHERE id = $1
     `;
 
     const result = await database.query(query, [id]);
@@ -56,18 +42,13 @@ class QuoteItem {
 
   /**
    * Find all quote items for a specific quote
+   * name and base_price are stored directly in quote_item table
    */
   static async findByQuoteId(quoteId, schema) {
     const query = `
-      SELECT qi.*,
-             i.name as item_name,
-             i.description as item_description,
-             i.base_price as item_base_price,
-             i.active as item_active
-      FROM ${schema}.quote_item qi
-      LEFT JOIN ${schema}.item i ON qi.item_id = i.id
-      WHERE qi.quote_id = $1
-      ORDER BY qi.created_at ASC
+      SELECT * FROM ${schema}.quote_item
+      WHERE quote_id = $1
+      ORDER BY created_at ASC
     `;
 
     const result = await database.query(query, [quoteId]);
@@ -76,6 +57,7 @@ class QuoteItem {
 
   /**
    * Create a new quote item within a tenant schema
+   * Copies name and base_price from item catalog
    */
   static async create(itemData, schema) {
     const {
@@ -85,29 +67,36 @@ class QuoteItem {
       discountAmount = 0
     } = itemData;
 
-    // Get item data to calculate final price
+    if (!itemId) {
+      throw new Error('itemId is required');
+    }
+
+    // Get item name and base_price from catalog
     const itemResult = await database.query(`
-      SELECT base_price FROM ${schema}.item WHERE id = $1
+      SELECT name, base_price FROM ${schema}.item WHERE id = $1
     `, [itemId]);
 
     if (itemResult.rows.length === 0) {
-      throw new Error('Item not found');
+      throw new Error('Item not found in catalog');
     }
 
-    const basePrice = itemResult.rows[0].base_price;
+    const itemName = itemResult.rows[0].name;
+    const basePrice = parseFloat(itemResult.rows[0].base_price);
     const finalPrice = (basePrice - discountAmount) * quantity;
 
     const query = `
-      INSERT INTO ${schema}.quote_item (quote_id, item_id, quantity, discount_amount, final_price)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO ${schema}.quote_item (quote_id, item_id, name, base_price, quantity, discount_amount, final_price)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
     `;
 
     const result = await database.query(query, [
       quoteId,
       itemId,
+      itemName,
+      basePrice,
       quantity,
-      discountAmount,
+      discountAmount || 0,
       finalPrice
     ]);
 
@@ -145,8 +134,8 @@ class QuoteItem {
 
     // Recalculate final price if any pricing field changed
     if (['discount_amount', 'quantity'].some(field => updates[field] !== undefined)) {
-      // Get current item base price
-      const basePrice = currentItem.item ? currentItem.item.basePrice : 0;
+      // Use base_price stored directly in quote_item
+      const basePrice = parseFloat(currentItem.basePrice) || 0;
       const newDiscountAmount = updates.discount_amount !== undefined ? updates.discount_amount : currentItem.discountAmount;
       const newQuantity = updates.quantity !== undefined ? updates.quantity : currentItem.quantity;
 
@@ -196,7 +185,69 @@ class QuoteItem {
   }
 
   /**
-   * Bulk create quote items for a quote
+   * Replace all quote items for a quote (delete old + insert new)
+   * This is used when saving the complete items list from the frontend
+   */
+  static async replaceAll(quoteId, items, schema) {
+    const client = await database.getClient();
+
+    try {
+      await client.query('BEGIN');
+      await client.query(`SET LOCAL search_path TO ${schema}, public`);
+
+      // Delete all existing items for this quote
+      await client.query(`
+        DELETE FROM ${schema}.quote_item WHERE quote_id = $1
+      `, [quoteId]);
+
+      const createdItems = [];
+
+      // Create new items if provided
+      if (Array.isArray(items) && items.length > 0) {
+        for (const itemData of items) {
+          const { itemId, quantity = 1, discountAmount = 0 } = itemData;
+
+          if (!itemId) {
+            throw new Error('itemId is required for each item');
+          }
+
+          // Get item name and base_price from catalog
+          const itemResult = await client.query(`
+            SELECT name, base_price FROM ${schema}.item WHERE id = $1
+          `, [itemId]);
+
+          if (itemResult.rows.length === 0) {
+            throw new Error(`Item not found in catalog: ${itemId}`);
+          }
+
+          const itemName = itemResult.rows[0].name;
+          const basePrice = parseFloat(itemResult.rows[0].base_price);
+          const finalPrice = (basePrice - discountAmount) * quantity;
+
+          // Insert new quote item with copied name and base_price
+          const result = await client.query(`
+            INSERT INTO ${schema}.quote_item (quote_id, item_id, name, base_price, quantity, discount_amount, final_price)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+          `, [quoteId, itemId, itemName, basePrice, quantity, discountAmount || 0, finalPrice]);
+
+          createdItems.push(new QuoteItem(result.rows[0]));
+        }
+      }
+
+      await client.query('COMMIT');
+      return createdItems;
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Bulk create quote items for a quote (deprecated - use replaceAll instead)
    */
   static async createBulk(items, schema) {
     if (!Array.isArray(items) || items.length === 0) {
@@ -236,12 +287,12 @@ class QuoteItem {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       quoteId: this.quoteId,
-      name: this.name,
-      description: this.description,
-      basePrice: this.basePrice ? parseFloat(this.basePrice) : 0,
+      itemId: this.itemId,
+      name: this.name, // Copied from item catalog at creation
+      basePrice: this.basePrice ? parseFloat(this.basePrice) : 0, // Independent, editable
+      quantity: this.quantity || 1,
       discountAmount: this.discountAmount ? parseFloat(this.discountAmount) : 0,
-      finalPrice: this.finalPrice ? parseFloat(this.finalPrice) : 0,
-      quantity: this.quantity || 1
+      finalPrice: this.finalPrice ? parseFloat(this.finalPrice) : 0
     };
   }
 }

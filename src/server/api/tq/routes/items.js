@@ -110,7 +110,21 @@ router.get('/', async (req, res) => {
       activeOnly: activeOnly === 'true'
     });
 
-    res.json(result);
+    // Transform to camelCase
+    const transformedData = result.data.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      basePrice: parseFloat(item.basePrice).toFixed(2),
+      active: item.active,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    }));
+
+    res.json({
+      data: transformedData,
+      pagination: result.pagination
+    });
   } catch (error) {
     console.error('Error listing items:', error);
     res.status(500).json({ error: 'Failed to list items' });
@@ -146,7 +160,19 @@ router.get('/:id', async (req, res) => {
     const { id } = req.params;
 
     const item = await Item.findById(id, schema);
-    res.json(item);
+
+    // Transform to camelCase
+    const transformedItem = {
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      basePrice: parseFloat(item.basePrice).toFixed(2),
+      active: item.active,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt
+    };
+
+    res.json(transformedItem);
   } catch (error) {
     if (error instanceof ItemNotFoundError) {
       return res.status(404).json({ error: error.message });

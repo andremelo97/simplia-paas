@@ -403,8 +403,22 @@ export const NewSession: React.FC = () => {
 
       // Then create the quote using the session ID
       console.log('💰 [NewSession] Creating quote for session:', newSession.id)
-      const quoteContent = aiSummary || transcription // Use AI summary if provided, otherwise fallback to transcription
+      const rawContent = aiSummary || transcription // Use AI summary if provided, otherwise fallback to transcription
       console.log('📄 [NewSession] Quote content source:', aiSummary ? 'AI Summary' : 'Transcription')
+
+      // Convert plain text with line breaks to HTML paragraphs
+      // Also convert markdown-style bold (**text**) to HTML <strong>
+      const quoteContent = rawContent
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .map(line => {
+          // Convert markdown bold (**text**) to HTML <strong>
+          const htmlLine = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          return `<p class="editor-paragraph" style="text-align: left;">${htmlLine}</p>`
+        })
+        .join('')
+
       const quoteData: CreateQuoteRequest = {
         sessionId: newSession.id,
         content: quoteContent,

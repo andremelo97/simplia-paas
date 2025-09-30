@@ -27,7 +27,8 @@
       "Bash(npx @tiptap/cli@latest add:*)",
       "Bash(npx:*)",
       "Bash(tree:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(set PGPASSWORD=1234)"
     ],
     "deny": [],
     "ask": []

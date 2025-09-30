@@ -7,7 +7,7 @@ export const CreateItem: React.FC = () => {
   const [formData, setFormData] = useState<CreateItemRequest>({
     name: '',
     description: '',
-    base_price: 0,
+    basePrice: 0,
     active: true
   })
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
@@ -32,11 +32,11 @@ export const CreateItem: React.FC = () => {
   const handlePriceChange = (value: number) => {
     setFormData(prev => ({
       ...prev,
-      base_price: value
+      basePrice: value
     }))
 
-    if (validationErrors.base_price) {
-      setValidationErrors(prev => ({ ...prev, base_price: '' }))
+    if (validationErrors.basePrice) {
+      setValidationErrors(prev => ({ ...prev, basePrice: '' }))
     }
   }
 
@@ -58,8 +58,8 @@ export const CreateItem: React.FC = () => {
       errors.name = 'Item name must be less than 100 characters'
     }
 
-    if (formData.base_price <= 0) {
-      errors.base_price = 'Base price must be greater than 0'
+    if (formData.basePrice <= 0) {
+      errors.basePrice = 'Base price must be greater than 0'
     }
 
     setValidationErrors(errors)
@@ -147,9 +147,9 @@ export const CreateItem: React.FC = () => {
 
                 <PriceInput
                   label="Base Price"
-                  value={formData.base_price}
+                  value={formData.basePrice}
                   onChange={handlePriceChange}
-                  error={validationErrors.base_price}
+                  error={validationErrors.basePrice}
                   helperText="Standard price before discounts (required)"
                   disabled={isSubmitting}
                 />

@@ -414,7 +414,8 @@ router.get('/:id/items', async (req, res) => {
  * @swagger
  * /tq/quotes/{id}/items:
  *   post:
- *     summary: Add item to quote
+ *     summary: Replace all items in quote (bulk update)
+ *     description: Replaces all existing items in the quote with the provided array. Send empty array to remove all items.
  *     tags: [TQ - Quote Items]
  *     parameters:
  *       - in: path
@@ -430,178 +431,86 @@ router.get('/:id/items', async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - name
- *               - basePrice
+ *               - items
  *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               basePrice:
- *                 type: number
- *                 format: decimal
- *               discountAmount:
- *                 type: number
- *                 format: decimal
- *               quantity:
- *                 type: integer
+ *               items:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - itemId
+ *                   properties:
+ *                     itemId:
+ *                       type: string
+ *                       format: uuid
+ *                       description: Reference to item in catalog
+ *                     quantity:
+ *                       type: integer
+ *                       default: 1
+ *                     discountAmount:
+ *                       type: number
+ *                       format: decimal
+ *                       default: 0
  *     responses:
- *       201:
- *         description: Quote item created successfully
+ *       200:
+ *         description: Quote items replaced successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/QuoteItem'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     quote:
+ *                       $ref: '#/components/schemas/Quote'
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/QuoteItem'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                     message:
+ *                       type: string
  */
 router.post('/:id/items', async (req, res) => {
   try {
     const schema = req.tenant.schema;
     const { id: quoteId } = req.params;
-    const { name, description, basePrice, discountAmount, quantity } = req.body;
+    const { items } = req.body;
 
-    if (!name || basePrice === undefined) {
-      return res.status(400).json({ error: 'name and basePrice are required' });
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: 'items must be an array' });
     }
 
-    const item = await QuoteItem.create({
-      quoteId,
-      name,
-      description,
-      basePrice,
-      discountAmount,
-      quantity
-    }, schema);
+    // Replace all items
+    const createdItems = await QuoteItem.replaceAll(quoteId, items, schema);
 
     // Recalculate quote total
-    await Quote.calculateTotal(quoteId, schema);
+    const { total } = await Quote.calculateTotal(quoteId, schema);
 
-    res.status(201).json(item.toJSON());
+    // Get updated quote with session data
+    const quote = await Quote.findById(quoteId, schema, false, true);
+
+    res.json({
+      data: {
+        quote: quote.toJSON(),
+        items: createdItems.map(item => item.toJSON())
+      },
+      meta: {
+        code: 'QUOTE_ITEMS_UPDATED',
+        message: 'Quote items updated successfully'
+      }
+    });
   } catch (error) {
-    console.error('Error creating quote item:', error);
-    res.status(500).json({ error: 'Failed to create quote item' });
+    console.error('Error replacing quote items:', error);
+    res.status(500).json({ error: error.message || 'Failed to replace quote items' });
   }
 });
 
-/**
- * @swagger
- * /tq/quotes/{quoteId}/items/{itemId}:
- *   put:
- *     summary: Update quote item
- *     tags: [TQ - Quote Items]
- *     parameters:
- *       - in: path
- *         name: quoteId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *       - in: path
- *         name: itemId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               description:
- *                 type: string
- *               basePrice:
- *                 type: number
- *                 format: decimal
- *               discountAmount:
- *                 type: number
- *                 format: decimal
- *               quantity:
- *                 type: integer
- *     responses:
- *       200:
- *         description: Quote item updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/QuoteItem'
- *       404:
- *         description: Quote item not found
- */
-router.put('/:quoteId/items/:itemId', async (req, res) => {
-  try {
-    const schema = req.tenant.schema;
-    const { quoteId, itemId } = req.params;
-    const { name, description, basePrice, discountAmount, quantity } = req.body;
-
-    const updates = {};
-    if (name !== undefined) updates.name = name;
-    if (description !== undefined) updates.description = description;
-    if (basePrice !== undefined) updates.base_price = basePrice;
-    if (discountAmount !== undefined) updates.discount_amount = discountAmount;
-    if (quantity !== undefined) updates.quantity = quantity;
-
-    const item = await QuoteItem.update(itemId, updates, schema);
-
-    // Recalculate quote total
-    await Quote.calculateTotal(quoteId, schema);
-
-    res.json(item.toJSON());
-  } catch (error) {
-    if (error instanceof QuoteItemNotFoundError) {
-      return res.status(404).json({ error: error.message });
-    }
-    console.error('Error updating quote item:', error);
-    res.status(500).json({ error: 'Failed to update quote item' });
-  }
-});
-
-/**
- * @swagger
- * /tq/quotes/{quoteId}/items/{itemId}:
- *   delete:
- *     summary: Delete quote item
- *     tags: [TQ - Quote Items]
- *     parameters:
- *       - in: path
- *         name: quoteId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *       - in: path
- *         name: itemId
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *     responses:
- *       200:
- *         description: Quote item deleted successfully
- *       404:
- *         description: Quote item not found
- */
-router.delete('/:quoteId/items/:itemId', async (req, res) => {
-  try {
-    const schema = req.tenant.schema;
-    const { quoteId, itemId } = req.params;
-
-    await QuoteItem.delete(itemId, schema);
-
-    // Recalculate quote total
-    await Quote.calculateTotal(quoteId, schema);
-
-    res.json({ message: 'Quote item deleted successfully' });
-  } catch (error) {
-    if (error instanceof QuoteItemNotFoundError) {
-      return res.status(404).json({ error: error.message });
-    }
-    console.error('Error deleting quote item:', error);
-    res.status(500).json({ error: 'Failed to delete quote item' });
-  }
-});
 
 /**
  * @swagger

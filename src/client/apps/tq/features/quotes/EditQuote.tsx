@@ -9,7 +9,9 @@ import {
   Select,
   TemplateEditor
 } from '@client/common/ui'
-import { quotesService, Quote } from '../../services/quotes'
+import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
+import { patientsService } from '../../services/patients'
+import { QuoteItemsManager } from './QuoteItemsManager'
 
 const QUOTE_STATUS_OPTIONS = [
   { value: 'draft', label: 'Draft' },
@@ -26,9 +28,17 @@ export const EditQuote: React.FC = () => {
   const [quote, setQuote] = useState<Quote | null>(null)
   const [content, setContent] = useState('')
   const [status, setStatus] = useState('draft')
+  const [quoteItems, setQuoteItems] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+
+  // Patient data state (editable)
+  const [patientFirstName, setPatientFirstName] = useState('')
+  const [patientLastName, setPatientLastName] = useState('')
+  const [patientEmail, setPatientEmail] = useState('')
+  const [patientPhone, setPatientPhone] = useState('')
+  const [patientId, setPatientId] = useState<string | null>(null)
 
   // Load quote data
   useEffect(() => {
@@ -42,13 +52,29 @@ export const EditQuote: React.FC = () => {
         const quoteData = await quotesService.getQuote(id)
 
         if (!isCancelled) {
-          console.log('🔍 [EditQuote] Quote data loaded:', quoteData)
-          console.log('🔍 [EditQuote] Content length:', quoteData.content?.length)
-          console.log('🔍 [EditQuote] Content preview:', quoteData.content?.substring(0, 200))
-
           setQuote(quoteData)
           setContent(quoteData.content || '')
           setStatus(quoteData.status || 'draft')
+
+          // Load patient data
+          setPatientFirstName(quoteData.patient_first_name || '')
+          setPatientLastName(quoteData.patient_last_name || '')
+          setPatientEmail(quoteData.patient_email || '')
+          setPatientPhone(quoteData.patient_phone || '')
+          setPatientId(quoteData.patient_id || null)
+
+          // Load quote items with localId for frontend management
+          const items = quoteData.items || []
+          const itemsWithLocalId = items.map((item: any) => ({
+            localId: item.id,
+            itemId: item.itemId,
+            itemName: item.name,
+            itemBasePrice: typeof item.basePrice === 'string' ? parseFloat(item.basePrice) : item.basePrice,
+            quantity: item.quantity,
+            discountAmount: item.discountAmount
+          }))
+          setQuoteItems(itemsWithLocalId)
+
           setLoadError(null)
         }
       } catch (error) {
@@ -83,14 +109,114 @@ export const EditQuote: React.FC = () => {
     setIsSaving(true)
 
     try {
-      const updatedQuote = await quotesService.updateQuote(id, {
-        content,
-        status
-      })
-      // Update local state with saved data
-      setQuote(updatedQuote)
-      setContent(updatedQuote.content || '')
-      setStatus(updatedQuote.status || 'draft')
+      let itemsChanged = false
+
+      // 1. Update patient data if changed
+      if (patientId) {
+        const patientChanged =
+          patientFirstName !== (quote.patient_first_name || '') ||
+          patientLastName !== (quote.patient_last_name || '') ||
+          patientEmail !== (quote.patient_email || '') ||
+          patientPhone !== (quote.patient_phone || '')
+
+        if (patientChanged) {
+          await patientsService.updatePatient(patientId, {
+            first_name: patientFirstName,
+            last_name: patientLastName,
+            email: patientEmail || undefined,
+            phone: patientPhone || undefined
+          })
+        }
+      }
+
+      // 2. Update quote content and status if changed
+      const quoteChanged =
+        content !== (quote.content || '') ||
+        status !== quote.status
+
+      if (quoteChanged) {
+        await quotesService.updateQuote(id, {
+          content,
+          status
+        })
+      }
+
+      // 3. Check if items changed
+      const currentItems = quote.items || []
+      const itemsToSave = quoteItems
+        .filter(item => item.itemId && !item.isSearchMode)
+        .map(item => ({
+          itemId: item.itemId,
+          quantity: item.quantity || 1,
+          discountAmount: item.discountAmount || 0
+        }))
+
+      // Compare items: different length or different content
+      if (currentItems.length !== itemsToSave.length) {
+        itemsChanged = true
+      } else {
+        // Compare each item
+        for (let i = 0; i < currentItems.length; i++) {
+          const current = currentItems[i]
+          const toSave = itemsToSave[i]
+          if (
+            current.itemId !== toSave.itemId ||
+            current.quantity !== toSave.quantity ||
+            current.discountAmount !== toSave.discountAmount
+          ) {
+            itemsChanged = true
+            break
+          }
+        }
+      }
+
+      // 4. Update quote items only if changed
+      if (itemsChanged) {
+        const { items: updatedItems } = await quotesService.replaceQuoteItems(id, {
+          items: itemsToSave
+        })
+
+        // Update items with server response
+        const itemsWithLocalId = updatedItems.map((item: any) => ({
+          localId: item.id,
+          itemId: item.itemId,
+          itemName: item.name,
+          itemBasePrice: typeof item.basePrice === 'string' ? parseFloat(item.basePrice) : item.basePrice,
+          quantity: item.quantity,
+          discountAmount: item.discountAmount,
+          isSearchMode: false
+        }))
+        setQuoteItems(itemsWithLocalId)
+      }
+
+      // 5. Fetch fresh quote data to ensure all data is updated
+      const freshQuote = await quotesService.getQuote(id)
+
+      // Update local state with fresh data
+      setQuote(freshQuote)
+      setContent(freshQuote.content || '')
+      setStatus(freshQuote.status || 'draft')
+
+      // Update patient state with fresh data
+      setPatientFirstName(freshQuote.patient_first_name || '')
+      setPatientLastName(freshQuote.patient_last_name || '')
+      setPatientEmail(freshQuote.patient_email || '')
+      setPatientPhone(freshQuote.patient_phone || '')
+
+      // Update items if not already updated
+      if (!itemsChanged && freshQuote.items) {
+        const itemsWithLocalId = freshQuote.items.map((item: any) => ({
+          localId: item.id,
+          itemId: item.itemId,
+          itemName: item.name,
+          itemBasePrice: typeof item.basePrice === 'string' ? parseFloat(item.basePrice) : item.basePrice,
+          quantity: item.quantity,
+          discountAmount: item.discountAmount,
+          isSearchMode: false
+        }))
+        setQuoteItems(itemsWithLocalId)
+      }
+
       // Success feedback is handled automatically by HTTP interceptor
     } catch (error) {
       console.error('Failed to update quote:', error)
@@ -158,7 +284,7 @@ export const EditQuote: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
         <p className="text-gray-600 mt-1">
-          Editing: {quote.number}
+          Quote {quote.number} • {quote.patient_first_name || quote.patient_last_name ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim() : ''}
         </p>
       </div>
 
@@ -258,55 +384,87 @@ export const EditQuote: React.FC = () => {
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 gap-4 divide-x divide-gray-200">
                   {/* Patient Info - Left */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Patient</h3>
-                    {quote.patient_first_name || quote.patient_last_name ? (
-                      <>
+                  <div className="space-y-2 pr-4">
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2">Patient</h3>
+                    {patientId ? (
+                      <div className="space-y-2">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Name
+                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
+                            First Name
                           </label>
-                          <p className="text-base text-gray-900">
-                            {[quote.patient_first_name, quote.patient_last_name]
-                              .filter(Boolean)
-                              .join(' ') || 'N/A'}
-                          </p>
+                          <input
+                            type="text"
+                            value={patientFirstName}
+                            onChange={(e) => setPatientFirstName(e.target.value)}
+                            disabled={isSaving}
+                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
+                          />
                         </div>
 
-                        {quote.patient_email && (
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Email
-                            </label>
-                            <p className="text-base text-gray-900">{quote.patient_email}</p>
-                          </div>
-                        )}
-                      </>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            value={patientLastName}
+                            onChange={(e) => setPatientLastName(e.target.value)}
+                            disabled={isSaving}
+                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
+                            Email
+                          </label>
+                          <input
+                            type="email"
+                            value={patientEmail}
+                            onChange={(e) => setPatientEmail(e.target.value)}
+                            disabled={isSaving}
+                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
+                            Phone
+                          </label>
+                          <input
+                            type="text"
+                            value={patientPhone}
+                            onChange={(e) => setPatientPhone(e.target.value)}
+                            disabled={isSaving}
+                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <p className="text-sm text-gray-500">No patient data</p>
                     )}
                   </div>
 
                   {/* Session Info - Right */}
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Session</h3>
+                  <div className="space-y-2 pl-4">
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2">Session</h3>
                     {quote.session_number ? (
                       <>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
                             Session Number
                           </label>
-                          <p className="text-base text-gray-900">{quote.session_number}</p>
+                          <p className="text-sm text-gray-900">{quote.session_number}</p>
                         </div>
 
                         {quote.session_status && (
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-xs font-medium text-gray-700 mb-0.5">
                               Status
                             </label>
-                            <p className="text-base text-gray-900 capitalize">{quote.session_status}</p>
+                            <p className="text-sm text-gray-900 capitalize">{quote.session_status}</p>
                           </div>
                         )}
                       </>
@@ -318,23 +476,12 @@ export const EditQuote: React.FC = () => {
               </CardContent>
             </Card>
 
-            {/* Quote Items Placeholder */}
-            <Card>
-              <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Quote Items</h2>
-              </CardHeader>
-
-              <CardContent className="px-6 pb-6">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <p className="text-gray-500 text-sm">
-                    Quote items functionality will be implemented here
-                  </p>
-                  <p className="text-gray-400 text-xs mt-2">
-                    (Item management, pricing, discounts)
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Quote Items */}
+            <QuoteItemsManager
+              quoteId={id!}
+              initialItems={quoteItems}
+              onItemsChange={setQuoteItems}
+            />
 
           </div>
         </div>

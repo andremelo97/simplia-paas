@@ -34,7 +34,8 @@ class Quote {
         id: data.patient_id,
         firstName: data.patient_first_name,
         lastName: data.patient_last_name,
-        email: data.patient_email
+        email: data.patient_email,
+        phone: data.patient_phone
       };
     }
 
@@ -50,7 +51,7 @@ class Quote {
   static async findById(id, schema, includeItems = false, includeSession = true) {
     let query = `
       SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
-             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone
       FROM ${schema}.quote q
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
@@ -75,10 +76,10 @@ class Quote {
 
       quote.items = itemsResult.rows.map(item => ({
         id: item.id,
+        itemId: item.item_id,
         name: item.name,
-        description: item.description,
         basePrice: parseFloat(item.base_price),
-        discountAmount: parseFloat(item.discount_amount),
+        discountAmount: parseFloat(item.discount_amount || 0),
         finalPrice: parseFloat(item.final_price),
         quantity: item.quantity,
         createdAt: item.created_at,
@@ -97,7 +98,7 @@ class Quote {
 
     let query = `
       SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
-             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone
       FROM ${schema}.quote q
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
@@ -179,7 +180,7 @@ class Quote {
     // Fetch the created quote with all joined data (session + patient)
     const selectQuery = `
       SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
-             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone
       FROM ${schema}.quote q
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
@@ -268,10 +269,11 @@ class Quote {
 
   /**
    * Calculate quote total based on items
+   * Note: final_price already includes quantity (final_price = (base_price - discount) * quantity)
    */
   static async calculateTotal(quoteId, schema) {
     const result = await database.query(`
-      SELECT SUM(final_price * quantity) as total
+      SELECT SUM(final_price) as total
       FROM ${schema}.quote_item
       WHERE quote_id = $1
     `, [quoteId]);
@@ -311,6 +313,7 @@ class Quote {
       result.patient_first_name = this.patient.firstName;
       result.patient_last_name = this.patient.lastName;
       result.patient_email = this.patient.email;
+      result.patient_phone = this.patient.phone;
     }
 
     // Include items if available

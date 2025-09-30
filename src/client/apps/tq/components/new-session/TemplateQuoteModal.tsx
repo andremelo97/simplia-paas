@@ -20,6 +20,7 @@ interface TemplateQuoteModalProps {
   onClose: () => void
   transcription: string
   patient: Patient | null
+  sessionId?: string // Optional: if provided, skips session creation
   onCreateQuote?: (templateId: string) => void
   onCreateClinicalReport?: (templateId: string) => void
   onQuoteCreated?: (quoteId: string, quoteNumber: string) => void
@@ -31,6 +32,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   onClose,
   transcription,
   patient,
+  sessionId,
   onCreateQuote,
   onCreateClinicalReport,
   onQuoteCreated,
@@ -80,24 +82,34 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
       setIsCreatingQuote(true)
       setError(null)
 
-      // Step 1: Create transcription from text
-      console.log('📝 [TemplateQuoteModal] Creating transcription with text:', transcription)
-      const createdTranscription = await transcriptionService.createTextTranscription(transcription)
-      console.log('✅ [TemplateQuoteModal] Transcription created:', createdTranscription.transcriptionId)
+      let targetSessionId: string
 
-      // Step 2: Create session with the transcription
-      console.log('📄 [TemplateQuoteModal] Creating session for patient:', patient.id)
-      const sessionData = {
-        patient_id: patient.id,
-        transcription_id: createdTranscription.transcriptionId
+      // If sessionId is provided (from EditSession), use it directly
+      if (sessionId) {
+        targetSessionId = sessionId
+        console.log('📄 [TemplateQuoteModal] Using existing session:', sessionId)
+      } else {
+        // Otherwise, create new transcription and session (NewSession flow)
+        // Step 1: Create transcription from text
+        console.log('📝 [TemplateQuoteModal] Creating transcription with text:', transcription)
+        const createdTranscription = await transcriptionService.createTextTranscription(transcription)
+        console.log('✅ [TemplateQuoteModal] Transcription created:', createdTranscription.transcriptionId)
+
+        // Step 2: Create session with the transcription
+        console.log('📄 [TemplateQuoteModal] Creating session for patient:', patient.id)
+        const sessionData = {
+          patient_id: patient.id,
+          transcription_id: createdTranscription.transcriptionId
+        }
+        const newSession = await sessionsService.createSession(sessionData)
+        console.log('✅ [TemplateQuoteModal] Session created successfully:', newSession.number)
+        targetSessionId = newSession.id
       }
-      const newSession = await sessionsService.createSession(sessionData)
-      console.log('✅ [TemplateQuoteModal] Session created successfully:', newSession.number)
 
       // Step 3: Fill template with AI using session transcription
       const fillTemplateRequest: FillTemplateRequest = {
         templateId: selectedTemplateId,
-        sessionId: newSession.id,
+        sessionId: targetSessionId,
         patientId: patient.id
       }
 
@@ -107,7 +119,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
 
       // Step 4: Create quote with filled template content
       const quoteData: CreateQuoteRequest = {
-        sessionId: newSession.id,
+        sessionId: targetSessionId,
         content: filledTemplateResponse.filledTemplate,
         status: 'draft'
       }
@@ -214,7 +226,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
           {/* Action Buttons */}
           <div className="flex space-x-3">
             <Button
-              variant="outline"
+              variant="primary"
               onClick={handleCreateQuote}
               disabled={!selectedTemplateId || !transcription.trim() || !patient || isLoading || isCreatingQuote}
               className="flex-1 flex items-center justify-center gap-2"
@@ -228,7 +240,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
             </Button>
 
             <Button
-              variant="primary"
+              variant="outline"
               onClick={handleCreateClinicalReport}
               disabled={!selectedTemplateId || isLoading}
               className="flex-1 flex items-center justify-center gap-2"

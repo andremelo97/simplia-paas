@@ -18,6 +18,7 @@ export interface Quote {
   patient_first_name?: string
   patient_last_name?: string
   patient_email?: string
+  patient_phone?: string
   // Quote items when includeItems=true
   items?: QuoteItem[]
 }
@@ -85,20 +86,14 @@ export interface UpdateQuoteRequest {
   expiresAt?: string
 }
 
-export interface CreateQuoteItemRequest {
-  name: string
-  description?: string
-  basePrice: number
-  discountAmount?: number
+export interface QuoteItemInput {
+  itemId: string
   quantity?: number
+  discountAmount?: number
 }
 
-export interface UpdateQuoteItemRequest {
-  name?: string
-  description?: string
-  basePrice?: number
-  discountAmount?: number
-  quantity?: number
+export interface ReplaceQuoteItemsRequest {
+  items: QuoteItemInput[]
 }
 
 export const quotesService = {
@@ -150,6 +145,7 @@ export const quotesService = {
       patient_first_name: apiQuote.patient_first_name,
       patient_last_name: apiQuote.patient_last_name,
       patient_email: apiQuote.patient_email,
+      patient_phone: apiQuote.patient_phone,
       // Items if included
       items: apiQuote.items
     }))
@@ -195,6 +191,7 @@ export const quotesService = {
       patient_first_name: apiQuote.patient_first_name,
       patient_last_name: apiQuote.patient_last_name,
       patient_email: apiQuote.patient_email,
+      patient_phone: apiQuote.patient_phone,
       // Items if included
       items: apiQuote.items
     }
@@ -300,40 +297,11 @@ export const quotesService = {
   // Quote Items methods
   async getQuoteItems(quoteId: string): Promise<QuoteItem[]> {
     const response = await api.get(`/api/tq/v1/quotes/${quoteId}/items`)
-    return response.data || []
+    return response || []
   },
 
-  async createQuoteItem(quoteId: string, data: CreateQuoteItemRequest): Promise<QuoteItem> {
-    const apiData = {
-      name: data.name,
-      description: data.description,
-      basePrice: data.basePrice,
-      discountAmount: data.discountAmount || 0,
-      quantity: data.quantity || 1
-    }
-
-    const response = await api.post(`/api/tq/v1/quotes/${quoteId}/items`, apiData)
-    return response.data
-  },
-
-  async updateQuoteItem(quoteId: string, itemId: string, data: UpdateQuoteItemRequest): Promise<QuoteItem> {
-    const apiData: any = {}
-    if (data.name !== undefined) apiData.name = data.name
-    if (data.description !== undefined) apiData.description = data.description
-    if (data.basePrice !== undefined) apiData.basePrice = data.basePrice
-    if (data.discountAmount !== undefined) apiData.discountAmount = data.discountAmount
-    if (data.quantity !== undefined) apiData.quantity = data.quantity
-
-    const response = await api.put(`/api/tq/v1/quotes/${quoteId}/items/${itemId}`, apiData)
-    return response.data
-  },
-
-  async deleteQuoteItem(quoteId: string, itemId: string): Promise<void> {
-    await api.delete(`/api/tq/v1/quotes/${quoteId}/items/${itemId}`)
-  },
-
-  async calculateQuoteTotal(quoteId: string): Promise<{ total: number }> {
-    const response = await api.post(`/api/tq/v1/quotes/${quoteId}/calculate`, {})
+  async replaceQuoteItems(quoteId: string, data: ReplaceQuoteItemsRequest): Promise<{ quote: Quote; items: QuoteItem[] }> {
+    const response = await api.post(`/api/tq/v1/quotes/${quoteId}/items`, data)
     return response.data
   }
 }

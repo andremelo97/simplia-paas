@@ -361,7 +361,7 @@ router.post('/fill-template', async (req, res) => {
       id: userId,
       first_name: req.user?.firstName || '',  // User model uses camelCase
       last_name: req.user?.lastName || '',    // User model uses camelCase
-      clinic: req.user?.clinic || '' // TODO: Define clinic field structure
+      clinic: req.tenant?.name || '' // Use tenant name as clinic name
     };
 
     // Step 1: Resolve system variables

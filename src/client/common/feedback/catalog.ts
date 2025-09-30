@@ -173,6 +173,12 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   TEMPLATE_FILLED: {
     title: "Template Filled",
     message: "Template filled successfully with AI."
+  },
+
+  // TQ - Quote Items operations
+  QUOTE_ITEMS_UPDATED: {
+    title: "Items Updated",
+    message: "Quote items updated successfully."
   }
 }
 

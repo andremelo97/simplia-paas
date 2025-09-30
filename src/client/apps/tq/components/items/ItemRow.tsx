@@ -25,11 +25,12 @@ export const ItemRow: React.FC<ItemRowProps> = ({
   }
 
 
-  const formatCurrency = (amount: number): string => {
+  const formatCurrency = (amount: number | string): string => {
+    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount)
+    }).format(numAmount)
   }
 
   return (
@@ -42,7 +43,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         {/* Created Date */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
-            {new Date(item.created_at).toLocaleDateString('pt-BR', {
+            {new Date(item.createdAt).toLocaleDateString('pt-BR', {
               day: '2-digit',
               month: '2-digit',
               year: 'numeric'
@@ -67,7 +68,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         {/* Base Price */}
         <div className="min-w-0 flex-1">
           <span className={`text-sm ${item.active ? 'text-gray-600' : 'text-gray-400'}`}>
-            {formatCurrency(item.base_price)}
+            {formatCurrency(item.basePrice)}
           </span>
         </div>
 

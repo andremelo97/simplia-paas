@@ -33,9 +33,9 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
   }
 
   const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('pt-BR', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'USD'
     }).format(amount)
   }
 

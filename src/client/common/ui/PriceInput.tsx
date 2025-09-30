@@ -15,10 +15,11 @@ const PriceInput = React.forwardRef<HTMLInputElement, PriceInputProps>(
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
     const [displayValue, setDisplayValue] = React.useState('')
 
-    // Initialize display value
+    // Initialize display value with 2 decimal places
     React.useEffect(() => {
       if (value !== undefined && value !== null && value !== 0) {
-        setDisplayValue(value.toString())
+        const numValue = typeof value === 'number' ? value : parseFloat(value)
+        setDisplayValue(numValue.toFixed(2))
       } else {
         setDisplayValue('')
       }

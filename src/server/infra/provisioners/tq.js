@@ -151,6 +151,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     `);
 
     // Create quote_item table (relationship between quotes and items)
+    // name and base_price are copied from item at creation time and become independent
+    // This allows users to edit prices in quotes without affecting the catalog
     await client.query(`
       CREATE TABLE IF NOT EXISTS quote_item (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -158,6 +160,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
         item_id UUID NOT NULL REFERENCES item(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        base_price NUMERIC(10, 2) NOT NULL,
         quantity INTEGER DEFAULT 1,
         discount_amount NUMERIC(10, 2) DEFAULT 0.00,
         final_price NUMERIC(10, 2) NOT NULL

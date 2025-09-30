@@ -52,7 +52,7 @@ function resolveTemplateVariables(template, context) {
     'me.fullName': user ?
       `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Doctor'
       : '',
-    'me.clinic': user?.clinic || '' // TODO: Define how clinic name is stored
+    'me.clinic': user?.clinic || '' // Clinic name from tenant (passed via context)
   }
 
   // Replace all variables in the template

@@ -44,6 +44,7 @@ export interface HeaderProps {
   showNotifications?: boolean
   className?: string
   getDisplayRole?: (user: User) => string
+  searchComponent?: React.ReactNode
 }
 
 const defaultGetBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
@@ -109,7 +110,8 @@ export const Header: React.FC<HeaderProps> = ({
   showSearch = true,
   showNotifications = true,
   className,
-  getDisplayRole = defaultGetDisplayRole
+  getDisplayRole = defaultGetDisplayRole,
+  searchComponent
 }) => {
   const location = useLocation()
   
@@ -191,20 +193,30 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Right Side - Actions & User */}
-        <div className="flex items-center space-x-3">
-          {/* Search Button */}
-          {showSearch && (
-            <Button variant="ghost" size="icon" className="hidden md:flex">
-              <Search className="w-4 h-4" />
-            </Button>
-          )}
-          
+        <div className="flex items-center">
+          {/* Search Component or Button */}
+          <div className="pr-3">
+            {showSearch && (
+              searchComponent ? (
+                <div className="hidden md:block">
+                  {searchComponent}
+                </div>
+              ) : (
+                <Button variant="ghost" size="icon" className="hidden md:flex">
+                  <Search className="w-4 h-4" />
+                </Button>
+              )
+            )}
+          </div>
+
           {/* Notifications */}
           {showNotifications && (
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-4 h-4" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-            </Button>
+            <div className="pr-3">
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-4 h-4" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+              </Button>
+            </div>
           )}
 
           {/* User Menu */}

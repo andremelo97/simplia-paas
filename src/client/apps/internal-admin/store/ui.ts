@@ -25,7 +25,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
-  sidebarOpen: true,
+  sidebarOpen: false,
   theme: 'light',
   currentTenant: null,
   notifications: [],

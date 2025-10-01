@@ -1,7 +1,14 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/auth'
 import { authService } from '../../services/auth'
 import { Header as CommonHeader } from '@client/common/components'
+import { QuickSearchBar } from '../../components/home/QuickSearchBar'
+import { patientsService, Patient } from '../../services/patients'
+import { sessionsService, Session } from '../../services/sessions'
+import { quotesService, Quote } from '../../services/quotes'
+import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
+import { templatesService, Template } from '../../services/templates'
+import { Search } from 'lucide-react'
 
 const getBreadcrumbs = (pathname: string) => {
   const segments = pathname.split('/').filter(Boolean)
@@ -79,6 +86,36 @@ const getDisplayRole = (user: any) => {
 
 export const Header: React.FC = () => {
   const { user } = useAuthStore()
+  const [patients, setPatients] = useState<Patient[]>([])
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [quotes, setQuotes] = useState<Quote[]>([])
+  const [clinicalReports, setClinicalReports] = useState<ClinicalReport[]>([])
+  const [templates, setTemplates] = useState<Template[]>([])
+
+  // Load data for search
+  useEffect(() => {
+    const loadSearchData = async () => {
+      try {
+        const [patientsRes, sessionsRes, quotesRes, reportsRes, templatesRes] = await Promise.all([
+          patientsService.list({}),
+          sessionsService.list({}),
+          quotesService.list({}),
+          clinicalReportsService.list({}),
+          templatesService.getAll({})
+        ])
+
+        setPatients(patientsRes.data || [])
+        setSessions(sessionsRes.data || [])
+        setQuotes(quotesRes.data || [])
+        setClinicalReports(reportsRes.data || [])
+        setTemplates(templatesRes.templates || [])
+      } catch (error) {
+        console.error('Failed to load search data:', error)
+      }
+    }
+
+    loadSearchData()
+  }, [])
 
   const handleLogout = () => {
     authService.logout()
@@ -91,8 +128,17 @@ export const Header: React.FC = () => {
       onLogout={handleLogout}
       getBreadcrumbs={getBreadcrumbs}
       getDisplayRole={getDisplayRole}
-      showSearch={false} // TQ doesn't need search initially
-      showNotifications={false} // TQ doesn't need notifications initially
+      showSearch={true}
+      showNotifications={false}
+      searchComponent={
+        <QuickSearchBar
+          patients={patients}
+          sessions={sessions}
+          quotes={quotes}
+          clinicalReports={clinicalReports}
+          templates={templates}
+        />
+      }
     />
   )
 }

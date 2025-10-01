@@ -1,6 +1,7 @@
 export { Button, buttonVariants, type ButtonProps } from './Button'
 export { LinkButton } from './LinkButton'
 export { Input, type InputProps } from './Input'
+export { SearchInput, type SearchInputProps } from './SearchInput'
 export { PriceInput, type PriceInputProps } from './PriceInput'
 export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from './Card'
 export { Label } from './Label'

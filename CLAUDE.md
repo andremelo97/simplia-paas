@@ -260,6 +260,7 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - **Common UI Components**: `src/client/common/ui/` - Shared design system components
   - `DropdownMenu`: Context-based dropdown with trigger/content/item components
   - `Input`: Standardized input with purple focus border (#B725B7)
+  - `SearchInput`: Reusable search input with clear button and consistent styling
   - `Button`, `Card`, `Select`, `Textarea`, `Progress`: Core UI primitives
   - `RichTextEditor`: Generic TipTap wrapper for rich text editing
   - `TemplateEditor`: Template-specific editor with syntax highlighting and variables palette
@@ -561,6 +562,17 @@ const handleSave = async () => {
 TQ follows the same `/features` architecture as internal-admin:
 
 #### Key TQ Features Implemented:
+- **Home Dashboard**: Comprehensive dashboard with multiple sections
+  - **Quick Actions**: 3 action cards (Start New Session, Add Patient, View Sessions)
+  - **Latest Quotes**: 6 cards in 3-column grid showing most recent quotes
+  - **Latest Reports**: 6 cards in 3-column grid showing most recent clinical reports
+  - **Sessions This Week**: 6 cards in 3-column grid showing most recent sessions
+  - **Patients Recently Added**: 5 most recent patients in list format with avatars
+  - **Recent Activity**: 5 most recent activities (patients, sessions, quotes) in timeline format
+  - **Global Search**: Header search bar with live results for patients, sessions, quotes, reports, and templates
+  - **Visual Separators**: Horizontal dividers between sections for clear organization
+  - **Double-click Navigation**: All cards and rows support double-click to edit/view
+  - **Color Consistency**: Icons match sidebar colors (Users=#5ED6CE, FileText=#B725B7, Receipt=#E91E63)
 - **NewSession**: Audio transcription interface with split-button design
   - Split button for "Start Transcribing" vs "Upload Audio" mode selection
   - Compact patient input field with inline "Create new patient" CTA
@@ -623,6 +635,14 @@ src/client/apps/tq/
 │       ├── CreateTemplate.tsx  # Template creation
 │       └── EditTemplate.tsx    # Template editing
 ├── components/        # Reusable TQ components
+│   ├── home/          # Home page components
+│   │   ├── QuickActionCard.tsx    # Action card for Quick Actions
+│   │   ├── QuoteCard.tsx          # Quote card for Latest Quotes
+│   │   ├── SessionCard.tsx        # Session card for Sessions This Week
+│   │   ├── ReportCard.tsx         # Report card for Latest Reports
+│   │   ├── RecentPatientRow.tsx   # Patient row for Recently Added
+│   │   ├── ActivityFeed.tsx       # Activity feed component
+│   │   └── QuickSearchBar.tsx     # Global search bar for header
 │   └── patients/      # Patient-specific components
 │       ├── PatientRow.tsx         # Patient table row (with History button)
 │       └── history/               # Patient history components
@@ -644,12 +664,15 @@ src/client/apps/tq/
 
 **Key TQ Implementation Details:**
 - **Shared UI**: Identical Layout, Sidebar, Header components as Hub
-- **Simplified Navigation**: Menu includes Home, Patients, Sessions, Quotes
+- **Simplified Navigation**: Menu includes Home, Patients, Sessions, Quotes, Clinical Reports, Templates
 - **SSO Integration**: Automatic login via URL parameters from Hub
 - **Features Structure**: Follows enterprise `/features` pattern instead of `/pages`
 - **Dedicated TQ API**: Separate API server on port 3004 with tenant-scoped routes
-- **Complete Backend**: Full CRUD APIs for patients, sessions, quotes, and AI agent integration
+- **Complete Backend**: Full CRUD APIs for patients, sessions, quotes, clinical reports, templates, and AI agent integration
 - **Medical Workflow**: End-to-end transcription → AI summary → quote generation workflow
+- **Global Search**: Live search across all entities with keyboard navigation (Arrow keys, Enter, Escape)
+- **UI Consistency**: All icons match sidebar (Users, FileText, Receipt, ClipboardList, FileType)
+- **Default Sidebar State**: Internal-admin sidebar starts collapsed; TQ sidebar starts expanded
 
 ### Database Schema Changes
 1. Create migration file in `src/server/infra/migrations/`

@@ -11,6 +11,13 @@ O Simplia PaaS é um monorepo Node.js fullstack que combina:
 - **Sistema de Licenciamento**: Arquitetura enterprise de 5 camadas com auditoria completa
 - **Compliance**: Campos de auditoria em todas as tabelas + logs detalhados para conformidade médica
 
+### ✨ Atualizações Recentes
+- **TQ Home Dashboard**: Dashboard completo com Quick Actions, Latest Quotes (6 cards), Latest Reports (6 cards), Sessions This Week (6 cards), Patients Recently Added (5), e Recent Activity (5)
+- **Global Search**: Busca global no header do TQ com resultados ao vivo para pacientes, sessões, quotes, reports e templates
+- **SearchInput Component**: Novo componente de busca reutilizável com ícone, botão clear e altura consistente (32px)
+- **UI Improvements**: Separadores visuais entre seções, double-click navigation, cores de ícones consistentes com sidebar
+- **Sidebar State**: Internal-admin inicia com sidebar colapsado; TQ inicia com sidebar expandido
+
 ## 🏗️ Arquitetura de Pastas e Arquivos
 
 ```
@@ -113,7 +120,7 @@ simplia-paas/
 │   │   │   │   │   ├── 📁 auth/       # autenticação com SSO
 │   │   │   │   │   │   └── Login.tsx  # página de login (SSO)
 │   │   │   │   │   ├── 📁 home/       # página inicial
-│   │   │   │   │   │   └── Home.tsx   # dashboard principal do TQ
+│   │   │   │   │   │   └── Home.tsx   # **ATUALIZADO**: dashboard com Quick Actions, Latest Quotes, Reports, Sessions, Recent Activity, Patients
 │   │   │   │   │   ├── 📁 templates/  # gestão de templates clínicos
 │   │   │   │   │   │   ├── Templates.tsx      # listagem com busca e paginação
 │   │   │   │   │   │   ├── CreateTemplate.tsx # criação com layout 2-colunas e guia
@@ -137,6 +144,14 @@ simplia-paas/
 │   │   │   │   │       ├── EditClinicalReport.tsx  # edição 60/40 layout (sem quote items)
 │   │   │   │   │       └── ViewClinicalReport.tsx  # visualização com Print/PDF
 │   │   │   │   ├── 📁 components/     # componentes específicos do TQ
+│   │   │   │   │   ├── 📁 home/       # **NOVO**: componentes do dashboard
+│   │   │   │   │   │   ├── QuickActionCard.tsx     # card de ação rápida
+│   │   │   │   │   │   ├── QuoteCard.tsx           # card de quote com double-click
+│   │   │   │   │   │   ├── SessionCard.tsx         # card de sessão com double-click
+│   │   │   │   │   │   ├── ReportCard.tsx          # card de report com double-click
+│   │   │   │   │   │   ├── RecentPatientRow.tsx    # row de paciente recente com avatar
+│   │   │   │   │   │   ├── ActivityFeed.tsx        # feed de atividades recentes
+│   │   │   │   │   │   └── QuickSearchBar.tsx      # busca global no header
 │   │   │   │   │   ├── 📁 templates/  # componentes de templates
 │   │   │   │   │   │   ├── TemplateRow.tsx         # item da lista de templates
 │   │   │   │   │   │   ├── TemplateFilters.tsx     # busca e filtros
@@ -145,8 +160,8 @@ simplia-paas/
 │   │   │   │   │   ├── 📁 patients/    # componentes de patients
 │   │   │   │   │   │   ├── PatientRow.tsx          # item da lista de patients (com botão History)
 │   │   │   │   │   │   └── 📁 history/             # componentes de histórico
-│   │   │   │   │   │       ├── HistoryRow.tsx      # **NOVO**: row genérico para tabs
-│   │   │   │   │   │       └── TimelineItem.tsx    # **NOVO**: item de timeline com spine vertical
+│   │   │   │   │   │       ├── HistoryRow.tsx      # row genérico para tabs
+│   │   │   │   │   │       └── TimelineItem.tsx    # item de timeline com spine vertical
 │   │   │   │   │   ├── 📁 clinical-reports/ # componentes de clinical reports
 │   │   │   │   │   │   ├── ClinicalReportRow.tsx   # item da lista de reports
 │   │   │   │   │   │   ├── ClinicalReportsEmpty.tsx # estado vazio

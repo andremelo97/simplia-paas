@@ -576,6 +576,20 @@ TQ follows the same `/features` architecture as internal-admin:
   - Medical-focused prompts optimized for 2nd person summaries
   - Direct quote creation from AI-generated summaries
 - **Patient Management**: Complete CRUD system for patient records
+  - **Patient History**: Comprehensive history page at `/patients/:id/history` with:
+    - 4 metric cards: Total Sessions, Total Quotes, Approved Quotes, Total Reports
+    - 4 tabs: Sessions, Quotes, Clinical Reports, Timeline
+    - Timeline view with vertical spine visualization (newest first)
+    - Pagination (10 items per page) across all tabs
+    - Navigation: Edit button in History → Edit Patient, View History button in Edit → History
+- **Clinical Report Management**: Complete CRUD system with print/PDF support
+  - **View Clinical Report**: `/clinical-reports/:id/view` with Edit and Print/PDF buttons
+  - **Print/PDF Implementation**: Simple HTML rendering (no TipTap) for proper pagination
+    - Uses `dangerouslySetInnerHTML` for direct HTML rendering
+    - Custom `@media print` CSS with A4 page setup and 2cm margins
+    - Automatic pagination across multiple pages
+    - Page numbers at bottom center
+    - Hides URL, sidebar, and header in print view
 - **Session Management**: Audio session tracking with transcription integration
 - **Transcription Service**: `transcriptionService.ts` for API communication with Deepgram
 - **Audio Components**: AudioUploadModal for file uploads, recording controls
@@ -594,20 +608,36 @@ src/client/apps/tq/
 │   ├── home/          # Home/Dashboard functionality
 │   │   └── Home.tsx
 │   ├── patients/      # Patient management
+│   │   ├── Patients.tsx           # Patient listing page
+│   │   ├── CreatePatient.tsx      # Patient creation
+│   │   ├── EditPatient.tsx        # Patient editing (with View History button)
+│   │   └── PatientHistory.tsx     # Patient history with tabs and timeline
+│   ├── clinical-reports/  # Clinical report management
+│   │   ├── ClinicalReports.tsx    # Report listing page
+│   │   ├── EditClinicalReport.tsx # Report editing
+│   │   └── ViewClinicalReport.tsx # Report viewing with Print/PDF
 │   ├── session/       # Session management and transcription
 │   ├── quotes/        # Quote management system
 │   └── templates/     # Template management with TipTap editor
 │       ├── Templates.tsx    # Main listing page
 │       ├── CreateTemplate.tsx  # Template creation
 │       └── EditTemplate.tsx    # Template editing
+├── components/        # Reusable TQ components
+│   └── patients/      # Patient-specific components
+│       ├── PatientRow.tsx         # Patient table row (with History button)
+│       └── history/               # Patient history components
+│           ├── HistoryRow.tsx     # Generic history row for tabs
+│           └── TimelineItem.tsx   # Timeline item with vertical spine
 ├── shared/            # Shared TQ components/services
 │   ├── components/    # Layout, Sidebar, Header (copied from Hub)
 │   ├── store/         # Zustand stores (auth, ui)
 │   └── types/         # TypeScript interfaces
 ├── services/          # API service layer
-│   ├── templates.ts   # Template API service with TQ API integration
-│   ├── patients.ts    # Patient API service
-│   └── sessions.ts    # Session API service
+│   ├── templates.ts        # Template API service with TQ API integration
+│   ├── patients.ts         # Patient API service
+│   ├── sessions.ts         # Session API service
+│   ├── quotes.ts           # Quote API service
+│   └── clinicalReports.ts  # Clinical reports API service
 ├── lib/              # Utilities (SSO consumption)
 └── App.tsx           # TQ application root
 ```

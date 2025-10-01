@@ -156,38 +156,28 @@ export const ViewClinicalReport: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Print-only version - No Card, pure content */}
-      <div className="hidden print:block print-report-content">
+      {/* Print-only version - Simple HTML rendering for proper pagination */}
+      <div className="hidden print:block print-report-content" data-date={formatDate(report.created_at)}>
         {/* Report Header */}
-        <div style={{ marginBottom: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+        <div className="print-header">
+          <h2 className="print-title">
             Clinical Report {report.number}
           </h2>
-          <p style={{ marginBottom: '0.25rem' }}>
+          <p className="print-patient">
             <strong>Patient:</strong> {patientName}
           </p>
-          <p style={{ fontSize: '0.875rem', color: '#4b5563' }}>
+          <p className="print-date">
             <strong>Generated on:</strong> {formatDate(report.created_at)}
           </p>
         </div>
 
-        <hr style={{ margin: '1rem 0', borderTop: '1px solid #e5e7eb' }} />
+        <hr className="print-divider" />
 
-        {/* Report Content */}
-        <div className="clinical-report-view">
-          <TemplateEditor
-            content={report.content || '<p>No content available</p>'}
-            onChange={() => {}} // No-op since it's readonly
-            readonly={true}
-          />
-        </div>
-
-        {/* Footer disclaimer */}
-        <div style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #e5e7eb' }}>
-          <p style={{ fontSize: '0.75rem', color: '#6b7280', fontStyle: 'italic' }}>
-            This clinical report was generated automatically. Please verify all information before use.
-          </p>
-        </div>
+        {/* Report Content - Direct HTML rendering for proper pagination */}
+        <div
+          className="print-content"
+          dangerouslySetInnerHTML={{ __html: report.content || '<p>No content available</p>' }}
+        />
       </div>
     </div>
   )

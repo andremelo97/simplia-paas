@@ -10,6 +10,7 @@ import { EditSession } from '../features/session/EditSession'
 import { Patients } from '../features/patients/Patients'
 import { CreatePatient } from '../features/patients/CreatePatient'
 import { EditPatient } from '../features/patients/EditPatient'
+import { PatientHistory } from '../features/patients/PatientHistory'
 import { QuoteManagementLayout } from '../features/quotes/QuoteManagementLayout'
 import { QuotesTab } from '../features/quotes/tabs/QuotesTab'
 import { ItemsTab } from '../features/quotes/tabs/ItemsTab'
@@ -85,6 +86,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="patients" element={<Patients />} />
         <Route path="patients/create" element={<CreatePatient />} />
         <Route path="patients/:id/edit" element={<EditPatient />} />
+        <Route path="patients/:id/history" element={<PatientHistory />} />
         <Route path="templates" element={<Templates />} />
         <Route path="templates/create" element={<CreateTemplate />} />
         <Route path="templates/:id/edit" element={<EditTemplate />} />

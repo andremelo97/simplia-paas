@@ -51,9 +51,8 @@ export const Patients: React.FC = () => {
     navigate(`/patients/${patient.id}/edit`)
   }
 
-  const handleDuplicatePatient = (patient: Patient) => {
-    // Placeholder: Will be implemented later
-    console.log('Duplicate patient:', patient)
+  const handleHistoryPatient = (patient: Patient) => {
+    navigate(`/patients/${patient.id}/history`)
   }
 
   const handleDeletePatient = (patient: Patient) => {
@@ -151,7 +150,7 @@ export const Patients: React.FC = () => {
                     key={patient.id}
                     patient={patient}
                     onEdit={handleEditPatient}
-                    onDuplicate={handleDuplicatePatient}
+                    onHistory={handleHistoryPatient}
                     onDelete={handleDeletePatient}
                   />
                 ))}

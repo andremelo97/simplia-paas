@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Edit, Copy, Trash2 } from 'lucide-react'
+import { Edit, History, Trash2 } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { Patient } from '../../services/patients'
 import { formatPatientName } from '../../hooks/usePatients'
@@ -7,14 +7,14 @@ import { formatPatientName } from '../../hooks/usePatients'
 interface PatientRowProps {
   patient: Patient
   onEdit?: (patient: Patient) => void
-  onDuplicate?: (patient: Patient) => void
+  onHistory?: (patient: Patient) => void
   onDelete?: (patient: Patient) => void
 }
 
 export const PatientRow: React.FC<PatientRowProps> = ({
   patient,
   onEdit,
-  onDuplicate,
+  onHistory,
   onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false)
@@ -23,8 +23,8 @@ export const PatientRow: React.FC<PatientRowProps> = ({
     onEdit?.(patient)
   }
 
-  const handleDuplicate = () => {
-    onDuplicate?.(patient)
+  const handleHistory = () => {
+    onHistory?.(patient)
   }
 
   const handleDelete = () => {
@@ -78,21 +78,21 @@ export const PatientRow: React.FC<PatientRowProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleEdit}
+          onClick={handleHistory}
           className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Edit ${formatPatientName(patient)}`}
+          aria-label={`View history for ${formatPatientName(patient)}`}
         >
-          <Edit className="w-4 h-4 text-gray-600" />
+          <History className="w-4 h-4 text-gray-600" />
         </Button>
 
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleDuplicate}
+          onClick={handleEdit}
           className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Duplicate ${formatPatientName(patient)}`}
+          aria-label={`Edit ${formatPatientName(patient)}`}
         >
-          <Copy className="w-4 h-4 text-gray-600" />
+          <Edit className="w-4 h-4 text-gray-600" />
         </Button>
 
         <Button

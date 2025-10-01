@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { History } from 'lucide-react'
 import { Card, CardHeader, CardContent, Button, Input, Textarea } from '@client/common/ui'
 import { patientsService, Patient } from '../../services/patients'
 import { formatDate } from '@client/common/utils/dateUtils'
@@ -245,11 +246,21 @@ export const EditPatient: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Patient</h1>
-        <p className="text-gray-600 mt-1">
-          Update patient information
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Patient</h1>
+          <p className="text-gray-600 mt-1">
+            Update patient information
+          </p>
+        </div>
+        <Button
+          variant="secondary"
+          onClick={() => navigate(`/patients/${id}/history`)}
+          className="flex items-center gap-2"
+        >
+          <History className="w-4 h-4" />
+          View History
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit}>

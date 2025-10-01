@@ -120,9 +120,10 @@ simplia-paas/
 │   │   │   │   │   │   ├── EditTemplate.tsx   # edição de templates
 │   │   │   │   │   │   └── ViewTemplate.tsx   # visualização/detalhes
 │   │   │   │   │   ├── 📁 patients/   # gestão de pacientes
-│   │   │   │   │   │   ├── Patients.tsx       # listagem com busca
-│   │   │   │   │   │   ├── CreatePatient.tsx  # criação
-│   │   │   │   │   │   └── EditPatient.tsx    # edição
+│   │   │   │   │   │   ├── Patients.tsx        # listagem com busca
+│   │   │   │   │   │   ├── CreatePatient.tsx   # criação
+│   │   │   │   │   │   ├── EditPatient.tsx     # edição (com botão View History)
+│   │   │   │   │   │   └── PatientHistory.tsx  # **NOVO**: histórico completo do paciente
 │   │   │   │   │   ├── 📁 session/    # gestão de sessões de transcrição
 │   │   │   │   │   │   ├── NewSession.tsx     # interface de nova sessão com split button
 │   │   │   │   │   │   ├── Sessions.tsx       # listagem de sessões
@@ -131,15 +132,21 @@ simplia-paas/
 │   │   │   │   │   │   ├── QuoteManagementLayout.tsx # layout com tabs
 │   │   │   │   │   │   ├── EditQuote.tsx      # edição 60/40 layout
 │   │   │   │   │   │   └── 📁 tabs/           # tabs de quotes e items
-│   │   │   │   │   └── 📁 clinical-reports/   # **NOVO**: relatórios clínicos
-│   │   │   │   │       ├── ClinicalReports.tsx    # listagem com busca
-│   │   │   │   │       └── EditClinicalReport.tsx # edição 60/40 layout (sem quote items)
+│   │   │   │   │   └── 📁 clinical-reports/   # relatórios clínicos
+│   │   │   │   │       ├── ClinicalReports.tsx     # listagem com busca
+│   │   │   │   │       ├── EditClinicalReport.tsx  # edição 60/40 layout (sem quote items)
+│   │   │   │   │       └── ViewClinicalReport.tsx  # visualização com Print/PDF
 │   │   │   │   ├── 📁 components/     # componentes específicos do TQ
 │   │   │   │   │   ├── 📁 templates/  # componentes de templates
 │   │   │   │   │   │   ├── TemplateRow.tsx         # item da lista de templates
 │   │   │   │   │   │   ├── TemplateFilters.tsx     # busca e filtros
 │   │   │   │   │   │   ├── TemplatesEmpty.tsx      # estado vazio
 │   │   │   │   │   │   └── TemplatePreview.tsx     # preview/modal de templates
+│   │   │   │   │   ├── 📁 patients/    # componentes de patients
+│   │   │   │   │   │   ├── PatientRow.tsx          # item da lista de patients (com botão History)
+│   │   │   │   │   │   └── 📁 history/             # componentes de histórico
+│   │   │   │   │   │       ├── HistoryRow.tsx      # **NOVO**: row genérico para tabs
+│   │   │   │   │   │       └── TimelineItem.tsx    # **NOVO**: item de timeline com spine vertical
 │   │   │   │   │   ├── 📁 clinical-reports/ # componentes de clinical reports
 │   │   │   │   │   │   ├── ClinicalReportRow.tsx   # item da lista de reports
 │   │   │   │   │   │   ├── ClinicalReportsEmpty.tsx # estado vazio
@@ -1119,6 +1126,20 @@ npx jest --testNamePattern="Grant.*snapshot.*seat"
     - **Edit Quote Page**: Interface 60/40 com edição de conteúdo e visualização de patient/session
     - **Automatic Feedback**: Todas mutações retornam `meta.code` para toasts automáticos via HTTP interceptor
     - **Stay on Page**: Edições mantém usuário na página com atualização local de estado
+  - **Patient History System**: Página completa de histórico do paciente (`/patients/:id/history`)
+    - **4 Metric Cards**: Total Sessions, Total Quotes, Approved Quotes, Total Reports
+    - **4 Tabs with Pagination**: Sessions, Quotes, Clinical Reports, Timeline (10 items per page)
+    - **Timeline Visualization**: Eventos cronológicos com spine vertical conectando items (newest first)
+    - **History Components**: `HistoryRow` (genérico para tabs) e `TimelineItem` (com spine visual)
+    - **Navigation**: Botão Edit em History → Edit Patient, botão View History em Edit → History
+    - **Clean Presentation**: IDs removidos de todos os tabs, foco em conteúdo relevante
+  - **Clinical Report Print/PDF**: Sistema de impressão e exportação para PDF
+    - **Print Button**: Botão "Print/Save as PDF" na página `/clinical-reports/:id/view`
+    - **Simple HTML Rendering**: Usa `dangerouslySetInnerHTML` para renderização direta (sem TipTap)
+    - **Proper Pagination**: Conteúdo flui naturalmente para múltiplas páginas A4
+    - **Custom Print CSS**: `@media print` com margens 2cm, reset de overflow/height
+    - **Page Numbers**: Contador automático no rodapé centralizado (1, 2, 3...)
+    - **Clean Output**: Oculta URL, sidebar, header e elementos de navegação
   - **DropdownMenu Component**: Novo componente comum com Context API (Trigger/Content/Item)
   - **Input Standardization**: Borda roxa (#B725B7) no foco para todos os inputs do sistema
   - **Card Layout Refinado**: Padding consistente (px-6 py-4) em headers e conteúdo

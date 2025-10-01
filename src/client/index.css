@@ -199,63 +199,183 @@ button[data-variant="secondary"] {
   padding: 0 !important;
 }
 
-/* Print styles - ensure no scrollbars in PDF */
+/* Print styles for Clinical Reports */
 @media print {
-  /* Print content container */
-  .print-report-content {
+  /* Page setup with custom footer */
+  @page {
+    margin: 2cm 2cm 3cm 2cm;
+    size: A4;
+
+    @bottom-center {
+      content: counter(page);
+    }
+  }
+
+  /* Reset body and ensure full height */
+  body {
     margin: 0;
     padding: 0;
+    background: white;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
   }
 
-  /* CRITICAL: Override 100vh and overflow from simple-editor.scss */
-  .print-report-content .clinical-report-view .simple-editor-wrapper {
-    width: 100% !important;
+  /* Reset all containers that might limit height - CRITICAL FOR PAGINATION */
+  #root,
+  #root > div,
+  .app,
+  main,
+  main > div,
+  main > div > div {
     height: auto !important;
+    min-height: auto !important;
     max-height: none !important;
     overflow: visible !important;
   }
 
-  .print-report-content .clinical-report-view .simple-editor-content {
-    max-width: 100% !important;
-    width: 100% !important;
+  /* Hide sidebar and header in print */
+  aside,
+  header,
+  nav {
+    display: none !important;
+  }
+
+  /* Print container */
+  .print-report-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
     height: auto !important;
+    min-height: auto !important;
     max-height: none !important;
     overflow: visible !important;
-    display: block !important;
-    flex: none !important;
-    margin: 0 !important;
   }
 
-  .print-report-content .clinical-report-view .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  /* App name header - centered at top */
+  .print-app-header {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .print-app-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  /* Report header styling */
+  .print-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .print-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #111827;
+    text-align: left;
+  }
+
+  .print-patient {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #374151;
+  }
+
+  .print-date {
+    font-size: 0.875rem;
+    color: #6b7280;
+  }
+
+  .print-divider {
+    margin: 1.5rem 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  /* Content styling - allow natural pagination */
+  .print-content {
+    width: 100%;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #111827;
     height: auto !important;
+    min-height: auto !important;
     max-height: none !important;
-    min-height: 0 !important;
     overflow: visible !important;
-    border: none !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    flex: none !important;
   }
 
-  /* Allow page breaks at all levels */
-  .print-report-content .clinical-report-view,
-  .print-report-content .clinical-report-view .simple-editor-wrapper,
-  .print-report-content .clinical-report-view .simple-editor-content,
-  .print-report-content .clinical-report-view .simple-editor-content .tiptap.ProseMirror.simple-editor {
-    page-break-inside: auto !important;
-    break-inside: auto !important;
-  }
-
-  /* Typography controls */
-  .print-report-content p {
+  /* HTML content typography */
+  .print-content p {
+    margin-bottom: 0.75rem;
     orphans: 2;
     widows: 2;
   }
 
-  .print-report-content h1,
-  .print-report-content h2,
-  .print-report-content h3 {
+  .print-content h1,
+  .print-content h2,
+  .print-content h3,
+  .print-content h4 {
     page-break-after: avoid;
     break-after: avoid;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  .print-content ul,
+  .print-content ol {
+    margin-left: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .print-content li {
+    margin-bottom: 0.25rem;
+  }
+
+  .print-content strong {
+    font-weight: 600;
+  }
+
+  /* Prevent page breaks inside important elements */
+  .print-content blockquote,
+  .print-content pre,
+  .print-content table {
+    page-break-inside: avoid;
+  }
+
+  /* CRITICAL: Remove all nested elements that might restrict height */
+  .print-content * {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Reset ALL divs that might be limiting height */
+  div {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure framer-motion doesn't block pagination */
+  [style*="overflow: hidden"],
+  [style*="height: 100vh"],
+  [style*="max-height"] {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  /* Hide URL in footer */
+  @page {
+    @bottom-left {
+      content: none;
+    }
+    @bottom-right {
+      content: none;
+    }
   }
 }

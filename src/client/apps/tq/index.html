@@ -13,7 +13,7 @@
       @media print {
         /* Page setup */
         @page {
-          margin: 1.5cm;
+          margin: 1cm;
           size: A4;
         }
 
@@ -22,22 +22,19 @@
           visibility: hidden;
         }
 
-        /* Show only the report card and its contents */
-        .print-report-card,
-        .print-report-card * {
+        /* Show only the print content and its children */
+        .print-report-content,
+        .print-report-content * {
           visibility: visible;
         }
 
-        /* Position the card at top left */
-        .print-report-card {
-          position: absolute;
-          left: 0;
-          top: 0;
+        /* Clean print layout */
+        .print-report-content {
+          position: static;
           width: 100%;
-          box-shadow: none !important;
-          border: none !important;
-          margin: 0 !important;
-          background: white !important;
+          margin: 0;
+          padding: 0;
+          background: white;
         }
 
         /* Reset body */
@@ -86,6 +83,89 @@
         .max-w-xl {
           max-width: none !important;
         }
+      }
+
+      /* TipTap Content Styling - Match editor rendering exactly */
+      .tiptap-content {
+        line-height: 1.75;
+      }
+
+      .tiptap-content p {
+        margin-top: 0;
+        margin-bottom: 1em;
+      }
+
+      .tiptap-content p:last-child {
+        margin-bottom: 0;
+      }
+
+      .tiptap-content strong {
+        font-weight: 600;
+      }
+
+      .tiptap-content em {
+        font-style: italic;
+      }
+
+      .tiptap-content ul,
+      .tiptap-content ol {
+        padding-left: 1.5em;
+        margin-bottom: 1em;
+      }
+
+      .tiptap-content li {
+        margin-bottom: 0.25em;
+      }
+
+      .tiptap-content h1,
+      .tiptap-content h2,
+      .tiptap-content h3,
+      .tiptap-content h4,
+      .tiptap-content h5,
+      .tiptap-content h6 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+
+      .tiptap-content h1:first-child,
+      .tiptap-content h2:first-child,
+      .tiptap-content h3:first-child,
+      .tiptap-content h4:first-child,
+      .tiptap-content h5:first-child,
+      .tiptap-content h6:first-child {
+        margin-top: 0;
+      }
+
+      .tiptap-content code {
+        background-color: #f3f4f6;
+        padding: 0.125em 0.25em;
+        border-radius: 0.25em;
+        font-size: 0.875em;
+      }
+
+      .tiptap-content pre {
+        background-color: #1f2937;
+        color: #f9fafb;
+        padding: 1em;
+        border-radius: 0.5em;
+        overflow-x: auto;
+        margin-bottom: 1em;
+      }
+
+      .tiptap-content pre code {
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+      }
+
+      .tiptap-content blockquote {
+        border-left: 4px solid #d1d5db;
+        padding-left: 1em;
+        margin-left: 0;
+        margin-bottom: 1em;
+        font-style: italic;
       }
     </style>
   </head>

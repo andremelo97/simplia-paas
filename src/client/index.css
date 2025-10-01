@@ -172,3 +172,90 @@ button[data-variant="secondary"] {
   border-color: var(--brand-primary) !important;
   box-shadow: 0 0 0 1px var(--brand-primary) !important;
 }
+
+/* Clinical Report View - Hide toolbar and show full content */
+.clinical-report-view .simple-editor-wrapper .tiptap-toolbar {
+  display: none !important;
+}
+
+.clinical-report-view .simple-editor-wrapper {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.clinical-report-view .simple-editor-content {
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.clinical-report-view .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  max-height: none !important;
+  height: auto !important;
+  overflow-y: visible !important;
+  overflow: visible !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Print styles - ensure no scrollbars in PDF */
+@media print {
+  /* Print content container */
+  .print-report-content {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* CRITICAL: Override 100vh and overflow from simple-editor.scss */
+  .print-report-content .clinical-report-view .simple-editor-wrapper {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .print-report-content .clinical-report-view .simple-editor-content {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+    flex: none !important;
+    margin: 0 !important;
+  }
+
+  .print-report-content .clinical-report-view .simple-editor-content .tiptap.ProseMirror.simple-editor {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    flex: none !important;
+  }
+
+  /* Allow page breaks at all levels */
+  .print-report-content .clinical-report-view,
+  .print-report-content .clinical-report-view .simple-editor-wrapper,
+  .print-report-content .clinical-report-view .simple-editor-content,
+  .print-report-content .clinical-report-view .simple-editor-content .tiptap.ProseMirror.simple-editor {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  /* Typography controls */
+  .print-report-content p {
+    orphans: 2;
+    widows: 2;
+  }
+
+  .print-report-content h1,
+  .print-report-content h2,
+  .print-report-content h3 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+}

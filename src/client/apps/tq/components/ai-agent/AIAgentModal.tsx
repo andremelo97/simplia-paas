@@ -217,7 +217,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                     <Card className="flex-1">
                       <CardContent className="p-4">
                         <div className="prose prose-sm max-w-none">
-                          <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-gray-800">
+                          <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800" style={{ lineHeight: '1.8' }}>
                             {message.content}
                           </pre>
                         </div>

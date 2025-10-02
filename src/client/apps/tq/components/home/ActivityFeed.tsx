@@ -1,13 +1,13 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@client/common/ui'
-import { FileText, Users, Receipt, CheckCircle, Clock } from 'lucide-react'
+import { FileText, Users, Receipt, CheckCircle, Clock, ClipboardList } from 'lucide-react'
 
 interface Activity {
   id: string
-  type: 'patient_added' | 'session_created' | 'quote_created' | 'quote_approved' | 'session_completed'
+  type: 'patient_added' | 'session_created' | 'quote_created' | 'quote_approved' | 'session_completed' | 'report_created'
   message: string
   timestamp: string
-  icon: 'patient' | 'session' | 'quote' | 'approved' | 'completed'
+  icon: 'patient' | 'session' | 'quote' | 'approved' | 'completed' | 'report'
   path?: string
 }
 
@@ -36,6 +36,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoadin
         return <FileText className={`${iconClass} text-[#B725B7]`} />
       case 'quote':
         return <Receipt className={`${iconClass} text-[#E91E63]`} />
+      case 'report':
+        return <ClipboardList className={`${iconClass} text-blue-600`} />
       case 'approved':
         return <CheckCircle className={`${iconClass} text-green-600`} />
       case 'completed':
@@ -53,6 +55,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoadin
         return 'bg-purple-100'
       case 'quote':
         return 'bg-pink-100'
+      case 'report':
+        return 'bg-blue-100'
       case 'approved':
         return 'bg-green-100'
       case 'completed':

@@ -9,7 +9,7 @@ interface HistoryRowProps {
   status?: string
   date: string
   icon: React.ReactNode
-  onView?: () => void
+  viewPath?: string
 }
 
 export const HistoryRow: React.FC<HistoryRowProps> = ({
@@ -20,8 +20,20 @@ export const HistoryRow: React.FC<HistoryRowProps> = ({
   status,
   date,
   icon,
-  onView
+  viewPath
 }) => {
+  const handleViewClick = (e: React.MouseEvent) => {
+    if (!viewPath) return
+
+    // Se Ctrl (Windows/Linux) ou Cmd (Mac) estiver pressionado, abre em nova aba
+    if (e.ctrlKey || e.metaKey) {
+      window.open(viewPath, '_blank', 'noopener,noreferrer')
+    } else {
+      // Senão, abre na mesma aba
+      window.location.href = viewPath
+    }
+  }
+
   return (
     <div className="flex items-start gap-4 py-4 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors">
       {/* Icon/Avatar */}
@@ -63,16 +75,18 @@ export const HistoryRow: React.FC<HistoryRowProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="flex-shrink-0">
-        <Button
-          variant="tertiary"
-          size="sm"
-          onClick={onView}
-          className="text-sm"
-        >
-          View
-        </Button>
-      </div>
+      {viewPath && (
+        <div className="flex-shrink-0">
+          <Button
+            variant="tertiary"
+            size="sm"
+            onClick={handleViewClick}
+            className="text-sm"
+          >
+            View
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

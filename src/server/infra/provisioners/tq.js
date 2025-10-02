@@ -412,6 +412,86 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
+    // Create public_quote_template table for reusable Puck layouts
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public_quote_template (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        content JSONB NOT NULL,
+        is_default BOOLEAN DEFAULT false,
+        active BOOLEAN DEFAULT true
+      )
+    `);
+
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_public_quote_template_default
+        ON public_quote_template(is_default)
+        WHERE is_default = true
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_public_quote_template_active
+        ON public_quote_template(active)
+    `);
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_public_quote_template_updated_at ON public_quote_template
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_public_quote_template_updated_at
+        BEFORE UPDATE ON public_quote_template
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
+    // Create public_quote table for external quote sharing instances
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS public_quote (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
+        template_id UUID REFERENCES public_quote_template(id) ON DELETE SET NULL,
+        access_token VARCHAR(64) UNIQUE NOT NULL,
+        password_hash VARCHAR(255),
+        views_count INTEGER DEFAULT 0,
+        last_viewed_at TIMESTAMPTZ,
+        active BOOLEAN DEFAULT true,
+        expires_at TIMESTAMPTZ
+      )
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_public_quote_access_token ON public_quote(access_token)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_public_quote_quote_id ON public_quote(quote_id)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_public_quote_template_id ON public_quote(template_id)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_public_quote_active ON public_quote(active)
+    `);
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_public_quote_updated_at ON public_quote
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_public_quote_updated_at
+        BEFORE UPDATE ON public_quote
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
     await client.query('COMMIT');
     console.log(`TQ app schema provisioned successfully for tenant schema: ${schema}`);
 
@@ -435,10 +515,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_report')
+        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_report', 'public_quote')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 8;
+    return parseInt(result.rows[0].table_count) === 9;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

@@ -179,6 +179,24 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   QUOTE_ITEMS_UPDATED: {
     title: "Items Updated",
     message: "Quote items updated successfully."
+  },
+
+  // Branding operations
+  BRANDING_UPDATED: {
+    title: "Branding Updated",
+    message: "Branding configuration updated successfully."
+  },
+  BRANDING_RESET: {
+    title: "Branding Reset",
+    message: "Branding configuration reset to defaults."
+  },
+  LOGO_UPLOADED: {
+    title: "Logo Uploaded",
+    message: "Logo uploaded successfully."
+  },
+  FAVICON_UPLOADED: {
+    title: "Favicon Uploaded",
+    message: "Favicon uploaded successfully."
   }
 }
 

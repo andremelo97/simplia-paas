@@ -606,10 +606,10 @@ For external API access (like Deepgram):
 #### File Management
 ```javascript
 // Upload with automatic URL generation
-const result = await supabaseService.uploadAudioFile(
+const result = await supabaseService.uploadFile(
   fileBuffer,
   'recording.mp3',
-  transcriptionId,
+  transcriptionId,  // Unique file identifier
   tenantId,
   'audio/mpeg'
 );
@@ -761,6 +761,61 @@ CREATE INDEX clinical_report_created_at_idx ON tenant_{slug}.clinical_report(cre
 -- Auto-update timestamp trigger
 CREATE TRIGGER clinical_report_updated_at_trigger
     BEFORE UPDATE ON tenant_{slug}.clinical_report
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+```
+
+### Public Quote Template Table
+```sql
+-- Per-tenant public_quote_template table for customizable quote layouts
+CREATE TABLE tenant_{slug}.public_quote_template (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  content JSONB NOT NULL DEFAULT '{}'::jsonb,
+  is_default BOOLEAN NOT NULL DEFAULT false,
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for performance
+CREATE INDEX public_quote_template_active_idx ON tenant_{slug}.public_quote_template(active);
+CREATE INDEX public_quote_template_is_default_idx ON tenant_{slug}.public_quote_template(is_default) WHERE is_default = true;
+
+-- Auto-update timestamp trigger
+CREATE TRIGGER public_quote_template_updated_at_trigger
+    BEFORE UPDATE ON tenant_{slug}.public_quote_template
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+```
+
+### Public Quote Table
+```sql
+-- Per-tenant public_quote table for shareable quote links
+CREATE TABLE tenant_{slug}.public_quote (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  quote_id UUID NOT NULL REFERENCES tenant_{slug}.quote(id) ON DELETE CASCADE,
+  template_id UUID REFERENCES tenant_{slug}.public_quote_template(id) ON DELETE SET NULL,
+  access_token VARCHAR(64) NOT NULL UNIQUE,
+  password_hash VARCHAR(255),
+  views_count INTEGER NOT NULL DEFAULT 0,
+  last_viewed_at TIMESTAMPTZ,
+  active BOOLEAN NOT NULL DEFAULT true,
+  expires_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for performance
+CREATE INDEX public_quote_quote_id_idx ON tenant_{slug}.public_quote(quote_id);
+CREATE INDEX public_quote_access_token_idx ON tenant_{slug}.public_quote(access_token);
+CREATE INDEX public_quote_active_idx ON tenant_{slug}.public_quote(active);
+CREATE INDEX public_quote_expires_at_idx ON tenant_{slug}.public_quote(expires_at);
+
+-- Auto-update timestamp trigger
+CREATE TRIGGER public_quote_updated_at_trigger
+    BEFORE UPDATE ON tenant_{slug}.public_quote
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 ```
@@ -933,7 +988,7 @@ const uploadResult = await transcriptionService.processAudio(audioFile, {
 ### Backend Processing Flow
 ```javascript
 // 1. Upload to Supabase Storage
-const uploadResult = await supabaseService.uploadAudioFile(/*...*/);
+const uploadResult = await supabaseService.uploadFile(/*...*/);
 // Returns signed URL accessible by Deepgram
 
 // 2. Start Deepgram transcription

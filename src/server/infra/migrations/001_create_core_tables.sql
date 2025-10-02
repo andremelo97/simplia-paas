@@ -291,8 +291,53 @@ CREATE INDEX IF NOT EXISTS idx_platform_login_audit_success_created ON platform_
 CREATE INDEX IF NOT EXISTS idx_platform_login_audit_user_created ON platform_login_audit(user_id_fk, created_at DESC) WHERE user_id_fk IS NOT NULL;
 
 -- =============================================
--- POSTGRESQL TRIGGERS FOR UPDATED_AT (Manual updates for now)
+-- TENANT BRANDING CONFIGURATION
 -- =============================================
+
+-- Tenant visual identity configuration for public-facing pages (quotes, reports)
+CREATE TABLE IF NOT EXISTS tenant_branding (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+
+  -- Colors (hex format with validation)
+  primary_color VARCHAR(7) NOT NULL DEFAULT '#B725B7'
+    CHECK (primary_color ~ '^#[0-9A-Fa-f]{6}$'),
+  secondary_color VARCHAR(7) NOT NULL DEFAULT '#E91E63'
+    CHECK (secondary_color ~ '^#[0-9A-Fa-f]{6}$'),
+  tertiary_color VARCHAR(7) NOT NULL DEFAULT '#5ED6CE'
+    CHECK (tertiary_color ~ '^#[0-9A-Fa-f]{6}$'),
+
+  -- Images (URLs to Supabase storage)
+  logo_url TEXT,
+  favicon_url TEXT,
+
+  -- Display information
+  company_name VARCHAR(255),
+
+  -- Metadata
+  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  -- One branding config per tenant
+  UNIQUE(tenant_id_fk)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tenant_branding_tenant_id ON tenant_branding(tenant_id_fk);
+
+COMMENT ON TABLE tenant_branding IS 'Tenant visual identity configuration for public-facing pages (public quotes, reports)';
+COMMENT ON COLUMN tenant_branding.primary_color IS 'Main brand color in hex format (#RRGGBB)';
+COMMENT ON COLUMN tenant_branding.secondary_color IS 'Secondary brand color in hex format (#RRGGBB)';
+COMMENT ON COLUMN tenant_branding.tertiary_color IS 'Tertiary brand color in hex format (#RRGGBB)';
+COMMENT ON COLUMN tenant_branding.logo_url IS 'URL to tenant logo (Supabase storage path)';
+COMMENT ON COLUMN tenant_branding.favicon_url IS 'URL to tenant favicon (Supabase storage path)';
+COMMENT ON COLUMN tenant_branding.company_name IS 'Company display name for public pages';
+
+-- =============================================
+-- POSTGRESQL TRIGGERS
+-- =============================================
+
+-- Note: Tenant branding will be created automatically via application code
+-- Trigger approach causes issues with migration runner's statement splitting
 
 -- Note: Automatic updated_at triggers will be added in a future migration
 -- For now, applications should manually update the updated_at field when modifying records

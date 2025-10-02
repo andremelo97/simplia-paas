@@ -35,9 +35,11 @@ const getBreadcrumbs = (pathname: string) => {
       case 'clinical-reports': return 'Clinical Reports'
       case 'templates': return 'Templates'
       case 'configurations': return 'Configurations'
+      case 'public-quotes': return 'Public Quotes'
       case 'new-session': return 'New Session'
       case 'create': return 'Create'
       case 'edit': return 'Edit'
+      case 'design': return 'Design'
       default: return segment.charAt(0).toUpperCase() + segment.slice(1)
     }
   }
@@ -64,6 +66,20 @@ const getBreadcrumbs = (pathname: string) => {
         breadcrumbs.push({ label: 'Patients', href: '/patients' })
       } else if (index === 2) {
         breadcrumbs.push({ label: 'Edit', href: '#' })
+      }
+      return
+    }
+
+    // For public-quotes template design: /public-quotes/templates/:id/design -> Home > Public Quotes > Templates > Edit > Design
+    if (segments[0] === 'public-quotes' && segments[1] === 'templates' && segments[3] === 'design') {
+      if (index === 0) {
+        breadcrumbs.push({ label: 'Public Quotes', href: '/public-quotes' })
+      } else if (index === 1) {
+        breadcrumbs.push({ label: 'Templates', href: '/public-quotes/templates' })
+      } else if (index === 3) {
+        const templateId = segments[2]
+        breadcrumbs.push({ label: 'Edit', href: `/public-quotes/templates/${templateId}/edit` })
+        breadcrumbs.push({ label: 'Design', href: '#' })
       }
       return
     }

@@ -1,0 +1,77 @@
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@client/common/ui'
+import { Plus } from 'lucide-react'
+import { publicQuotesService, PublicQuoteTemplate } from '../../../services/publicQuotes'
+import { TemplatesEmpty } from '../../../components/public-quotes/TemplatesEmpty'
+import { TemplateCard } from '../../../components/public-quotes/TemplateCard'
+
+export const TemplatesTab: React.FC = () => {
+  const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    loadTemplates()
+  }, [])
+
+  const loadTemplates = async () => {
+    try {
+      setLoading(true)
+      const response = await publicQuotesService.listTemplates()
+      setTemplates(response.data || response)
+    } catch (error) {
+      console.error('Failed to load templates:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTemplateClick = (template: PublicQuoteTemplate) => {
+    navigate(`/public-quotes/templates/${template.id}/edit`)
+  }
+
+  return (
+    <Card>
+      <CardHeader className="py-4 px-6">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base">
+            Templates ({templates?.length || 0} of 3)
+          </CardTitle>
+          <Button
+            variant="primary"
+            disabled={(templates?.length || 0) >= 3}
+            onClick={() => navigate('/public-quotes/templates/create')}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create Template
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="px-6 pb-6">
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-gray-500">Loading templates...</div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && (!templates || templates.length === 0) && <TemplatesEmpty />}
+
+        {/* Templates Grid - 3 columns */}
+        {!loading && templates && templates.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {templates.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onClick={() => handleTemplateClick(template)}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}

@@ -23,6 +23,12 @@ import { EditQuote } from '../features/quotes/EditQuote'
 import { ClinicalReports } from '../features/clinical-reports/ClinicalReports'
 import { EditClinicalReport } from '../features/clinical-reports/EditClinicalReport'
 import { ViewClinicalReport } from '../features/clinical-reports/ViewClinicalReport'
+import { PublicQuotesLayout } from '../features/public-quotes/PublicQuotesLayout'
+import { LinksTab } from '../features/public-quotes/tabs/LinksTab'
+import { TemplatesTab } from '../features/public-quotes/tabs/TemplatesTab'
+import { CreatePublicQuoteTemplate } from '../features/public-quotes/CreatePublicQuoteTemplate'
+import { EditPublicQuoteTemplate } from '../features/public-quotes/EditPublicQuoteTemplate'
+import { DesignPublicQuoteTemplate } from '../features/public-quotes/DesignPublicQuoteTemplate'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -107,6 +113,22 @@ export const AppRoutes: React.FC = () => {
 
         {/* Edit Quote - Outside QuoteManagementLayout for full page layout */}
         <Route path="quotes/:id/edit" element={<EditQuote />} />
+
+        {/* Public Quotes with Tabs */}
+        <Route path="public-quotes" element={<PublicQuotesLayout />}>
+          <Route index element={<Navigate to="/public-quotes/links" replace />} />
+          <Route path="links" element={<LinksTab />} />
+          <Route path="templates" element={<TemplatesTab />} />
+        </Route>
+
+        {/* Create Public Quote Template - Outside layout for full page */}
+        <Route path="public-quotes/templates/create" element={<CreatePublicQuoteTemplate />} />
+
+        {/* Edit Public Quote Template - Outside layout for full page */}
+        <Route path="public-quotes/templates/:id/edit" element={<EditPublicQuoteTemplate />} />
+
+        {/* Design Public Quote Template - Full screen Puck editor */}
+        <Route path="public-quotes/templates/:id/design" element={<DesignPublicQuoteTemplate />} />
 
         <Route path="*" element={<NotFound />} />
       </Route>

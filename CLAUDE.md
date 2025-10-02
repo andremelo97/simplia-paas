@@ -458,6 +458,101 @@ const filledTemplateHtml = filledTemplate // Already HTML from AI
 - **Response Format**: Backend returns `data/meta` structure, frontend handles gracefully
 - **Middleware**: Global TQ middlewares handle auth/tenant - no individual route middleware needed
 
+## TQ Public Quote System
+
+### Overview
+The Public Quote system allows quotes to be shared externally via secure links with customizable templates powered by Puck page builder. The system supports template management, password protection, link expiration, and usage analytics.
+
+### Database Schema
+
+```sql
+-- Public Quote Templates (reusable Puck layouts)
+CREATE TABLE tenant_{slug}.public_quote_template (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  content JSONB NOT NULL,  -- Puck layout configuration
+  is_default BOOLEAN DEFAULT false,
+  active BOOLEAN DEFAULT true
+);
+
+-- Constraint: Only 1 template can be default per tenant
+CREATE UNIQUE INDEX idx_public_quote_template_default
+  ON public_quote_template(is_default)
+  WHERE is_default = true;
+
+-- Public Quote Instances (shared links)
+CREATE TABLE tenant_{slug}.public_quote (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
+  template_id UUID REFERENCES public_quote_template(id) ON DELETE SET NULL,
+  access_token VARCHAR(64) UNIQUE NOT NULL,  -- Secure random token
+  password_hash VARCHAR(255),  -- Optional password protection
+  views_count INTEGER DEFAULT 0,
+  last_viewed_at TIMESTAMPTZ,
+  active BOOLEAN DEFAULT true,
+  expires_at TIMESTAMPTZ  -- Optional expiration date
+);
+```
+
+### Relationships
+- **1:N Template → Public Quote**: One template can be used by multiple public quotes
+- **1:N Quote → Public Quote**: One quote can have multiple public share instances
+- **Template Deletion**: ON DELETE SET NULL - public quotes remain active with no template
+
+### API Endpoints
+
+**Public Quote Templates** (`/api/tq/v1/public-quote-templates`):
+- `GET /?isDefault=true&active=true` - List all templates with filters (max 3 per tenant)
+- `GET /:id` - Get template by ID
+- `POST /` - Create new template (enforces max 3 limit)
+- `PUT /:id` - Update template (auto-unsets other defaults when setting default)
+- `DELETE /:id` - Delete template
+
+**Public Quotes** (`/api/tq/v1/public-quotes`):
+- `POST /` - Create public quote link
+- `GET /by-quote/:quoteId` - Get all public links for a quote
+- `DELETE /:id` - Revoke public quote link (soft delete)
+
+### Template Limits
+- **Max 3 templates per tenant** - Enforced at API level
+- Only 1 template can be marked as default
+- Templates cannot be deleted if they're the default (must set another as default first)
+
+### Security Features
+- **Secure tokens**: 64-character cryptographically random access tokens
+- **Password protection**: Optional bcrypt-hashed passwords
+- **Link expiration**: Optional expiration dates
+- **Soft delete**: Revoked links remain in database for audit
+
+### Puck Integration
+Templates store complete Puck page builder configuration in `content` JSONB field:
+- Component tree structure
+- Layout configuration
+- Styling and branding (uses tenant colors/logo automatically)
+- Custom components for quote data rendering
+
+### Implementation Details
+- **Models**: `PublicQuoteTemplate.js` and `PublicQuote.js`
+- **API Routes**:
+  - `public-quote-templates.js` - 5 endpoints (simplified with filters)
+  - `public-quotes.js` - 3 endpoints (updated to support template_id)
+- **Tenant Isolation**: All templates and public quotes scoped to tenant schema
+- **Analytics**: Track views and last viewed timestamp per public quote
+- **Simplified Routes**: No `/duplicate` or `/default` routes - use POST with populated body and GET with `isDefault=true` filter
+
+### Usage Flow
+1. **Create Template**: User creates up to 3 custom templates in `/public-quotes` using Puck editor
+2. **Select Template**: In `/quotes/:id/edit`, user selects template from dropdown
+3. **Generate Link**: System creates public_quote record with selected template_id and secure token
+4. **Share Link**: `https://app.com/public/{access_token}` sent to client
+5. **Client Views**: Public page renders quote data using template's Puck configuration
+6. **Analytics**: System tracks views and timestamps automatically
+
 ## Critical Seat Counting Rules
 - **Grant**: MUST call `TenantApplication.incrementSeat(tenantId, applicationId)`
 - **Revoke**: MUST call `TenantApplication.decrementSeat(tenantId, applicationId)`

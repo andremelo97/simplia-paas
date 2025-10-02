@@ -16,7 +16,9 @@ const db = require('../../../infra/db/database');
 
 const router = express.Router();
 const deepgramService = new DeepgramService();
-const storageService = new SupabaseStorageService();
+const storageService = new SupabaseStorageService(
+  process.env.SUPABASE_AUDIO_BUCKET || 'tq-audio-files'
+);
 
 // Configure multer for audio file uploads
 const upload = multer({
@@ -247,7 +249,7 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     console.log('🔍 [DEBUG] Storage bucket verified');
 
     // Upload to Supabase using transcriptionId as filename
-    const uploadResult = await storageService.uploadAudioFile(
+    const uploadResult = await storageService.uploadFile(
       fileBuffer,
       fileName,
       transcriptionId, // Use transcription ID instead of session ID

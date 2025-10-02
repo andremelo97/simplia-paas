@@ -34,12 +34,63 @@ async function runMigrations() {
       console.log(`Running migration: ${file}`);
       const migrationPath = path.join(migrationsDir, file);
       const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
-      
+
       // Split by semicolon to handle multiple statements
-      const statements = migrationSQL
-        .split(';')
-        .map(stmt => stmt.trim())
-        .filter(stmt => stmt.length > 0);
+      // BUT respect dollar-quoted strings (e.g., $tag$...$tag$) used in functions/triggers
+      const statements = [];
+      let currentStatement = '';
+      let insideDollarQuote = false;
+      let dollarQuoteTag = null;
+
+      for (let i = 0; i < migrationSQL.length; i++) {
+        const char = migrationSQL[i];
+        currentStatement += char;
+
+        // Detect dollar-quote start/end (e.g., $tag$ or $$)
+        if (char === '$') {
+          let tag = '$';
+          let j = i + 1;
+
+          // Extract tag between dollar signs (e.g., $auto_branding$)
+          while (j < migrationSQL.length && migrationSQL[j] !== '$') {
+            tag += migrationSQL[j];
+            j++;
+          }
+
+          if (j < migrationSQL.length && migrationSQL[j] === '$') {
+            tag += '$'; // Complete tag
+
+            if (!insideDollarQuote) {
+              // Starting a dollar-quoted string
+              insideDollarQuote = true;
+              dollarQuoteTag = tag;
+              currentStatement += tag.substring(1); // Already added first $
+              i = j; // Skip to end of tag
+            } else if (tag === dollarQuoteTag) {
+              // Ending the dollar-quoted string
+              insideDollarQuote = false;
+              dollarQuoteTag = null;
+              currentStatement += tag.substring(1); // Already added first $
+              i = j; // Skip to end of tag
+            }
+          }
+        }
+
+        // Only split on semicolon if we're NOT inside a dollar-quoted string
+        if (char === ';' && !insideDollarQuote) {
+          const stmt = currentStatement.trim();
+          if (stmt.length > 0) {
+            statements.push(stmt);
+          }
+          currentStatement = '';
+        }
+      }
+
+      // Add any remaining statement
+      const finalStmt = currentStatement.trim();
+      if (finalStmt.length > 0) {
+        statements.push(finalStmt);
+      }
       
       for (let i = 0; i < statements.length; i++) {
         const statement = statements[i];

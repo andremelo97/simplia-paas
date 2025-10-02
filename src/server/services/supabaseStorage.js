@@ -1,17 +1,22 @@
 /**
  * Supabase Storage Service
  *
- * Handles file uploads to Supabase Storage for the TQ application.
- * Manages audio files with tenant isolation and proper naming conventions.
+ * Handles file uploads to Supabase Storage.
+ * Manages files with tenant isolation and proper naming conventions.
+ * Can be used for audio files, images, documents, etc.
  */
 
 const { createClient } = require('@supabase/supabase-js');
 
 class SupabaseStorageService {
-  constructor() {
+  constructor(bucketName) {
+    if (!bucketName) {
+      throw new Error('bucketName is required for SupabaseStorageService');
+    }
+
     this.supabaseUrl = process.env.SUPABASE_URL;
     this.supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    this.bucketName = process.env.SUPABASE_STORAGE_BUCKET || 'tq-audio-files';
+    this.bucketName = bucketName;
     this.publicUrl = process.env.SUPABASE_STORAGE_PUBLIC_URL;
 
     if (!this.supabaseUrl || !this.supabaseServiceKey) {
@@ -27,22 +32,22 @@ class SupabaseStorageService {
   }
 
   /**
-   * Upload audio file to Supabase Storage
+   * Upload file to Supabase Storage
    *
-   * @param {Buffer} fileBuffer - Audio file buffer
+   * @param {Buffer} fileBuffer - File buffer
    * @param {string} fileName - Original filename
-   * @param {string} sessionId - Session UUID
+   * @param {string} fileIdentifier - Unique identifier for the file (e.g., sessionId, userId, etc.)
    * @param {string} tenantId - Tenant ID for isolation
    * @param {string} mimeType - File MIME type
    * @returns {Promise<{url: string, path: string, size: number}>}
    */
-  async uploadAudioFile(fileBuffer, fileName, sessionId, tenantId, mimeType) {
+  async uploadFile(fileBuffer, fileName, fileIdentifier, tenantId, mimeType) {
     try {
       // Extract file extension from original filename
       const fileExtension = fileName.split('.').pop().toLowerCase();
 
       // Generate storage path with tenant isolation
-      const storagePath = `tenant_${tenantId}/${sessionId}.${fileExtension}`;
+      const storagePath = `tenant_${tenantId}/${fileIdentifier}.${fileExtension}`;
 
       // Upload file to Supabase Storage
       const { data, error } = await this.supabase.storage
@@ -86,12 +91,12 @@ class SupabaseStorageService {
   }
 
   /**
-   * Delete audio file from storage
+   * Delete file from storage
    *
    * @param {string} filePath - Storage file path
    * @returns {Promise<boolean>}
    */
-  async deleteAudioFile(filePath) {
+  async deleteFile(filePath) {
     try {
       const { error } = await this.supabase.storage
         .from(this.bucketName)

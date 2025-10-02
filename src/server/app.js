@@ -17,12 +17,14 @@ const tenantsRoutes = require('./api/internal/routes/tenants');
 const auditRoutes = require('./api/internal/routes/audit');
 const metricsRoutes = require('./api/internal/routes/metrics');
 const entitlementsRoutes = require('./api/internal/routes/entitlements');
+const brandingRoutes = require('./api/internal/routes/branding');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
 
 // Public routes (no auth required)
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
+const publicViewRoutes = require('./api/public/routes/view');
 
 // Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -111,6 +113,9 @@ internalRouter.use('/audit', auditRoutes);
 // Metrics routes (platform-scoped, for internal admins only)
 internalRouter.use('/metrics', metricsRoutes);
 
+// Configurations routes (platform-scoped, uses authenticated user's tenant)
+internalRouter.use('/configurations/branding', brandingRoutes);
+
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();
 tenantScopedRouter.use(tenantMiddleware, requireAuth);
@@ -126,6 +131,9 @@ internalRouter.use(tenantScopedRouter);
 
 // Mount internal API with CORS
 app.use(INTERNAL_PREFIX, cors(internalCorsOptions), internalRouter);
+
+// Mount public API routes (NO authentication required)
+app.use('/api/public', cors(internalCorsOptions), publicViewRoutes);
 
 // Swagger Documentation (Protected by platform role)
 if (ENABLE_DOCS) {

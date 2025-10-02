@@ -100,6 +100,7 @@ Sistema de notificações padronizadas para operações bem-sucedidas:
 - `USER_CREATED`, `USER_UPDATED`, `USER_DEACTIVATED`
 - `LICENSE_ACTIVATED`, `LICENSE_ADJUSTED`
 - `PRICING_CREATED`, `PRICING_UPDATED`
+- `BRANDING_UPDATED`, `BRANDING_RESET`, `LOGO_UPLOADED`, `FAVICON_UPLOADED`
 
 ---
 
@@ -920,6 +921,174 @@ Licenças do tenant com usuários assignados (read-only).
 
 ---
 
+## 🎨 10. Branding Configuration
+
+**Scope**: Platform (uses `req.user.tenantId`)
+**Base**: `/branding`
+
+Configure tenant's visual identity including colors, logos, and company information.
+
+### Get Branding Configuration
+
+```http
+GET /branding
+```
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response**:
+```json
+{
+  "data": {
+    "id": 1,
+    "tenantId": 123,
+    "primaryColor": "#B725B7",
+    "secondaryColor": "#E91E63",
+    "tertiaryColor": "#5ED6CE",
+    "logoUrl": "https://supabase.co/.../logo.png",
+    "faviconUrl": "https://supabase.co/.../favicon.ico",
+    "companyName": "My Clinic",
+    "createdAt": "2025-01-15T10:00:00Z",
+    "updatedAt": "2025-01-15T10:00:00Z"
+  }
+}
+```
+
+**Notes**:
+- Returns default values if no custom configuration exists
+- Default colors: `#B725B7`, `#E91E63`, `#5ED6CE`
+
+---
+
+### Update Branding Configuration
+
+```http
+PUT /branding
+```
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Request Body**:
+```json
+{
+  "primaryColor": "#B725B7",
+  "secondaryColor": "#E91E63",
+  "tertiaryColor": "#5ED6CE",
+  "logoUrl": "https://...",
+  "faviconUrl": "https://...",
+  "companyName": "My Clinic"
+}
+```
+
+**Validation**:
+- Colors must be hex format: `#RRGGBB`
+- All fields are optional (partial updates supported)
+
+**Response**:
+```json
+{
+  "data": { /* updated branding */ },
+  "meta": {
+    "code": "BRANDING_UPDATED",
+    "message": "Branding configuration updated successfully"
+  }
+}
+```
+
+---
+
+### Reset Branding to Defaults
+
+```http
+DELETE /branding
+```
+
+**Headers**: `Authorization: Bearer <token>`
+
+**Response**:
+```json
+{
+  "meta": {
+    "code": "BRANDING_RESET",
+    "message": "Branding configuration reset to defaults"
+  }
+}
+```
+
+---
+
+### Upload Logo
+
+```http
+POST /branding/upload-logo
+```
+
+**Headers**:
+- `Authorization: Bearer <token>`
+- `Content-Type: multipart/form-data`
+
+**Form Data**:
+- `logo`: Image file (PNG, JPEG, SVG, ICO, max 5MB)
+
+**Response**:
+```json
+{
+  "data": {
+    "logoUrl": "https://supabase.co/.../logo_1234567890.png",
+    "storagePath": "tenant_123/logo_1234567890.png",
+    "size": 45678
+  },
+  "meta": {
+    "code": "LOGO_UPLOADED",
+    "message": "Logo uploaded successfully"
+  }
+}
+```
+
+**Storage**:
+- Bucket: `tq-branding-assets` (env: `SUPABASE_BRANDING_BUCKET`)
+- Path: `tenant_{id}/logo_{timestamp}.{ext}`
+- Automatically updates branding configuration
+
+---
+
+### Upload Favicon
+
+```http
+POST /branding/upload-favicon
+```
+
+**Headers**:
+- `Authorization: Bearer <token>`
+- `Content-Type: multipart/form-data`
+
+**Form Data**:
+- `favicon`: Image file (PNG, JPEG, SVG, ICO, max 5MB)
+
+**Response**:
+```json
+{
+  "data": {
+    "faviconUrl": "https://supabase.co/.../favicon_1234567890.ico",
+    "storagePath": "tenant_123/favicon_1234567890.ico",
+    "size": 12345
+  },
+  "meta": {
+    "code": "FAVICON_UPLOADED",
+    "message": "Favicon uploaded successfully"
+  }
+}
+```
+
+**Supabase Storage Architecture**:
+- **Generic Service**: `SupabaseStorageService` requires bucket name on instantiation
+- **Audio Bucket**: `tq-audio-files` (env: `SUPABASE_AUDIO_BUCKET`)
+- **Branding Bucket**: `tq-branding-assets` (env: `SUPABASE_BRANDING_BUCKET`)
+- **Pattern**: Each endpoint creates its own instance with appropriate bucket
+- **Tenant Isolation**: All files stored under `tenant_{id}/` prefix
+
+---
+
 # 🏗️ Arquitetura Técnica
 
 ## Multi-Layered Authorization (5 Camadas)
@@ -1025,6 +1194,14 @@ ENABLE_HELMET=true
 ```bash
 DEFAULT_TENANT=default
 TENANT_HEADER_NAME=x-tenant-id
+```
+
+### Supabase Storage
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_AUDIO_BUCKET=tq-audio-files
+SUPABASE_BRANDING_BUCKET=tq-branding-assets
 ```
 
 ## CORS Configuration

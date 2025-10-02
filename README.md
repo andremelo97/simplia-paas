@@ -12,11 +12,12 @@ O Simplia PaaS é um monorepo Node.js fullstack que combina:
 - **Compliance**: Campos de auditoria em todas as tabelas + logs detalhados para conformidade médica
 
 ### ✨ Atualizações Recentes
+- **Branding System**: Sistema completo de configuração de identidade visual (cores, logo, favicon) com upload para Supabase Storage
+- **Configurations Drawer**: Drawer lateral no Hub (admin-only) para configurações de tenant, iniciando com Branding
+- **Generic Storage Service**: Supabase Storage Service refatorado para suportar múltiplos tipos de arquivos (áudio, imagens, etc)
 - **TQ Home Dashboard**: Dashboard completo com Quick Actions, Latest Quotes (6 cards), Latest Reports (6 cards), Sessions This Week (6 cards), Patients Recently Added (5), e Recent Activity (5)
 - **Global Search**: Busca global no header do TQ com resultados ao vivo para pacientes, sessões, quotes, reports e templates
-- **SearchInput Component**: Novo componente de busca reutilizável com ícone, botão clear e altura consistente (32px)
-- **UI Improvements**: Separadores visuais entre seções, double-click navigation, cores de ícones consistentes com sidebar
-- **Sidebar State**: Internal-admin inicia com sidebar colapsado; TQ inicia com sidebar expandido
+- **Drawer Component**: Novo componente Drawer reutilizável em common/ui para sidebars secundários
 
 ## 🏗️ Arquitetura de Pastas e Arquivos
 

@@ -4,6 +4,7 @@ import { useAuthStore } from './store/auth'
 import { Layout } from './components/Layout'
 import { Login } from './pages/Login'
 import { Home } from './pages/Home'
+import { Configurations } from './features/configurations/Configurations'
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, isLoading, isHydrated } = useAuthStore()
@@ -63,6 +64,10 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <Home />
+          },
+          {
+            path: 'configurations',
+            element: <Configurations />
           }
         ]
       }

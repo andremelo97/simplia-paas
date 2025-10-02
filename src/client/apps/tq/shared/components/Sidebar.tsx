@@ -1,5 +1,5 @@
 import React from 'react'
-import { Home, Plus, FileText, Users, Receipt, FileType, Settings, ClipboardList } from 'lucide-react'
+import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList } from 'lucide-react'
 import { useUIStore } from '../store/ui'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
 
@@ -40,9 +40,9 @@ const navigation: NavigationItem[] = [
     icon: FileType
   },
   {
-    name: 'Configurations',
-    href: '/configurations',
-    icon: Settings
+    name: 'Public Quotes',
+    href: '/public-quotes',
+    icon: Share2
   }
 ]
 

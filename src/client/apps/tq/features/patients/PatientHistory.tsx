@@ -397,7 +397,7 @@ export const PatientHistory: React.FC = () => {
                           minute: '2-digit'
                         })}
                         icon={getEventIcon('session')}
-                        onView={() => navigate(`/sessions/${session.id}/edit`)}
+                        viewPath={`/sessions/${session.id}/edit`}
                       />
                     ))
                 ) : (
@@ -450,7 +450,7 @@ export const PatientHistory: React.FC = () => {
                           minute: '2-digit'
                         })}
                         icon={getEventIcon('quote')}
-                        onView={() => navigate(`/quotes/${quote.id}/edit`)}
+                        viewPath={`/quotes/${quote.id}/edit`}
                       />
                     ))
                 ) : (
@@ -502,7 +502,7 @@ export const PatientHistory: React.FC = () => {
                           minute: '2-digit'
                         })}
                         icon={getEventIcon('clinical')}
-                        onView={() => navigate(`/clinical-reports/${report.id}/view`)}
+                        viewPath={`/clinical-reports/${report.id}/view`}
                       />
                     ))
                 ) : (

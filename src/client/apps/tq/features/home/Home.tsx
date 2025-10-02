@@ -32,10 +32,10 @@ export const Home: React.FC = () => {
   const activities = React.useMemo(() => {
     const allActivities: Array<{
       id: string
-      type: 'patient_added' | 'session_created' | 'quote_created'
+      type: 'patient_added' | 'session_created' | 'quote_created' | 'report_created'
       message: string
       timestamp: string
-      icon: 'patient' | 'session' | 'quote'
+      icon: 'patient' | 'session' | 'quote' | 'report'
       date: Date
     }> = []
 
@@ -99,12 +99,33 @@ export const Home: React.FC = () => {
       })
     })
 
+    // Add clinical report activities
+    reports.forEach((report) => {
+      const patientName = report.patient_first_name || report.patient_last_name
+        ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim()
+        : 'Unknown Patient'
+      allActivities.push({
+        id: `report-${report.id}`,
+        type: 'report_created',
+        message: `Clinical report ${report.number} created for ${patientName}`,
+        timestamp: new Date(report.created_at).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        icon: 'report',
+        date: new Date(report.created_at),
+        path: `/clinical-reports/${report.id}/edit`
+      })
+    })
+
     // Sort by date descending and take top 5
     return allActivities
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5)
       .map(({ date, ...rest }) => rest)
-  }, [patients, sessions, quotes])
+  }, [patients, sessions, quotes, reports])
 
   // Handle SSO on home page load
   useEffect(() => {
@@ -254,7 +275,7 @@ export const Home: React.FC = () => {
               <ReportCard
                 key={report.id}
                 report={report}
-                onDoubleClick={() => navigate(`/clinical-reports/${report.id}`)}
+                onDoubleClick={() => navigate(`/clinical-reports/${report.id}/edit`)}
               />
             ))}
           </div>
@@ -347,7 +368,7 @@ export const Home: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
           <ActivityFeed
             activities={activities}
-            isLoading={isLoadingQuotes || isLoadingPatients || isLoadingSessions}
+            isLoading={isLoadingQuotes || isLoadingPatients || isLoadingSessions || isLoadingReports}
             onActivityClick={(path) => navigate(path)}
           />
         </div>

@@ -19,14 +19,33 @@ export const EditPublicQuoteTemplate: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    loadTemplate()
+    loadData()
   }, [id])
 
-  const loadTemplate = async () => {
+  const loadData = async () => {
     if (!id) return
 
     try {
       setIsLoading(true)
+      const template = await publicQuotesService.getTemplate(id)
+
+      setFormData({
+        name: template.name,
+        description: template.description || '',
+        content: template.content,
+        isDefault: template.isDefault,
+        active: template.active
+      })
+    } catch (error) {
+      console.error('Failed to load data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadTemplate = async () => {
+    if (!id) return
+    try {
       const template = await publicQuotesService.getTemplate(id)
       setFormData({
         name: template.name,
@@ -37,8 +56,6 @@ export const EditPublicQuoteTemplate: React.FC = () => {
       })
     } catch (error) {
       console.error('Failed to load template:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -136,11 +153,21 @@ export const EditPublicQuoteTemplate: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
-        <p className="text-gray-600 mt-1">
-          Update template information and design layout
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+          <p className="text-gray-600 mt-1">
+            Update template information and design layout
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="tertiary"
+          onClick={handleDesignLayout}
+          disabled={isSubmitting}
+        >
+          Design Layout
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -195,53 +222,6 @@ export const EditPublicQuoteTemplate: React.FC = () => {
                   disabled={isSubmitting}
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Template Layout */}
-          <Card>
-            <CardHeader className="p-6 pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Template Layout</h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Design your template layout using the visual editor
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="tertiary"
-                  onClick={handleDesignLayout}
-                  disabled={isSubmitting}
-                >
-                  Design Layout
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent className="px-6 pb-6">
-              {formData.content && Object.keys(formData.content).length > 0 ? (
-                <div className="bg-gray-50 border border-gray-300 rounded-lg p-6">
-                  <div className="text-sm text-gray-600 mb-2">Layout configured</div>
-                  <p className="text-xs text-gray-500">
-                    Click "Design Layout" to modify the template design
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                  <div className="max-w-md mx-auto">
-                    <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
-                    </svg>
-                    <p className="text-gray-600 font-medium mb-2">
-                      No layout designed yet
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Click "Design Layout" to create your custom quote layout
-                    </p>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>

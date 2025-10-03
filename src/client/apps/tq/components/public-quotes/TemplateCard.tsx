@@ -2,13 +2,16 @@ import React, { useState } from 'react'
 import { Card, CardContent, StatusBadge } from '@client/common/ui'
 import { FileText } from 'lucide-react'
 import { PublicQuoteTemplate } from '../../services/publicQuotes'
+import { TemplatePreview } from './TemplatePreview'
+import { BrandingData } from '../../services/branding'
 
 interface TemplateCardProps {
   template: PublicQuoteTemplate
+  branding: BrandingData
   onClick?: () => void
 }
 
-export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick }) => {
+export const TemplateCard: React.FC<TemplateCardProps> = ({ template, branding, onClick }) => {
   const [isFlashing, setIsFlashing] = useState(false)
 
   const handleClick = () => {
@@ -25,9 +28,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick })
       onClick={handleClick}
     >
       <CardContent className="p-6">
-        {/* Template Preview Placeholder */}
-        <div className="bg-gray-100 rounded-lg h-48 mb-4 flex items-center justify-center">
-          <FileText className="w-12 h-12 text-gray-400" />
+        {/* Template Preview */}
+        <div className="h-48 mb-4 overflow-hidden">
+          <TemplatePreview content={template.content} branding={branding} maxComponents={2} />
         </div>
 
         {/* Template Info */}

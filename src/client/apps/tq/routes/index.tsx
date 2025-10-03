@@ -29,6 +29,7 @@ import { TemplatesTab } from '../features/public-quotes/tabs/TemplatesTab'
 import { CreatePublicQuoteTemplate } from '../features/public-quotes/CreatePublicQuoteTemplate'
 import { EditPublicQuoteTemplate } from '../features/public-quotes/EditPublicQuoteTemplate'
 import { DesignPublicQuoteTemplate } from '../features/public-quotes/DesignPublicQuoteTemplate'
+import { PreviewPublicQuoteTemplate } from '../features/public-quotes/PreviewPublicQuoteTemplate'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -75,6 +76,9 @@ export const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
+
+      {/* Preview Public Quote Template - Completely isolated, no auth/layout */}
+      <Route path="/public-quotes/templates/:id/preview" element={<PreviewPublicQuoteTemplate />} />
 
       <Route
         path="/*"

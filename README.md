@@ -12,6 +12,15 @@ O Simplia PaaS é um monorepo Node.js fullstack que combina:
 - **Compliance**: Campos de auditoria em todas as tabelas + logs detalhados para conformidade médica
 
 ### ✨ Atualizações Recentes
+- **Public Quotes System**: Sistema completo de compartilhamento de quotes com templates customizáveis via Puck editor visual
+  - **Template Designer**: Editor visual Puck de tela cheia com 50+ componentes drag-and-drop
+  - **Component Library**: 6 categorias (Layout, Typography, Actions, Quote Info, Header, Other) com 15+ componentes
+  - **Branding Integration**: Cores, logo e identidade visual aplicados automaticamente em todos os componentes
+  - **Live Preview**: Preview isolado e público mostrando exatamente como usuário final verá
+  - **Fullscreen Mode**: Editor pode ocupar tela completa para melhor experiência de design
+  - **Template Management**: CRUD completo com limite de 3 templates por tenant, sistema de default, ativação/desativação
+  - **Public Links**: Geração de links compartilháveis com token seguro, senha opcional, data de expiração (implementação futura)
+  - **Tab Structure**: Interface com 2 tabs (Links | Templates) seguindo padrão TQ
 - **Branding System**: Sistema completo de configuração de identidade visual (cores, logo, favicon) com upload para Supabase Storage
 - **Configurations Drawer**: Drawer lateral no Hub (admin-only) para configurações de tenant, iniciando com Branding
 - **Generic Storage Service**: Supabase Storage Service refatorado para suportar múltiplos tipos de arquivos (áudio, imagens, etc)
@@ -140,10 +149,18 @@ simplia-paas/
 │   │   │   │   │   │   ├── QuoteManagementLayout.tsx # layout com tabs
 │   │   │   │   │   │   ├── EditQuote.tsx      # edição 60/40 layout
 │   │   │   │   │   │   └── 📁 tabs/           # tabs de quotes e items
-│   │   │   │   │   └── 📁 clinical-reports/   # relatórios clínicos
-│   │   │   │   │       ├── ClinicalReports.tsx     # listagem com busca
-│   │   │   │   │       ├── EditClinicalReport.tsx  # edição 60/40 layout (sem quote items)
-│   │   │   │   │       └── ViewClinicalReport.tsx  # visualização com Print/PDF
+│   │   │   │   │   ├── 📁 clinical-reports/   # relatórios clínicos
+│   │   │   │   │   │   ├── ClinicalReports.tsx     # listagem com busca
+│   │   │   │   │   │   ├── EditClinicalReport.tsx  # edição 60/40 layout (sem quote items)
+│   │   │   │   │   │   └── ViewClinicalReport.tsx  # visualização com Print/PDF
+│   │   │   │   │   └── 📁 public-quotes/     # **NOVO**: sistema de compartilhamento de quotes
+│   │   │   │   │       ├── PublicQuotesLayout.tsx  # layout com tabs (Links | Templates)
+│   │   │   │   │       ├── CreatePublicQuoteTemplate.tsx  # criação de template
+│   │   │   │   │       ├── EditPublicQuoteTemplate.tsx    # edição de template
+│   │   │   │   │       ├── DesignPublicQuoteTemplate.tsx  # editor Puck full-screen
+│   │   │   │   │       └── 📁 tabs/                       # tabs do layout
+│   │   │   │   │           ├── LinksTab.tsx        # gerenciamento de links públicos
+│   │   │   │   │           └── TemplatesTab.tsx    # gerenciamento de templates
 │   │   │   │   ├── 📁 components/     # componentes específicos do TQ
 │   │   │   │   │   ├── 📁 home/       # **NOVO**: componentes do dashboard
 │   │   │   │   │   │   ├── QuickActionCard.tsx     # card de ação rápida
@@ -171,6 +188,11 @@ simplia-paas/
 │   │   │   │   │   │   ├── QuoteRow.tsx            # item da lista de quotes
 │   │   │   │   │   │   ├── QuotesEmpty.tsx         # estado vazio
 │   │   │   │   │   │   └── QuoteFilters.tsx        # busca e filtros
+│   │   │   │   │   ├── 📁 public-quotes/ # **NOVO**: componentes de public quotes
+│   │   │   │   │   │   ├── TemplateCard.tsx        # card de template com preview
+│   │   │   │   │   │   ├── TemplatesEmpty.tsx      # estado vazio templates
+│   │   │   │   │   │   ├── LinksEmpty.tsx          # estado vazio links
+│   │   │   │   │   │   └── PublicQuoteLinksFilters.tsx # filtros de links
 │   │   │   │   │   └── 📁 new-session/ # componentes de nova sessão
 │   │   │   │   │       ├── AIAgentModal.tsx        # modal de AI agent
 │   │   │   │   │       └── TemplateQuoteModal.tsx  # modal de templates
@@ -189,7 +211,8 @@ simplia-paas/
 │   │   │   │   │   ├── sessions.ts    # serviços de sessões
 │   │   │   │   │   ├── patients.ts    # serviços de pacientes
 │   │   │   │   │   ├── quotes.ts      # serviços de cotações
-│   │   │   │   │   ├── clinicalReports.ts # **NOVO**: serviços de clinical reports
+│   │   │   │   │   ├── clinicalReports.ts # serviços de clinical reports
+│   │   │   │   │   ├── publicQuotes.ts    # **NOVO**: serviços de public quotes e templates
 │   │   │   │   │   ├── aiAgentService.ts  # serviços de AI agent
 │   │   │   │   │   └── transcriptionService.ts # serviços de transcrição
 │   │   │   │   ├── 📁 lib/            # consumeSso para SSO
@@ -278,7 +301,8 @@ simplia-paas/
 │   │   │   │       ├── sessions.js    # gestão de sessões
 │   │   │   │       ├── patients.js    # gestão de pacientes
 │   │   │   │       ├── quotes.js      # sistema de cotações
-│   │   │   │       └── transcription.js # integração Deepgram
+│   │   │   │       ├── transcription.js # integração Deepgram
+│   │   │   │       └── publicQuotes.js  # **NOVO**: sistema de public quotes e templates
 │   │   │   ├── 📁 crm/                # API do produto CRM
 │   │   │   │   └── 📁 routes/         # Rotas específicas do CRM
 │   │   │   └── 📁 automation/         # API do produto Automation
@@ -306,11 +330,13 @@ simplia-paas/
 │   │   │   │   ├── ApplicationPricing.js # Pricing matrix App × UserType com overlap prevention
 │   │   │   │   ├── AccessLog.js       # Auditoria detalhada para compliance
 │   │   │   │   ├── PlatformLoginAudit.js # **NOVO**: Auditoria de logins da plataforma
-│   │   │   │   ├── Template.js        # **NOVO**: Templates clínicos para TQ com usage tracking
+│   │   │   │   ├── Template.js        # Templates clínicos para TQ com usage tracking
 │   │   │   │   ├── Quote.js           # Sistema de cotações do TQ
 │   │   │   │   ├── QuoteItem.js       # Itens de cotação com desconto
 │   │   │   │   ├── Session.js         # Sessões de transcrição
-│   │   │   │   └── Patient.js         # Gestão de pacientes
+│   │   │   │   ├── Patient.js         # Gestão de pacientes
+│   │   │   │   ├── PublicQuoteTemplate.js # **NOVO**: Templates de layout para quotes públicos
+│   │   │   │   └── PublicQuote.js     # **NOVO**: Links públicos compartilháveis de quotes
 │   │   │   │
 │   │   │   ├── 📁 utils/
 │   │   │   │   └── datetime.js        # **NOVO**: Utilidades de overlap detection com semântica [start, end)

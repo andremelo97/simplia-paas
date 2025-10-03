@@ -820,7 +820,170 @@ CREATE TRIGGER public_quote_updated_at_trigger
     EXECUTE FUNCTION update_updated_at_column();
 ```
 
+### Public Quotes
+
+Manage shareable quote links with customizable templates and access control.
+
+#### GET /public-quote-templates
+List all public quote templates for the tenant.
+
+**Query Parameters:**
+- `limit` (integer): Number of templates to return (default: 50)
+- `offset` (integer): Number of templates to skip (default: 0)
+- `active` (boolean): Filter by active status
+- `isDefault` (boolean): Filter by default status
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "uuid-string",
+      "name": "Modern Quote Layout",
+      "description": "Clean, professional quote template",
+      "content": {
+        "content": [...],
+        "root": {...}
+      },
+      "isDefault": true,
+      "active": true,
+      "createdAt": "2025-10-03T10:00:00Z",
+      "updatedAt": "2025-10-03T10:00:00Z"
+    }
+  ],
+  "meta": {
+    "total": 3,
+    "limit": 50,
+    "offset": 0
+  }
+}
+```
+
+#### GET /public-quote-templates/{templateId}
+Retrieve a specific template.
+
+#### POST /public-quote-templates
+Create a new public quote template.
+
+**Request:**
+```json
+{
+  "name": "Modern Quote Layout",
+  "description": "Clean, professional quote template",
+  "content": {
+    "content": [...],
+    "root": {...}
+  },
+  "isDefault": false,
+  "active": true
+}
+```
+
+**Limits:**
+- Maximum 3 templates per tenant
+- Name: 2-255 characters required
+
+#### PUT /public-quote-templates/{templateId}
+Update an existing template.
+
+#### DELETE /public-quote-templates/{templateId}
+Delete a template (only if not set as default).
+
+#### POST /public-quotes
+Create a shareable public quote link.
+
+**Request:**
+```json
+{
+  "quoteId": "uuid-string",
+  "templateId": "uuid-string",
+  "password": "optional-password",
+  "expiresAt": "2025-12-31T23:59:59Z"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "quoteId": "uuid-string",
+    "templateId": "uuid-string",
+    "accessToken": "secure-random-token",
+    "viewsCount": 0,
+    "active": true,
+    "expiresAt": "2025-12-31T23:59:59Z",
+    "hasPassword": true,
+    "isExpired": false,
+    "isAccessible": true
+  }
+}
+```
+
+**Access URL Format:**
+```
+https://your-domain.com/public/quotes/{accessToken}
+```
+
+#### GET /public-quotes/by-quote/{quoteId}
+Get all public quote links for a specific quote.
+
+#### DELETE /public-quotes/{publicQuoteId}
+Revoke a public quote link (sets active to false).
+
 ## Complete Workflow Example
+
+### Public Quote Sharing Workflow
+```javascript
+// 1. Create a public quote template (design in Puck editor)
+const template = await fetch('/api/tq/v1/public-quote-templates', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    name: 'Professional Quote Layout',
+    description: 'Modern template with company branding',
+    content: puckEditorData, // Puck editor output with layout components
+    isDefault: true,
+    active: true
+  })
+}).then(res => res.json());
+
+// 2. Create a public shareable link for a quote
+const publicQuote = await fetch('/api/tq/v1/public-quotes', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId,
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    quoteId: quoteId,
+    templateId: template.id,
+    password: 'client-password-123', // Optional
+    expiresAt: '2025-12-31T23:59:59Z' // Optional
+  })
+}).then(res => res.json());
+
+// 3. Share the link with client
+const shareableUrl = `https://your-domain.com/public/quotes/${publicQuote.data.accessToken}`;
+
+// 4. Client accesses quote (password-protected if set)
+// Views are tracked automatically
+// Link becomes inactive after expiration date
+
+// 5. Revoke access if needed
+await fetch(`/api/tq/v1/public-quotes/${publicQuote.data.id}`, {
+  method: 'DELETE',
+  headers: {
+    'Authorization': 'Bearer ' + token,
+    'x-tenant-id': tenantId
+  }
+});
+```
 
 ### Quote Creation Workflow
 ```javascript

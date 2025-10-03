@@ -3,25 +3,31 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@client/common/ui'
 import { Plus } from 'lucide-react'
 import { publicQuotesService, PublicQuoteTemplate } from '../../../services/publicQuotes'
+import { brandingService, BrandingData } from '../../../services/branding'
 import { TemplatesEmpty } from '../../../components/public-quotes/TemplatesEmpty'
 import { TemplateCard } from '../../../components/public-quotes/TemplateCard'
 
 export const TemplatesTab: React.FC = () => {
   const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [branding, setBranding] = useState<BrandingData | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
 
   useEffect(() => {
-    loadTemplates()
+    loadData()
   }, [])
 
-  const loadTemplates = async () => {
+  const loadData = async () => {
     try {
       setLoading(true)
-      const response = await publicQuotesService.listTemplates()
-      setTemplates(response.data || response)
+      const [templatesResponse, brandingData] = await Promise.all([
+        publicQuotesService.listTemplates(),
+        brandingService.getBranding(),
+      ])
+      setTemplates(templatesResponse.data || templatesResponse)
+      setBranding(brandingData)
     } catch (error) {
-      console.error('Failed to load templates:', error)
+      console.error('Failed to load data:', error)
     } finally {
       setLoading(false)
     }
@@ -60,12 +66,13 @@ export const TemplatesTab: React.FC = () => {
         {!loading && (!templates || templates.length === 0) && <TemplatesEmpty />}
 
         {/* Templates Grid - 3 columns */}
-        {!loading && templates && templates.length > 0 && (
+        {!loading && templates && templates.length > 0 && branding && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {templates.map((template) => (
               <TemplateCard
                 key={template.id}
                 template={template}
+                branding={branding}
                 onClick={() => handleTemplateClick(template)}
               />
             ))}

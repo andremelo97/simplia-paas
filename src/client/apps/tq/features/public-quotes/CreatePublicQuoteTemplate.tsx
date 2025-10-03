@@ -159,47 +159,6 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-
-          {/* Template Layout */}
-          <Card>
-            <CardHeader className="p-6 pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Template Layout</h2>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Design your template layout using the visual editor
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="tertiary"
-                  onClick={() => {
-                    // TODO: Open design page after template is created
-                    alert('Save the template first to design the layout')
-                  }}
-                  disabled={true}
-                >
-                  Design Layout
-                </Button>
-              </div>
-            </CardHeader>
-
-            <CardContent className="px-6 pb-6">
-              <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-                <div className="max-w-md mx-auto">
-                  <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z" />
-                  </svg>
-                  <p className="text-gray-600 font-medium mb-2">
-                    No layout designed yet
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Click "Design Layout" after saving to create your custom quote layout
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">

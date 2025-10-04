@@ -16,6 +16,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
   })
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDuplicating, setIsDuplicating] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -143,6 +144,33 @@ export const EditPublicQuoteTemplate: React.FC = () => {
     }
   }
 
+  const handleDuplicate = async () => {
+    if (!id) return
+
+    setIsDuplicating(true)
+
+    try {
+      const template = await publicQuotesService.getTemplate(id)
+
+      const duplicateData = {
+        name: `${template.name} (Copy)`,
+        description: template.description,
+        content: template.content,
+        isDefault: false, // Duplicate is never default
+        active: template.active
+      }
+
+      const newTemplate = await publicQuotesService.createTemplate(duplicateData)
+
+      // Navigate to the new duplicated template
+      navigate(`/public-quotes/templates/${newTemplate.id}/edit`)
+    } catch (error) {
+      console.error('Failed to duplicate template:', error)
+    } finally {
+      setIsDuplicating(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -160,14 +188,25 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             Update template information and design layout
           </p>
         </div>
-        <Button
-          type="button"
-          variant="tertiary"
-          onClick={handleDesignLayout}
-          disabled={isSubmitting}
-        >
-          Design Layout
-        </Button>
+        <div className="flex items-center space-x-4">
+          <Button
+            type="button"
+            variant="tertiary"
+            onClick={handleDesignLayout}
+            disabled={isSubmitting || isDuplicating}
+          >
+            Design Layout
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={handleDuplicate}
+            isLoading={isDuplicating}
+            disabled={isSubmitting || isDuplicating}
+          >
+            {isDuplicating ? 'Duplicating...' : 'Duplicate'}
+          </Button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -231,7 +270,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             type="submit"
             variant="default"
             isLoading={isSubmitting}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isDuplicating}
           >
             {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
           </Button>
@@ -240,7 +279,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             type="button"
             variant="secondary"
             onClick={handleCancel}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isDuplicating}
             style={{ height: '32px', minHeight: '32px' }}
           >
             Cancel

@@ -1,4 +1,6 @@
 import React from 'react'
+import { BrandingData } from '../../../services/branding'
+import { textColorOptions, resolveColor } from './color-options'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -24,7 +26,7 @@ const verticalPaddingOptions = [
   { label: '160px', value: 160 },
 ]
 
-export const typographyComponents = {
+export const createTypographyComponents = (branding: BrandingData) => ({
   Heading: {
     fields: {
       text: {
@@ -70,6 +72,11 @@ export const typographyComponents = {
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
+      color: {
+        type: 'select' as const,
+        label: 'Text Color',
+        options: textColorOptions,
+      },
     },
     defaultProps: {
       text: 'Heading',
@@ -77,36 +84,74 @@ export const typographyComponents = {
       level: 'h2',
       align: 'left',
       verticalPadding: 8,
+      color: 'default',
     },
-    render: ({ text, size, level, align, verticalPadding }: any) => {
+    render: ({ text, size, level, align, verticalPadding, color }: any) => {
       const Tag = level || 'h2'
 
-      const sizeClasses = {
-        xs: 'text-xs',
-        s: 'text-sm',
-        m: 'text-base',
-        l: 'text-lg',
-        xl: 'text-xl',
-        xxl: 'text-2xl',
-        xxxl: 'text-4xl',
+      const baseSizeStyles = {
+        xs: { fontSize: '12px' },
+        s: { fontSize: '14px' },
+        m: { fontSize: '16px' },
+        l: { fontSize: '18px' },
+        xl: { fontSize: '20px' },
+        xxl: { fontSize: '24px' },
+        xxxl: { fontSize: '30px' },
       }
 
-      const alignClasses = {
-        left: 'text-left',
-        center: 'text-center',
-        right: 'text-right',
+      const alignStyles = {
+        left: 'left' as const,
+        center: 'center' as const,
+        right: 'right' as const,
       }
+
+      const textColor = resolveColor(color, branding)
+      const uniqueId = `heading-${Math.random().toString(36).substr(2, 9)}`
 
       return (
-        <Tag
-          className={`font-bold ${sizeClasses[size as keyof typeof sizeClasses]} ${alignClasses[align as keyof typeof alignClasses]}`}
-          style={{
-            paddingTop: `${verticalPadding}px`,
-            paddingBottom: `${verticalPadding}px`,
-          }}
-        >
-          {text}
-        </Tag>
+        <>
+          <Tag
+            className={uniqueId}
+            style={{
+              fontWeight: '700',
+              ...baseSizeStyles[size as keyof typeof baseSizeStyles],
+              textAlign: alignStyles[align as keyof typeof alignStyles],
+              wordBreak: 'break-word',
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              color: textColor,
+            }}
+          >
+            {text}
+          </Tag>
+          <style>{`
+            @media (min-width: 640px) {
+              .${uniqueId} {
+                padding-left: 0;
+                padding-right: 0;
+                ${size === 's' ? 'font-size: 16px;' : ''}
+                ${size === 'm' ? 'font-size: 18px;' : ''}
+                ${size === 'l' ? 'font-size: 20px;' : ''}
+                ${size === 'xl' ? 'font-size: 24px;' : ''}
+                ${size === 'xxl' ? 'font-size: 30px;' : ''}
+                ${size === 'xxxl' ? 'font-size: 36px;' : ''}
+              }
+            }
+            @media (min-width: 768px) {
+              .${uniqueId} {
+                ${size === 'xxl' ? 'font-size: 36px;' : ''}
+                ${size === 'xxxl' ? 'font-size: 48px;' : ''}
+              }
+            }
+            @media (min-width: 1024px) {
+              .${uniqueId} {
+                ${size === 'xxxl' ? 'font-size: 60px;' : ''}
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },
@@ -134,12 +179,9 @@ export const typographyComponents = {
         ],
       },
       color: {
-        type: 'radio' as const,
-        label: 'color',
-        options: [
-          { label: 'Default', value: 'default' },
-          { label: 'Muted', value: 'muted' },
-        ],
+        type: 'select' as const,
+        label: 'Text Color',
+        options: textColorOptions,
       },
       maxWidth: {
         type: 'text' as const,
@@ -160,25 +202,29 @@ export const typographyComponents = {
       verticalPadding: 0,
     },
     render: ({ text, size, align, color, maxWidth, verticalPadding }: any) => {
-      const sizeClasses = {
-        m: 'text-base',
-        s: 'text-sm',
+      const baseSizeStyles = {
+        m: { fontSize: '14px' },
+        s: { fontSize: '12px' },
       }
 
-      const alignClasses = {
-        left: 'text-left',
-        center: 'text-center',
-        right: 'text-right',
+      const alignStyles = {
+        left: 'left' as const,
+        center: 'center' as const,
+        right: 'right' as const,
       }
 
-      const colorClasses = {
-        default: 'text-gray-900',
-        muted: 'text-gray-600',
-      }
+      const textColor = resolveColor(color, branding)
+      const uniqueId = `text-${Math.random().toString(36).substr(2, 9)}`
 
       const styles: any = {
+        ...baseSizeStyles[size as keyof typeof baseSizeStyles],
+        textAlign: alignStyles[align as keyof typeof alignStyles],
+        wordBreak: 'break-word',
+        paddingLeft: '16px',
+        paddingRight: '16px',
         paddingTop: `${verticalPadding}px`,
         paddingBottom: `${verticalPadding}px`,
+        color: textColor,
       }
 
       if (maxWidth) {
@@ -186,13 +232,22 @@ export const typographyComponents = {
       }
 
       return (
-        <p
-          className={`${sizeClasses[size as keyof typeof sizeClasses]} ${alignClasses[align as keyof typeof alignClasses]} ${colorClasses[color as keyof typeof colorClasses]}`}
-          style={styles}
-        >
-          {text}
-        </p>
+        <>
+          <p className={uniqueId} style={styles}>
+            {text}
+          </p>
+          <style>{`
+            @media (min-width: 640px) {
+              .${uniqueId} {
+                padding-left: 0;
+                padding-right: 0;
+                ${size === 'm' ? 'font-size: 16px;' : ''}
+                ${size === 's' ? 'font-size: 14px;' : ''}
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },
-}
+})

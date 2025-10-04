@@ -50,14 +50,28 @@ export const createHeaderComponent = (branding: BrandingData) => ({
       return (
         <>
           <header
-            className="fixed top-0 left-0 right-0 z-50 border-b px-8"
             style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 50,
               backgroundColor: getBackgroundColor(),
-              borderBottomColor: backgroundColor === 'white' ? '#e5e7eb' : 'transparent',
-              height: `${height}px`,
+              borderBottom: `1px solid ${backgroundColor === 'white' ? '#e5e7eb' : 'transparent'}`,
+              height: `${parseInt(height)}px`,
+              paddingLeft: '32px',
+              paddingRight: '32px',
             }}
           >
-            <div className="max-w-6xl mx-auto h-full flex items-center">
+            <div
+              style={{
+                maxWidth: '1152px',
+                margin: '0 auto',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
               {branding.logoUrl ? (
                 <img
                   src={branding.logoUrl}
@@ -70,8 +84,11 @@ export const createHeaderComponent = (branding: BrandingData) => ({
                 />
               ) : (
                 <span
-                  className="text-2xl font-bold"
-                  style={{ color: getTextColor() }}
+                  style={{
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    color: getTextColor(),
+                  }}
                 >
                   LOGO
                 </span>
@@ -79,7 +96,7 @@ export const createHeaderComponent = (branding: BrandingData) => ({
             </div>
           </header>
           {/* Spacer to compensate for fixed header */}
-          <div style={{ height: `${height}px` }} />
+          <div style={{ height: `${parseInt(height)}px` }} />
         </>
       )
     },

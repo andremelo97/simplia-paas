@@ -1,5 +1,6 @@
 import React from 'react'
 import { BrandingData } from '../../../services/branding'
+import { backgroundColorOptions, resolveColor } from './color-options'
 
 export const createLayoutComponents = (branding: BrandingData) => ({
   Grid: {
@@ -45,23 +46,7 @@ export const createLayoutComponents = (branding: BrandingData) => ({
       backgroundColor: {
         type: 'select' as const,
         label: 'Background Color',
-        options: [
-          { label: 'None', value: 'none' },
-          { label: 'Primary', value: 'primary' },
-          { label: 'Secondary', value: 'secondary' },
-          { label: 'Tertiary', value: 'tertiary' },
-          { label: 'White', value: '#ffffff' },
-          { label: 'Light Gray', value: '#f9fafb' },
-          { label: 'Gray', value: '#f3f4f6' },
-          { label: 'Dark Gray', value: '#e5e7eb' },
-          { label: 'Black', value: '#111827' },
-          { label: 'Blue', value: '#3b82f6' },
-          { label: 'Red', value: '#ef4444' },
-          { label: 'Green', value: '#10b981' },
-          { label: 'Yellow', value: '#f59e0b' },
-          { label: 'Purple', value: '#8b5cf6' },
-          { label: 'Pink', value: '#ec4899' },
-        ],
+        options: backgroundColorOptions,
       },
       content: {
         type: 'slot' as const,
@@ -74,32 +59,62 @@ export const createLayoutComponents = (branding: BrandingData) => ({
       backgroundColor: 'none',
     },
     render: ({ columns, gap, verticalPadding, backgroundColor, content: Content }: any) => {
-      const getBackgroundColor = () => {
-        if (backgroundColor === 'none') return 'transparent'
-        if (backgroundColor === 'primary') return branding.primaryColor
-        if (backgroundColor === 'secondary') return branding.secondaryColor
-        if (backgroundColor === 'tertiary') return branding.tertiaryColor
-        return backgroundColor
+      const bgColor = resolveColor(backgroundColor, branding)
+      const uniqueId = `grid-${Math.random().toString(36).substr(2, 9)}`
+
+      // Apply columns configuration directly
+      const getGridColumns = (cols: number) => {
+        if (cols <= 1) return '1fr'
+        return `repeat(${cols}, 1fr)`
       }
 
+      const wrapperId = `grid-wrapper-${Math.random().toString(36).substr(2, 9)}`
+
       return (
-        <div
-          className="px-8"
-          style={{
-            backgroundColor: getBackgroundColor(),
-          }}
-        >
-          <Content
-            className="max-w-6xl mx-auto"
+        <>
+          <div
+            className={wrapperId}
             style={{
-              display: 'grid',
-              gridTemplateColumns: `repeat(${columns || 4}, 1fr)`,
-              gap: `${gap}px`,
-              paddingTop: `${verticalPadding}px`,
-              paddingBottom: `${verticalPadding}px`,
+              width: '100%',
+              overflowX: 'hidden',
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: bgColor,
             }}
-          />
-        </div>
+          >
+            <Content
+              className={uniqueId}
+              style={{
+                width: '100%',
+                maxWidth: '1152px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                display: 'grid',
+                gridTemplateColumns: getGridColumns(columns),
+                gap: `${Math.max(12, gap / 2)}px`,
+                paddingTop: `${verticalPadding}px`,
+                paddingBottom: `${verticalPadding}px`,
+              }}
+            />
+          </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${wrapperId} {
+                padding-left: 24px;
+                padding-right: 24px;
+              }
+              .${uniqueId} {
+                gap: ${gap}px;
+              }
+            }
+            @media (min-width: 768px) {
+              .${wrapperId} {
+                padding-left: 32px;
+                padding-right: 32px;
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },
@@ -165,23 +180,7 @@ export const createLayoutComponents = (branding: BrandingData) => ({
       backgroundColor: {
         type: 'select' as const,
         label: 'Background Color',
-        options: [
-          { label: 'None', value: 'none' },
-          { label: 'Primary', value: 'primary' },
-          { label: 'Secondary', value: 'secondary' },
-          { label: 'Tertiary', value: 'tertiary' },
-          { label: 'White', value: '#ffffff' },
-          { label: 'Light Gray', value: '#f9fafb' },
-          { label: 'Gray', value: '#f3f4f6' },
-          { label: 'Dark Gray', value: '#e5e7eb' },
-          { label: 'Black', value: '#111827' },
-          { label: 'Blue', value: '#3b82f6' },
-          { label: 'Red', value: '#ef4444' },
-          { label: 'Green', value: '#10b981' },
-          { label: 'Yellow', value: '#f59e0b' },
-          { label: 'Purple', value: '#8b5cf6' },
-          { label: 'Pink', value: '#ec4899' },
-        ],
+        options: backgroundColorOptions,
       },
       content: {
         type: 'slot' as const,
@@ -196,34 +195,60 @@ export const createLayoutComponents = (branding: BrandingData) => ({
       backgroundColor: 'none',
     },
     render: ({ direction, justifyContent, gap, wrap, verticalPadding, backgroundColor, content: Content }: any) => {
-      const getBackgroundColor = () => {
-        if (backgroundColor === 'none') return 'transparent'
-        if (backgroundColor === 'primary') return branding.primaryColor
-        if (backgroundColor === 'secondary') return branding.secondaryColor
-        if (backgroundColor === 'tertiary') return branding.tertiaryColor
-        return backgroundColor
-      }
+      const bgColor = resolveColor(backgroundColor, branding)
+      const uniqueId = `flex-${Math.random().toString(36).substr(2, 9)}`
+      const wrapperId = `flex-wrapper-${Math.random().toString(36).substr(2, 9)}`
+
+      // Apply direction directly as CSS value
+      const flexDir = direction
 
       return (
-        <div
-          className="px-8"
-          style={{
-            backgroundColor: getBackgroundColor(),
-          }}
-        >
-          <Content
-            className="max-w-6xl mx-auto"
+        <>
+          <div
+            className={wrapperId}
             style={{
-              display: 'flex',
-              flexDirection: direction,
-              justifyContent: justifyContent,
-              gap: `${gap}px`,
-              flexWrap: wrap ? 'wrap' : 'nowrap',
-              paddingTop: `${verticalPadding}px`,
-              paddingBottom: `${verticalPadding}px`,
+              width: '100%',
+              overflowX: 'hidden',
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: bgColor,
             }}
-          />
-        </div>
+          >
+            <Content
+              className={uniqueId}
+              style={{
+                width: '100%',
+                maxWidth: '1152px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                display: 'flex',
+                flexDirection: flexDir,
+                justifyContent: justifyContent,
+                gap: `${Math.max(12, gap / 2)}px`,
+                flexWrap: wrap ? 'wrap' : 'nowrap',
+                paddingTop: `${verticalPadding}px`,
+                paddingBottom: `${verticalPadding}px`,
+              }}
+            />
+          </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${wrapperId} {
+                padding-left: 24px;
+                padding-right: 24px;
+              }
+              .${uniqueId} {
+                gap: ${gap}px;
+              }
+            }
+            @media (min-width: 768px) {
+              .${wrapperId} {
+                padding-left: 32px;
+                padding-right: 32px;
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },

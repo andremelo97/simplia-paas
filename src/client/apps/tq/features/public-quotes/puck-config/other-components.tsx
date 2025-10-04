@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrandingData } from '../../../services/branding'
 import * as Icons from './icons'
+import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor } from './color-options'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -46,24 +47,66 @@ export const createOtherComponents = (branding: BrandingData) => ({
       content: {
         type: 'slot' as const,
       },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      titleColor: {
+        type: 'select' as const,
+        label: 'Title Color',
+        options: textColorOptions,
+      },
+      descriptionColor: {
+        type: 'select' as const,
+        label: 'Description Color',
+        options: textColorOptions,
+      },
     },
     defaultProps: {
       title: 'Card Title',
       description: 'Card description goes here',
       padding: 'md',
+      backgroundColor: 'none',
+      titleColor: '#111827',
+      descriptionColor: '#4b5563',
     },
-    render: ({ title, description, padding, content: Content }: any) => {
-      const paddingClasses = {
-        sm: 'p-4',
-        md: 'p-6',
-        lg: 'p-8',
+    render: ({ title, description, padding, backgroundColor, titleColor, descriptionColor, content: Content }: any) => {
+      const basePadding = {
+        sm: '12px',
+        md: '16px',
+        lg: '24px',
       }
+
+      const uniqueId = `card-container-${Math.random().toString(36).substr(2, 9)}`
+
       return (
-        <div className={`bg-white rounded-lg border border-gray-200 shadow-sm ${paddingClasses[padding as keyof typeof paddingClasses]}`}>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-          <p className="text-gray-600 text-sm mb-4">{description}</p>
-          <Content />
-        </div>
+        <>
+          <div
+            className={uniqueId}
+            style={{
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+              padding: basePadding[padding as keyof typeof basePadding],
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>{title}</h3>
+            <p style={{ fontSize: '14px', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>{description}</p>
+            <Content />
+          </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${uniqueId} {
+                padding: ${padding === 'sm' ? '16px' : padding === 'md' ? '24px' : '32px'};
+              }
+              .${uniqueId} h3 {
+                font-size: 18px;
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },
@@ -187,6 +230,26 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      iconColor: {
+        type: 'select' as const,
+        label: 'Icon Background Color',
+        options: iconColorOptions,
+      },
+      titleColor: {
+        type: 'select' as const,
+        label: 'Title Color',
+        options: textColorOptions,
+      },
+      descriptionColor: {
+        type: 'select' as const,
+        label: 'Description Color',
+        options: textColorOptions,
+      },
     },
     defaultProps: {
       title: 'Title',
@@ -194,8 +257,12 @@ export const createOtherComponents = (branding: BrandingData) => ({
       icon: 'stethoscope',
       mode: 'card',
       verticalPadding: 0,
+      backgroundColor: 'none',
+      iconColor: 'primary',
+      titleColor: '#111827',
+      descriptionColor: '#4b5563',
     },
-    render: ({ title, description, icon, mode, verticalPadding }: any) => {
+    render: ({ title, description, icon, mode, verticalPadding, backgroundColor, iconColor, titleColor, descriptionColor }: any) => {
       const getIconComponent = () => {
         const iconProps = { size: mode === 'flat' ? 24 : 20 }
 
@@ -296,53 +363,144 @@ export const createOtherComponents = (branding: BrandingData) => ({
         }
       }
 
+      const uniqueId = `card-with-icon-${Math.random().toString(36).substr(2, 9)}`
+      const iconId = `icon-${Math.random().toString(36).substr(2, 9)}`
+
       if (mode === 'card') {
         // Modo Card: Layout horizontal compacto com ícone pequeno à esquerda
         return (
-          <div
-            className="bg-white rounded-lg border border-gray-200 shadow-sm p-6"
-            style={{
-              paddingTop: `${Math.max(24, verticalPadding)}px`,
-              paddingBottom: `${Math.max(24, verticalPadding)}px`,
-            }}
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className="flex-shrink-0 w-10 h-10 text-white rounded-full flex items-center justify-center"
-                style={{ backgroundColor: branding.primaryColor }}
-              >
-                {getIconComponent()}
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+          <>
+            <div
+              className={uniqueId}
+              style={{
+                width: '100%',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+                padding: '16px',
+                paddingTop: `${Math.max(16, verticalPadding)}px`,
+                paddingBottom: `${Math.max(16, verticalPadding)}px`,
+                backgroundColor: resolveColor(backgroundColor, branding),
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <div
+                  className={iconId}
+                  style={{
+                    flexShrink: 0,
+                    width: '32px',
+                    height: '32px',
+                    color: 'white',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: resolveColor(iconColor, branding),
+                  }}
+                >
+                  {getIconComponent()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>{title}</h3>
+                  <p style={{ fontSize: '14px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>{description}</p>
+                </div>
               </div>
             </div>
-          </div>
+            <style>{`
+              @media (min-width: 640px) {
+                .${uniqueId} {
+                  padding: 24px;
+                  padding-top: ${Math.max(24, verticalPadding)}px;
+                  padding-bottom: ${Math.max(24, verticalPadding)}px;
+                }
+                .${uniqueId} > div {
+                  gap: 16px;
+                }
+                .${iconId} {
+                  width: 40px;
+                  height: 40px;
+                }
+                .${uniqueId} h3 {
+                  font-size: 18px;
+                }
+              }
+            `}</style>
+          </>
         )
       } else {
         // Modo Flat: Layout vertical centralizado com ícone grande no topo
+        const contentId = `content-${Math.random().toString(36).substr(2, 9)}`
+
         return (
-          <div
-            className="text-center p-8"
-            style={{
-              paddingTop: `${Math.max(32, verticalPadding)}px`,
-              paddingBottom: `${Math.max(32, verticalPadding)}px`,
-            }}
-          >
-            <div className="flex flex-col items-center">
-              <div
-                className="w-16 h-16 text-white rounded-full flex items-center justify-center mb-6"
-                style={{ backgroundColor: branding.primaryColor }}
-              >
-                {getIconComponent()}
-              </div>
-              <div className="max-w-sm">
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">{title}</h3>
-                <p className="text-gray-600 text-base leading-relaxed">{description}</p>
+          <>
+            <div
+              className={uniqueId}
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                padding: '16px',
+                paddingTop: `${Math.max(16, verticalPadding)}px`,
+                paddingBottom: `${Math.max(16, verticalPadding)}px`,
+                backgroundColor: resolveColor(backgroundColor, branding),
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div
+                  className={iconId}
+                  style={{
+                    width: '48px',
+                    height: '48px',
+                    color: 'white',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '16px',
+                    backgroundColor: resolveColor(iconColor, branding),
+                  }}
+                >
+                  {getIconComponent()}
+                </div>
+                <div className={contentId} style={{ width: '100%', maxWidth: '384px', paddingLeft: '16px', paddingRight: '16px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>{title}</h3>
+                  <p style={{ fontSize: '14px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>{description}</p>
+                </div>
               </div>
             </div>
-          </div>
+            <style>{`
+              @media (min-width: 640px) {
+                .${uniqueId} {
+                  padding: 24px;
+                  padding-top: ${Math.max(24, verticalPadding)}px;
+                  padding-bottom: ${Math.max(24, verticalPadding)}px;
+                }
+                .${iconId} {
+                  width: 56px;
+                  height: 56px;
+                  margin-bottom: 20px;
+                }
+                .${contentId} h3 {
+                  font-size: 20px;
+                  margin-bottom: 16px;
+                }
+                .${contentId} p {
+                  font-size: 16px;
+                }
+              }
+              @media (min-width: 768px) {
+                .${uniqueId} {
+                  padding: 32px;
+                  padding-top: ${Math.max(32, verticalPadding)}px;
+                  padding-bottom: ${Math.max(32, verticalPadding)}px;
+                }
+                .${iconId} {
+                  width: 64px;
+                  height: 64px;
+                  margin-bottom: 24px;
+                }
+              }
+            `}</style>
+          </>
         )
       }
     },
@@ -425,6 +583,21 @@ export const createOtherComponents = (branding: BrandingData) => ({
         type: 'text' as const,
         label: 'padding',
       },
+      titleColor: {
+        type: 'select' as const,
+        label: 'Title Color',
+        options: textColorOptions,
+      },
+      descriptionColor: {
+        type: 'select' as const,
+        label: 'Description Color',
+        options: textColorOptions,
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
     },
     defaultProps: {
       title: 'Hero Title',
@@ -442,8 +615,11 @@ export const createOtherComponents = (branding: BrandingData) => ({
       url: '',
       mode: 'inline',
       padding: '64px',
+      titleColor: '#111827',
+      descriptionColor: '#374151',
+      backgroundColor: 'none',
     },
-    render: ({ title, description, buttons, align, showMedia, media, url, mode, padding }: any) => {
+    render: ({ title, description, buttons, align, showMedia, media, url, mode, padding, titleColor, descriptionColor, backgroundColor }: any) => {
       const alignClasses = {
         left: 'text-left',
         center: 'text-center',
@@ -483,10 +659,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
 
         if (media === 'video') {
           return (
-            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+            <div style={{ aspectRatio: '16 / 9', backgroundColor: '#f3f4f6', borderRadius: '8px', overflow: 'hidden' }}>
               <iframe
                 src={url}
-                className="w-full h-full"
+                style={{ width: '100%', height: '100%' }}
                 frameBorder="0"
                 allowFullScreen
                 title="Hero Video"
@@ -495,11 +671,11 @@ export const createOtherComponents = (branding: BrandingData) => ({
           )
         } else if (media === 'image') {
           return (
-            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+            <div style={{ aspectRatio: '16 / 9', backgroundColor: '#f3f4f6', borderRadius: '8px', overflow: 'hidden' }}>
               <img
                 src={url}
                 alt={title}
-                className="w-full h-full object-cover"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
           )
@@ -509,114 +685,84 @@ export const createOtherComponents = (branding: BrandingData) => ({
 
       // Background mode: image/video as background
       if (mode === 'bg' && showMedia && url && media === 'image') {
-        return (
-          <div
-            className="relative px-8 min-h-[500px] flex items-center"
-            style={{
-              paddingTop: padding ? `${parseInt(padding)}px` : '64px',
-              paddingBottom: padding ? `${parseInt(padding)}px` : '64px',
-            }}
-          >
-            {/* Background image layer */}
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `url(${url})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-            {/* Gradient overlay - white from left fading to transparent */}
-            <div
-              className="absolute inset-0"
-              style={{
-                background: align === 'center'
-                  ? 'linear-gradient(to bottom, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75))'
-                  : 'linear-gradient(to right, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.2) 70%, rgba(255, 255, 255, 0) 100%)',
-              }}
-            />
-            {/* Content */}
-            <div className="max-w-6xl mx-auto relative z-10 w-full">
-              <div className={align === 'center' ? 'max-w-3xl mx-auto text-center' : 'max-w-3xl text-left'}>
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                  {title}
-                </h1>
-                <p className="text-xl text-gray-700 mb-8 leading-relaxed">
-                  {description}
-                </p>
-                {buttons && buttons.length > 0 && (
-                  <div className={`flex flex-wrap gap-4 ${align === 'center' ? 'justify-center' : 'justify-start'}`}>
-                    {buttons.map((button: any, index: number) => (
-                      <a
-                        key={index}
-                        href={button.href}
-                        className="inline-flex items-center px-6 py-3 rounded-lg font-medium transition-colors border"
-                        style={getButtonVariantStyles(button.variant)}
-                      >
-                        {button.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )
-      }
+        const bgWrapperId = `hero-bg-wrapper-${Math.random().toString(36).substr(2, 9)}`
+        const bgTitleId = `hero-bg-title-${Math.random().toString(36).substr(2, 9)}`
+        const bgDescId = `hero-bg-desc-${Math.random().toString(36).substr(2, 9)}`
+        const bgButtonsId = `hero-bg-buttons-${Math.random().toString(36).substr(2, 9)}`
 
-      // Inline mode (default)
-      return (
-        <div
-          className="bg-white px-8"
-          style={{
-            paddingTop: padding ? `${parseInt(padding)}px` : '64px',
-            paddingBottom: padding ? `${parseInt(padding)}px` : '64px',
-          }}
-        >
-          <div className="max-w-6xl mx-auto">
-            {align === 'center' ? (
-              // Layout centralizado - single column
-              <div className="max-w-3xl mx-auto text-center">
-                <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                  {title}
-                </h1>
-                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                  {description}
-                </p>
-                {buttons && buttons.length > 0 && (
-                  <div className={`flex flex-wrap gap-4 justify-center ${showMedia && url ? 'mb-8' : ''}`}>
-                    {buttons.map((button: any, index: number) => (
-                      <a
-                        key={index}
-                        href={button.href}
-                        className="inline-flex items-center px-6 py-3 rounded-lg font-medium transition-colors border"
-                        style={getButtonVariantStyles(button.variant)}
-                      >
-                        {button.label}
-                      </a>
-                    ))}
-                  </div>
-                )}
-                {renderMedia()}
-              </div>
-            ) : (
-              // Layout left - two columns (or single column if no media)
-              <div className={showMedia && url ? "grid grid-cols-1 lg:grid-cols-2 gap-12 items-center" : ""}>
-                <div className="text-left">
-                  <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+        return (
+          <>
+            <div
+              className={bgWrapperId}
+              style={{
+                width: '100%',
+                overflowX: 'hidden',
+                position: 'relative',
+                paddingLeft: '16px',
+                paddingRight: '16px',
+                minHeight: '300px',
+                display: 'flex',
+                alignItems: 'center',
+                paddingTop: padding ? `${Math.max(32, parseInt(padding))}px` : '48px',
+                paddingBottom: padding ? `${Math.max(32, parseInt(padding))}px` : '48px',
+                backgroundColor: resolveColor(backgroundColor, branding),
+              }}
+            >
+              {/* Background image layer */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  left: 0,
+                  backgroundImage: `url(${url})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+              {/* Gradient overlay - white from left fading to transparent */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  left: 0,
+                  background: align === 'center'
+                    ? 'linear-gradient(to bottom, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75))'
+                    : 'linear-gradient(to right, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.2) 70%, rgba(255, 255, 255, 0) 100%)',
+                }}
+              />
+              {/* Content */}
+              <div style={{ width: '100%', maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto', position: 'relative', zIndex: 10 }}>
+                <div style={{ width: '100%', maxWidth: '768px', ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' } : { textAlign: 'left' }), paddingLeft: '16px', paddingRight: '16px' }}>
+                  <h1 className={bgTitleId} style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
                     {title}
                   </h1>
-                  <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                  <p className={bgDescId} style={{ fontSize: '16px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
                     {description}
                   </p>
                   {buttons && buttons.length > 0 && (
-                    <div className="flex flex-wrap gap-4 justify-start">
+                    <div className={bgButtonsId} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: align === 'center' ? 'center' : 'flex-start' }}>
                       {buttons.map((button: any, index: number) => (
                         <a
                           key={index}
                           href={button.href}
-                          className="inline-flex items-center px-6 py-3 rounded-lg font-medium transition-colors border"
-                          style={getButtonVariantStyles(button.variant)}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            paddingLeft: '16px',
+                            paddingRight: '16px',
+                            paddingTop: '8px',
+                            paddingBottom: '8px',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            transition: 'colors 0.2s',
+                            border: '1px solid',
+                            ...getButtonVariantStyles(button.variant)
+                          }}
                         >
                           {button.label}
                         </a>
@@ -624,15 +770,216 @@ export const createOtherComponents = (branding: BrandingData) => ({
                     </div>
                   )}
                 </div>
-                {showMedia && url && (
-                  <div>
-                    {renderMedia()}
-                  </div>
-                )}
               </div>
-            )}
+            </div>
+            <style>{`
+              @media (min-width: 640px) {
+                .${bgWrapperId} {
+                  padding-left: 24px;
+                  padding-right: 24px;
+                  min-height: 400px;
+                }
+                .${bgTitleId} {
+                  font-size: 30px;
+                  margin-bottom: 24px;
+                }
+                .${bgDescId} {
+                  font-size: 18px;
+                  margin-bottom: 32px;
+                }
+                .${bgButtonsId} {
+                  gap: 16px;
+                }
+                .${bgButtonsId} a {
+                  padding-left: 24px;
+                  padding-right: 24px;
+                  padding-top: 12px;
+                  padding-bottom: 12px;
+                  font-size: 16px;
+                }
+              }
+              @media (min-width: 768px) {
+                .${bgWrapperId} {
+                  padding-left: 32px;
+                  padding-right: 32px;
+                  min-height: 500px;
+                }
+                .${bgTitleId} {
+                  font-size: 36px;
+                }
+                .${bgDescId} {
+                  font-size: 20px;
+                }
+              }
+              @media (min-width: 1024px) {
+                .${bgTitleId} {
+                  font-size: 48px;
+                }
+              }
+            `}</style>
+          </>
+        )
+      }
+
+      // Inline mode (default)
+      const inlineWrapperId = `hero-inline-wrapper-${Math.random().toString(36).substr(2, 9)}`
+      const inlineTitleId = `hero-inline-title-${Math.random().toString(36).substr(2, 9)}`
+      const inlineDescId = `hero-inline-desc-${Math.random().toString(36).substr(2, 9)}`
+      const inlineButtonsId = `hero-inline-buttons-${Math.random().toString(36).substr(2, 9)}`
+      const inlineGridId = `hero-inline-grid-${Math.random().toString(36).substr(2, 9)}`
+
+      return (
+        <>
+          <div
+            className={inlineWrapperId}
+            style={{
+              width: '100%',
+              overflowX: 'hidden',
+              backgroundColor: resolveColor(backgroundColor, branding),
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              paddingTop: padding ? `${Math.max(32, parseInt(padding))}px` : '48px',
+              paddingBottom: padding ? `${Math.max(32, parseInt(padding))}px` : '48px',
+            }}
+          >
+            <div style={{ width: '100%', maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto' }}>
+              {align === 'center' ? (
+                // Layout centralizado - single column
+                <div style={{ width: '100%', maxWidth: '768px', marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' }}>
+                  <h1 className={inlineTitleId} style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                    {title}
+                  </h1>
+                  <p className={inlineDescId} style={{ fontSize: '16px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                    {description}
+                  </p>
+                  {buttons && buttons.length > 0 && (
+                    <div className={inlineButtonsId} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', ...(showMedia && url ? { marginBottom: '24px' } : {}) }}>
+                      {buttons.map((button: any, index: number) => (
+                        <a
+                          key={index}
+                          href={button.href}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            paddingLeft: '16px',
+                            paddingRight: '16px',
+                            paddingTop: '8px',
+                            paddingBottom: '8px',
+                            borderRadius: '8px',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            transition: 'colors 0.2s',
+                            border: '1px solid',
+                            ...getButtonVariantStyles(button.variant)
+                          }}
+                        >
+                          {button.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  {renderMedia()}
+                </div>
+              ) : (
+                // Layout left - two columns (or single column if no media)
+                <div className={inlineGridId} style={{ width: '100%', ...(showMedia && url ? { display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'center' } : {}) }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <h1 className={inlineTitleId} style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                      {title}
+                    </h1>
+                    <p className={inlineDescId} style={{ fontSize: '16px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                      {description}
+                    </p>
+                    {buttons && buttons.length > 0 && (
+                      <div className={inlineButtonsId} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'flex-start' }}>
+                        {buttons.map((button: any, index: number) => (
+                          <a
+                            key={index}
+                            href={button.href}
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              paddingLeft: '16px',
+                              paddingRight: '16px',
+                              paddingTop: '8px',
+                              paddingBottom: '8px',
+                              borderRadius: '8px',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              transition: 'colors 0.2s',
+                              border: '1px solid',
+                              ...getButtonVariantStyles(button.variant)
+                            }}
+                          >
+                            {button.label}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {showMedia && url && (
+                    <div style={{ width: '100%' }}>
+                      {renderMedia()}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${inlineWrapperId} {
+                padding-left: 24px;
+                padding-right: 24px;
+              }
+              .${inlineTitleId} {
+                font-size: 30px;
+                margin-bottom: 24px;
+              }
+              .${inlineDescId} {
+                font-size: 18px;
+                margin-bottom: 32px;
+              }
+              .${inlineButtonsId} {
+                gap: 16px;
+                ${showMedia && url ? 'margin-bottom: 32px;' : ''}
+              }
+              .${inlineButtonsId} a {
+                padding-left: 24px;
+                padding-right: 24px;
+                padding-top: 12px;
+                padding-bottom: 12px;
+                font-size: 16px;
+              }
+              .${inlineGridId} {
+                gap: 32px;
+              }
+            }
+            @media (min-width: 768px) {
+              .${inlineWrapperId} {
+                padding-left: 32px;
+                padding-right: 32px;
+              }
+              .${inlineTitleId} {
+                font-size: 36px;
+              }
+              .${inlineDescId} {
+                font-size: 20px;
+              }
+              .${inlineGridId} {
+                gap: 48px;
+              }
+            }
+            @media (min-width: 1024px) {
+              .${inlineTitleId} {
+                font-size: 48px;
+              }
+              .${inlineGridId} {
+                grid-template-columns: ${showMedia && url ? 'repeat(2, 1fr)' : '1fr'};
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },
@@ -671,33 +1018,76 @@ export const createOtherComponents = (branding: BrandingData) => ({
       ],
     },
     render: ({ title, logos }: any) => {
+      const wrapperId = `logos-wrapper-${Math.random().toString(36).substr(2, 9)}`
+      const titleId = `logos-title-${Math.random().toString(36).substr(2, 9)}`
+      const gridId = `logos-grid-${Math.random().toString(36).substr(2, 9)}`
+      const itemId = `logos-item-${Math.random().toString(36).substr(2, 9)}`
+      const textId = `logos-text-${Math.random().toString(36).substr(2, 9)}`
+
       return (
-        <div className="text-center py-12">
-          <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-8">{title}</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center max-w-4xl mx-auto">
-            {logos && logos.length > 0 ? (
-              logos.map((logo: any, index: number) => (
-                <div key={index} className="flex items-center justify-center h-16 bg-gray-100 rounded p-4">
-                  {logo.imageUrl ? (
-                    <img
-                      src={logo.imageUrl}
-                      alt={logo.alt || `Logo ${index + 1}`}
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  ) : (
-                    <span className="text-gray-500 text-sm">
-                      {logo.alt || `Logo ${index + 1}`}
-                    </span>
-                  )}
+        <>
+          <div className={wrapperId} style={{ width: '100%', overflowX: 'hidden', textAlign: 'center', paddingTop: '32px', paddingBottom: '32px', paddingLeft: '16px', paddingRight: '16px' }}>
+            <h3 className={titleId} style={{ fontSize: '12px', fontWeight: '600', color: '#4b5563', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '24px' }}>{title}</h3>
+            <div className={gridId} style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', alignItems: 'center', maxWidth: '896px', marginLeft: 'auto', marginRight: 'auto' }}>
+              {logos && logos.length > 0 ? (
+                logos.map((logo: any, index: number) => (
+                  <div key={index} className={itemId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '48px', backgroundColor: '#f3f4f6', borderRadius: '4px', padding: '12px' }}>
+                    {logo.imageUrl ? (
+                      <img
+                        src={logo.imageUrl}
+                        alt={logo.alt || `Logo ${index + 1}`}
+                        style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <span className={textId} style={{ color: '#6b7280', fontSize: '12px' }}>
+                        {logo.alt || `Logo ${index + 1}`}
+                      </span>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '48px', backgroundColor: '#f3f4f6', borderRadius: '4px' }}>
+                  <span className={textId} style={{ color: '#6b7280', fontSize: '12px' }}>No logos added</span>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full flex items-center justify-center h-16 bg-gray-100 rounded">
-                <span className="text-gray-500 text-sm">No logos added</span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${wrapperId} {
+                padding-top: 40px;
+                padding-bottom: 40px;
+              }
+              .${titleId} {
+                font-size: 14px;
+                margin-bottom: 32px;
+              }
+              .${gridId} {
+                gap: 24px;
+              }
+              .${itemId} {
+                height: 56px;
+                padding: 16px;
+              }
+              .${textId} {
+                font-size: 14px;
+              }
+            }
+            @media (min-width: 768px) {
+              .${wrapperId} {
+                padding-top: 48px;
+                padding-bottom: 48px;
+              }
+              .${gridId} {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 32px;
+              }
+              .${itemId} {
+                height: 64px;
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },
@@ -735,6 +1125,21 @@ export const createOtherComponents = (branding: BrandingData) => ({
           value: '1,000',
         },
       },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      valueColor: {
+        type: 'select' as const,
+        label: 'Value Color',
+        options: textColorOptions,
+      },
+      descriptionColor: {
+        type: 'select' as const,
+        label: 'Description Color',
+        options: textColorOptions,
+      },
     },
     defaultProps: {
       itemsPerRow: 3,
@@ -743,39 +1148,84 @@ export const createOtherComponents = (branding: BrandingData) => ({
         { title: 'Stat', description: 'Satisfaction Rate', value: '99%' },
         { title: 'Stat', description: 'Support Available', value: '24/7' },
       ],
+      backgroundColor: 'none',
+      valueColor: 'primary',
+      descriptionColor: '#4b5563',
     },
-    render: ({ itemsPerRow, items }: any) => {
-      const getGridClasses = () => {
-        switch (itemsPerRow) {
-          case 1: return 'grid-cols-1'
-          case 2: return 'grid-cols-1 md:grid-cols-2'
-          case 3: return 'grid-cols-1 md:grid-cols-3'
-          default: return 'grid-cols-1 md:grid-cols-3'
-        }
+    render: ({ itemsPerRow, items, backgroundColor, valueColor, descriptionColor }: any) => {
+      const gridId = `stats-grid-${Math.random().toString(36).substr(2, 9)}`
+      const valueId = `stats-value-${Math.random().toString(36).substr(2, 9)}`
+      const descId = `stats-desc-${Math.random().toString(36).substr(2, 9)}`
+      const emptyId = `stats-empty-${Math.random().toString(36).substr(2, 9)}`
+
+      const getBaseGridCols = () => {
+        // Apply itemsPerRow configuration directly
+        if (itemsPerRow === 1) return '1fr'
+        if (itemsPerRow === 2) return 'repeat(2, 1fr)'
+        return 'repeat(3, 1fr)'
       }
 
       return (
-        <div className={`grid ${getGridClasses()} gap-8 py-12`}>
-          {items && items.length > 0 ? (
-            items.map((item: any, index: number) => (
-              <div key={index} className="text-center">
-                <div
-                  className="text-4xl font-bold mb-2"
-                  style={{ color: branding.primaryColor }}
-                >
-                  {item.value}
+        <>
+          <div
+            className={gridId}
+            style={{
+              display: 'grid',
+              gridTemplateColumns: getBaseGridCols(),
+              gap: '16px',
+              paddingTop: '32px',
+              paddingBottom: '32px',
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            {items && items.length > 0 ? (
+              items.map((item: any, index: number) => (
+                <div key={index} style={{ textAlign: 'center' }}>
+                  <div
+                    className={valueId}
+                    style={{ fontSize: '24px', fontWeight: '700', marginBottom: '8px', wordBreak: 'break-word', color: resolveColor(valueColor, branding) }}
+                  >
+                    {item.value}
+                  </div>
+                  <div className={descId} style={{ fontSize: '14px', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                    {item.description}
+                  </div>
                 </div>
-                <div className="text-gray-600">
-                  {item.description}
-                </div>
+              ))
+            ) : (
+              <div className={emptyId} style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
+                No stats added
               </div>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-gray-500">
-              No stats added
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${gridId} {
+                gap: 24px;
+                padding-top: 40px;
+                padding-bottom: 40px;
+              }
+              .${valueId} {
+                font-size: 30px;
+              }
+              .${descId}, .${emptyId} {
+                font-size: 16px;
+              }
+            }
+            @media (min-width: 768px) {
+              .${gridId} {
+                gap: 32px;
+                padding-top: 48px;
+                padding-bottom: 48px;
+              }
+              .${valueId} {
+                font-size: 36px;
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },

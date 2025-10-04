@@ -134,6 +134,9 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
           onPublish={(publishedData: any) => {
             setData(publishedData)
           }}
+          iframe={{
+            enabled: true,
+          }}
           overrides={{
             headerActions: () => (
               <div className="flex items-center gap-2">

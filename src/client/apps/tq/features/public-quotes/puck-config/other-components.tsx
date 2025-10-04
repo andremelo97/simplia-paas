@@ -737,10 +737,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
               {/* Content */}
               <div style={{ width: '100%', maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto', position: 'relative', zIndex: 10 }}>
                 <div style={{ width: '100%', maxWidth: '768px', ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' } : { textAlign: 'left' }), paddingLeft: '16px', paddingRight: '16px' }}>
-                  <h1 className={bgTitleId} style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                  <h1 className={bgTitleId} style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
                     {title}
                   </h1>
-                  <p className={bgDescId} style={{ fontSize: '16px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                  <p className={bgDescId} style={{ fontSize: '18px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
                     {description}
                   </p>
                   {buttons && buttons.length > 0 && (
@@ -780,11 +780,11 @@ export const createOtherComponents = (branding: BrandingData) => ({
                   min-height: 400px;
                 }
                 .${bgTitleId} {
-                  font-size: 30px;
+                  font-size: 42px;
                   margin-bottom: 24px;
                 }
                 .${bgDescId} {
-                  font-size: 18px;
+                  font-size: 20px;
                   margin-bottom: 32px;
                 }
                 .${bgButtonsId} {
@@ -805,15 +805,15 @@ export const createOtherComponents = (branding: BrandingData) => ({
                   min-height: 500px;
                 }
                 .${bgTitleId} {
-                  font-size: 36px;
+                  font-size: 48px;
                 }
                 .${bgDescId} {
-                  font-size: 20px;
+                  font-size: 22px;
                 }
               }
               @media (min-width: 1024px) {
                 .${bgTitleId} {
-                  font-size: 48px;
+                  font-size: 60px;
                 }
               }
             `}</style>
@@ -846,10 +846,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
               {align === 'center' ? (
                 // Layout centralizado - single column
                 <div style={{ width: '100%', maxWidth: '768px', marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' }}>
-                  <h1 className={inlineTitleId} style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                  <h1 className={inlineTitleId} style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
                     {title}
                   </h1>
-                  <p className={inlineDescId} style={{ fontSize: '16px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                  <p className={inlineDescId} style={{ fontSize: '18px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
                     {description}
                   </p>
                   {buttons && buttons.length > 0 && (
@@ -884,10 +884,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 // Layout left - two columns (or single column if no media)
                 <div className={inlineGridId} style={{ width: '100%', ...(showMedia && url ? { display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'center' } : {}) }}>
                   <div style={{ textAlign: 'left' }}>
-                    <h1 className={inlineTitleId} style={{ fontSize: '24px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                    <h1 className={inlineTitleId} style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
                       {title}
                     </h1>
-                    <p className={inlineDescId} style={{ fontSize: '16px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                    <p className={inlineDescId} style={{ fontSize: '18px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
                       {description}
                     </p>
                     {buttons && buttons.length > 0 && (
@@ -933,11 +933,11 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 padding-right: 24px;
               }
               .${inlineTitleId} {
-                font-size: 30px;
+                font-size: 42px;
                 margin-bottom: 24px;
               }
               .${inlineDescId} {
-                font-size: 18px;
+                font-size: 20px;
                 margin-bottom: 32px;
               }
               .${inlineButtonsId} {
@@ -961,10 +961,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 padding-right: 32px;
               }
               .${inlineTitleId} {
-                font-size: 36px;
+                font-size: 48px;
               }
               .${inlineDescId} {
-                font-size: 20px;
+                font-size: 22px;
               }
               .${inlineGridId} {
                 gap: 48px;
@@ -972,7 +972,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
             }
             @media (min-width: 1024px) {
               .${inlineTitleId} {
-                font-size: 48px;
+                font-size: 60px;
               }
               .${inlineGridId} {
                 grid-template-columns: ${showMedia && url ? 'repeat(2, 1fr)' : '1fr'};

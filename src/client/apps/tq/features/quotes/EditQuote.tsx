@@ -11,6 +11,7 @@ import {
 } from '@client/common/ui'
 import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
 import { patientsService } from '../../services/patients'
+import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { QuoteItemsManager } from './QuoteItemsManager'
 
 const QUOTE_STATUS_OPTIONS = [
@@ -39,6 +40,35 @@ export const EditQuote: React.FC = () => {
   const [patientEmail, setPatientEmail] = useState('')
   const [patientPhone, setPatientPhone] = useState('')
   const [patientId, setPatientId] = useState<string | null>(null)
+
+  // Public Quote Template state
+  const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+  const [isGeneratingPublicQuote, setIsGeneratingPublicQuote] = useState(false)
+
+  // Load templates
+  useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        setIsLoadingTemplates(true)
+        const response = await publicQuotesService.listTemplates({ active: true })
+        setTemplates(response.data)
+
+        // Set default template if exists
+        const defaultTemplate = response.data.find(t => t.isDefault)
+        if (defaultTemplate) {
+          setSelectedTemplateId(defaultTemplate.id)
+        }
+      } catch (error) {
+        console.error('Failed to load templates:', error)
+      } finally {
+        setIsLoadingTemplates(false)
+      }
+    }
+
+    loadTemplates()
+  }, [])
 
   // Load quote data
   useEffect(() => {
@@ -229,6 +259,26 @@ export const EditQuote: React.FC = () => {
     navigate('/quotes')
   }
 
+  const handleGeneratePublicQuote = async () => {
+    if (!id || !selectedTemplateId) return
+
+    setIsGeneratingPublicQuote(true)
+
+    try {
+      await publicQuotesService.createPublicQuote({
+        quoteId: id,
+        templateId: selectedTemplateId
+      })
+
+      // Navigate to public quotes links tab
+      navigate('/public-quotes/links')
+    } catch (error) {
+      console.error('Failed to generate public quote:', error)
+    } finally {
+      setIsGeneratingPublicQuote(false)
+    }
+  }
+
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -347,6 +397,7 @@ export const EditQuote: React.FC = () => {
                   onChange={handleContentChange}
                   placeholder="Quote content..."
                   readonly={isSaving}
+                  minHeight="500px"
                 />
               </CardContent>
             </Card>
@@ -482,6 +533,50 @@ export const EditQuote: React.FC = () => {
               initialItems={quoteItems}
               onItemsChange={setQuoteItems}
             />
+
+            {/* Public Quote Template Selection */}
+            <Card>
+              <CardHeader className="p-6 pb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Public Quote</h2>
+              </CardHeader>
+
+              <CardContent className="space-y-4 px-6 pb-6">
+                <Select
+                  label="Template"
+                  value={selectedTemplateId}
+                  onChange={(e) => setSelectedTemplateId(e.target.value)}
+                  options={[
+                    { value: '', label: 'Select a template...' },
+                    ...templates.map(t => ({ value: t.id, label: t.name }))
+                  ]}
+                  disabled={isLoadingTemplates}
+                  helperText="Select a template to preview and generate a public quote link"
+                />
+
+                {selectedTemplateId && (
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={() => window.open(`/quotes/${id}/preview-public-quote/${selectedTemplateId}`, '_blank')}
+                      disabled={!selectedTemplateId}
+                    >
+                      Preview Template
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={handleGeneratePublicQuote}
+                      isLoading={isGeneratingPublicQuote}
+                      disabled={!selectedTemplateId || isGeneratingPublicQuote}
+                    >
+                      {isGeneratingPublicQuote ? 'Generating...' : 'Generate Public Quote'}
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
           </div>
         </div>

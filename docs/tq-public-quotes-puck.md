@@ -343,11 +343,288 @@ render: ({ content: Content }) => <Content />
 </header>
 ```
 
+## Template Variables & Preview System
+
+### Arquitetura de Resolução de Variáveis
+
+O sistema de preview utiliza uma arquitetura **dual-config** para renderizar variáveis de forma segura:
+
+#### 1. Config Normal (Edição)
+- **Localização**: `src/client/apps/tq/features/public-quotes/puck-config/`
+- **Uso**: Editor visual em `/public-quotes/templates/:id/design`
+- **Comportamento**: Renderiza placeholders literais (`{{quote.number}}`) para visualização no editor
+
+```typescript
+// quote-components.tsx
+QuoteNumber: {
+  render: ({ label }) => (
+    <span>{{'{{quote.number}}'}}</span>  // Placeholder visual
+  )
+}
+```
+
+#### 2. Config Preview (Renderização com Dados)
+- **Localização**: `src/client/apps/tq/features/public-quotes/puck-config-preview.tsx`
+- **Uso**: Preview em `/quotes/:id/preview-public-quote/:templateId`
+- **Comportamento**: Renderiza valores reais da quote
+
+```typescript
+// puck-config-preview.tsx
+export const createConfigWithResolvedData = (branding, quoteData) => ({
+  QuoteNumber: {
+    render: ({ label }) => (
+      <span>{quoteData.quote.number}</span>  // Valor real: "QUO000001"
+    )
+  }
+})
+```
+
+### Fluxo de Resolução de Variáveis
+
+```
+1. Quote Data (DB)
+   ↓
+2. resolveTemplateVariables()  → Formata dados
+   ↓
+3. createConfigWithResolvedData() → Cria config customizada
+   ↓
+4. Puck <Render> → Renderiza com valores reais
+```
+
+#### Serviços Utilizados
+
+**`src/client/apps/tq/lib/resolveTemplateVariables.ts`**
+```typescript
+// Converte Quote raw para formato estruturado
+export const resolveTemplateVariables = (
+  templateContent: any,
+  quote: Quote
+): ResolvedQuoteData => {
+  return {
+    quote: {
+      number: quote.number || '',
+      total: quote.total ? `$${parseFloat(quote.total).toFixed(2)}` : '$0.00',
+      content: quote.content || '',  // HTML do clinical summary
+      status: quote.status || 'draft',
+      created_at: new Date(quote.created_at).toLocaleDateString()
+    },
+    patient: {
+      first_name: quote.patient_first_name || '',
+      last_name: quote.patient_last_name || '',
+      full_name: `${quote.patient_first_name} ${quote.patient_last_name}`.trim(),
+      email: quote.patient_email || '',
+      phone: quote.patient_phone || ''
+    },
+    items: quote.items.map(item => ({
+      name: item.name,
+      description: item.description,
+      quantity: item.quantity,
+      base_price: `$${parseFloat(item.basePrice).toFixed(2)}`,
+      discount: `$${parseFloat(item.discountAmount).toFixed(2)}`,
+      final_price: `$${parseFloat(item.finalPrice).toFixed(2)}`
+    }))
+  }
+}
+```
+
+**`src/client/apps/tq/services/quotes.ts`**
+```typescript
+// Busca quote com todos os relacionamentos
+quotesService.getQuote(quoteId)
+```
+
+**`src/client/apps/tq/services/publicQuotes.ts`**
+```typescript
+// Busca template Puck
+publicQuotesService.getTemplate(templateId)
+```
+
+**`src/client/apps/tq/services/branding.ts`**
+```typescript
+// Busca branding para cores e logo
+brandingService.getBranding()
+```
+
+### Preview Flow Completo
+
+**Localização**: `src/client/apps/tq/features/quotes/PreviewPublicQuote.tsx`
+
+```typescript
+export const PreviewPublicQuote: React.FC = () => {
+  const { id: quoteId, templateId } = useParams()
+
+  // 1. Carrega dados em paralelo
+  const [quote, template, branding] = await Promise.all([
+    quotesService.getQuote(quoteId),
+    publicQuotesService.getTemplate(templateId),
+    brandingService.getBranding()
+  ])
+
+  // 2. Resolve variáveis
+  const resolvedData = resolveTemplateVariables(template.content, quote)
+
+  // 3. Cria config customizada com valores resolvidos
+  const previewConfig = useMemo(
+    () => createConfigWithResolvedData(branding, resolvedData),
+    [branding, quote, template]
+  )
+
+  // 4. Renderiza com Puck
+  return <Render config={previewConfig} data={template.content} />
+}
+```
+
+### Variáveis Suportadas
+
+#### Quote Variables
+- `{{quote.number}}` → `"QUO000001"`
+- `{{quote.total}}` → `"$5,701.00"`
+- `{{quote.status}}` → `"approved"`
+- `{{quote.created_at}}` → `"03/10/2025"`
+- `{{quote.content}}` → HTML do clinical summary
+
+#### Patient Variables
+- `{{patient.first_name}}` → `"ANDRE"`
+- `{{patient.last_name}}` → `"MELO"`
+- `{{patient.full_name}}` → `"ANDRE MELO"`
+- `{{patient.email}}` → `"andre@example.com"`
+- `{{patient.phone}}` → `"11994411280"`
+
+#### Item Variables (Todos os itens renderizados)
+- `{{item.name}}` → `"Dental Implant"`
+- `{{item.description}}` → `"Titanium implant with crown"`
+- `{{item.quantity}}` → `1`
+- `{{item.base_price}}` → `"$3,000.00"`
+- `{{item.discount}}` → `"$500.00"`
+- `{{item.final_price}}` → `"$2,500.00"`
+
+### Preview Isolado
+
+**Rota**: `/quotes/:id/preview-public-quote/:templateId`
+
+**Características**:
+- ✅ Sem autenticação (RouteGuard mas sem Layout)
+- ✅ Sem sidebar/header do TQ
+- ✅ Fullscreen - simula exatamente o que paciente verá
+- ✅ Abre em nova aba via `window.open(..., '_blank')`
+- ✅ Variáveis resolvidas em tempo real
+
+**Configuração de Rota**:
+```typescript
+// src/client/apps/tq/routes/index.tsx
+<Routes>
+  {/* Preview isolado - Fora do Layout */}
+  <Route
+    path="/quotes/:id/preview-public-quote/:templateId"
+    element={
+      <RouteGuard requireAuth requiredApp="tq">
+        <PreviewPublicQuote />
+      </RouteGuard>
+    }
+  />
+
+  <Route path="/*" element={<Layout />}>
+    {/* Rotas normais com sidebar */}
+  </Route>
+</Routes>
+```
+
+### Por Que Dual-Config é Segura?
+
+**Problemas da Abordagem Anterior (Mutação DOM)**:
+- ❌ Race conditions (setTimeout arbitrário)
+- ❌ React não sabe das mudanças
+- ❌ Performance ruim (percorre todo DOM)
+- ❌ Frágil (quebra em re-renders)
+
+**Vantagens da Dual-Config**:
+- ✅ React controla tudo - zero mutação DOM
+- ✅ Type-safe - TypeScript mantém tipagem
+- ✅ Performance - valores renderizados diretamente
+- ✅ Sem timing issues - useMemo recalcula quando dados mudam
+- ✅ Reutilizável - mesma config para qualquer quote
+
+### Quote Items - Renderização Múltipla
+
+O componente `QuoteItems` renderiza **todos** os items da quote:
+
+```typescript
+// puck-config-preview.tsx
+QuoteItems: {
+  render: ({ showDiscount }) => {
+    const items = quoteData?.items || []
+
+    return (
+      <>
+        {/* Mobile: Cards */}
+        {items.map((item, index) => (
+          <div key={index}>
+            <h3>{item.name}</h3>
+            <p>{item.description}</p>
+            <span>Qty: {item.quantity}</span>
+            <span>Price: {item.base_price}</span>
+            {showDiscount && <span>Discount: {item.discount}</span>}
+            <span>Total: {item.final_price}</span>
+          </div>
+        ))}
+
+        {/* Desktop: Table rows */}
+        <table>
+          {items.map((item, index) => (
+            <tr key={index}>
+              <td>{item.name}</td>
+              <td>{item.quantity}</td>
+              <td>{item.base_price}</td>
+              {showDiscount && <td>{item.discount}</td>}
+              <td>{item.final_price}</td>
+            </tr>
+          ))}
+        </table>
+      </>
+    )
+  }
+}
+```
+
+### Integration com EditQuote
+
+**Localização**: `src/client/apps/tq/features/quotes/EditQuote.tsx`
+
+```typescript
+// 1. Load templates
+const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
+const [selectedTemplateId, setSelectedTemplateId] = useState('')
+
+useEffect(() => {
+  const response = await publicQuotesService.listTemplates({ active: true })
+  setTemplates(response.data)
+
+  // Auto-select default template
+  const defaultTemplate = response.data.find(t => t.isDefault)
+  if (defaultTemplate) setSelectedTemplateId(defaultTemplate.id)
+}, [])
+
+// 2. Preview button
+<Button
+  onClick={() => window.open(
+    `/quotes/${id}/preview-public-quote/${selectedTemplateId}`,
+    '_blank'
+  )}
+>
+  Preview Template
+</Button>
+
+// 3. Generate public quote
+<Button onClick={handleGeneratePublicQuote}>
+  Generate Public Quote
+</Button>
+```
+
 ## Próximos Passos
 
 ### Funcionalidades Planejadas
 
-1. **Template Variables**: Sistema de variáveis para substituir placeholders (`{{quote.number}}`, `{{quote.total}}`)
+1. ✅ **Template Variables**: Sistema de variáveis implementado com dual-config
 2. **Conditional Sections**: Mostrar/ocultar seções baseado em dados da cotação
 3. **Public Links**: Gerar links públicos com hash para compartilhar templates
 4. **PDF Export**: Exportar template renderizado para PDF

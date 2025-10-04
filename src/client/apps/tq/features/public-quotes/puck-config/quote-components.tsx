@@ -4,21 +4,70 @@ import { textColorOptions, resolveColor } from './color-options'
 
 export const createQuoteComponents = (branding: BrandingData) => ({
   QuoteNumber: {
-    label: 'Quote Number',
     fields: {
       label: {
         type: 'text' as const,
       },
+      size: {
+        type: 'select' as const,
+        label: 'Size',
+        options: [
+          { label: 'XXXL', value: 'xxxl' },
+          { label: 'XXL', value: 'xxl' },
+          { label: 'XL', value: 'xl' },
+          { label: 'L', value: 'l' },
+          { label: 'M', value: 'm' },
+          { label: 'S', value: 's' },
+          { label: 'XS', value: 'xs' },
+        ],
+      },
     },
     defaultProps: {
       label: 'Quote #',
+      size: 'm',
     },
-    render: ({ label }: any) => {
+    render: ({ label, size }: any) => {
+      const baseSizeStyles = {
+        xs: { label: '12px', number: '14px' },
+        s: { label: '14px', number: '16px' },
+        m: { label: '16px', number: '18px' },
+        l: { label: '18px', number: '20px' },
+        xl: { label: '20px', number: '24px' },
+        xxl: { label: '24px', number: '30px' },
+        xxxl: { label: '30px', number: '36px' },
+      }
+
+      const responsiveSizeStyles = {
+        xs: { label: '14px', number: '16px' },
+        s: { label: '16px', number: '18px' },
+        m: { label: '18px', number: '20px' },
+        l: { label: '20px', number: '24px' },
+        xl: { label: '24px', number: '30px' },
+        xxl: { label: '30px', number: '36px' },
+        xxxl: { label: '36px', number: '42px' },
+      }
+
+      const sizeStyle = baseSizeStyles[size as keyof typeof baseSizeStyles]
+      const responsiveStyle = responsiveSizeStyles[size as keyof typeof responsiveSizeStyles]
+      const uniqueId = `quote-number-${Math.random().toString(36).substr(2, 9)}`
+
       return (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '14px', fontWeight: '500', color: '#4b5563' }}>{label}</span>
-          <span style={{ fontSize: '16px', fontWeight: '700', color: '#111827' }}>{'{{quote.number}}'}</span>
-        </div>
+        <>
+          <div className={uniqueId} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+            <span className={`${uniqueId}-label`} style={{ fontSize: sizeStyle.label, fontWeight: '500', color: '#4b5563' }}>{label}</span>
+            <span className={`${uniqueId}-number`} style={{ fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>{'{{quote.number}}'}</span>
+          </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${uniqueId}-label {
+                font-size: ${responsiveStyle.label};
+              }
+              .${uniqueId}-number {
+                font-size: ${responsiveStyle.number};
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },

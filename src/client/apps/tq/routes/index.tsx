@@ -20,6 +20,7 @@ import { Templates } from '../features/templates/Templates'
 import { CreateTemplate } from '../features/templates/CreateTemplate'
 import { EditTemplate } from '../features/templates/EditTemplate'
 import { EditQuote } from '../features/quotes/EditQuote'
+import { PreviewPublicQuote } from '../features/quotes/PreviewPublicQuote'
 import { ClinicalReports } from '../features/clinical-reports/ClinicalReports'
 import { EditClinicalReport } from '../features/clinical-reports/EditClinicalReport'
 import { ViewClinicalReport } from '../features/clinical-reports/ViewClinicalReport'
@@ -79,6 +80,16 @@ export const AppRoutes: React.FC = () => {
 
       {/* Preview Public Quote Template - Completely isolated, no auth/layout */}
       <Route path="/public-quotes/templates/:id/preview" element={<PreviewPublicQuoteTemplate />} />
+
+      {/* Preview Public Quote - Isolated preview with auth but no layout */}
+      <Route
+        path="/quotes/:id/preview-public-quote/:templateId"
+        element={
+          <RouteGuard requireAuth requiredApp="tq">
+            <PreviewPublicQuote />
+          </RouteGuard>
+        }
+      />
 
       <Route
         path="/*"

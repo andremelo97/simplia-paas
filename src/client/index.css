@@ -161,6 +161,39 @@ button[data-variant="secondary"] {
   color: inherit !important;
 }
 
+/* === Puck Preview (.prose) Compatibility === */
+/* Make .prose render HTML identically to TipTap editor */
+/* Supports both <p> and <p class="editor-paragraph"> for backward compatibility */
+
+.prose p,
+.prose .editor-paragraph {
+  margin: 0 0 0.5rem 0;
+  line-height: 1.5;
+  padding: 0;
+}
+
+/* Empty paragraphs create spacing (double line breaks in TipTap) */
+.prose p:empty,
+.prose .editor-paragraph:empty {
+  margin: 0 0 1rem 0;
+  min-height: 1rem;
+}
+
+.prose p:first-child,
+.prose .editor-paragraph:first-child {
+  margin-top: 0;
+}
+
+.prose p:last-child,
+.prose .editor-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+/* Match TipTap spacing between elements */
+.prose > * + * {
+  margin-top: 0.5rem;
+}
+
 /* Fix selection styling */
 .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor .ProseMirror-selectednode {
   outline: 2px solid var(--brand-primary) !important;

@@ -154,8 +154,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
         content TEXT,
         total NUMERIC(12, 2) DEFAULT 0.00,
-        status quote_status_enum NOT NULL DEFAULT 'draft',
-        expires_at TIMESTAMPTZ DEFAULT NULL
+        status quote_status_enum NOT NULL DEFAULT 'draft'
       )
     `);
 
@@ -282,10 +281,6 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_quote_number ON quote(number)
-    `);
-
-    await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_quote_expires_at ON quote(expires_at)
     `);
 
     await client.query(`
@@ -461,7 +456,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         views_count INTEGER DEFAULT 0,
         last_viewed_at TIMESTAMPTZ,
         active BOOLEAN DEFAULT true,
-        expires_at TIMESTAMPTZ
+        expires_at TIMESTAMPTZ DEFAULT NULL
       )
     `);
 
@@ -479,6 +474,10 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_public_quote_active ON public_quote(active)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_public_quote_expires_at ON public_quote(expires_at)
     `);
 
     await client.query(`

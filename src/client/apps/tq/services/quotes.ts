@@ -7,7 +7,6 @@ export interface Quote {
   content?: string
   total: number
   status: string // 'draft', 'sent', 'approved', 'rejected', 'expired'
-  expires_at?: string
   created_at: string
   updated_at: string
   // Session data when includeSession=true
@@ -44,7 +43,6 @@ interface ApiQuote {
   content?: string
   total: number
   status: string
-  expiresAt?: string
   createdAt: string
   updatedAt: string
   // Session data when includeSession=true (API returns snake_case for joined data)
@@ -76,14 +74,12 @@ export interface CreateQuoteRequest {
   sessionId: string
   content?: string
   status?: string
-  expiresAt?: string
 }
 
 export interface UpdateQuoteRequest {
   content?: string
   total?: number
   status?: string
-  expiresAt?: string
 }
 
 export interface QuoteItemInput {
@@ -134,7 +130,6 @@ export const quotesService = {
       content: apiQuote.content,
       total: apiQuote.total,
       status: apiQuote.status,
-      expires_at: apiQuote.expiresAt,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
       // Session data (API returns snake_case for joined data)
@@ -180,7 +175,6 @@ export const quotesService = {
       content: apiQuote.content,
       total: apiQuote.total,
       status: apiQuote.status,
-      expires_at: apiQuote.expiresAt,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
       // Session data (API returns snake_case for joined data)
@@ -205,8 +199,7 @@ export const quotesService = {
     const apiData = {
       sessionId: data.sessionId,
       content: data.content,
-      status: data.status,
-      expiresAt: data.expiresAt
+      status: data.status
     }
 
     console.log('🔄 [Quotes Service] Sending data to API:', apiData)
@@ -229,7 +222,6 @@ export const quotesService = {
       content: apiQuote.content,
       total: apiQuote.total,
       status: apiQuote.status,
-      expires_at: apiQuote.expiresAt,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
       // Session data (API returns snake_case for joined data)
@@ -252,7 +244,6 @@ export const quotesService = {
     if (data.content !== undefined) apiData.content = data.content
     if (data.total !== undefined) apiData.total = data.total
     if (data.status !== undefined) apiData.status = data.status
-    if (data.expiresAt !== undefined) apiData.expiresAt = data.expiresAt
 
     console.log('🔄 [Quotes Service] Updating quote:', apiData)
     const response = await api.put(`/api/tq/v1/quotes/${id}`, apiData)
@@ -273,7 +264,6 @@ export const quotesService = {
       content: apiQuote.content,
       total: apiQuote.total,
       status: apiQuote.status,
-      expires_at: apiQuote.expiresAt,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
       // Session data (API returns snake_case for joined data)

@@ -13,6 +13,7 @@ import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
 import { patientsService } from '../../services/patients'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { QuoteItemsManager } from './QuoteItemsManager'
+import { GeneratePublicQuoteModal } from '../../components/quotes/GeneratePublicQuoteModal'
 
 const QUOTE_STATUS_OPTIONS = [
   { value: 'draft', label: 'Draft' },
@@ -46,6 +47,7 @@ export const EditQuote: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
   const [isGeneratingPublicQuote, setIsGeneratingPublicQuote] = useState(false)
+  const [showGenerateModal, setShowGenerateModal] = useState(false)
 
   // Load templates
   useEffect(() => {
@@ -567,11 +569,9 @@ export const EditQuote: React.FC = () => {
                     <Button
                       type="button"
                       variant="primary"
-                      onClick={handleGeneratePublicQuote}
-                      isLoading={isGeneratingPublicQuote}
-                      disabled={!selectedTemplateId || isGeneratingPublicQuote}
+                      onClick={() => setShowGenerateModal(true)}
                     >
-                      {isGeneratingPublicQuote ? 'Generating...' : 'Generate Public Quote'}
+                      Generate Public Quote
                     </Button>
                   </div>
                 )}
@@ -581,6 +581,23 @@ export const EditQuote: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Generate Public Quote Modal */}
+      {quote && (
+        <GeneratePublicQuoteModal
+          open={showGenerateModal}
+          onClose={() => setShowGenerateModal(false)}
+          quoteId={quote.id}
+          quoteNumber={quote.number}
+          patientName={`${patientFirstName} ${patientLastName}`.trim()}
+          patientEmail={patientEmail}
+          patientPhone={patientPhone}
+          onSuccess={(publicQuote) => {
+            console.log('Public quote generated:', publicQuote)
+            setShowGenerateModal(false)
+          }}
+        />
+      )}
     </div>
   )
 }

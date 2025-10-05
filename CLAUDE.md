@@ -36,6 +36,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Quick Start Commands
 
+```bash
+# Initial Setup (First Time)
+npm install                      # Install all dependencies
+cp .env.example .env            # Create environment file (then configure DB settings)
+npm run migrate                 # Run database migrations
+
+# Development - Choose Your Workflow
+npm run dev                     # Run ALL: Internal API + Internal-Admin (ports 3001 + 3002)
+npm run dev:internal            # Internal API only (port 3001)
+npm run dev:admin               # Internal-Admin frontend only (port 3002)
+npm run dev:hub                 # Hub frontend only (port 3003)
+npm run dev:tq-api              # TQ API server only (port 3004)
+npm run dev:tq-front            # TQ frontend only (port 3005)
+
+# Testing
+npm test                        # Run all tests (auto-creates test DB)
+npm run test:watch              # Run tests in watch mode
+
+# Type Checking & Build
+npx tsc --noEmit --project src/client/  # Check TypeScript errors
+npm run build                   # Build production bundle
+```
+
 ## Tech Stack
 - **Backend**: Node.js + Express + PostgreSQL (JavaScript only - .js files)
 - **Frontend**: React + TypeScript + Vite (TypeScript - .tsx/.ts files)  
@@ -270,6 +293,26 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 
 ## TQ Quote Management System
 
+### HTML Rendering Consistency (TipTap → Puck Preview)
+
+**Problem Solved**: Editor and preview showed different line spacing for quote content.
+
+**Solution Implemented**:
+1. **TipTap Config**: Commented `class: 'editor-paragraph'` to prevent class injection
+2. **CSS Compatibility**: Added `.prose` rules to match TipTap spacing:
+   ```css
+   /* Normal paragraphs */
+   .prose p { margin: 0 0 0.5rem 0; }
+
+   /* Empty paragraphs (double line breaks) create extra spacing */
+   .prose p:empty { margin: 0 0 1rem 0; min-height: 1rem; }
+   ```
+3. **Result**: Quote content renders identically in `/quotes/:id/edit` and Puck Preview
+
+**Files Modified**:
+- `src/shared/components/tiptap-templates/simple/simple-editor.tsx` - Class commented
+- `src/client/index.css` - Prose compatibility rules added
+
 ### Quote CRUD Interface
 Complete quote management with full CRUD operations:
 - **Quote Listing**: `/quotes` - Overview page with patient/session data
@@ -494,8 +537,7 @@ CREATE TABLE tenant_{slug}.public_quote (
   password_hash VARCHAR(255),  -- Optional password protection
   views_count INTEGER DEFAULT 0,
   last_viewed_at TIMESTAMPTZ,
-  active BOOLEAN DEFAULT true,
-  expires_at TIMESTAMPTZ  -- Optional expiration date
+  active BOOLEAN DEFAULT true
 );
 ```
 
@@ -526,8 +568,8 @@ CREATE TABLE tenant_{slug}.public_quote (
 ### Security Features
 - **Secure tokens**: 64-character cryptographically random access tokens
 - **Password protection**: Optional bcrypt-hashed passwords
-- **Link expiration**: Optional expiration dates
-- **Soft delete**: Revoked links remain in database for audit
+- **Link expiration**: Controlled via `quote.expires_at` (inherited from quote)
+- **Soft delete**: Revoked links remain in database for audit via `active` flag
 
 ### Puck Integration
 Templates store complete Puck page builder configuration in `content` JSONB field:
@@ -535,6 +577,14 @@ Templates store complete Puck page builder configuration in `content` JSONB fiel
 - Layout configuration
 - Styling and branding (uses tenant colors/logo automatically)
 - Custom components for quote data rendering
+
+**Available Components** (54+ components across 6 categories):
+- **Layout**: Grid, Flex, Space, Divider (NEW - horizontal separator with customizable color, thickness, and spacing)
+- **Typography**: Heading, Text
+- **Actions**: Button
+- **Quote Info**: QuoteNumber, QuoteTotal, QuoteItems, QuoteContent
+- **Header**: Header (fixed top bar with logo)
+- **Other**: CardContainer, CardWithIcon, Hero, Logos, Stats
 
 ### Implementation Details
 - **Models**: `PublicQuoteTemplate.js` and `PublicQuote.js`

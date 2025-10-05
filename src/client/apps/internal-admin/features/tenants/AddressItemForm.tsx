@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Label, Button, SelectCountry, FieldError, Select } from '@client/common/ui';
+import { Input, Label, Button, SelectCountry, FieldError, Select, Checkbox } from '@client/common/ui';
 import { Trash2 } from 'lucide-react';
 import { AddressFormValues, AddressType, ADDRESS_TYPE_OPTIONS } from './types';
 
@@ -155,9 +155,8 @@ export const AddressItemForm: React.FC<AddressItemFormProps> = ({
         />
       </div>
 
-      <div className="flex items-center pt-2 border-t border-gray-200">
-        <input
-          type="checkbox"
+      <div className="pt-2 border-t border-gray-200">
+        <Checkbox
           id={`address-${index}-primary`}
           checked={address.is_primary}
           onChange={(e) => {
@@ -168,11 +167,8 @@ export const AddressItemForm: React.FC<AddressItemFormProps> = ({
               onChange(index, 'is_primary', false);
             }
           }}
-          className="h-4 w-4 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)] border-gray-300 rounded"
+          label="Set as primary address"
         />
-        <Label htmlFor={`address-${index}-primary`} className="ml-2 text-sm">
-          Set as primary address
-        </Label>
       </div>
     </div>
   );

@@ -310,13 +310,12 @@ router.put('/:id', async (req, res) => {
   try {
     const schema = req.tenant.schema;
     const { id } = req.params;
-    const { content, total, status, expiresAt } = req.body;
+    const { content, total, status } = req.body;
 
     const updates = {};
     if (content !== undefined) updates.content = content;
     if (total !== undefined) updates.total = total;
     if (status !== undefined) updates.status = status;
-    if (expiresAt !== undefined) updates.expires_at = expiresAt;
 
     const quote = await Quote.update(id, updates, schema);
 

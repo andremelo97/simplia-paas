@@ -45,6 +45,11 @@ src/client/apps/tq/features/public-quotes/
 - **Grid**: Grid CSS responsivo com colunas configuráveis (1-12), gap ajustável e vertical padding
 - **Flex**: Flexbox com direção (row/column), justify-content, gap, wrap e vertical padding
 - **Space**: Espaçador vertical, horizontal ou ambos com tamanhos de 8px a 160px
+- **Divider**: Linha horizontal separadora com:
+  - **Cor**: 13 opções (Light Gray padrão, Gray, Dark Gray, Primary, Secondary, Tertiary, Black, Blue, Red, Green, Yellow, Purple, Pink)
+  - **Espessura**: 8 opções (1px a 10px)
+  - **Espaçamento**: 9 opções de padding vertical (0px a 80px, padrão 24px)
+  - Responsivo: espaçamento ajusta automaticamente em telas maiores
 
 ### Typography
 - **Heading**: Títulos com 7 tamanhos (XS a XXXL), 6 níveis semânticos (H1-H6), alinhamento e vertical padding

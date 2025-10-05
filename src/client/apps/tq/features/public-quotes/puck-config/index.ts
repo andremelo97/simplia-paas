@@ -18,7 +18,7 @@ export const createConfig = (branding: BrandingData) => ({
   categories: {
     layout: {
       title: 'Layout',
-      components: ['Grid', 'Flex', 'Space'],
+      components: ['Grid', 'Flex', 'Space', 'Divider'],
     },
     typography: {
       title: 'Typography',

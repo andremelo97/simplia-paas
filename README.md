@@ -15,11 +15,13 @@ O Simplia PaaS é um monorepo Node.js fullstack que combina:
 - **Public Quotes System**: Sistema completo de compartilhamento de quotes com templates customizáveis via Puck editor visual
   - **Template Designer**: Editor visual Puck de tela cheia com 50+ componentes drag-and-drop
   - **Component Library**: 6 categorias (Layout, Typography, Actions, Quote Info, Header, Other) com 15+ componentes
+    - **NEW**: Componente Divider para separação visual de blocos (cor, espessura e espaçamento customizáveis)
   - **Branding Integration**: Cores, logo e identidade visual aplicados automaticamente em todos os componentes
   - **Live Preview**: Preview isolado e público mostrando exatamente como usuário final verá
+  - **HTML Rendering Consistency**: TipTap editor e Puck preview renderizam conteúdo identicamente (espaçamento de linhas corrigido)
   - **Fullscreen Mode**: Editor pode ocupar tela completa para melhor experiência de design
   - **Template Management**: CRUD completo com limite de 3 templates por tenant, sistema de default, ativação/desativação
-  - **Public Links**: Geração de links compartilháveis com token seguro, senha opcional, data de expiração (implementação futura)
+  - **Public Links**: Geração de links compartilháveis com token seguro, senha opcional (expiração controlada via quote)
   - **Tab Structure**: Interface com 2 tabs (Links | Templates) seguindo padrão TQ
 - **Branding System**: Sistema completo de configuração de identidade visual (cores, logo, favicon) com upload para Supabase Storage
 - **Configurations Drawer**: Drawer lateral no Hub (admin-only) para configurações de tenant, iniciando com Branding

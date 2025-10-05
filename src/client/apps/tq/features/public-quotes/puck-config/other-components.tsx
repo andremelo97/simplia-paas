@@ -27,7 +27,102 @@ const verticalPaddingOptions = [
   { label: '160px', value: 160 },
 ]
 
+const dividerColorOptions = [
+  { label: 'Light Gray', value: '#e5e7eb' },
+  { label: 'Gray', value: '#d1d5db' },
+  { label: 'Dark Gray', value: '#9ca3af' },
+  { label: 'Primary', value: 'primary' },
+  { label: 'Secondary', value: 'secondary' },
+  { label: 'Tertiary', value: 'tertiary' },
+  { label: 'Black', value: '#111827' },
+  { label: 'Blue', value: '#3b82f6' },
+  { label: 'Red', value: '#ef4444' },
+  { label: 'Green', value: '#10b981' },
+  { label: 'Yellow', value: '#f59e0b' },
+  { label: 'Purple', value: '#8b5cf6' },
+  { label: 'Pink', value: '#ec4899' },
+]
+
+const dividerThicknessOptions = [
+  { label: '1px (Thin)', value: 1 },
+  { label: '2px', value: 2 },
+  { label: '3px', value: 3 },
+  { label: '4px', value: 4 },
+  { label: '5px', value: 5 },
+  { label: '6px (Thick)', value: 6 },
+  { label: '8px', value: 8 },
+  { label: '10px', value: 10 },
+]
+
+const dividerSpacingOptions = [
+  { label: '0px (None)', value: 0 },
+  { label: '8px (XS)', value: 8 },
+  { label: '16px (S)', value: 16 },
+  { label: '24px (M)', value: 24 },
+  { label: '32px (L)', value: 32 },
+  { label: '40px (XL)', value: 40 },
+  { label: '48px (XXL)', value: 48 },
+  { label: '64px (3XL)', value: 64 },
+  { label: '80px (4XL)', value: 80 },
+]
+
 export const createOtherComponents = (branding: BrandingData) => ({
+  Divider: {
+    fields: {
+      color: {
+        type: 'select' as const,
+        label: 'Color',
+        options: dividerColorOptions,
+      },
+      thickness: {
+        type: 'select' as const,
+        label: 'Thickness',
+        options: dividerThicknessOptions,
+      },
+      spacing: {
+        type: 'select' as const,
+        label: 'Spacing (Top & Bottom)',
+        options: dividerSpacingOptions,
+      },
+    },
+    defaultProps: {
+      color: '#e5e7eb',
+      thickness: 1,
+      spacing: 24,
+    },
+    render: ({ color, thickness, spacing }: any) => {
+      const uniqueId = `divider-${Math.random().toString(36).substr(2, 9)}`
+
+      return (
+        <>
+          <div
+            className={uniqueId}
+            style={{
+              width: '100%',
+              paddingTop: `${spacing}px`,
+              paddingBottom: `${spacing}px`,
+            }}
+          >
+            <hr
+              style={{
+                border: 'none',
+                borderTop: `${thickness}px solid ${resolveColor(color, branding)}`,
+                margin: 0,
+              }}
+            />
+          </div>
+          <style>{`
+            @media (min-width: 640px) {
+              .${uniqueId} {
+                padding-top: ${spacing > 0 ? Math.max(spacing, 16) : 0}px;
+                padding-bottom: ${spacing > 0 ? Math.max(spacing, 16) : 0}px;
+              }
+            }
+          `}</style>
+        </>
+      )
+    },
+  },
   CardContainer: {
     fields: {
       title: {

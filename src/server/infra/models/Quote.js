@@ -17,7 +17,6 @@ class Quote {
     this.content = data.content;
     this.total = data.total;
     this.status = data.status;
-    this.expiresAt = data.expires_at;
 
     // Include session data if joined
     if (data.session_number) {
@@ -160,19 +159,18 @@ class Quote {
    * Create a new quote within a tenant schema
    */
   static async create(quoteData, schema) {
-    const { sessionId, content, status = 'draft', expiresAt } = quoteData;
+    const { sessionId, content, status = 'draft' } = quoteData;
 
     const insertQuery = `
-      INSERT INTO ${schema}.quote (session_id, content, status, expires_at)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO ${schema}.quote (session_id, content, status)
+      VALUES ($1, $2, $3)
       RETURNING id
     `;
 
     const insertResult = await database.query(insertQuery, [
       sessionId,
       content,
-      status,
-      expiresAt
+      status
     ]);
 
     const quoteId = insertResult.rows[0].id;
@@ -200,7 +198,7 @@ class Quote {
       throw new Error('No updates provided');
     }
 
-    const allowedUpdates = ['content', 'total', 'status', 'expires_at'];
+    const allowedUpdates = ['content', 'total', 'status'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -297,8 +295,7 @@ class Quote {
       sessionId: this.sessionId,
       content: this.content,
       total: this.total ? parseFloat(this.total) : 0,
-      status: this.status,
-      expiresAt: this.expiresAt
+      status: this.status
     };
 
     // Include session data if available (flat fields for frontend compatibility)

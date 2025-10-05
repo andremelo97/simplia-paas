@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { Puck } from '@measured/puck'
 import '@measured/puck/puck.css'
 import { Button } from '@client/common/ui'
-import { Maximize2, Minimize2, Eye } from 'lucide-react'
+import { Maximize2, Minimize2, Eye, Save } from 'lucide-react'
 import { publicQuotesService } from '../../services/publicQuotes'
 import { brandingService, BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
@@ -110,15 +110,6 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
             >
               Cancel
             </Button>
-            <Button
-              type="button"
-              variant="default"
-              onClick={handleSave}
-              isLoading={isSaving}
-              disabled={isSaving}
-            >
-              {isSaving ? 'Saving...' : 'Save Layout'}
-            </Button>
           </div>
         </div>
       )}
@@ -140,6 +131,17 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
           overrides={{
             headerActions: () => (
               <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="default"
+                  onClick={handleSave}
+                  isLoading={isSaving}
+                  disabled={isSaving}
+                  className="flex items-center gap-2"
+                >
+                  <Save size={16} />
+                  {isSaving ? 'Saving...' : 'Save Layout'}
+                </Button>
                 <Button
                   type="button"
                   variant="secondary"

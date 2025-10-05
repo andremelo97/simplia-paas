@@ -27,7 +27,7 @@ router.use(tqRateLimit);
  *
  *       Creates a shareable public link for a quote with auto-generated password.
  *       Password will be sent to patient's email (future implementation).
- *       Link expires when the quote expires (quote.expires_at).
+ *       Access controlled via active flag and quote.expires_at.
  *     security:
  *       - bearerAuth: []
  *     parameters:

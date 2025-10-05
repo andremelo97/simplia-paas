@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input, Label, Button, FieldError, Select } from '@client/common/ui';
+import { Input, Label, Button, FieldError, Select, Checkbox } from '@client/common/ui';
 import { Trash2 } from 'lucide-react';
 import { ContactFormValues, ContactType, CONTACT_TYPE_OPTIONS } from './types';
 
@@ -190,9 +190,8 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center pt-2 border-t border-gray-200">
-        <input
-          type="checkbox"
+      <div className="pt-2 border-t border-gray-200">
+        <Checkbox
           id={`contact-${index}-primary`}
           checked={contact.is_primary}
           onChange={(e) => {
@@ -203,11 +202,8 @@ export const ContactItemForm: React.FC<ContactItemFormProps> = ({
               onChange(index, 'is_primary', false);
             }
           }}
-          className="h-4 w-4 text-[var(--brand-primary)] focus:ring-[var(--brand-primary)] border-gray-300 rounded"
+          label="Set as primary contact"
         />
-        <Label htmlFor={`contact-${index}-primary`} className="ml-2 text-sm">
-          Set as primary contact
-        </Label>
       </div>
     </div>
   );

@@ -198,7 +198,7 @@ export function SimpleEditor({
         code: false,
         paragraph: {
           HTMLAttributes: {
-            class: 'editor-paragraph',
+            // class: 'editor-paragraph',  // COMMENTED: Prevents class injection, maintains compatibility with existing HTML
           },
         },
       }),

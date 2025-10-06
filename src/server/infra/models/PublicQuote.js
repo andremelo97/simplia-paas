@@ -66,6 +66,21 @@ class PublicQuote {
   }
 
   /**
+   * Generate a secure random password for public quote access
+   * Returns 8-character base64url encoded string (e.g., "aB3xZ9Qr")
+   */
+  static generatePassword() {
+    return crypto.randomBytes(6).toString('base64url');
+  }
+
+  /**
+   * Hash a password for storage
+   */
+  static async hashPassword(password) {
+    return await bcrypt.hash(password, 10);
+  }
+
+  /**
    * Create a new public quote link
    */
   static async create(schema, data) {

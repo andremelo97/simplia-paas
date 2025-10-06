@@ -158,7 +158,7 @@ export const publicQuotesService = {
   async generateNewPassword(id: string): Promise<{ publicUrl: string; password: string }> {
     const response = await api.post(`/api/tq/v1/public-quotes/${id}/new-password`)
     return {
-      publicUrl: response.data.data.publicUrl,
+      publicUrl: response.data.publicUrl,
       password: response.meta.password
     }
   }

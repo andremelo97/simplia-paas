@@ -99,7 +99,7 @@ export const createConfigWithResolvedData = (branding: BrandingData, quoteData: 
       },
       QuoteItems: {
         ...baseConfig.components.QuoteItems,
-        render: ({ showDiscount }: any) => {
+        render: ({ showPrice, showDiscount }: any) => {
           const uniqueId = `quote-items-${Math.random().toString(36).substr(2, 9)}`
           const items = quoteData?.items || []
 
@@ -136,10 +136,12 @@ export const createConfigWithResolvedData = (branding: BrandingData, quoteData: 
                           <span style={{ color: '#6b7280' }}>Qty:</span>
                           <span style={{ marginLeft: '8px', fontWeight: '600' }}>{item.quantity}</span>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ color: '#6b7280' }}>Price:</span>
-                          <span style={{ marginLeft: '8px', fontWeight: '600' }}>{item.base_price}</span>
-                        </div>
+                        {showPrice && (
+                          <div style={{ textAlign: 'right' }}>
+                            <span style={{ color: '#6b7280' }}>Price:</span>
+                            <span style={{ marginLeft: '8px', fontWeight: '600' }}>{item.base_price}</span>
+                          </div>
+                        )}
                         {showDiscount && (
                           <>
                             <div>
@@ -172,7 +174,9 @@ export const createConfigWithResolvedData = (branding: BrandingData, quoteData: 
                       <tr>
                         <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: '#374151' }}>Item</th>
                         <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: '#374151' }}>Qty</th>
-                        <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: '#374151' }}>Price</th>
+                        {showPrice && (
+                          <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: '#374151' }}>Price</th>
+                        )}
                         {showDiscount && (
                           <th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '14px', fontWeight: '600', color: '#374151' }}>Discount</th>
                         )}
@@ -187,7 +191,9 @@ export const createConfigWithResolvedData = (branding: BrandingData, quoteData: 
                             <div style={{ fontSize: '13px', color: '#6b7280' }}>{item.description}</div>
                           </td>
                           <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right' }}>{item.quantity}</td>
-                          <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right' }}>{item.base_price}</td>
+                          {showPrice && (
+                            <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right' }}>{item.base_price}</td>
+                          )}
                           {showDiscount && (
                             <td style={{ padding: '12px 16px', fontSize: '14px', textAlign: 'right', color: '#ef4444' }}>{item.discount}</td>
                           )}

@@ -21,6 +21,7 @@ const brandingRoutes = require('./api/internal/routes/branding');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
+const publicQuoteAccessRoutes = require('./api/tq/routes/public-quote-access');
 
 // Public routes (no auth required)
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
@@ -134,6 +135,10 @@ app.use(INTERNAL_PREFIX, cors(internalCorsOptions), internalRouter);
 
 // Mount public API routes (NO authentication required)
 app.use('/api/public', cors(internalCorsOptions), publicViewRoutes);
+
+// Mount public quote access route (NO authentication, NO tenant middleware required)
+// This allows patients to access quotes via /api/tq/v1/pq/:accessToken
+app.use('/api/tq/v1', cors(internalCorsOptions), publicQuoteAccessRoutes);
 
 // Swagger Documentation (Protected by platform role)
 if (ENABLE_DOCS) {

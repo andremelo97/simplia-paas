@@ -240,7 +240,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                         <label className="block text-xs font-medium text-gray-700 mb-1">
                           Base Price
                         </label>
-                        <div className="h-8 px-3 py-1.5 text-sm bg-gray-100 border border-gray-200 rounded-md text-gray-700 flex items-center">
+                        <div className="h-8 px-2 py-1.5 text-xs bg-gray-100 border border-gray-200 rounded-md text-gray-700 flex items-center">
                           ${item.itemBasePrice?.toFixed(2) || '0.00'}
                         </div>
                       </div>
@@ -270,7 +270,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                         <label className="block text-xs font-medium text-gray-700 mb-1">
                           Total
                         </label>
-                        <div className="h-8 px-2 py-1.5 text-sm font-semibold bg-purple-50 border border-purple-200 rounded-md text-purple-700 flex items-center justify-center">
+                        <div className="h-8 px-2 py-1.5 text-xs font-semibold bg-purple-50 border border-purple-200 rounded-md text-purple-700 flex items-center justify-center">
                           ${calculateItemTotal(item).toFixed(2)}
                         </div>
                       </div>

@@ -3,7 +3,7 @@ import { Card, CardHeader, CardContent, CardTitle, Input } from '@client/common/
 
 interface PublicQuoteLinksFiltersProps {
   quoteFilter: string
-  onQuoteFilterChange: (quoteId: string) => void
+  onQuoteFilterChange: (value: string) => void
 }
 
 export const PublicQuoteLinksFilters: React.FC<PublicQuoteLinksFiltersProps> = ({
@@ -21,10 +21,9 @@ export const PublicQuoteLinksFilters: React.FC<PublicQuoteLinksFiltersProps> = (
         <Input
           label="Filter by Quote"
           type="text"
-          placeholder="Enter quote number or ID"
+          placeholder="Quote number"
           value={quoteFilter}
           onChange={(e) => onQuoteFilterChange(e.target.value)}
-          className="w-full"
         />
       </CardContent>
     </Card>

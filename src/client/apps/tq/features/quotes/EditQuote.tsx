@@ -7,7 +7,8 @@ import {
   Button,
   Input,
   Select,
-  TemplateEditor
+  TemplateEditor,
+  LinkToast
 } from '@client/common/ui'
 import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
 import { patientsService } from '../../services/patients'
@@ -46,6 +47,10 @@ export const EditQuote: React.FC = () => {
   const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+  
+  // LinkToast state for Public Quote
+  const [showLinkToast, setShowLinkToast] = useState(false)
+  const [toastData, setToastData] = useState<{publicQuoteId: string, publicUrl: string, password: string} | null>(null)
   const [isGeneratingPublicQuote, setIsGeneratingPublicQuote] = useState(false)
   const [showGenerateModal, setShowGenerateModal] = useState(false)
 
@@ -331,13 +336,27 @@ export const EditQuote: React.FC = () => {
     )
   }
 
+  const handleViewPublicLink = () => {
+    if (quote?.number) {
+      navigate(`/public-quotes/links?quote=${encodeURIComponent(quote.number)}`)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
-        <p className="text-gray-600 mt-1">
-          Quote {quote.number} • {quote.patient_first_name || quote.patient_last_name ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim() : ''}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
+          <p className="text-gray-600 mt-1">
+            Quote {quote.number} • {quote.patient_first_name || quote.patient_last_name ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim() : ''}
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          onClick={handleViewPublicLink}
+        >
+          View Public Link
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -393,7 +412,6 @@ export const EditQuote: React.FC = () => {
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
-                {console.log('🔍 [EditQuote] Rendering TemplateEditor with content length:', content?.length)}
                 <TemplateEditor
                   content={content}
                   onChange={handleContentChange}
@@ -596,6 +614,24 @@ export const EditQuote: React.FC = () => {
             console.log('Public quote generated:', publicQuote)
             setShowGenerateModal(false)
           }}
+          onShowToast={(data) => {
+            setToastData(data)
+            setShowLinkToast(true)
+          }}
+        />
+      )}
+      
+      {/* Link Toast for Public Quote */}
+      {toastData && quote && (
+        <LinkToast
+          show={showLinkToast}
+          itemNumber={quote.number}
+          itemId={toastData.publicQuoteId}
+          onClose={() => setShowLinkToast(false)}
+          type="public-quote"
+          publicUrl={toastData.publicUrl}
+          password={toastData.password}
+          duration={15000}
         />
       )}
     </div>

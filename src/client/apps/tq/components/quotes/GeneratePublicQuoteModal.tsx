@@ -22,6 +22,7 @@ interface GeneratePublicQuoteModalProps {
   patientEmail?: string
   patientPhone?: string
   onSuccess?: (publicQuote: any) => void
+  onShowToast?: (data: { publicQuoteId: string, publicUrl: string, password: string }) => void
 }
 
 export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> = ({
@@ -32,7 +33,8 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   patientName,
   patientEmail,
   patientPhone,
-  onSuccess
+  onSuccess,
+  onShowToast
 }) => {
   const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
@@ -81,17 +83,48 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
 
     setIsGenerating(true)
     try {
+      // Get tenantId from auth store
+      const { tenantId } = await import('../../shared/store/auth').then(m => m.useAuthStore.getState())
+      
+      if (!tenantId) {
+        console.error('No tenantId found in auth store')
+        return
+      }
+
       const payload: any = {
         quoteId,
-        templateId: selectedTemplateId
+        templateId: selectedTemplateId,
+        tenantId,
+        autoGeneratePassword: true // Always generate password
       }
 
       if (expiresAt) {
         payload.expiresAt = new Date(expiresAt).toISOString()
       }
 
-      const publicQuote = await publicQuotesService.createPublicQuote(payload)
+      // Use api directly to capture meta
+      const { api } = await import('@client/config/http')
+      const response = await api.post('/api/tq/v1/public-quotes', payload)
+      
+      const publicQuote = response.data
+      const meta = response.meta || {}
+      
       setGeneratedQuote(publicQuote)
+      
+      // Notify parent to show LinkToast with URL and password
+      if (meta.publicUrl && meta.password && publicQuote.id) {
+        onShowToast?.({
+          publicQuoteId: publicQuote.id,
+          publicUrl: meta.publicUrl,
+          password: meta.password
+        })
+        
+        // Close modal after showing toast
+        setTimeout(() => {
+          onClose()
+        }, 500)
+      }
+      
       onSuccess?.(publicQuote)
     } catch (error) {
       console.error('Failed to generate public quote:', error)
@@ -288,6 +321,14 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                   {copiedField === 'link' ? 'Copied!' : 'Copy'}
                 </Button>
               </div>
+            </div>
+
+            {/* Password Info */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-sm text-yellow-800">
+                <strong>⚠️ Important:</strong> The access password was shown in the notification above. 
+                Make sure you copied it - it won't be shown again!
+              </p>
             </div>
 
             {/* Link Details */}

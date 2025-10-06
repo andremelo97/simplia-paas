@@ -1,8 +1,10 @@
 const express = require('express');
+const database = require('../../../infra/db/database');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
 const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth');
 const { PublicQuote, PublicQuoteNotFoundError } = require('../../../infra/models/PublicQuote');
 const { Quote, QuoteNotFoundError } = require('../../../infra/models/Quote');
+const { createContentPackage } = require('../../../services/puckTemplateResolver');
 
 const router = express.Router();
 
@@ -15,6 +17,76 @@ router.use(requireAuth);
 // Apply rate limiting
 const tqRateLimit = createRateLimit(15 * 60 * 1000, 200); // 200 requests per 15 minutes
 router.use(tqRateLimit);
+
+/**
+ * @openapi
+ * /tq/public-quotes:
+ *   get:
+ *     tags: [TQ - Public Quotes]
+ *     summary: List all public quotes for tenant
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Returns all public quote links for the current tenant with quote and patient details.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of public quotes
+ */
+router.get('/', async (req, res) => {
+  try {
+    const schema = req.tenant?.schema;
+
+    if (!schema) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing tenant context'
+      });
+    }
+
+    // Get all public quotes for this tenant with joined data
+    const query = `
+      SELECT 
+        pq.*,
+        q.number as quote_number,
+        q.total as quote_total,
+        q.status as quote_status,
+        q.session_id as quote_session_id,
+        s.patient_id as session_patient_id,
+        p.first_name as patient_first_name,
+        p.last_name as patient_last_name,
+        p.email as patient_email,
+        pqt.name as template_name
+      FROM ${schema}.public_quote pq
+      LEFT JOIN ${schema}.quote q ON pq.quote_id = q.id
+      LEFT JOIN ${schema}.session s ON q.session_id = s.id
+      LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN ${schema}.public_quote_template pqt ON pq.template_id = pqt.id
+      WHERE pq.tenant_id = $1
+      ORDER BY pq.created_at DESC
+    `;
+
+    const result = await database.query(query, [req.tenant.id]);
+    const publicQuotes = result.rows.map(row => new PublicQuote(row));
+
+    res.json({
+      data: publicQuotes.map(pq => pq.toJSON())
+    });
+  } catch (error) {
+    console.error('List public quotes error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to list public quotes'
+    });
+  }
+});
 
 /**
  * @openapi
@@ -74,7 +146,7 @@ router.use(tqRateLimit);
 router.post('/', async (req, res) => {
   try {
     const schema = req.tenant?.schema;
-    const { quoteId, templateId, password, expiresAt } = req.body;
+    const { quoteId, templateId, expiresAt, tenantId, autoGeneratePassword = true } = req.body;
 
     if (!schema) {
       return res.status(400).json({
@@ -90,31 +162,110 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Verify quote exists
-    try {
-      await Quote.findById(quoteId, schema);
-    } catch (error) {
-      if (error instanceof QuoteNotFoundError) {
-        return res.status(404).json({
-          error: 'Not Found',
-          message: 'Quote not found'
-        });
-      }
-      throw error;
+    if (!tenantId) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'tenantId is required'
+      });
     }
 
+    // Fetch quote with patient data
+    const quoteQuery = `
+      SELECT 
+        q.*,
+        s.patient_id,
+        p.first_name as patient_first_name,
+        p.last_name as patient_last_name,
+        p.email as patient_email,
+        p.phone as patient_phone
+      FROM ${schema}.quote q
+      INNER JOIN ${schema}.session s ON q.session_id = s.id
+      INNER JOIN ${schema}.patient p ON s.patient_id = p.id
+      WHERE q.id = $1
+    `;
+    
+    const quoteResult = await database.query(quoteQuery, [quoteId]);
+    
+    if (quoteResult.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Quote not found'
+      });
+    }
+
+    const quoteData = quoteResult.rows[0];
+
+    // Fetch quote items
+    const itemsQuery = `
+      SELECT * FROM ${schema}.quote_item
+      WHERE quote_id = $1
+      ORDER BY created_at ASC
+    `;
+    const itemsResult = await database.query(itemsQuery, [quoteId]);
+
+    // Fetch template content if templateId provided
+    let templateContent = null;
+    if (templateId) {
+      const templateQuery = `
+        SELECT content FROM ${schema}.public_quote_template
+        WHERE id = $1
+      `;
+      const templateResult = await database.query(templateQuery, [templateId]);
+      if (templateResult.rows.length > 0) {
+        templateContent = templateResult.rows[0].content;
+      }
+    }
+
+    // Create content package with resolved data
+    // This uses EXACT same logic as frontend to ensure consistency
+    const contentPackage = createContentPackage(
+      templateContent,
+      {
+        number: quoteData.quote_number || quoteData.number,
+        total: quoteData.total,
+        content: quoteData.content,
+        status: quoteData.status,
+        created_at: quoteData.created_at
+      },
+      {
+        first_name: quoteData.patient_first_name,
+        last_name: quoteData.patient_last_name,
+        email: quoteData.patient_email,
+        phone: quoteData.patient_phone
+      },
+      itemsResult.rows
+    );
+
+    // Auto-generate secure password (always enabled for public quotes)
+    const crypto = require('crypto');
+    const password = autoGeneratePassword 
+      ? crypto.randomBytes(6).toString('base64url') // Generates 8-char secure password (e.g., "aB3xZ9Qr")
+      : null;
+
+    // Generate access token and public URL
+    const accessToken = PublicQuote.generateAccessToken();
+    const baseUrl = process.env.TQ_ORIGIN || 'http://localhost:3005';
+    const publicUrl = `${baseUrl}/pq/${accessToken}`;
+
     const publicQuote = await PublicQuote.create(schema, {
+      tenantId,
       quoteId,
       templateId,
+      accessToken, // Pass the pre-generated token
+      publicUrl,
+      content: contentPackage, // Save template + resolved data
       password,
       expiresAt
     });
 
+    // Return public quote data with URL and password in meta
     res.status(201).json({
       data: publicQuote.toJSON(),
       meta: {
         code: 'PUBLIC_QUOTE_CREATED',
-        message: 'Public quote link created successfully'
+        message: `Public quote link created successfully!`,
+        password: password, // Password for frontend to show
+        publicUrl: publicQuote.publicUrl // URL for frontend to show
       }
     });
   } catch (error) {
@@ -128,7 +279,7 @@ router.post('/', async (req, res) => {
 
 /**
  * @openapi
- * /tq/public-quotes/by-quote/{quoteId}:
+ * /tq/public-quotes/{quoteIdentifier}:
  *   get:
  *     tags: [TQ - Public Quotes]
  *     summary: Get public quote links for a quote
@@ -136,6 +287,7 @@ router.post('/', async (req, res) => {
  *       **Scope:** Tenant (x-tenant-id required)
  *
  *       Retrieves all active public links for a specific quote.
+ *       Accepts either quote UUID or quote number.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -145,25 +297,50 @@ router.post('/', async (req, res) => {
  *         schema:
  *           type: string
  *       - in: path
- *         name: quoteId
+ *         name: quoteIdentifier
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
+ *         description: Quote UUID or quote number (e.g., "Q-2024-001")
  *     responses:
  *       200:
  *         description: List of public quote links
+ *       404:
+ *         description: Quote not found
  */
-router.get('/by-quote/:quoteId', async (req, res) => {
+router.get('/:quoteIdentifier', async (req, res) => {
   try {
     const schema = req.tenant?.schema;
-    const { quoteId } = req.params;
+    const { quoteIdentifier } = req.params;
 
     if (!schema) {
       return res.status(400).json({
         error: 'Bad Request',
         message: 'Missing tenant context'
       });
+    }
+
+    // Check if identifier is a UUID or quote number
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quoteIdentifier);
+    
+    let quoteId;
+    if (isUUID) {
+      quoteId = quoteIdentifier;
+    } else {
+      // It's a quote number, find the quote by number
+      const quoteQuery = `
+        SELECT id FROM ${schema}.quote WHERE quote_number = $1
+      `;
+      const quoteResult = await database.query(quoteQuery, [quoteIdentifier]);
+      
+      if (quoteResult.rows.length === 0) {
+        return res.status(404).json({
+          error: 'Not Found',
+          message: 'Quote not found'
+        });
+      }
+      
+      quoteId = quoteResult.rows[0].id;
     }
 
     const publicQuotes = await PublicQuote.findByQuoteId(quoteId, schema);

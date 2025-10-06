@@ -83,6 +83,11 @@ export function shouldInjectTenantHeader(url: string): boolean {
     return false
   }
   
+  // Don't inject for public quote access (patient access)
+  if (url.includes('/api/tq/v1/pq/')) {
+    return false
+  }
+  
   // Don't inject for platform auth
   if (url.includes('/platform-auth/')) {
     return false

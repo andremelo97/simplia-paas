@@ -181,6 +181,28 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Quote items updated successfully."
   },
 
+  // TQ - Public Quote operations
+  PUBLIC_QUOTE_CREATED: {
+    title: "Public Quote Created",
+    message: "Public quote link created successfully!"
+  },
+  PUBLIC_QUOTE_REVOKED: {
+    title: "Link Revoked",
+    message: "Public quote link has been revoked successfully."
+  },
+  PUBLIC_QUOTE_NOT_FOUND: {
+    title: "Not Found",
+    message: "Public quote link not found."
+  },
+  LOAD_FAILED: {
+    title: "Load Failed",
+    message: "Failed to load data. Please try again."
+  },
+  REVOKE_FAILED: {
+    title: "Revoke Failed",
+    message: "Failed to revoke link. Please try again."
+  },
+
   // Branding operations
   BRANDING_UPDATED: {
     title: "Branding Updated",

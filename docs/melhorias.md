@@ -671,3 +671,90 @@
   - Precisa migration para cada novo domínio
   - Mais tabelas no banco
   - Menos "flexível" (mas isso é bom!)
+
+  ----
+
+  PUBLIC_QUOTE_TEMPLATE VARIABLES RESOLUTION:
+
+  Ótima pergunta! Vou analisar as duas abordagens:
+
+## 🤔 **ANÁLISE: Resolver Template no Frontend vs Backend**
+
+---
+
+### **📍 SITUAÇÃO ATUAL (Frontend resolve)**
+
+**Como funciona:**
+1. Frontend carrega: quote data + template + branding
+2. Hook `usePublicQuoteRenderer` chama `resolveTemplateVariables(template, quote)`
+3. Puck renderiza com dados resolvidos no cliente
+
+**Prós ✅:**
+- **Performance**: Não precisa serializar/processar HTML no backend
+- **Flexibilidade**: Puck é client-side, mudanças no template são instantâneas
+- **Cacheable**: Pode cachear template + dados separadamente
+- **Menos carga no servidor**: Renderização acontece no browser do usuário
+
+**Contras ❌:**
+- **Segurança**: Expõe toda a estrutura do template no frontend
+- **Tamanho do payload**: Envia template completo + todos os dados da quote
+- **Lógica duplicada**: `resolveTemplateVariables` fica no frontend
+
+---
+
+### **🔄 ALTERNATIVA (Backend resolve)**
+
+**Como funcionaria:**
+1. Frontend faz request: `POST /public-quote/:accessToken { password }`
+2. Backend resolve variáveis: `{{quote.number}}` → `Q-2024-001`
+3. Retorna template já preenchido + configuração Puck pronta
+
+**Prós ✅:**
+- **Segurança**: Template bruto fica no backend
+- **Payload menor**: Envia apenas dados necessários
+- **Controle centralizado**: Lógica de resolução em um lugar só (backend)
+- **Auditoria**: Pode logar o que foi acessado com mais precisão
+
+**Contras ❌:**
+- **Carga no servidor**: Backend precisa processar cada acesso
+- **Complexidade**: Precisa resolver template no Node.js (não é nativo do Puck)
+- **Cacheable limitado**: Template resolvido é único por quote
+- **Flexibilidade reduzida**: Mudanças no Puck config precisam sync frontend/backend
+
+---
+
+## 💡 **RECOMENDAÇÃO BASEADA NO SEU CONTEXTO**
+
+### **MANTER NO FRONTEND (atual)**
+
+**Por quê?**
+
+1. **Puck é client-side first**: Ele foi feito para renderizar no browser, forçar pelo backend seria remar contra a maré
+2. **Public quotes são "read-only"**: Não tem problema expor a estrutura do template, não há risco de manipulação
+3. **Performance melhor**: Cada usuário renderiza no próprio device, não sobrecarrega servidor
+4. **Já funciona bem**: Preview e public-quote usam a mesma lógica, consistência garantida
+
+### **Quando mover pro Backend?**
+
+Se no futuro vocês precisarem de:
+- **PDF generation**: Converter quote em PDF (aí sim, backend via Puppeteer)
+- **Email templates**: Enviar quote por email
+- **Server-side rendering (SSR)**: SEO para public quotes
+- **Rate limiting por conteúdo**: Controlar acesso baseado nos dados da quote
+
+---
+
+## 🎯 **CONCLUSÃO**
+
+**Manter no frontend** é a escolha certa para o caso de uso atual:
+- Public quotes são páginas interativas visualizadas no browser
+- Puck precisa rodar client-side de qualquer forma
+- Performance é melhor (offload pro cliente)
+- Segurança não é concern (dados já são públicos com senha)
+
+Se precisar de **proteção extra**, vocês podem:
+1. **Ofuscar**: Minificar o template JSON antes de enviar
+2. **Validar no backend**: Checar se quote ainda está ativa antes de retornar dados
+3. **Rate limit**: Limitar tentativas de senha por IP
+
+Mantenha como está! 👍

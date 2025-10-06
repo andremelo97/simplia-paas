@@ -67,6 +67,11 @@ export const createTypographyComponents = (branding: BrandingData) => ({
           { label: 'Right', value: 'right' },
         ],
       },
+      horizontalPadding: {
+        type: 'select' as const,
+        label: 'Horizontal Padding',
+        options: verticalPaddingOptions,
+      },
       verticalPadding: {
         type: 'select' as const,
         label: 'Vertical Padding',
@@ -83,10 +88,11 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       size: 'm',
       level: 'h2',
       align: 'left',
+      horizontalPadding: 16,
       verticalPadding: 8,
       color: 'default',
     },
-    render: ({ text, size, level, align, verticalPadding, color }: any) => {
+    render: ({ text, size, level, align, horizontalPadding, verticalPadding, color }: any) => {
       const Tag = level || 'h2'
 
       const baseSizeStyles = {
@@ -117,8 +123,8 @@ export const createTypographyComponents = (branding: BrandingData) => ({
               ...baseSizeStyles[size as keyof typeof baseSizeStyles],
               textAlign: alignStyles[align as keyof typeof alignStyles],
               wordBreak: 'break-word',
-              paddingLeft: '16px',
-              paddingRight: '16px',
+              paddingLeft: `${horizontalPadding}px`,
+              paddingRight: `${horizontalPadding}px`,
               paddingTop: `${verticalPadding}px`,
               paddingBottom: `${verticalPadding}px`,
               color: textColor,
@@ -129,8 +135,8 @@ export const createTypographyComponents = (branding: BrandingData) => ({
           <style>{`
             @media (min-width: 640px) {
               .${uniqueId} {
-                padding-left: 0;
-                padding-right: 0;
+                padding-left: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
+                padding-right: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
                 ${size === 's' ? 'font-size: 16px;' : ''}
                 ${size === 'm' ? 'font-size: 18px;' : ''}
                 ${size === 'l' ? 'font-size: 20px;' : ''}
@@ -187,6 +193,11 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         type: 'text' as const,
         label: 'maxWidth',
       },
+      horizontalPadding: {
+        type: 'select' as const,
+        label: 'Horizontal Padding',
+        options: verticalPaddingOptions,
+      },
       verticalPadding: {
         type: 'select' as const,
         label: 'Vertical Padding',
@@ -199,9 +210,10 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       align: 'left',
       color: 'default',
       maxWidth: '',
+      horizontalPadding: 16,
       verticalPadding: 0,
     },
-    render: ({ text, size, align, color, maxWidth, verticalPadding }: any) => {
+    render: ({ text, size, align, color, maxWidth, horizontalPadding, verticalPadding }: any) => {
       const baseSizeStyles = {
         m: { fontSize: '14px' },
         s: { fontSize: '12px' },
@@ -220,8 +232,8 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         ...baseSizeStyles[size as keyof typeof baseSizeStyles],
         textAlign: alignStyles[align as keyof typeof alignStyles],
         wordBreak: 'break-word',
-        paddingLeft: '16px',
-        paddingRight: '16px',
+        paddingLeft: `${horizontalPadding}px`,
+        paddingRight: `${horizontalPadding}px`,
         paddingTop: `${verticalPadding}px`,
         paddingBottom: `${verticalPadding}px`,
         color: textColor,
@@ -239,8 +251,8 @@ export const createTypographyComponents = (branding: BrandingData) => ({
           <style>{`
             @media (min-width: 640px) {
               .${uniqueId} {
-                padding-left: 0;
-                padding-right: 0;
+                padding-left: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
+                padding-right: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
                 ${size === 'm' ? 'font-size: 16px;' : ''}
                 ${size === 's' ? 'font-size: 14px;' : ''}
               }

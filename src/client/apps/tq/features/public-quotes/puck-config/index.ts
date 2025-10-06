@@ -4,7 +4,8 @@ import { createTypographyComponents } from './typography-components'
 import { createActionComponents } from './action-components'
 import { createQuoteComponents } from './quote-components'
 import { createOtherComponents } from './other-components'
-import { createHeaderComponent } from './header-component'
+import { createHeaderFooterComponents } from './header-component'
+import { createMediaComponents } from './media-components'
 
 export const createConfig = (branding: BrandingData) => ({
   components: {
@@ -12,8 +13,9 @@ export const createConfig = (branding: BrandingData) => ({
     ...createTypographyComponents(branding),
     ...createActionComponents(branding),
     ...createQuoteComponents(branding),
+    ...createMediaComponents(branding),
     ...createOtherComponents(branding),
-    ...createHeaderComponent(branding),
+    ...createHeaderFooterComponents(branding),
   },
   categories: {
     layout: {
@@ -32,9 +34,13 @@ export const createConfig = (branding: BrandingData) => ({
       title: 'Quote Info',
       components: ['QuoteNumber', 'QuoteTotal', 'QuoteItems', 'QuoteContent'],
     },
-    header: {
-      title: 'Header',
-      components: ['Header'],
+    media: {
+      title: 'Media',
+      components: ['Image', 'Video'],
+    },
+    headerFooter: {
+      title: 'Header & Footer',
+      components: ['Header', 'Footer'],
     },
     other: {
       title: 'Other',

@@ -153,12 +153,31 @@ export const createConfig = (branding: BrandingData) => ({
 ### Database Schema
 
 ```sql
+-- Public Quote Templates
 CREATE TABLE tenant_{slug}.public_quote_template (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
   description TEXT,
   content JSONB,  -- Puck data structure
   active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Public Quotes (Shareable Links)
+CREATE TABLE tenant_{slug}.public_quote (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id INTEGER NOT NULL,
+  quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
+  template_id UUID REFERENCES public_quote_template(id) ON DELETE SET NULL,
+  access_token VARCHAR(64) UNIQUE NOT NULL,
+  public_url TEXT,
+  content JSONB,  -- Resolved template + data package (immutable snapshot)
+  password_hash VARCHAR(255),
+  views_count INTEGER DEFAULT 0,
+  last_viewed_at TIMESTAMPTZ,
+  active BOOLEAN DEFAULT true,
+  expires_at TIMESTAMPTZ DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -625,16 +644,169 @@ useEffect(() => {
 </Button>
 ```
 
+## Public Quote Content Resolution (Backend)
+
+### Arquitetura de Imutabilidade
+
+Quando um public quote link é gerado, o sistema **"congela"** o conteúdo no momento da criação para garantir que:
+- ✅ Patient vê EXATAMENTE a mesma coisa que o usuário autenticado
+- ✅ Alterações no template NÃO afetam links já gerados
+- ✅ Dados históricos preservados para auditoria
+
+### Backend Resolution Flow
+
+```
+1. POST /api/tq/v1/public-quotes
+   ↓
+2. Backend busca: Quote + Items + Patient + Template
+   ↓
+3. puckTemplateResolver.js resolve dados (EXATAMENTE igual ao frontend)
+   ↓
+4. Cria Content Package: { template, resolvedData }
+   ↓
+5. Salva em public_quote.content (JSONB)
+   ↓
+6. Retorna: { publicUrl, password }
+```
+
+### Content Package Structure
+
+```json
+{
+  "template": {
+    "content": [...],  // Puck template original
+    "root": {},
+    "zones": {}
+  },
+  "resolvedData": {
+    "quote": {
+      "number": "QUO000001",
+      "total": "$5,701.00",
+      "content": "<p>Clinical summary...</p>",
+      "status": "approved",
+      "created_at": "Jan 15, 2025"
+    },
+    "patient": {
+      "first_name": "ANDRE",
+      "last_name": "MELO",
+      "full_name": "ANDRE MELO",
+      "email": "andre@example.com",
+      "phone": "11994411280"
+    },
+    "items": [
+      {
+        "name": "Dental Implant",
+        "description": "Titanium implant with crown",
+        "quantity": 1,
+        "base_price": "$3,000.00",
+        "discount": "$500.00",
+        "final_price": "$2,500.00"
+      }
+    ]
+  }
+}
+```
+
+### Backend Service
+
+**Location**: `src/server/services/puckTemplateResolver.js`
+
+```javascript
+// MUST match EXACTLY the frontend logic
+function resolveQuoteData(quote, patient, items) {
+  return {
+    quote: {
+      number: quote.number || '',
+      total: formatCurrency(quote.total),
+      content: quote.content || '',
+      status: quote.status || 'draft',
+      created_at: formatDate(quote.created_at)
+    },
+    patient: {
+      first_name: patient.first_name || '',
+      last_name: patient.last_name || '',
+      full_name: `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'N/A',
+      email: patient.email || '',
+      phone: patient.phone || ''
+    },
+    items: (items || []).map(item => ({
+      name: item.name || '',
+      description: item.description || '',
+      quantity: item.quantity || 1,
+      base_price: formatCurrency(item.base_price),
+      discount: formatCurrency(item.discount_amount),
+      final_price: formatCurrency(item.final_price)
+    }))
+  }
+}
+```
+
+### Public Access Endpoint
+
+**Route**: `POST /api/tq/v1/pq/:accessToken`
+
+```javascript
+// Patient enters password
+// Returns saved content package (already resolved)
+{
+  "data": {
+    "content": {
+      "template": { ... },    // Original Puck template
+      "resolvedData": { ... } // Pre-formatted quote data
+    },
+    "branding": {
+      "primaryColor": "#B725B7",
+      "secondaryColor": "#E91E63",
+      "tertiaryColor": "#5ED6CE",
+      "logo": "https://..."
+    }
+  }
+}
+```
+
+### Frontend Rendering
+
+**Location**: `src/client/apps/tq/features/public-quotes/PublicQuoteAccess.tsx`
+
+```typescript
+// Uses the saved resolvedData directly
+const previewConfig = useMemo(() => {
+  if (!quoteData?.content) return null
+  
+  const branding = { /* branding data */ }
+  
+  // Uses saved resolvedData (no need to resolve again)
+  return createConfigWithResolvedData(branding, quoteData.content.resolvedData)
+}, [quoteData])
+
+return <Render config={previewConfig} data={quoteData.content.template} />
+```
+
+### Consistency Guarantees
+
+1. **Format Functions Match**:
+   - Backend `formatCurrency()` === Frontend `formatCurrency()`
+   - Backend `formatDate()` === Frontend `formatDate()`
+
+2. **Same Data Structure**:
+   - Backend `resolveQuoteData()` === Frontend `resolveTemplateVariables()`
+   - Identical field names and transformations
+
+3. **No Runtime Resolution**:
+   - Patient page uses pre-resolved data
+   - Zero chance of divergence
+
 ## Próximos Passos
 
 ### Funcionalidades Planejadas
 
 1. ✅ **Template Variables**: Sistema de variáveis implementado com dual-config
-2. **Conditional Sections**: Mostrar/ocultar seções baseado em dados da cotação
-3. **Public Links**: Gerar links públicos com hash para compartilhar templates
-4. **PDF Export**: Exportar template renderizado para PDF
-5. **Email Templates**: Usar templates para enviar cotações por email
-6. **Theme Presets**: Templates pré-prontos para diferentes indústrias
+2. ✅ **Public Links**: Links públicos com password protection implementado
+3. ✅ **Content Immutability**: Backend resolve e salva content package
+4. **Conditional Sections**: Mostrar/ocultar seções baseado em dados da cotação
+5. **PDF Export**: Exportar template renderizado para PDF
+6. **Email Templates**: Usar templates para enviar cotações por email
+7. **Theme Presets**: Templates pré-prontos para diferentes indústrias
 
 ### Melhorias Técnicas
 

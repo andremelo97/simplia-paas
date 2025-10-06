@@ -42,9 +42,11 @@ export interface PublicQuote {
   id: string
   createdAt: string
   updatedAt: string
+  tenantId: number
   quoteId: string
   templateId?: string
   accessToken: string
+  publicUrl?: string
   viewsCount: number
   lastViewedAt?: string
   active: boolean
@@ -120,8 +122,15 @@ export const publicQuotesService = {
     return response.data.data
   },
 
-  async getPublicQuotesByQuote(quoteId: string): Promise<PublicQuote[]> {
-    const response = await api.get(`/api/tq/v1/public-quotes/by-quote/${quoteId}`)
+  async listAllPublicQuotes(): Promise<PublicQuote[]> {
+    const response = await api.get('/api/tq/v1/public-quotes')
+    // Response structure: { data: [...] }
+    // The api client already parses response.json(), so response.data IS the array
+    return Array.isArray(response.data) ? response.data : (response.data?.data || [])
+  },
+
+  async getPublicQuotesByQuote(quoteIdOrNumber: string): Promise<PublicQuote[]> {
+    const response = await api.get(`/api/tq/v1/public-quotes/${quoteIdOrNumber}`)
     return response.data.data
   },
 

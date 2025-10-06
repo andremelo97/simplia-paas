@@ -17,6 +17,32 @@ export const createLayoutComponents = (branding: BrandingData) => ({
         min: 0,
         max: 100,
       },
+      horizontalPadding: {
+        type: 'select' as const,
+        label: 'Horizontal Padding',
+        options: [
+          { label: '0px', value: 0 },
+          { label: '8px', value: 8 },
+          { label: '16px', value: 16 },
+          { label: '24px', value: 24 },
+          { label: '32px', value: 32 },
+          { label: '40px', value: 40 },
+          { label: '48px', value: 48 },
+          { label: '56px', value: 56 },
+          { label: '64px', value: 64 },
+          { label: '72px', value: 72 },
+          { label: '80px', value: 80 },
+          { label: '88px', value: 88 },
+          { label: '96px', value: 96 },
+          { label: '104px', value: 104 },
+          { label: '112px', value: 112 },
+          { label: '120px', value: 120 },
+          { label: '128px', value: 128 },
+          { label: '136px', value: 136 },
+          { label: '144px', value: 144 },
+          { label: '152px', value: 152 },
+        ],
+      },
       verticalPadding: {
         type: 'select' as const,
         label: 'Vertical Padding',
@@ -55,10 +81,11 @@ export const createLayoutComponents = (branding: BrandingData) => ({
     defaultProps: {
       columns: 4,
       gap: 24,
+      horizontalPadding: 16,
       verticalPadding: 0,
       backgroundColor: 'none',
     },
-    render: ({ columns, gap, verticalPadding, backgroundColor, content: Content }: any) => {
+    render: ({ columns, gap, horizontalPadding, verticalPadding, backgroundColor, content: Content }: any) => {
       const bgColor = resolveColor(backgroundColor, branding)
       const uniqueId = `grid-${Math.random().toString(36).substr(2, 9)}`
 
@@ -77,8 +104,8 @@ export const createLayoutComponents = (branding: BrandingData) => ({
             style={{
               width: '100%',
               overflowX: 'hidden',
-              paddingLeft: '16px',
-              paddingRight: '16px',
+              paddingLeft: `${horizontalPadding}px`,
+              paddingRight: `${horizontalPadding}px`,
               backgroundColor: bgColor,
             }}
           >
@@ -100,8 +127,8 @@ export const createLayoutComponents = (branding: BrandingData) => ({
           <style>{`
             @media (min-width: 640px) {
               .${wrapperId} {
-                padding-left: 24px;
-                padding-right: 24px;
+                padding-left: ${Math.round(horizontalPadding * 1.5)}px;
+                padding-right: ${Math.round(horizontalPadding * 1.5)}px;
               }
               .${uniqueId} {
                 gap: ${gap}px;
@@ -109,8 +136,8 @@ export const createLayoutComponents = (branding: BrandingData) => ({
             }
             @media (min-width: 768px) {
               .${wrapperId} {
-                padding-left: 32px;
-                padding-right: 32px;
+                padding-left: ${horizontalPadding * 2}px;
+                padding-right: ${horizontalPadding * 2}px;
               }
             }
           `}</style>
@@ -149,6 +176,32 @@ export const createLayoutComponents = (branding: BrandingData) => ({
         options: [
           { label: 'true', value: true },
           { label: 'false', value: false },
+        ],
+      },
+      horizontalPadding: {
+        type: 'select' as const,
+        label: 'Horizontal Padding',
+        options: [
+          { label: '0px', value: 0 },
+          { label: '8px', value: 8 },
+          { label: '16px', value: 16 },
+          { label: '24px', value: 24 },
+          { label: '32px', value: 32 },
+          { label: '40px', value: 40 },
+          { label: '48px', value: 48 },
+          { label: '56px', value: 56 },
+          { label: '64px', value: 64 },
+          { label: '72px', value: 72 },
+          { label: '80px', value: 80 },
+          { label: '88px', value: 88 },
+          { label: '96px', value: 96 },
+          { label: '104px', value: 104 },
+          { label: '112px', value: 112 },
+          { label: '120px', value: 120 },
+          { label: '128px', value: 128 },
+          { label: '136px', value: 136 },
+          { label: '144px', value: 144 },
+          { label: '152px', value: 152 },
         ],
       },
       verticalPadding: {
@@ -191,10 +244,11 @@ export const createLayoutComponents = (branding: BrandingData) => ({
       justifyContent: 'flex-start',
       gap: 24,
       wrap: true,
+      horizontalPadding: 16,
       verticalPadding: 0,
       backgroundColor: 'none',
     },
-    render: ({ direction, justifyContent, gap, wrap, verticalPadding, backgroundColor, content: Content }: any) => {
+    render: ({ direction, justifyContent, gap, wrap, horizontalPadding, verticalPadding, backgroundColor, content: Content }: any) => {
       const bgColor = resolveColor(backgroundColor, branding)
       const uniqueId = `flex-${Math.random().toString(36).substr(2, 9)}`
       const wrapperId = `flex-wrapper-${Math.random().toString(36).substr(2, 9)}`
@@ -209,8 +263,8 @@ export const createLayoutComponents = (branding: BrandingData) => ({
             style={{
               width: '100%',
               overflowX: 'hidden',
-              paddingLeft: '16px',
-              paddingRight: '16px',
+              paddingLeft: `${horizontalPadding}px`,
+              paddingRight: `${horizontalPadding}px`,
               backgroundColor: bgColor,
             }}
           >
@@ -234,8 +288,8 @@ export const createLayoutComponents = (branding: BrandingData) => ({
           <style>{`
             @media (min-width: 640px) {
               .${wrapperId} {
-                padding-left: 24px;
-                padding-right: 24px;
+                padding-left: ${Math.round(horizontalPadding * 1.5)}px;
+                padding-right: ${Math.round(horizontalPadding * 1.5)}px;
               }
               .${uniqueId} {
                 gap: ${gap}px;
@@ -243,8 +297,8 @@ export const createLayoutComponents = (branding: BrandingData) => ({
             }
             @media (min-width: 768px) {
               .${wrapperId} {
-                padding-left: 32px;
-                padding-right: 32px;
+                padding-left: ${horizontalPadding * 2}px;
+                padding-right: ${horizontalPadding * 2}px;
               }
             }
           `}</style>

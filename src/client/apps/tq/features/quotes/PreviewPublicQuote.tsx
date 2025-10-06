@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Render } from '@measured/puck'
 import '@measured/puck/puck.css'
@@ -7,9 +7,7 @@ import { ArrowLeft } from 'lucide-react'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { quotesService, Quote } from '../../services/quotes'
 import { brandingService, BrandingData } from '../../services/branding'
-import { createConfig } from '../public-quotes/puck-config'
-import { createConfigWithResolvedData } from '../public-quotes/puck-config-preview'
-import { resolveTemplateVariables } from '../../lib/resolveTemplateVariables'
+import { usePublicQuoteRenderer } from '../../hooks/usePublicQuoteRenderer'
 
 export const PreviewPublicQuote: React.FC = () => {
   const { id: quoteId, templateId } = useParams<{ id: string; templateId: string }>()
@@ -48,13 +46,8 @@ export const PreviewPublicQuote: React.FC = () => {
     }
   }
 
-  // Create config with resolved quote data
-  const previewConfig = useMemo(() => {
-    if (!branding || !quote) return null
-
-    const resolvedData = resolveTemplateVariables(template?.content || {}, quote)
-    return createConfigWithResolvedData(branding, resolvedData)
-  }, [branding, quote, template])
+  // Create config with resolved quote data using reusable hook
+  const previewConfig = usePublicQuoteRenderer(template, quote, branding)
 
   const handleBack = () => {
     navigate(`/quotes/${quoteId}/edit`)

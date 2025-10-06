@@ -31,6 +31,8 @@ import { CreatePublicQuoteTemplate } from '../features/public-quotes/CreatePubli
 import { EditPublicQuoteTemplate } from '../features/public-quotes/EditPublicQuoteTemplate'
 import { DesignPublicQuoteTemplate } from '../features/public-quotes/DesignPublicQuoteTemplate'
 import { PreviewPublicQuoteTemplate } from '../features/public-quotes/PreviewPublicQuoteTemplate'
+import { PublicQuoteAccess } from '../features/public-quotes/PublicQuoteAccess'
+import { PreviewPublicQuoteLink } from '../features/public-quotes/PreviewPublicQuoteLink'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -78,6 +80,10 @@ export const AppRoutes: React.FC = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
+      {/* Public Quote Access - Completely public, no auth required */}
+      {/* Public route for patient access - NO AUTH */}
+      <Route path="/pq/:accessToken" element={<PublicQuoteAccess />} />
+
       {/* Preview Public Quote Template - Completely isolated, no auth/layout */}
       <Route path="/public-quotes/templates/:id/preview" element={<PreviewPublicQuoteTemplate />} />
 
@@ -87,6 +93,16 @@ export const AppRoutes: React.FC = () => {
         element={
           <RouteGuard requireAuth requiredApp="tq">
             <PreviewPublicQuote />
+          </RouteGuard>
+        }
+      />
+
+      {/* Preview Public Quote Link - Isolated preview (auth user sees what patient sees) */}
+      <Route
+        path="/public-quotes/links/:id/preview"
+        element={
+          <RouteGuard requireAuth requiredApp="tq">
+            <PreviewPublicQuoteLink />
           </RouteGuard>
         }
       />

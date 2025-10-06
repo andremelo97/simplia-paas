@@ -125,8 +125,24 @@ export const createOtherComponents = (branding: BrandingData) => ({
   },
   CardContainer: {
     fields: {
+      showTitle: {
+        type: 'radio' as const,
+        label: 'Show Title',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
       title: {
         type: 'text' as const,
+      },
+      showDescription: {
+        type: 'radio' as const,
+        label: 'Show Description',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
       },
       description: {
         type: 'textarea' as const,
@@ -147,6 +163,11 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Background Color',
         options: backgroundColorOptions,
       },
+      borderColor: {
+        type: 'select' as const,
+        label: 'Border Color',
+        options: dividerColorOptions,
+      },
       titleColor: {
         type: 'select' as const,
         label: 'Title Color',
@@ -159,14 +180,17 @@ export const createOtherComponents = (branding: BrandingData) => ({
       },
     },
     defaultProps: {
+      showTitle: true,
       title: 'Card Title',
+      showDescription: true,
       description: 'Card description goes here',
       padding: 'md',
       backgroundColor: 'none',
+      borderColor: '#e5e7eb',
       titleColor: '#111827',
       descriptionColor: '#4b5563',
     },
-    render: ({ title, description, padding, backgroundColor, titleColor, descriptionColor, content: Content }: any) => {
+    render: ({ showTitle, title, showDescription, description, padding, backgroundColor, borderColor, titleColor, descriptionColor, content: Content }: any) => {
       const basePadding = {
         sm: '12px',
         md: '16px',
@@ -181,15 +205,21 @@ export const createOtherComponents = (branding: BrandingData) => ({
             className={uniqueId}
             style={{
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: `1px solid ${resolveColor(borderColor, branding)}`,
               boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
               padding: basePadding[padding as keyof typeof basePadding],
               backgroundColor: resolveColor(backgroundColor, branding),
             }}
           >
-            <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>{title}</h3>
-            <p style={{ fontSize: '14px', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>{description}</p>
-            <Content />
+            {showTitle && title && (
+              <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>{title}</h3>
+            )}
+            {showDescription && description && (
+              <p style={{ fontSize: '14px', marginBottom: showTitle && title ? '16px' : '0px', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>{description}</p>
+            )}
+            <div style={{ marginTop: (showTitle && title) || (showDescription && description) ? '16px' : '0px' }}>
+              <Content />
+            </div>
           </div>
           <style>{`
             @media (min-width: 640px) {
@@ -622,20 +652,37 @@ export const createOtherComponents = (branding: BrandingData) => ({
             type: 'text' as const,
             label: 'href',
           },
-          variant: {
-            type: 'select' as const,
-            label: 'variant',
+          style: {
+            type: 'radio' as const,
+            label: 'style',
             options: [
               { label: 'primary', value: 'primary' },
               { label: 'secondary', value: 'secondary' },
               { label: 'tertiary', value: 'tertiary' },
+              { label: 'outline', value: 'outline' },
             ],
+          },
+          size: {
+            type: 'select' as const,
+            label: 'Size',
+            options: [
+              { label: 'Small', value: 'sm' },
+              { label: 'Medium', value: 'md' },
+              { label: 'Large', value: 'lg' },
+            ],
+          },
+          textColor: {
+            type: 'select' as const,
+            label: 'Text Color',
+            options: textColorOptions,
           },
         },
         defaultItemProps: {
           label: 'Learn more',
           href: '#',
-          variant: 'primary',
+          style: 'primary',
+          size: 'md',
+          textColor: '#ffffff',
         },
       },
       align: {
@@ -701,7 +748,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
         {
           label: 'Click here',
           href: '#',
-          variant: 'primary',
+          style: 'primary',
+          size: 'md',
+          textColor: '#ffffff',
         },
       ],
       align: 'left',
@@ -720,31 +769,76 @@ export const createOtherComponents = (branding: BrandingData) => ({
         center: 'text-center',
       }
 
-      const getButtonVariantStyles = (variant: string) => {
-        switch (variant) {
+      const getButtonStyleConfig = (style: string, textColor?: string) => {
+        const baseConfig = {
+          backgroundColor: branding.primaryColor,
+          color: resolveColor(textColor || '#ffffff', branding),
+          borderColor: branding.primaryColor
+        }
+
+        switch (style) {
           case 'primary':
             return {
+              ...baseConfig,
               backgroundColor: branding.primaryColor,
-              color: 'white',
               borderColor: branding.primaryColor
             }
           case 'secondary':
             return {
+              ...baseConfig,
               backgroundColor: branding.secondaryColor,
-              color: 'white',
               borderColor: branding.secondaryColor
             }
           case 'tertiary':
             return {
+              ...baseConfig,
               backgroundColor: branding.tertiaryColor,
-              color: 'white',
               borderColor: branding.tertiaryColor
+            }
+          case 'outline':
+            return {
+              backgroundColor: 'transparent',
+              color: resolveColor(textColor || branding.primaryColor, branding),
+              borderColor: branding.primaryColor
+            }
+          default:
+            return baseConfig
+        }
+      }
+
+      const getButtonSizeConfig = (size: string) => {
+        switch (size) {
+          case 'sm':
+            return {
+              paddingLeft: '12px',
+              paddingRight: '12px',
+              paddingTop: '6px',
+              paddingBottom: '6px',
+              fontSize: '12px'
+            }
+          case 'md':
+            return {
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              paddingTop: '8px',
+              paddingBottom: '8px',
+              fontSize: '14px'
+            }
+          case 'lg':
+            return {
+              paddingLeft: '24px',
+              paddingRight: '24px',
+              paddingTop: '12px',
+              paddingBottom: '12px',
+              fontSize: '16px'
             }
           default:
             return {
-              backgroundColor: branding.primaryColor,
-              color: 'white',
-              borderColor: branding.primaryColor
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              paddingTop: '8px',
+              paddingBottom: '8px',
+              fontSize: '14px'
             }
         }
       }
@@ -847,16 +941,12 @@ export const createOtherComponents = (branding: BrandingData) => ({
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            paddingLeft: '16px',
-                            paddingRight: '16px',
-                            paddingTop: '8px',
-                            paddingBottom: '8px',
                             borderRadius: '8px',
-                            fontSize: '14px',
                             fontWeight: '500',
                             transition: 'colors 0.2s',
                             border: '1px solid',
-                            ...getButtonVariantStyles(button.variant)
+                            ...getButtonSizeConfig(button.size || 'md'),
+                            ...getButtonStyleConfig(button.style, button.textColor)
                           }}
                         >
                           {button.label}
@@ -956,16 +1046,12 @@ export const createOtherComponents = (branding: BrandingData) => ({
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            paddingLeft: '16px',
-                            paddingRight: '16px',
-                            paddingTop: '8px',
-                            paddingBottom: '8px',
                             borderRadius: '8px',
-                            fontSize: '14px',
                             fontWeight: '500',
                             transition: 'colors 0.2s',
                             border: '1px solid',
-                            ...getButtonVariantStyles(button.variant)
+                            ...getButtonSizeConfig(button.size || 'md'),
+                            ...getButtonStyleConfig(button.style, button.textColor)
                           }}
                         >
                           {button.label}
@@ -994,16 +1080,12 @@ export const createOtherComponents = (branding: BrandingData) => ({
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              paddingLeft: '16px',
-                              paddingRight: '16px',
-                              paddingTop: '8px',
-                              paddingBottom: '8px',
                               borderRadius: '8px',
-                              fontSize: '14px',
                               fontWeight: '500',
                               transition: 'colors 0.2s',
                               border: '1px solid',
-                              ...getButtonVariantStyles(button.variant)
+                              ...getButtonSizeConfig(button.size || 'md'),
+                              ...getButtonStyleConfig(button.style, button.textColor)
                             }}
                           >
                             {button.label}

@@ -449,9 +449,12 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
         updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        tenant_id INTEGER NOT NULL,
         quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
         template_id UUID REFERENCES public_quote_template(id) ON DELETE SET NULL,
         access_token VARCHAR(64) UNIQUE NOT NULL,
+        public_url TEXT,
+        content JSONB,
         password_hash VARCHAR(255),
         views_count INTEGER DEFAULT 0,
         last_viewed_at TIMESTAMPTZ,
@@ -462,6 +465,10 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_public_quote_access_token ON public_quote(access_token)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_public_quote_tenant_id ON public_quote(tenant_id)
     `);
 
     await client.query(`

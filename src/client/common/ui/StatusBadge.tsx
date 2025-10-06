@@ -1,6 +1,6 @@
 import React from 'react'
 
-export type Status = 'active' | 'inactive' | 'suspended'
+export type Status = 'active' | 'inactive' | 'suspended' | 'revoked' | 'expired'
 
 export interface StatusBadgeProps {
   status: Status
@@ -23,6 +23,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
         return 'bg-red-100 text-red-800'
       case 'suspended':
         return 'bg-yellow-100 text-yellow-800'
+      case 'revoked':
+        return 'bg-gray-100 text-gray-800'
+      case 'expired':
+        return 'bg-red-100 text-red-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -36,6 +40,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
         return 'Inactive'
       case 'suspended':
         return 'Suspended'
+      case 'revoked':
+        return 'Revoked'
+      case 'expired':
+        return 'Expired'
       default:
         return status
     }

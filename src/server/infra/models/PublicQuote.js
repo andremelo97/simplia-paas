@@ -14,9 +14,12 @@ class PublicQuote {
     this.id = data.id;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
+    this.tenantId = data.tenant_id;
     this.quoteId = data.quote_id;
     this.templateId = data.template_id;
     this.accessToken = data.access_token;
+    this.publicUrl = data.public_url;
+    this.content = data.content; // Resolved Puck content
     this.passwordHash = data.password_hash;
     this.viewsCount = data.views_count || 0;
     this.lastViewedAt = data.last_viewed_at;
@@ -28,11 +31,21 @@ class PublicQuote {
       this.quote = {
         id: data.quote_id,
         number: data.quote_number,
-        content: data.content,
-        total: parseFloat(data.total || 0),
-        status: data.status,
-        sessionId: data.session_id
+        content: data.quote_content,
+        total: parseFloat(data.quote_total || 0),
+        status: data.quote_status,
+        sessionId: data.quote_session_id
       };
+      
+      // Include patient data nested in quote if available
+      if (data.patient_first_name || data.patient_last_name) {
+        this.quote.patient = {
+          id: data.session_patient_id,
+          firstName: data.patient_first_name,
+          lastName: data.patient_last_name,
+          email: data.patient_email
+        };
+      }
     }
 
     // Include template data if joined
@@ -41,16 +54,6 @@ class PublicQuote {
         id: data.template_id,
         name: data.template_name,
         content: data.template_content
-      };
-    }
-
-    // Include patient data if joined
-    if (data.patient_first_name || data.patient_last_name) {
-      this.patient = {
-        id: data.patient_id,
-        firstName: data.patient_first_name,
-        lastName: data.patient_last_name,
-        email: data.patient_email
       };
     }
   }
@@ -67,33 +70,43 @@ class PublicQuote {
    */
   static async create(schema, data) {
     const {
+      tenantId,
       quoteId,
       templateId = null,
+      accessToken = null, // Accept pre-generated token
+      publicUrl = null,
+      content = null, // Resolved Puck content
       password = null,
       active = true,
       expiresAt = null
     } = data;
 
-    const accessToken = this.generateAccessToken();
+    const finalAccessToken = accessToken || this.generateAccessToken();
     const passwordHash = password ? await bcrypt.hash(password, 10) : null;
 
     const query = `
       INSERT INTO ${schema}.public_quote (
+        tenant_id,
         quote_id,
         template_id,
         access_token,
+        public_url,
+        content,
         password_hash,
         active,
         expires_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
     `;
 
     const result = await database.query(query, [
+      tenantId,
       quoteId,
       templateId,
-      accessToken,
+      finalAccessToken,
+      publicUrl,
+      content ? JSON.stringify(content) : null,
       passwordHash,
       active,
       expiresAt
@@ -262,9 +275,12 @@ class PublicQuote {
       id: this.id,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      tenantId: this.tenantId,
       quoteId: this.quoteId,
       templateId: this.templateId,
       accessToken: this.accessToken,
+      publicUrl: this.publicUrl,
+      content: this.content, // Resolved Puck content
       viewsCount: this.viewsCount,
       lastViewedAt: this.lastViewedAt,
       active: this.active,

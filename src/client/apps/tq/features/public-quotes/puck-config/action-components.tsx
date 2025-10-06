@@ -8,12 +8,14 @@ export const createActionComponents = (branding: BrandingData) => ({
       label: {
         type: 'text' as const,
       },
-      variant: {
-        type: 'select' as const,
+      style: {
+        type: 'radio' as const,
+        label: 'Style',
         options: [
           { label: 'Primary', value: 'primary' },
           { label: 'Secondary', value: 'secondary' },
-          { label: 'Tertiary', value: 'tertiary' }
+          { label: 'Tertiary', value: 'tertiary' },
+          { label: 'Outline', value: 'outline' }
         ],
       },
       size: {
@@ -32,13 +34,13 @@ export const createActionComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       text: 'Click here',
-      variant: 'primary',
+      style: 'primary',
       size: 'md',
       textColor: '#ffffff',
     },
-    render: ({ text, variant, size, textColor }: any) => {
-      const getVariantStyles = (variant: string) => {
-        switch (variant) {
+    render: ({ text, style, size, textColor }: any) => {
+      const getStyleConfig = (style: string) => {
+        switch (style) {
           case 'primary':
             return {
               backgroundColor: branding.primaryColor,
@@ -53,6 +55,11 @@ export const createActionComponents = (branding: BrandingData) => ({
             return {
               backgroundColor: branding.tertiaryColor,
               borderColor: branding.tertiaryColor
+            }
+          case 'outline':
+            return {
+              backgroundColor: 'transparent',
+              borderColor: branding.primaryColor
             }
           default:
             return {
@@ -81,7 +88,7 @@ export const createActionComponents = (branding: BrandingData) => ({
               border: '1px solid',
               wordBreak: 'break-word',
               ...baseSizeStyles[size as keyof typeof baseSizeStyles],
-              ...getVariantStyles(variant),
+              ...getStyleConfig(style),
               color: buttonTextColor,
             }}
           >

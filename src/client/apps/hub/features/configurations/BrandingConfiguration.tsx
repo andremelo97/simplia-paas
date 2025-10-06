@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Upload, Palette } from 'lucide-react'
+import { Upload, Palette, Video } from 'lucide-react'
 import { Button, Input, Card, Label } from '@client/common/ui'
 import { brandingService, BrandingData } from '../../services/brandingService'
 import { ImageUploadModal } from '../../components/configurations/ImageUploadModal'
+import { VideoUploadModal } from '../../components/configurations/VideoUploadModal'
 
 export const BrandingConfiguration: React.FC = () => {
   // Initialize with empty values so form always renders
@@ -13,11 +14,13 @@ export const BrandingConfiguration: React.FC = () => {
     tertiaryColor: '',
     logoUrl: null,
     faviconUrl: null,
+    backgroundVideoUrl: null,
     companyName: null
   })
   const [loading, setLoading] = useState(true)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [uploadType, setUploadType] = useState<'logo' | 'favicon'>('logo')
+  const [videoUploadModalOpen, setVideoUploadModalOpen] = useState(false)
 
   useEffect(() => {
     loadBranding()
@@ -71,6 +74,11 @@ export const BrandingConfiguration: React.FC = () => {
     } else {
       setBranding(prev => ({ ...prev, faviconUrl: imageUrl }))
     }
+  }
+
+  const handleVideoUploadComplete = (videoUrl: string) => {
+    // Update local state with new video URL
+    setBranding(prev => ({ ...prev, backgroundVideoUrl: videoUrl }))
   }
 
   return (
@@ -225,18 +233,57 @@ export const BrandingConfiguration: React.FC = () => {
         </div>
       </Card>
 
+      {/* Background Video */}
+      <Card className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Video className="h-5 w-5 text-[#B725B7]" />
+          <h2 className="text-lg font-semibold text-gray-900">Background Video (Optional)</h2>
+        </div>
+        <p className="text-sm text-gray-600 mb-4">
+          Upload a video to use as background in Hero sections. The video will auto-play on loop with adjustable opacity.
+        </p>
+        <div className="space-y-3">
+          {branding.backgroundVideoUrl && (
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <video
+                src={branding.backgroundVideoUrl}
+                className="w-full max-h-48 rounded"
+                controls
+                muted
+              />
+            </div>
+          )}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setVideoUploadModalOpen(true)}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+            {branding.backgroundVideoUrl ? 'Replace Video' : 'Upload Video'}
+          </Button>
+          <p className="text-xs text-gray-500">
+            MP4 format only • Max size: 20MB • Recommended: landscape format, optimized for web
+          </p>
+        </div>
+      </Card>
+
       {/* Actions */}
       <div className="flex gap-3">
         <Button variant="primary" onClick={handleSave}>Save Changes</Button>
         <Button variant="secondary" onClick={handleReset}>Reset to Defaults</Button>
       </div>
 
-      {/* Upload Modal */}
+      {/* Upload Modals */}
       <ImageUploadModal
         open={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUploadComplete={handleUploadComplete}
         type={uploadType}
+      />
+      <VideoUploadModal
+        open={videoUploadModalOpen}
+        onClose={() => setVideoUploadModalOpen(false)}
+        onUploadComplete={handleVideoUploadComplete}
       />
     </div>
   )

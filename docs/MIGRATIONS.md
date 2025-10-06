@@ -485,6 +485,10 @@ Complete App × UserType pricing with differentiated rates per user type.
 - ✅ Users ↔ Tenants 1:1 model with numeric FKs
 - ✅ Complete pricing system with snapshots
 - ✅ Address and contact management
+- ✅ **Tenant Branding** (`tenant_branding` table):
+  - Color scheme (primary, secondary, tertiary)
+  - Brand assets (logo, favicon, background video)
+  - `background_video_url` field for Hero component background videos (MP4, max 20MB)
 - ✅ Comprehensive comments and documentation
 
 ### 002_create_indexes.sql

@@ -30,10 +30,45 @@ const upload = multer({
   }
 });
 
+// Configure multer for video uploads
+const videoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 20 * 1024 * 1024, // 20MB limit for videos
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['video/mp4'];
+
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only MP4 video files are allowed'), false);
+    }
+  }
+});
+
 // Create storage service for branding assets
 const brandingStorage = new SupabaseStorageService(
   process.env.SUPABASE_BRANDING_BUCKET || 'tq-branding-assets'
 );
+
+/**
+ * Helper function to extract storage path from Supabase URL
+ * @param {string} url - Full Supabase storage URL
+ * @returns {string|null} - Storage path or null
+ */
+const extractStoragePath = (url) => {
+  if (!url) return null;
+  try {
+    // URL format: https://xxx.supabase.co/storage/v1/object/public/bucket-name/path/to/file.ext
+    // Extract: path/to/file.ext
+    const match = url.match(/\/object\/public\/[^/]+\/(.+)$/);
+    return match ? match[1] : null;
+  } catch (error) {
+    console.warn('Failed to extract storage path from URL:', url, error);
+    return null;
+  }
+};
 
 // Apply authentication to all internal-admin routes
 router.use(requireAuth);
@@ -152,6 +187,7 @@ router.put('/', async (req, res) => {
       tertiaryColor,
       logoUrl,
       faviconUrl,
+      backgroundVideoUrl,
       companyName
     } = req.body;
 
@@ -185,6 +221,7 @@ router.put('/', async (req, res) => {
       tertiaryColor,
       logoUrl,
       faviconUrl,
+      backgroundVideoUrl,
       companyName
     });
 
@@ -223,6 +260,7 @@ router.put('/', async (req, res) => {
  *       **Scope:** Platform (uses authenticated user's tenant)
  *
  *       Deletes the custom branding configuration, reverting to system defaults.
+ *       Also removes all uploaded files (logo, favicon, background video) from Supabase Storage.
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -242,12 +280,42 @@ router.delete('/', async (req, res) => {
       });
     }
 
+    // Get existing branding to retrieve file URLs before deleting
+    const existingBranding = await TenantBranding.findByTenant(tenantId);
+
+    // Delete files from Supabase Storage
+    const filesToDelete = [
+      extractStoragePath(existingBranding.logoUrl),
+      extractStoragePath(existingBranding.faviconUrl),
+      extractStoragePath(existingBranding.backgroundVideoUrl)
+    ].filter(Boolean); // Remove null/undefined values
+
+    // Delete each file (continue even if some deletions fail)
+    const deletionResults = await Promise.allSettled(
+      filesToDelete.map(async (filePath) => {
+        try {
+          await brandingStorage.deleteFile(filePath);
+          console.log(`Deleted file from storage: ${filePath}`);
+          return { success: true, path: filePath };
+        } catch (error) {
+          console.warn(`Failed to delete file from storage: ${filePath}`, error);
+          return { success: false, path: filePath, error: error.message };
+        }
+      })
+    );
+
+    // Log deletion results
+    const successCount = deletionResults.filter(r => r.status === 'fulfilled' && r.value.success).length;
+    console.log(`Deleted ${successCount}/${filesToDelete.length} files from storage for tenant ${tenantId}`);
+
+    // Delete branding record from database
     await TenantBranding.delete(tenantId);
 
     res.json({
       meta: {
         code: 'BRANDING_RESET',
-        message: 'Branding configuration reset to defaults'
+        message: 'Branding configuration reset to defaults',
+        filesDeleted: successCount
       }
     });
   } catch (error) {
@@ -351,6 +419,19 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
     // Get existing branding first to preserve other fields
     const existingBranding = await TenantBranding.findByTenant(tenantId);
 
+    // Delete old file if it exists (when replacing)
+    const oldUrl = type === 'logo' ? existingBranding.logoUrl : existingBranding.faviconUrl;
+    const oldPath = extractStoragePath(oldUrl);
+    if (oldPath) {
+      try {
+        await brandingStorage.deleteFile(oldPath);
+        console.log(`Deleted old ${type} from storage: ${oldPath}`);
+      } catch (error) {
+        console.warn(`Failed to delete old ${type} from storage:`, error);
+        // Continue even if deletion fails
+      }
+    }
+
     // Update branding configuration with new image URL
     const updateData = {
       primaryColor: existingBranding.primaryColor,
@@ -358,6 +439,7 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
       tertiaryColor: existingBranding.tertiaryColor,
       logoUrl: type === 'logo' ? uploadResult.url : existingBranding.logoUrl,
       faviconUrl: type === 'favicon' ? uploadResult.url : existingBranding.faviconUrl,
+      backgroundVideoUrl: existingBranding.backgroundVideoUrl,
       companyName: existingBranding.companyName
     };
 
@@ -391,6 +473,127 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to upload image'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /configurations/branding/upload-video:
+ *   post:
+ *     tags: [Configurations]
+ *     summary: Upload tenant background video
+ *     description: |
+ *       **Scope:** Platform (uses authenticated user's tenant)
+ *
+ *       Upload a background video for the tenant to use in Hero sections.
+ *       Videos are stored in a tenant-specific folder: `tenant_{tenantId}/background-video.mp4`
+ *       Automatically updates the branding configuration with the new video URL.
+ *       Supported format: MP4 only (max 20MB)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               video:
+ *                 type: string
+ *                 format: binary
+ *                 description: Video file (MP4 format only, max 20MB)
+ *     responses:
+ *       200:
+ *         description: Video uploaded successfully
+ *       400:
+ *         description: Invalid file format or missing file
+ *       413:
+ *         description: File too large (max 20MB)
+ */
+router.post('/upload-video', videoUpload.single('video'), async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId;
+
+    if (!tenantId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Video file is required'
+      });
+    }
+
+    // Ensure bucket exists
+    await brandingStorage.ensureBucketExists();
+
+    // Upload to Supabase - use 'background-video' as the type
+    const uploadResult = await brandingStorage.uploadFile(
+      req.file.buffer,
+      req.file.originalname,
+      'background-video',
+      tenantId,
+      req.file.mimetype
+    );
+
+    // Get existing branding first to preserve other fields
+    const existingBranding = await TenantBranding.findByTenant(tenantId);
+
+    // Delete old video if it exists (when replacing)
+    const oldPath = extractStoragePath(existingBranding.backgroundVideoUrl);
+    if (oldPath) {
+      try {
+        await brandingStorage.deleteFile(oldPath);
+        console.log(`Deleted old video from storage: ${oldPath}`);
+      } catch (error) {
+        console.warn('Failed to delete old video from storage:', error);
+        // Continue even if deletion fails
+      }
+    }
+
+    // Update branding configuration with new video URL
+    const updateData = {
+      primaryColor: existingBranding.primaryColor,
+      secondaryColor: existingBranding.secondaryColor,
+      tertiaryColor: existingBranding.tertiaryColor,
+      logoUrl: existingBranding.logoUrl,
+      faviconUrl: existingBranding.faviconUrl,
+      backgroundVideoUrl: uploadResult.url,
+      companyName: existingBranding.companyName
+    };
+
+    const branding = await TenantBranding.upsert(tenantId, updateData);
+
+    res.json({
+      data: {
+        backgroundVideoUrl: uploadResult.url,
+        storagePath: uploadResult.path,
+        size: uploadResult.size
+      },
+      meta: {
+        code: 'VIDEO_UPLOADED',
+        message: 'Background video uploaded successfully'
+      }
+    });
+
+  } catch (error) {
+    console.error('Video upload error:', error);
+
+    if (error.message.includes('Only MP4')) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: error.message
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to upload video'
     });
   }
 });

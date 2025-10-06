@@ -8,6 +8,7 @@ export interface BrandingData {
   tertiaryColor: string
   logoUrl: string | null
   faviconUrl: string | null
+  backgroundVideoUrl?: string | null
   companyName: string | null
   createdAt?: string
   updatedAt?: string

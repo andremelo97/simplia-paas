@@ -66,6 +66,8 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       buttonTextColor: '#ffffff',
     },
     render: ({ backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor }: any) => {
+      const headerButtonId = `header-btn-${Math.random().toString(36).substr(2, 9)}`
+      
       const getBackgroundColor = () => {
         switch (backgroundColor) {
           case 'primary':
@@ -186,6 +188,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
               {showButton && buttonLabel && (
                 <a
                   href={buttonUrl}
+                  className={headerButtonId}
                   style={getButtonStyles()}
                 >
                   {buttonLabel}
@@ -195,6 +198,17 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           </header>
           {/* Spacer to compensate for fixed header */}
           <div style={{ height: `${parseInt(height)}px` }} />
+          <style>{`
+            @media (max-width: 768px) {
+              .${headerButtonId} {
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+                padding-top: 6px !important;
+                padding-bottom: 6px !important;
+                font-size: 12px !important;
+              }
+            }
+          `}</style>
         </>
       )
     },
@@ -424,7 +438,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
               }}
             >
               {/* Three column grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '32px' }}>
+              <div className={`${uniqueId}-grid`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '32px' }}>
                 {/* Social Links */}
                 {showSocialLinks && socialLinks && socialLinks.length > 0 && (
                   <div>
@@ -584,6 +598,12 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           </footer>
 
           <style>{`
+            @media (max-width: 768px) {
+              .${uniqueId}-grid {
+                grid-template-columns: 1fr !important;
+                gap: 24px !important;
+              }
+            }
             @media (min-width: 640px) {
               .${wrapperId} {
                 padding-left: ${Math.round(horizontalPadding * 1.5)}px;

@@ -105,13 +105,27 @@ src/client/apps/tq/features/public-quotes/
 - **CardContainer**: Card com título, descrição e drop zone interna
 - **CardWithIcon**: Card com ícone selecionável (100+ ícones médicos e de negócios), modo compacto ou largo
 - **Hero**: Seção hero com:
-  - Título e descrição
-  - Botões de ação (múltiplos, cores do branding, tamanhos: Small/Medium/Large, cor de texto customizável)
-  - Alinhamento (left/center)
-  - Media (imagem/vídeo) com 2 modos:
-    - **inline**: Mídia ao lado do conteúdo (2 colunas)
-    - **bg**: Imagem como background com gradiente branco para legibilidade
-  - Padding vertical configurável
+  - **Título e descrição** com tamanhos de fonte customizáveis (placeholders: 48px e 18px)
+  - **Botões de ação** (múltiplos, cores do branding, tamanhos: Small/Medium/Large, cor de texto customizável)
+  - **Alinhamento** (left/center)
+  - **Background Mode** (none/image/video):
+    - **none**: Sem background, apenas cor de fundo
+    - **image**: Imagem customizada como background (URL)
+    - **video (from branding)**: Vídeo do branding como background
+      - Autoplay, loop, muted automáticos
+      - Opacidade configurável (0-1, default: 0.3)
+      - **Disable video on mobile**: Opcional para economizar dados móveis
+      - Garantia de loop infinito com fallback JavaScript
+  - **Inline Media** (opcional, separado do background):
+    - **Show inline media**: Yes/No
+    - **Tipo**: Image ou Video (embed)
+    - **URL**: Endereço da mídia inline
+  - **Gradient Overlay**: Overlay branco semi-transparente para legibilidade de texto
+    - Center align: `rgba(255, 255, 255, 0.25)` uniforme
+    - Left align: Gradiente horizontal de `0.5 → 0.25 → 0.05 → 0`
+  - **Padding vertical** configurável
+  - **Cores customizáveis**: Título, descrição, background
+  - **Responsivo**: Ajustes automáticos para mobile (Header button compacto, Footer empilhado)
 - **Logos**: Grid de logos com título
 - **Stats**: Cards de estatísticas com ícones e valores
 
@@ -298,23 +312,51 @@ render: ({ content: Content }: any) => (
 
 O Puck automaticamente gerencia drag-and-drop dentro do slot.
 
-### Hero Background Mode
+### Hero Background System
 
-Modo BG usa técnica de gradiente para legibilidade:
+O Hero component suporta três modos de background mutuamente exclusivos:
+
+#### 1. Background None
+- Apenas cor de fundo sólida (configurável)
+- Sem mídia de background
+
+#### 2. Background Image
+- Imagem customizada via URL
+- `backgroundSize: 'cover'`, `backgroundPosition: 'center'`
+- Opacidade configurável (0-1)
+
+#### 3. Background Video (From Branding)
+- Vídeo do tenant branding (`backgroundVideoUrl`)
+- **HTML5 Attributes**:
+  ```html
+  <video autoPlay loop muted playsInline preload="auto">
+  ```
+- **JavaScript Fallback**: 
+  - `onEnded`: Força loop se atributo nativo falhar
+  - `onCanPlay`: Garante início automático
+- **Mobile Data Saving**:
+  - Opção "disable video on mobile" (default: off)
+  - Quando ativado, oculta vídeo em telas ≤768px via CSS
+  ```css
+  @media (max-width: 768px) {
+    video { display: none !important; }
+  }
+  ```
+- **Opacidade configurável** (0-1, default: 0.3)
+
+#### Gradient Overlay for Text Legibility
+
+Aplicado sobre qualquer background (image/video) para garantir legibilidade:
 
 ```typescript
-// Imagem de fundo em opacity total
-backgroundImage: `url(${url})`
-backgroundSize: 'cover'
-backgroundPosition: 'center'
+// Center align: gradiente uniforme suave
+background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25))'
 
-// Gradiente branco sobre a imagem
-// Left align: gradiente horizontal (branco forte à esquerda, transparente à direita)
-background: 'linear-gradient(to right, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.2) 70%, rgba(255, 255, 255, 0) 100%)'
-
-// Center align: gradiente uniforme
-background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75))'
+// Left align: gradiente horizontal (forte à esquerda → transparente à direita)
+background: 'linear-gradient(to right, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0) 100%)'
 ```
+
+**Design Rationale**: Valores reduzidos (0.25-0.5) para evitar "whitewashing" do background enquanto mantém legibilidade.
 
 ## Troubleshooting
 

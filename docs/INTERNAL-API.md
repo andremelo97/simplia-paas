@@ -100,7 +100,7 @@ Sistema de notificações padronizadas para operações bem-sucedidas:
 - `USER_CREATED`, `USER_UPDATED`, `USER_DEACTIVATED`
 - `LICENSE_ACTIVATED`, `LICENSE_ADJUSTED`
 - `PRICING_CREATED`, `PRICING_UPDATED`
-- `BRANDING_UPDATED`, `BRANDING_RESET`, `LOGO_UPLOADED`, `FAVICON_UPLOADED`
+- `BRANDING_UPDATED`, `BRANDING_RESET`, `LOGO_UPLOADED`, `FAVICON_UPLOADED`, `VIDEO_UPLOADED`
 
 ---
 
@@ -947,6 +947,7 @@ GET /branding
     "tertiaryColor": "#5ED6CE",
     "logoUrl": "https://supabase.co/.../logo.png",
     "faviconUrl": "https://supabase.co/.../favicon.ico",
+    "backgroundVideoUrl": "https://supabase.co/.../background-video.mp4",
     "companyName": "My Clinic",
     "createdAt": "2025-01-15T10:00:00Z",
     "updatedAt": "2025-01-15T10:00:00Z"
@@ -957,6 +958,7 @@ GET /branding
 **Notes**:
 - Returns default values if no custom configuration exists
 - Default colors: `#B725B7`, `#E91E63`, `#5ED6CE`
+- `backgroundVideoUrl` is null if no video has been uploaded
 
 ---
 
@@ -976,6 +978,7 @@ PUT /branding
   "tertiaryColor": "#5ED6CE",
   "logoUrl": "https://...",
   "faviconUrl": "https://...",
+  "backgroundVideoUrl": "https://...",
   "companyName": "My Clinic"
 }
 ```
@@ -983,6 +986,7 @@ PUT /branding
 **Validation**:
 - Colors must be hex format: `#RRGGBB`
 - All fields are optional (partial updates supported)
+- `backgroundVideoUrl` should be a valid Supabase storage URL (typically uploaded via `/branding/upload-video`)
 
 **Response**:
 ```json
@@ -1080,12 +1084,56 @@ POST /branding/upload-favicon
 }
 ```
 
+---
+
+### Upload Background Video
+
+```http
+POST /branding/upload-video
+```
+
+**Headers**:
+- `Authorization: Bearer <token>`
+- `Content-Type: multipart/form-data`
+
+**Form Data**:
+- `video`: Video file (MP4 only, max 20MB)
+
+**Response**:
+```json
+{
+  "data": {
+    "backgroundVideoUrl": "https://supabase.co/.../background-video.mp4",
+    "storagePath": "tenant_123/background-video.mp4",
+    "size": 15728640
+  },
+  "meta": {
+    "code": "VIDEO_UPLOADED",
+    "message": "Background video uploaded successfully"
+  }
+}
+```
+
+**Constraints**:
+- Only MP4 format accepted
+- Maximum file size: 20MB
+- Replaces previous video (only one video per tenant)
+- Automatically updates branding configuration
+- Old video file is deleted from storage when replaced
+
+**Usage**:
+- Video can be used as background in Hero sections on public quote pages
+- Supports autoplay, loop, and muted playback
+- Configurable opacity overlay for text legibility
+- Optional disable on mobile to save data
+
 **Supabase Storage Architecture**:
 - **Generic Service**: `SupabaseStorageService` requires bucket name on instantiation
 - **Audio Bucket**: `tq-audio-files` (env: `SUPABASE_AUDIO_BUCKET`)
 - **Branding Bucket**: `tq-branding-assets` (env: `SUPABASE_BRANDING_BUCKET`)
 - **Pattern**: Each endpoint creates its own instance with appropriate bucket
 - **Tenant Isolation**: All files stored under `tenant_{id}/` prefix
+- **File Cleanup**: Old files are automatically deleted when new ones are uploaded or when branding is reset
 
 ---
 

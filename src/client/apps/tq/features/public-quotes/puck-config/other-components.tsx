@@ -693,37 +693,67 @@ export const createOtherComponents = (branding: BrandingData) => ({
           { label: 'center', value: 'center' },
         ],
       },
-      showMedia: {
+      backgroundMode: {
         type: 'radio' as const,
-        label: 'show media',
+        label: 'background',
+        options: [
+          { label: 'none', value: 'none' },
+          { label: 'image (custom url)', value: 'image' },
+          { label: 'video (from branding)', value: 'video' },
+        ],
+      },
+      backgroundImageUrl: {
+        type: 'text' as const,
+        label: 'background image url',
+      },
+      backgroundOpacity: {
+        type: 'number' as const,
+        label: 'background opacity (0-1)',
+        min: 0,
+        max: 1,
+        step: 0.1,
+      },
+      disableVideoOnMobile: {
+        type: 'radio' as const,
+        label: 'disable video on mobile',
         options: [
           { label: 'yes', value: true },
           { label: 'no', value: false },
         ],
       },
-      media: {
+      showInlineMedia: {
         type: 'radio' as const,
-        label: 'media type',
+        label: 'show inline media',
+        options: [
+          { label: 'yes', value: true },
+          { label: 'no', value: false },
+        ],
+      },
+      inlineMediaType: {
+        type: 'radio' as const,
+        label: 'inline media type',
         options: [
           { label: 'image', value: 'image' },
-          { label: 'video', value: 'video' },
+          { label: 'video (embed)', value: 'video' },
         ],
       },
-      url: {
+      inlineMediaUrl: {
         type: 'text' as const,
-        label: 'url',
-      },
-      mode: {
-        type: 'radio' as const,
-        label: 'mode',
-        options: [
-          { label: 'inline', value: 'inline' },
-          { label: 'bg', value: 'bg' },
-        ],
+        label: 'inline media url',
       },
       padding: {
         type: 'text' as const,
         label: 'padding',
+      },
+      titleSize: {
+        type: 'text' as const,
+        label: 'title font size (px)',
+        placeholder: '48',
+      },
+      descriptionSize: {
+        type: 'text' as const,
+        label: 'description font size (px)',
+        placeholder: '18',
       },
       titleColor: {
         type: 'select' as const,
@@ -754,16 +784,21 @@ export const createOtherComponents = (branding: BrandingData) => ({
         },
       ],
       align: 'left',
-      showMedia: false,
-      media: 'image',
-      url: '',
-      mode: 'inline',
+      backgroundMode: 'none',
+      backgroundImageUrl: '',
+      backgroundOpacity: 0.3,
+      disableVideoOnMobile: false,
+      showInlineMedia: false,
+      inlineMediaType: 'image',
+      inlineMediaUrl: '',
       padding: '64px',
+      titleSize: '',
+      descriptionSize: '',
       titleColor: '#111827',
       descriptionColor: '#374151',
       backgroundColor: 'none',
     },
-    render: ({ title, description, buttons, align, showMedia, media, url, mode, padding, titleColor, descriptionColor, backgroundColor }: any) => {
+    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleSize, descriptionSize, titleColor, descriptionColor, backgroundColor }: any) => {
       const alignClasses = {
         left: 'text-left',
         center: 'text-center',
@@ -843,14 +878,15 @@ export const createOtherComponents = (branding: BrandingData) => ({
         }
       }
 
-      const renderMedia = () => {
-        if (!showMedia || !url) return null
+      // Helper: Render inline media (image or video embed)
+      const renderInlineMedia = () => {
+        if (!showInlineMedia || !inlineMediaUrl) return null
 
-        if (media === 'video') {
+        if (inlineMediaType === 'video') {
           return (
             <div style={{ aspectRatio: '16 / 9', backgroundColor: '#f3f4f6', borderRadius: '8px', overflow: 'hidden' }}>
               <iframe
-                src={url}
+                src={inlineMediaUrl}
                 style={{ width: '100%', height: '100%' }}
                 frameBorder="0"
                 allowFullScreen
@@ -858,23 +894,28 @@ export const createOtherComponents = (branding: BrandingData) => ({
               />
             </div>
           )
-        } else if (media === 'image') {
+        } else {
           return (
             <div style={{ aspectRatio: '16 / 9', backgroundColor: '#f3f4f6', borderRadius: '8px', overflow: 'hidden' }}>
               <img
-                src={url}
+                src={inlineMediaUrl}
                 alt={title}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
           )
         }
-        return null
       }
 
-      // Background mode: image/video as background
-      if (mode === 'bg' && showMedia && url && media === 'image') {
+      // Determine if we have a background
+      const hasVideoBackground = backgroundMode === 'video' && branding.backgroundVideoUrl
+      const hasImageBackground = backgroundMode === 'image' && backgroundImageUrl
+      const hasBackground = hasVideoBackground || hasImageBackground
+
+      // Background mode: render with background media
+      if (hasBackground) {
         const bgWrapperId = `hero-bg-wrapper-${Math.random().toString(36).substr(2, 9)}`
+        const bgVideoId = `hero-bg-video-${Math.random().toString(36).substr(2, 9)}`
         const bgTitleId = `hero-bg-title-${Math.random().toString(36).substr(2, 9)}`
         const bgDescId = `hero-bg-desc-${Math.random().toString(36).substr(2, 9)}`
         const bgButtonsId = `hero-bg-buttons-${Math.random().toString(36).substr(2, 9)}`
@@ -897,20 +938,64 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 backgroundColor: resolveColor(backgroundColor, branding),
               }}
             >
+              {/* Background video layer */}
+              {hasVideoBackground && branding.backgroundVideoUrl && (
+                <video
+                  className={bgVideoId}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  onEnded={(e) => {
+                    // Force loop in case loop attribute fails
+                    const video = e.currentTarget as HTMLVideoElement;
+                    video.currentTime = 0;
+                    video.play().catch(() => {
+                      // Silently fail if autoplay is blocked
+                    });
+                  }}
+                  onCanPlay={(e) => {
+                    // Ensure video plays when ready
+                    const video = e.currentTarget as HTMLVideoElement;
+                    video.play().catch(() => {
+                      // Silently fail if autoplay is blocked
+                    });
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    opacity: backgroundOpacity || 0.3,
+                    zIndex: 0,
+                  }}
+                >
+                  <source src={branding.backgroundVideoUrl} type="video/mp4" />
+                </video>
+              )}
+              
               {/* Background image layer */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
-                  backgroundImage: `url(${url})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
-              {/* Gradient overlay - white from left fading to transparent */}
+              {hasImageBackground && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                    backgroundImage: `url(${backgroundImageUrl})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    opacity: backgroundOpacity || 1,
+                    zIndex: 0,
+                  }}
+                />
+              )}
+              
+              {/* Gradient overlay - subtle white for text legibility */}
               <div
                 style={{
                   position: 'absolute',
@@ -919,17 +1004,18 @@ export const createOtherComponents = (branding: BrandingData) => ({
                   bottom: 0,
                   left: 0,
                   background: align === 'center'
-                    ? 'linear-gradient(to bottom, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75))'
-                    : 'linear-gradient(to right, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.2) 70%, rgba(255, 255, 255, 0) 100%)',
+                    ? 'linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25))'
+                    : 'linear-gradient(to right, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0) 100%)',
+                  zIndex: 1,
                 }}
               />
               {/* Content */}
               <div style={{ width: '100%', maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto', position: 'relative', zIndex: 10 }}>
                 <div style={{ width: '100%', maxWidth: '768px', ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' } : { textAlign: 'left' }), paddingLeft: '16px', paddingRight: '16px' }}>
-                  <h1 className={bgTitleId} style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                  <h1 className={bgTitleId} style={{ fontSize: `${parseInt(titleSize) || 48}px`, fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
                     {title}
                   </h1>
-                  <p className={bgDescId} style={{ fontSize: '18px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                  <p className={bgDescId} style={{ fontSize: `${parseInt(descriptionSize) || 18}px`, marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
                     {description}
                   </p>
                   {buttons && buttons.length > 0 && (
@@ -958,6 +1044,13 @@ export const createOtherComponents = (branding: BrandingData) => ({
               </div>
             </div>
             <style>{`
+              ${disableVideoOnMobile ? `
+                @media (max-width: 768px) {
+                  .${bgVideoId} {
+                    display: none !important;
+                  }
+                }
+              ` : ''}
               @media (min-width: 640px) {
                 .${bgWrapperId} {
                   padding-left: 24px;
@@ -965,11 +1058,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
                   min-height: 400px;
                 }
                 .${bgTitleId} {
-                  font-size: 42px;
                   margin-bottom: 24px;
                 }
                 .${bgDescId} {
-                  font-size: 20px;
                   margin-bottom: 32px;
                 }
                 .${bgButtonsId} {
@@ -988,17 +1079,6 @@ export const createOtherComponents = (branding: BrandingData) => ({
                   padding-left: 32px;
                   padding-right: 32px;
                   min-height: 500px;
-                }
-                .${bgTitleId} {
-                  font-size: 48px;
-                }
-                .${bgDescId} {
-                  font-size: 22px;
-                }
-              }
-              @media (min-width: 1024px) {
-                .${bgTitleId} {
-                  font-size: 60px;
                 }
               }
             `}</style>
@@ -1031,14 +1111,14 @@ export const createOtherComponents = (branding: BrandingData) => ({
               {align === 'center' ? (
                 // Layout centralizado - single column
                 <div style={{ width: '100%', maxWidth: '768px', marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' }}>
-                  <h1 className={inlineTitleId} style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                  <h1 className={inlineTitleId} style={{ fontSize: `${parseInt(titleSize) || 48}px`, fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
                     {title}
                   </h1>
-                  <p className={inlineDescId} style={{ fontSize: '18px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                  <p className={inlineDescId} style={{ fontSize: `${parseInt(descriptionSize) || 18}px`, marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
                     {description}
                   </p>
                   {buttons && buttons.length > 0 && (
-                    <div className={inlineButtonsId} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', ...(showMedia && url ? { marginBottom: '24px' } : {}) }}>
+                    <div className={inlineButtonsId} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center', ...(showInlineMedia && inlineMediaUrl ? { marginBottom: '24px' } : {}) }}>
                       {buttons.map((button: any, index: number) => (
                         <a
                           key={index}
@@ -1059,16 +1139,16 @@ export const createOtherComponents = (branding: BrandingData) => ({
                       ))}
                     </div>
                   )}
-                  {renderMedia()}
+                  {renderInlineMedia()}
                 </div>
               ) : (
                 // Layout left - two columns (or single column if no media)
-                <div className={inlineGridId} style={{ width: '100%', ...(showMedia && url ? { display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'center' } : {}) }}>
+                <div className={inlineGridId} style={{ width: '100%', ...(showInlineMedia && inlineMediaUrl ? { display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'center' } : {}) }}>
                   <div style={{ textAlign: 'left' }}>
-                    <h1 className={inlineTitleId} style={{ fontSize: '32px', fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                    <h1 className={inlineTitleId} style={{ fontSize: `${parseInt(titleSize) || 48}px`, fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
                       {title}
                     </h1>
-                    <p className={inlineDescId} style={{ fontSize: '18px', marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                    <p className={inlineDescId} style={{ fontSize: `${parseInt(descriptionSize) || 18}px`, marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
                       {description}
                     </p>
                     {buttons && buttons.length > 0 && (
@@ -1094,9 +1174,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
                       </div>
                     )}
                   </div>
-                  {showMedia && url && (
+                  {showInlineMedia && inlineMediaUrl && (
                     <div style={{ width: '100%' }}>
-                      {renderMedia()}
+                      {renderInlineMedia()}
                     </div>
                   )}
                 </div>
@@ -1110,16 +1190,14 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 padding-right: 24px;
               }
               .${inlineTitleId} {
-                font-size: 42px;
                 margin-bottom: 24px;
               }
               .${inlineDescId} {
-                font-size: 20px;
                 margin-bottom: 32px;
               }
               .${inlineButtonsId} {
                 gap: 16px;
-                ${showMedia && url ? 'margin-bottom: 32px;' : ''}
+                ${showInlineMedia && inlineMediaUrl ? 'margin-bottom: 32px;' : ''}
               }
               .${inlineButtonsId} a {
                 padding-left: 24px;
@@ -1137,22 +1215,13 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 padding-left: 32px;
                 padding-right: 32px;
               }
-              .${inlineTitleId} {
-                font-size: 48px;
-              }
-              .${inlineDescId} {
-                font-size: 22px;
-              }
               .${inlineGridId} {
                 gap: 48px;
               }
             }
             @media (min-width: 1024px) {
-              .${inlineTitleId} {
-                font-size: 60px;
-              }
               .${inlineGridId} {
-                grid-template-columns: ${showMedia && url ? 'repeat(2, 1fr)' : '1fr'};
+                grid-template-columns: ${showInlineMedia && inlineMediaUrl ? 'repeat(2, 1fr)' : '1fr'};
               }
             }
           `}</style>

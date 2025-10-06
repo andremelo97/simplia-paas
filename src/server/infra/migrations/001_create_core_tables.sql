@@ -311,6 +311,9 @@ CREATE TABLE IF NOT EXISTS tenant_branding (
   logo_url TEXT,
   favicon_url TEXT,
 
+  -- Background video (URL to Supabase storage)
+  background_video_url TEXT,
+
   -- Display information
   company_name VARCHAR(255),
 
@@ -330,6 +333,7 @@ COMMENT ON COLUMN tenant_branding.secondary_color IS 'Secondary brand color in h
 COMMENT ON COLUMN tenant_branding.tertiary_color IS 'Tertiary brand color in hex format (#RRGGBB)';
 COMMENT ON COLUMN tenant_branding.logo_url IS 'URL to tenant logo (Supabase storage path)';
 COMMENT ON COLUMN tenant_branding.favicon_url IS 'URL to tenant favicon (Supabase storage path)';
+COMMENT ON COLUMN tenant_branding.background_video_url IS 'URL to background video for Hero sections (Supabase storage, MP4 format, max 20MB)';
 COMMENT ON COLUMN tenant_branding.company_name IS 'Company display name for public pages';
 
 -- =============================================

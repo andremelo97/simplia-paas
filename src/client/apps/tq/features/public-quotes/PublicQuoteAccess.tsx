@@ -17,6 +17,7 @@ interface PublicQuoteData {
     secondaryColor: string
     tertiaryColor: string
     logo: string | null
+    backgroundVideoUrl?: string | null
   }
 }
 
@@ -81,6 +82,7 @@ export const PublicQuoteAccess: React.FC = () => {
       tertiaryColor: quoteData.branding.tertiaryColor,
       logoUrl: quoteData.branding.logo || null,
       faviconUrl: null,
+      backgroundVideoUrl: quoteData.branding.backgroundVideoUrl || null,
       companyName: null
     }
 

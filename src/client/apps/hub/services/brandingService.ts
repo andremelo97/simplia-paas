@@ -8,6 +8,7 @@ export interface BrandingData {
   tertiaryColor: string;
   logoUrl: string | null;
   faviconUrl: string | null;
+  backgroundVideoUrl?: string | null;
   companyName: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -47,6 +48,26 @@ export const brandingService = {
 
     const response = await http.post(
       `/internal/api/v1/configurations/branding/upload-image?type=${type}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    return response.data;
+  },
+
+  /**
+   * Upload background video
+   */
+  uploadVideo: async (file: File): Promise<{ backgroundVideoUrl: string }> => {
+    const formData = new FormData();
+    formData.append('video', file);
+
+    const response = await http.post(
+      '/internal/api/v1/configurations/branding/upload-video',
       formData,
       {
         headers: {

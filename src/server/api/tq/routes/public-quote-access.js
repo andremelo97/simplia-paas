@@ -150,7 +150,7 @@ router.post('/pq/:accessToken', async (req, res) => {
     
     // Get branding from global tenant_branding table
     const brandingQuery = `
-      SELECT primary_color, secondary_color, tertiary_color, logo_url
+      SELECT primary_color, secondary_color, tertiary_color, logo_url, background_video_url
       FROM public.tenant_branding
       WHERE tenant_id_fk = $1
       LIMIT 1
@@ -171,7 +171,8 @@ router.post('/pq/:accessToken', async (req, res) => {
           primaryColor: brandingData.primary_color || '#3B82F6',
           secondaryColor: brandingData.secondary_color || '#1E40AF',
           tertiaryColor: brandingData.tertiary_color || '#60A5FA',
-          logo: brandingData.logo_url || null
+          logo: brandingData.logo_url || null,
+          backgroundVideoUrl: brandingData.background_video_url || null
         }
       }
     });

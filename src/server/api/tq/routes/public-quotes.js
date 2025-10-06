@@ -28,6 +28,7 @@ router.use(tqRateLimit);
  *       **Scope:** Tenant (x-tenant-id required)
  *
  *       Returns all public quote links for the current tenant with quote and patient details.
+ *       Supports filtering by active status and created date range.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -36,9 +37,39 @@ router.use(tqRateLimit);
  *         required: true
  *         schema:
  *           type: string
+ *         description: Numeric tenant identifier
+ *       - in: query
+ *         name: active
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *         description: Filter by active status (true for active, false for inactive)
+ *       - in: query
+ *         name: created_from
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by created date (from)
+ *       - in: query
+ *         name: created_to
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by created date (to)
  *     responses:
  *       200:
  *         description: List of public quotes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
  */
 router.get('/', async (req, res) => {
   try {
@@ -49,6 +80,34 @@ router.get('/', async (req, res) => {
         error: 'Bad Request',
         message: 'Missing tenant context'
       });
+    }
+
+    // Extract query parameters for filtering
+    const { active, created_from, created_to } = req.query;
+
+    // Build WHERE conditions
+    const conditions = ['pq.tenant_id = $1'];
+    const params = [req.tenant.id];
+    let paramIndex = 2;
+
+    // Filter by active status
+    if (active !== undefined) {
+      conditions.push(`pq.active = $${paramIndex}`);
+      params.push(active === 'true');
+      paramIndex++;
+    }
+
+    // Filter by created_at range
+    if (created_from) {
+      conditions.push(`pq.created_at >= $${paramIndex}`);
+      params.push(created_from);
+      paramIndex++;
+    }
+
+    if (created_to) {
+      conditions.push(`pq.created_at <= $${paramIndex}`);
+      params.push(created_to);
+      paramIndex++;
     }
 
     // Get all public quotes for this tenant with joined data
@@ -69,11 +128,11 @@ router.get('/', async (req, res) => {
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
       LEFT JOIN ${schema}.public_quote_template pqt ON pq.template_id = pqt.id
-      WHERE pq.tenant_id = $1
+      WHERE ${conditions.join(' AND ')}
       ORDER BY pq.created_at DESC
     `;
 
-    const result = await database.query(query, [req.tenant.id]);
+    const result = await database.query(query, params);
     const publicQuotes = result.rows.map(row => new PublicQuote(row));
 
     res.json({
@@ -421,6 +480,96 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to revoke public quote link'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /tq/public-quotes/{id}/new-password:
+ *   post:
+ *     tags: [TQ - Public Quotes]
+ *     summary: Generate new password for public quote link
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Generates a new password for an existing public quote link.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: New password generated successfully
+ *       404:
+ *         description: Public quote link not found
+ */
+router.post('/:id/new-password', async (req, res) => {
+  try {
+    const schema = req.tenant?.schema;
+    const { id } = req.params;
+
+    if (!schema) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing tenant context'
+      });
+    }
+
+    // Find the public quote
+    const publicQuote = await PublicQuote.findById(id, schema);
+
+    // Generate new password
+    const newPassword = PublicQuote.generatePassword();
+    const passwordHash = await PublicQuote.hashPassword(newPassword);
+
+    // Update the password hash in the database
+    const updateQuery = `
+      UPDATE ${schema}.public_quote
+      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `;
+    
+    const result = await database.query(updateQuery, [passwordHash, id]);
+    
+    if (result.rows.length === 0) {
+      throw new PublicQuoteNotFoundError(id);
+    }
+
+    const updatedPublicQuote = new PublicQuote(result.rows[0]);
+
+    res.json({
+      data: updatedPublicQuote.toJSON(),
+      meta: {
+        code: 'NEW_PASSWORD_GENERATED',
+        message: 'New password generated successfully',
+        password: newPassword // Return the plain password only once
+      }
+    });
+  } catch (error) {
+    console.error('Generate new password error:', error);
+
+    if (error instanceof PublicQuoteNotFoundError) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Public quote link not found'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to generate new password'
     });
   }
 });

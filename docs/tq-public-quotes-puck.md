@@ -61,7 +61,11 @@ src/client/apps/tq/features/public-quotes/
 ### Quote Info
 - **QuoteNumber**: Exibe número da cotação com label configurável (placeholder: `{{quote.number}}`)
 - **QuoteTotal**: Exibe total da cotação com destaque visual e cor primária do branding (placeholder: `{{quote.total}}`)
-- **ItemsTable**: Tabela de itens com colunas Item, Base Price, Discount (opcional), Final Price (placeholders: `{{item.*}}`)
+- **ItemsTable**: Tabela de itens com colunas configuráveis:
+  - Item, Base Price, Discount (opcional), Price (opcional), Final Price
+  - `showDiscount`: toggle para mostrar/ocultar coluna Discount
+  - `showPrice`: toggle para mostrar/ocultar coluna Price
+  - Placeholders: `{{item.*}}`
 
 ### Header
 - **Header**: Header fixo no topo com:
@@ -69,13 +73,40 @@ src/client/apps/tq/features/public-quotes/
   - 4 cores de fundo (White, Primary, Secondary, Tertiary)
   - 3 tamanhos (Small 64px, Medium 80px, Large 96px)
   - Spacer automático para compensar posicionamento fixo
+- **Footer**: Rodapé com:
+  - Múltiplas colunas configuráveis
+  - Links customizáveis em cada coluna
+  - Copyright text
+  - Cor de texto personalizável (aplica-se a todo o conteúdo do footer)
+
+### Media
+- **Image**: Componente de imagem com:
+  - URL da imagem
+  - Texto alternativo (alt)
+  - Aspect ratio (16:9, 4:3, 1:1, 21:9, custom)
+  - Object fit (cover, contain, fill)
+  - Border radius (0px a 24px)
+  - Max width (100% a 800px)
+  - Alinhamento (left, center, right)
+  - Padding vertical
+  - Link URL (opcional)
+  - Abrir em nova aba
+- **Video**: Componente de vídeo com:
+  - URL do vídeo (YouTube, Vimeo ou direto)
+  - Aspect ratio (16:9, 4:3, 1:1, 21:9)
+  - Border radius (0px a 24px)
+  - Max width (100% a 1200px)
+  - Alinhamento (left, center, right)
+  - Padding vertical
+  - Autoplay, Loop, Muted
+  - Mostrar controles
 
 ### Other
 - **CardContainer**: Card com título, descrição e drop zone interna
 - **CardWithIcon**: Card com ícone selecionável (100+ ícones médicos e de negócios), modo compacto ou largo
 - **Hero**: Seção hero com:
   - Título e descrição
-  - Botões de ação (múltiplos, cores do branding)
+  - Botões de ação (múltiplos, cores do branding, tamanhos: Small/Medium/Large, cor de texto customizável)
   - Alinhamento (left/center)
   - Media (imagem/vídeo) com 2 modos:
     - **inline**: Mídia ao lado do conteúdo (2 colunas)
@@ -796,6 +827,117 @@ return <Render config={previewConfig} data={quoteData.content.template} />
    - Patient page uses pre-resolved data
    - Zero chance of divergence
 
+## Public Quote Management
+
+### Public Quote Links
+
+**Route**: `/public-quotes/links`
+
+Sistema completo de gerenciamento de links públicos gerados:
+
+#### Filtros e Pesquisa
+- **Quote Number**: Busca por número da cotação
+- **Status**: Checkboxes para Active/Inactive
+- **Created Date Range**: Filtro de data de criação (from/to)
+- **Clear Filters**: Botão vermelho para limpar todos os filtros e query params da URL
+
+#### Lista de Links
+Cada link público exibe:
+- **Quote Number**: Número da cotação associada
+- **Patient**: Nome do paciente
+- **Created**: Data e hora de criação
+- **Views**: Contador de visualizações
+- **Status**: Badge (Active/Inactive)
+- **Actions**:
+  - **Open Quote**: Redireciona para `/quotes/:id/edit`
+  - **New Password**: Gera nova senha e exibe LinkToast (15s) com URL e nova senha
+  - **Revoke**: DELETE - remove o link público
+
+#### Recent Activity Integration
+- Public quotes aparecem no Recent Activity da Home
+- Ao clicar, navega para `/public-quotes/links?quote={NUMBER}` com filtro ativo
+- Public quote templates também aparecem no Recent Activity
+- Ao clicar no template, navega para `/public-quotes/templates/:id/edit`
+
+#### Global Search Integration
+A busca global no Header (QuickSearchBar) inclui:
+- **Patients**
+- **Sessions**
+- **Quotes**
+- **Clinical Reports** (ícone azul, tipo "report")
+- **Templates** (ícone roxo)
+- **Public Quote Templates** (ícone rosa, tipo "pq template")
+
+### Geração de Link Público
+
+**Route**: `/quotes/:id/edit` → Modal "Generate Public Quote"
+
+Fluxo:
+1. User seleciona template do dropdown
+2. Clica "Generate Public Quote"
+3. Backend:
+   - Resolve dados da quote (items, patient, etc.)
+   - Cria content package (template + resolvedData)
+   - Gera access token único
+   - Gera senha automática
+   - Cria public_url: `{TQ_ORIGIN}/pq/{accessToken}`
+   - Salva tudo em `public_quote` table
+4. Frontend:
+   - Exibe LinkToast (15s, fundo verde escuro)
+   - Mostra public_url e password com botões de copiar
+   - Não navega - toast persiste mesmo após fechar modal
+
+**Button "View Public Link"**:
+- Header de `/quotes/:id/edit`
+- Navega para `/public-quotes/links?quote={quote.number}`
+- Facilita acesso rápido aos links públicos dessa quote
+
+### Public Access (Patient View)
+
+**Route**: `/pq/:accessToken`
+
+Página pública totalmente isolada:
+- ✅ Sem autenticação
+- ✅ Sem sidebar/header do sistema TQ
+- ✅ Sem breadcrumbs
+- ✅ Fullscreen - standalone page
+
+Fluxo:
+1. Patient acessa link `{TQ_ORIGIN}/pq/{accessToken}`
+2. Sistema exibe tela de senha:
+   - Card com logo do tenant (branding)
+   - Input de senha (common/ui components)
+   - Button "Access Quote" (variant="primary")
+3. Patient digita senha e submete
+4. POST `/api/tq/v1/pq/:accessToken` com password
+5. Backend valida:
+   - ✅ Access token existe
+   - ✅ Link está ativo
+   - ✅ Senha correta (bcrypt hash)
+   - ✅ Não expirou
+6. Retorna:
+   ```json
+   {
+     "data": {
+       "content": {
+         "template": { ... },
+         "resolvedData": { ... }
+       },
+       "branding": { ... }
+     }
+   }
+   ```
+7. Frontend renderiza:
+   - Usa `createConfigWithResolvedData(branding, resolvedData)`
+   - Renderiza template com Puck `<Render>`
+   - Patient vê EXATAMENTE a mesma coisa que usuário autenticado viu
+
+**Error Handling**:
+- 401 (Unauthorized): "Invalid password. Please try again."
+- 404 (Not Found): "This quote link no longer exists."
+- 403 (Forbidden): "This quote link has expired or been revoked."
+- Generic: "Failed to load quote. Please try again later."
+
 ## Próximos Passos
 
 ### Funcionalidades Planejadas
@@ -803,10 +945,14 @@ return <Render config={previewConfig} data={quoteData.content.template} />
 1. ✅ **Template Variables**: Sistema de variáveis implementado com dual-config
 2. ✅ **Public Links**: Links públicos com password protection implementado
 3. ✅ **Content Immutability**: Backend resolve e salva content package
-4. **Conditional Sections**: Mostrar/ocultar seções baseado em dados da cotação
-5. **PDF Export**: Exportar template renderizado para PDF
-6. **Email Templates**: Usar templates para enviar cotações por email
-7. **Theme Presets**: Templates pré-prontos para diferentes indústrias
+4. ✅ **New Password Generation**: Regenera senha para link existente
+5. ✅ **Public Quote Management**: Interface completa de gerenciamento de links
+6. ✅ **Global Search**: Busca inclui templates e clinical reports
+7. ✅ **Recent Activity**: Integrado com public quotes e templates
+8. **Conditional Sections**: Mostrar/ocultar seções baseado em dados da cotação
+9. **PDF Export**: Exportar template renderizado para PDF
+10. **Email Templates**: Usar templates para enviar cotações por email
+11. **Theme Presets**: Templates pré-prontos para diferentes indústrias
 
 ### Melhorias Técnicas
 

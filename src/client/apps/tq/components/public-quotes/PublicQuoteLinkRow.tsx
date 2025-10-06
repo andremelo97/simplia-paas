@@ -1,17 +1,19 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, StatusBadge } from '@client/common/ui'
-import { ExternalLink, Copy, Trash2, CheckCircle2, FileText } from 'lucide-react'
+import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key } from 'lucide-react'
 import { PublicQuote } from '../../services/publicQuotes'
 
 interface PublicQuoteLinkRowProps {
   publicQuote: PublicQuote
   onRevoke: () => void
+  onNewPassword: () => void
 }
 
 export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
   publicQuote,
-  onRevoke
+  onRevoke,
+  onNewPassword
 }) => {
   const navigate = useNavigate()
   const [copied, setCopied] = React.useState(false)
@@ -21,6 +23,16 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
+    })
+  }
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     })
   }
 
@@ -105,7 +117,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
         </div>
         <div>
           <div className="text-gray-500 mb-1">Created</div>
-          <div className="text-gray-900">{formatDate(publicQuote.createdAt)}</div>
+          <div className="text-gray-900">{formatDateTime(publicQuote.createdAt)}</div>
         </div>
       </div>
 
@@ -151,6 +163,17 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
         >
           <FileText size={14} />
           Open Quote
+        </Button>
+
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={onNewPassword}
+          disabled={!publicQuote.active}
+          className="flex items-center gap-1.5"
+        >
+          <Key size={14} />
+          New Password
         </Button>
 
         <Button

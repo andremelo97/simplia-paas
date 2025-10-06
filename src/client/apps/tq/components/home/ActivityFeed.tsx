@@ -1,13 +1,13 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@client/common/ui'
-import { FileText, Users, Receipt, CheckCircle, Clock, ClipboardList } from 'lucide-react'
+import { FileText, Users, Receipt, CheckCircle, Clock, ClipboardList, Share2, Layout } from 'lucide-react'
 
 interface Activity {
   id: string
-  type: 'patient_added' | 'session_created' | 'quote_created' | 'quote_approved' | 'session_completed' | 'report_created'
+  type: 'patient_added' | 'session_created' | 'quote_created' | 'quote_approved' | 'session_completed' | 'report_created' | 'public_quote_created' | 'template_created' | 'public_quote_template_created'
   message: string
   timestamp: string
-  icon: 'patient' | 'session' | 'quote' | 'approved' | 'completed' | 'report'
+  icon: 'patient' | 'session' | 'quote' | 'approved' | 'completed' | 'report' | 'public_quote' | 'template' | 'public_quote_template'
   path?: string
 }
 
@@ -38,6 +38,12 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoadin
         return <Receipt className={`${iconClass} text-[#E91E63]`} />
       case 'report':
         return <ClipboardList className={`${iconClass} text-blue-600`} />
+      case 'public_quote':
+        return <Share2 className={`${iconClass} text-[#5ED6CE]`} />
+      case 'template':
+        return <Layout className={`${iconClass} text-purple-600`} />
+      case 'public_quote_template':
+        return <Layout className={`${iconClass} text-[#E91E63]`} />
       case 'approved':
         return <CheckCircle className={`${iconClass} text-green-600`} />
       case 'completed':
@@ -57,6 +63,12 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoadin
         return 'bg-pink-100'
       case 'report':
         return 'bg-blue-100'
+      case 'public_quote':
+        return 'bg-teal-100'
+      case 'template':
+        return 'bg-purple-100'
+      case 'public_quote_template':
+        return 'bg-pink-100'
       case 'approved':
         return 'bg-green-100'
       case 'completed':

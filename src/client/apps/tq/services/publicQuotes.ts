@@ -122,8 +122,25 @@ export const publicQuotesService = {
     return response.data.data
   },
 
-  async listAllPublicQuotes(): Promise<PublicQuote[]> {
-    const response = await api.get('/api/tq/v1/public-quotes')
+  async listAllPublicQuotes(filters?: {
+    active?: boolean
+    created_from?: string
+    created_to?: string
+  }): Promise<PublicQuote[]> {
+    const queryParams = new URLSearchParams()
+    
+    if (filters?.active !== undefined) {
+      queryParams.append('active', filters.active.toString())
+    }
+    if (filters?.created_from) {
+      queryParams.append('created_from', filters.created_from)
+    }
+    if (filters?.created_to) {
+      queryParams.append('created_to', filters.created_to)
+    }
+
+    const url = `/api/tq/v1/public-quotes${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    const response = await api.get(url)
     // Response structure: { data: [...] }
     // The api client already parses response.json(), so response.data IS the array
     return Array.isArray(response.data) ? response.data : (response.data?.data || [])
@@ -136,5 +153,13 @@ export const publicQuotesService = {
 
   async revokePublicQuote(id: string): Promise<void> {
     await api.delete(`/api/tq/v1/public-quotes/${id}`)
+  },
+
+  async generateNewPassword(id: string): Promise<{ publicUrl: string; password: string }> {
+    const response = await api.post(`/api/tq/v1/public-quotes/${id}/new-password`)
+    return {
+      publicUrl: response.data.data.publicUrl,
+      password: response.meta.password
+    }
   }
 }

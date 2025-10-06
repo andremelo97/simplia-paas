@@ -8,6 +8,8 @@ import { quotesService, Quote } from '../../services/quotes'
 import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
+import { publicQuotesService, PublicQuote, PublicQuoteTemplate } from '../../services/publicQuotes'
+import { templatesService, Template } from '../../services/templates'
 import { QuickActionCard } from '../../components/home/QuickActionCard'
 import { QuoteCard } from '../../components/home/QuoteCard'
 import { SessionCard } from '../../components/home/SessionCard'
@@ -23,6 +25,9 @@ export const Home: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [reports, setReports] = useState<ClinicalReport[]>([])
+  const [publicQuotes, setPublicQuotes] = useState<PublicQuote[]>([])
+  const [publicQuoteTemplates, setPublicQuoteTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [templates, setTemplates] = useState<Template[]>([])
   const [isLoadingQuotes, setIsLoadingQuotes] = useState(true)
   const [isLoadingPatients, setIsLoadingPatients] = useState(true)
   const [isLoadingSessions, setIsLoadingSessions] = useState(true)
@@ -32,11 +37,13 @@ export const Home: React.FC = () => {
   const activities = React.useMemo(() => {
     const allActivities: Array<{
       id: string
-      type: 'patient_added' | 'session_created' | 'quote_created' | 'report_created'
+      type: 'patient_added' | 'session_created' | 'quote_created' | 'report_created' | 'public_quote_created' | 'template_created' | 'public_quote_template_created'
       message: string
       timestamp: string
-      icon: 'patient' | 'session' | 'quote' | 'report'
+      icon: 'patient' | 'session' | 'quote' | 'report' | 'public_quote' | 'template' | 'public_quote_template'
       date: Date
+      path?: string
+      quoteNumber?: string
     }> = []
 
     // Add patient activities
@@ -120,12 +127,68 @@ export const Home: React.FC = () => {
       })
     })
 
+    // Add public quote activities
+    publicQuotes.forEach((pq) => {
+      const quoteNumber = pq.quote?.number || 'N/A'
+      allActivities.push({
+        id: `public-quote-${pq.id}`,
+        type: 'public_quote_created',
+        message: `Public quote link created for Quote ${quoteNumber}`,
+        timestamp: new Date(pq.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        icon: 'public_quote',
+        date: new Date(pq.createdAt),
+        path: `/public-quotes/links?quote=${encodeURIComponent(quoteNumber)}`,
+        quoteNumber: quoteNumber
+      })
+    })
+
+    // Add public quote template activities
+    publicQuoteTemplates.forEach((pqt) => {
+      allActivities.push({
+        id: `public-quote-template-${pqt.id}`,
+        type: 'public_quote_template_created',
+        message: `Public quote template "${pqt.name}" was created`,
+        timestamp: new Date(pqt.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        icon: 'public_quote_template',
+        date: new Date(pqt.createdAt),
+        path: `/public-quotes/templates/${pqt.id}/edit`
+      })
+    })
+
+    // Add template activities
+    templates.forEach((template) => {
+      allActivities.push({
+        id: `template-${template.id}`,
+        type: 'template_created',
+        message: `Template "${template.title}" was created`,
+        timestamp: new Date(template.createdAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }),
+        icon: 'template',
+        date: new Date(template.createdAt),
+        path: `/templates/${template.id}/edit`
+      })
+    })
+
     // Sort by date descending and take top 5
     return allActivities
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5)
       .map(({ date, ...rest }) => rest)
-  }, [patients, sessions, quotes, reports])
+  }, [patients, sessions, quotes, reports, publicQuotes, publicQuoteTemplates, templates])
 
   // Handle SSO on home page load
   useEffect(() => {
@@ -144,38 +207,56 @@ export const Home: React.FC = () => {
     handleSso()
   }, [])
 
-  // Load quotes, patients, sessions, and reports
+  // Load quotes, patients, sessions, reports, public quotes, and templates
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [quotesRes, patientsRes, sessionsRes, reportsRes] = await Promise.all([
+        const [quotesRes, patientsRes, sessionsRes, reportsRes, publicQuotesRes, publicQuoteTemplatesRes, templatesRes] = await Promise.all([
           quotesService.list({}),
           patientsService.list({}),
           sessionsService.list({}),
-          clinicalReportsService.list({})
+          clinicalReportsService.list({}),
+          publicQuotesService.listAllPublicQuotes(),
+          publicQuotesService.listTemplates({ active: true }),
+          templatesService.getAll({})
         ])
 
         // Sort by created_at DESC and take top items
         const sortedQuotes = quotesRes.data
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .sort((a: Quote, b: Quote) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 6)
 
         const sortedPatients = patientsRes.data
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .sort((a: Patient, b: Patient) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 5)
 
         const sortedSessions = sessionsRes.data
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .sort((a: Session, b: Session) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 6)
 
         const sortedReports = reportsRes.data
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .sort((a: ClinicalReport, b: ClinicalReport) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 6)
+
+        const sortedPublicQuotes = publicQuotesRes
+          .sort((a: PublicQuote, b: PublicQuote) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 5)
+
+        const sortedPublicQuoteTemplates = publicQuoteTemplatesRes.data
+          .sort((a: PublicQuoteTemplate, b: PublicQuoteTemplate) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 5)
+
+        const sortedTemplates = templatesRes.templates
+          .sort((a: Template, b: Template) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 5)
 
         setQuotes(sortedQuotes)
         setPatients(sortedPatients)
         setSessions(sortedSessions)
         setReports(sortedReports)
+        setPublicQuotes(sortedPublicQuotes)
+        setPublicQuoteTemplates(sortedPublicQuoteTemplates)
+        setTemplates(sortedTemplates)
       } catch (error) {
         console.error('Failed to load home data:', error)
       } finally {

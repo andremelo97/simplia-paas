@@ -632,6 +632,7 @@ export const EditQuote: React.FC = () => {
           publicUrl={toastData.publicUrl}
           password={toastData.password}
           duration={15000}
+          darkBackground={true}
         />
       )}
     </div>

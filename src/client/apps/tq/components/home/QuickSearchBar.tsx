@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Users, FileText, Receipt, ClipboardList, FileType } from 'lucide-react'
+import { Users, FileText, Receipt, ClipboardList, FileType, Layout } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SearchInput } from '@client/common/ui'
 import { Patient } from '../../services/patients'
@@ -7,10 +7,11 @@ import { Session } from '../../services/sessions'
 import { Quote } from '../../services/quotes'
 import { ClinicalReport } from '../../services/clinicalReports'
 import { Template } from '../../services/templates'
+import { PublicQuoteTemplate } from '../../services/publicQuotes'
 
 interface SearchResult {
   id: string
-  type: 'patient' | 'session' | 'quote' | 'clinical_report' | 'template'
+  type: 'patient' | 'session' | 'quote' | 'clinical_report' | 'template' | 'public_quote_template'
   title: string
   subtitle: string
   path: string
@@ -22,9 +23,10 @@ interface QuickSearchBarProps {
   quotes: Quote[]
   clinicalReports: ClinicalReport[]
   templates: Template[]
+  publicQuoteTemplates: PublicQuoteTemplate[]
 }
 
-export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessions, quotes, clinicalReports, templates }) => {
+export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessions, quotes, clinicalReports, templates, publicQuoteTemplates }) => {
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [results, setResults] = useState<SearchResult[]>([])
@@ -134,10 +136,28 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
         })
       })
 
+    // Search public quote templates
+    publicQuoteTemplates
+      .filter((pqt) => {
+        const name = pqt.name?.toLowerCase() || ''
+        const description = pqt.description?.toLowerCase() || ''
+        return name.includes(searchQuery) || description.includes(searchQuery)
+      })
+      .slice(0, 3)
+      .forEach((pqt) => {
+        foundResults.push({
+          id: pqt.id,
+          type: 'public_quote_template',
+          title: pqt.name,
+          subtitle: pqt.description || 'No description',
+          path: `/public-quotes/templates/${pqt.id}/edit`
+        })
+      })
+
     setResults(foundResults)
     setIsOpen(foundResults.length > 0)
     setSelectedIndex(0)
-  }, [query, patients, sessions, quotes, clinicalReports, templates])
+  }, [query, patients, sessions, quotes, clinicalReports, templates, publicQuoteTemplates])
 
   // Keyboard navigation
   useEffect(() => {
@@ -194,9 +214,11 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
       case 'quote':
         return <Receipt className="w-4 h-4 text-[#E91E63]" />
       case 'clinical_report':
-        return <ClipboardList className="w-4 h-4 text-gray-900" />
+        return <ClipboardList className="w-4 h-4 text-blue-600" />
       case 'template':
-        return <FileType className="w-4 h-4 text-gray-900" />
+        return <FileType className="w-4 h-4 text-purple-600" />
+      case 'public_quote_template':
+        return <Layout className="w-4 h-4 text-[#E91E63]" />
     }
   }
 
@@ -242,7 +264,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
 
               {/* Type badge */}
               <span className="flex-shrink-0 text-xs text-gray-400 uppercase">
-                {result.type === 'clinical_report' ? 'report' : result.type}
+                {result.type === 'clinical_report' ? 'report' : result.type === 'public_quote_template' ? 'pq template' : result.type}
               </span>
             </div>
           ))}

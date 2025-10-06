@@ -8,6 +8,7 @@ import { sessionsService, Session } from '../../services/sessions'
 import { quotesService, Quote } from '../../services/quotes'
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
 import { templatesService, Template } from '../../services/templates'
+import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { Search } from 'lucide-react'
 
 const getBreadcrumbs = (pathname: string) => {
@@ -107,17 +108,19 @@ export const Header: React.FC = () => {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [clinicalReports, setClinicalReports] = useState<ClinicalReport[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
+  const [publicQuoteTemplates, setPublicQuoteTemplates] = useState<PublicQuoteTemplate[]>([])
 
   // Load data for search
   useEffect(() => {
     const loadSearchData = async () => {
       try {
-        const [patientsRes, sessionsRes, quotesRes, reportsRes, templatesRes] = await Promise.all([
+        const [patientsRes, sessionsRes, quotesRes, reportsRes, templatesRes, publicQuoteTemplatesRes] = await Promise.all([
           patientsService.list({}),
           sessionsService.list({}),
           quotesService.list({}),
           clinicalReportsService.list({}),
-          templatesService.getAll({})
+          templatesService.getAll({}),
+          publicQuotesService.listTemplates({ active: true })
         ])
 
         setPatients(patientsRes.data || [])
@@ -125,6 +128,7 @@ export const Header: React.FC = () => {
         setQuotes(quotesRes.data || [])
         setClinicalReports(reportsRes.data || [])
         setTemplates(templatesRes.templates || [])
+        setPublicQuoteTemplates(publicQuoteTemplatesRes.data || [])
       } catch (error) {
         console.error('Failed to load search data:', error)
       }
@@ -153,6 +157,7 @@ export const Header: React.FC = () => {
           quotes={quotes}
           clinicalReports={clinicalReports}
           templates={templates}
+          publicQuoteTemplates={publicQuoteTemplates}
         />
       }
     />

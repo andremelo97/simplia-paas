@@ -12,6 +12,7 @@ interface LinkToastProps {
   duration?: number // em millisegundos, default 10000
   publicUrl?: string // For public-quote type
   password?: string // For public-quote type
+  darkBackground?: boolean // For darker green background (public-quote only)
 }
 
 export const LinkToast: React.FC<LinkToastProps> = ({
@@ -22,7 +23,8 @@ export const LinkToast: React.FC<LinkToastProps> = ({
   type = 'session',
   duration = 10000,
   publicUrl,
-  password
+  password,
+  darkBackground = false
 }) => {
   const navigate = useNavigate()
   const [timeLeft, setTimeLeft] = useState(duration / 1000)
@@ -123,8 +125,8 @@ export const LinkToast: React.FC<LinkToastProps> = ({
             className="w-full bg-white border-b border-gray-200 shadow-lg p-4 transition-colors"
             onClick={handleClick}
             style={{
-              backgroundColor: 'var(--brand-tertiary-bg)',
-              borderColor: 'var(--brand-tertiary)',
+              backgroundColor: darkBackground ? '#10b981' : 'var(--brand-tertiary-bg)',
+              borderColor: darkBackground ? '#059669' : 'var(--brand-tertiary)',
               cursor: type === 'public-quote' ? 'default' : 'pointer'
             }}
           >
@@ -134,11 +136,11 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <CheckCircle
                     className="w-5 h-5 flex-shrink-0 mt-0.5"
-                    style={{ color: 'var(--brand-tertiary)' }}
+                    style={{ color: darkBackground ? '#ffffff' : 'var(--brand-tertiary)' }}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="font-medium text-gray-900">
+                      <span className={`font-medium ${darkBackground ? 'text-white' : 'text-gray-900'}`}>
                         {getTypeText()} created successfully!
                       </span>
                     </div>
@@ -148,39 +150,39 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                       <div className="space-y-2">
                         {publicUrl && (
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600 w-20 flex-shrink-0">URL:</span>
-                            <code className="text-xs bg-gray-100 px-2 py-1 rounded flex-1 truncate">{publicUrl}</code>
+                            <span className={`text-sm w-20 flex-shrink-0 ${darkBackground ? 'text-white' : 'text-gray-600'}`}>URL:</span>
+                            <code className={`text-xs px-2 py-1 rounded flex-1 truncate ${darkBackground ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-900'}`}>{publicUrl}</code>
                             <button
                               onClick={() => handleCopy(publicUrl, 'url')}
-                              className="p-1.5 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
+                              className={`p-1.5 rounded transition-colors flex-shrink-0 ${darkBackground ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
                               title="Copy URL"
                             >
                               {copied === 'url' ? (
-                                <Check className="w-4 h-4 text-green-600" />
+                                <Check className={`w-4 h-4 ${darkBackground ? 'text-white' : 'text-green-600'}`} />
                               ) : (
-                                <Copy className="w-4 h-4 text-gray-600" />
+                                <Copy className={`w-4 h-4 ${darkBackground ? 'text-white' : 'text-gray-600'}`} />
                               )}
                             </button>
                           </div>
                         )}
                         {password && (
                           <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600 w-20 flex-shrink-0">Password:</span>
-                            <code className="text-xs bg-yellow-50 px-2 py-1 rounded font-mono font-semibold text-gray-900">{password}</code>
+                            <span className={`text-sm w-20 flex-shrink-0 ${darkBackground ? 'text-white' : 'text-gray-600'}`}>Password:</span>
+                            <code className={`text-xs px-2 py-1 rounded font-mono font-semibold ${darkBackground ? 'bg-white text-gray-900' : 'bg-yellow-50 text-gray-900'}`}>{password}</code>
                             <button
                               onClick={() => handleCopy(password, 'password')}
-                              className="p-1.5 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
+                              className={`p-1.5 rounded transition-colors flex-shrink-0 ${darkBackground ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
                               title="Copy Password"
                             >
                               {copied === 'password' ? (
-                                <Check className="w-4 h-4 text-green-600" />
+                                <Check className={`w-4 h-4 ${darkBackground ? 'text-white' : 'text-green-600'}`} />
                               ) : (
-                                <Copy className="w-4 h-4 text-gray-600" />
+                                <Copy className={`w-4 h-4 ${darkBackground ? 'text-white' : 'text-gray-600'}`} />
                               )}
                             </button>
                           </div>
                         )}
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className={`text-xs mt-2 ${darkBackground ? 'text-white/90' : 'text-gray-500'}`}>
                           Save the password now - it won't be shown again!
                         </p>
                       </div>
@@ -198,7 +200,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
 
                 {/* Right side: Countdown + close */}
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-sm text-gray-500">
+                  <span className={`text-sm ${darkBackground ? 'text-white/80' : 'text-gray-500'}`}>
                     {timeLeft}s
                   </span>
                   <button
@@ -206,9 +208,9 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                       e.stopPropagation()
                       onClose()
                     }}
-                    className="p-1 hover:bg-gray-200 rounded transition-colors"
+                    className={`p-1 rounded transition-colors ${darkBackground ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
                   >
-                    <X className="w-4 h-4 text-gray-400" />
+                    <X className={`w-4 h-4 ${darkBackground ? 'text-white' : 'text-gray-400'}`} />
                   </button>
                 </div>
               </div>

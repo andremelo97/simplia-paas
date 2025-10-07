@@ -3,7 +3,17 @@
  *
  * Handles file uploads to Supabase Storage.
  * Manages files with tenant isolation and proper naming conventions.
- * Can be used for audio files, images, documents, etc.
+ * Can be used for audio files, images, documents, videos, etc.
+ *
+ * **URL Strategy:**
+ * - Returns **permanent public URLs** by default (no expiration)
+ * - Also provides signed URLs (24h) for temporary access scenarios
+ * - Use public URLs for: brand assets (logos, videos), public resources
+ * - Use signed URLs for: private/sensitive files when needed
+ *
+ * **Requirements:**
+ * - Bucket must be set as PUBLIC in Supabase Dashboard for public URLs to work
+ * - For private files, keep bucket private and use getSignedUrl() method explicitly
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -20,7 +30,7 @@ class SupabaseStorageService {
     this.publicUrl = process.env.SUPABASE_STORAGE_PUBLIC_URL;
 
     if (!this.supabaseUrl || !this.supabaseServiceKey) {
-      throw new Error('Missing required Supabase configuration');
+      throw new Error('Missing required Supabase configuration (SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY)');
     }
 
     this.supabase = createClient(this.supabaseUrl, this.supabaseServiceKey, {
@@ -62,12 +72,12 @@ class SupabaseStorageService {
         throw new Error(`Failed to upload file: ${error.message}`);
       }
 
-      // Generate public URL using Supabase's built-in method
+      // Generate public URL (permanent, no expiration)
       const { data: publicData } = this.supabase.storage
         .from(this.bucketName)
         .getPublicUrl(storagePath);
 
-      // Also generate a signed URL valid for 24 hours for external APIs like Deepgram
+      // Also generate a signed URL valid for 24 hours (for private/temporary access scenarios)
       const { data: signedData, error: signedError } = await this.supabase.storage
         .from(this.bucketName)
         .createSignedUrl(storagePath, 24 * 60 * 60); // 24 hours
@@ -77,9 +87,9 @@ class SupabaseStorageService {
       }
 
       return {
-        url: signedData?.signedUrl || publicData.publicUrl,
+        url: publicData.publicUrl, // Use permanent public URL as default for branding assets
         publicUrl: publicData.publicUrl,
-        signedUrl: signedData?.signedUrl,
+        signedUrl: signedData?.signedUrl, // Available for scenarios requiring temporary access
         path: storagePath,
         size: fileBuffer.length
       };
@@ -175,7 +185,14 @@ class SupabaseStorageService {
   }
 
   /**
-   * Get signed URL for private files (if needed in future)
+   * Get signed URL for private/temporary access
+   *
+   * Use this method explicitly when you need:
+   * - Temporary access to sensitive files
+   * - Time-limited sharing
+   * - Files in private buckets
+   *
+   * Note: Brand assets (logos, videos) should use permanent public URLs instead (default behavior)
    *
    * @param {string} filePath - Storage file path
    * @param {number} expiresIn - URL expiration in seconds (default: 1 hour)

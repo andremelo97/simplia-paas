@@ -674,87 +674,197 @@
 
   ----
 
-  PUBLIC_QUOTE_TEMPLATE VARIABLES RESOLUTION:
-
-  Ótima pergunta! Vou analisar as duas abordagens:
-
-## 🤔 **ANÁLISE: Resolver Template no Frontend vs Backend**
+ Excelente reflexão! 🤔 Vamos analisar a arquitetura de autenticação atual e o que faz sentido para o cenário de **múltiplos domínios**.
 
 ---
 
-### **📍 SITUAÇÃO ATUAL (Frontend resolve)**
+## 🔍 Situação Atual (Como Funciona)
 
-**Como funciona:**
-1. Frontend carrega: quote data + template + branding
-2. Hook `usePublicQuoteRenderer` chama `resolveTemplateVariables(template, quote)`
-3. Puck renderiza com dados resolvidos no cliente
+### **1. Estrutura de Token JWT**
+```javascript
+{
+  userId: 2,
+  tenantId: 2,
+  email: "user@example.com",
+  role: "admin",
+  allowedApps: ["hub", "tq"], // Apps que o usuário pode acessar
+  userType: { id: 3, slug: "admin" }
+}
+```
 
-**Prós ✅:**
-- **Performance**: Não precisa serializar/processar HTML no backend
-- **Flexibilidade**: Puck é client-side, mudanças no template são instantâneas
-- **Cacheable**: Pode cachear template + dados separadamente
-- **Menos carga no servidor**: Renderização acontece no browser do usuário
+### **2. Fluxo Atual**
+```
+1. User → Login no HUB → Token JWT (localStorage)
+2. User clica em "TQ" no HUB → window.open(TQ_URL)
+3. TQ abre → ??? (Como recebe o token do HUB?)
+4. TQ tem rota /auth/login independente → Pode criar NOVO token
+```
 
-**Contras ❌:**
-- **Segurança**: Expõe toda a estrutura do template no frontend
-- **Tamanho do payload**: Envia template completo + todos os dados da quote
-- **Lógica duplicada**: `resolveTemplateVariables` fica no frontend
-
----
-
-### **🔄 ALTERNATIVA (Backend resolve)**
-
-**Como funcionaria:**
-1. Frontend faz request: `POST /public-quote/:accessToken { password }`
-2. Backend resolve variáveis: `{{quote.number}}` → `Q-2024-001`
-3. Retorna template já preenchido + configuração Puck pronta
-
-**Prós ✅:**
-- **Segurança**: Template bruto fica no backend
-- **Payload menor**: Envia apenas dados necessários
-- **Controle centralizado**: Lógica de resolução em um lugar só (backend)
-- **Auditoria**: Pode logar o que foi acessado com mais precisão
-
-**Contras ❌:**
-- **Carga no servidor**: Backend precisa processar cada acesso
-- **Complexidade**: Precisa resolver template no Node.js (não é nativo do Puck)
-- **Cacheable limitado**: Template resolvido é único por quote
-- **Flexibilidade reduzida**: Mudanças no Puck config precisam sync frontend/backend
+### **3. Problema Identificado** ⚠️
+- **Domínios separados** (`hub.simplia.com`, `tq.simplia.com`)
+- **localStorage não compartilha** entre domínios
+- **Cookies não compartilham** entre domínios diferentes
+- **Sessões independentes** → Não é verdadeiro SSO
 
 ---
 
-## 💡 **RECOMENDAÇÃO BASEADA NO SEU CONTEXTO**
+## 🎯 O Que Faz Sentido?
 
-### **MANTER NO FRONTEND (atual)**
-
-**Por quê?**
-
-1. **Puck é client-side first**: Ele foi feito para renderizar no browser, forçar pelo backend seria remar contra a maré
-2. **Public quotes são "read-only"**: Não tem problema expor a estrutura do template, não há risco de manipulação
-3. **Performance melhor**: Cada usuário renderiza no próprio device, não sobrecarrega servidor
-4. **Já funciona bem**: Preview e public-quote usam a mesma lógica, consistência garantida
-
-### **Quando mover pro Backend?**
-
-Se no futuro vocês precisarem de:
-- **PDF generation**: Converter quote em PDF (aí sim, backend via Puppeteer)
-- **Email templates**: Enviar quote por email
-- **Server-side rendering (SSR)**: SEO para public quotes
-- **Rate limiting por conteúdo**: Controlar acesso baseado nos dados da quote
+Para múltiplos domínios, você tem **3 opções arquiteturais**:
 
 ---
 
-## 🎯 **CONCLUSÃO**
+## Opção 1: **True SSO (OAuth2/OIDC)** ✅ Recomendado para Produção
 
-**Manter no frontend** é a escolha certa para o caso de uso atual:
-- Public quotes são páginas interativas visualizadas no browser
-- Puck precisa rodar client-side de qualquer forma
-- Performance é melhor (offload pro cliente)
-- Segurança não é concern (dados já são públicos com senha)
+### **Arquitetura:**
+```
+┌─────────────────────────────────────────────┐
+│          auth.simplia.com (Central)          │
+│  - Único ponto de autenticação               │
+│  - Gerencia sessões centralizadas            │
+│  - Emite tokens para apps autorizados        │
+└─────────────────────────────────────────────┘
+               ↓              ↓
+    ┌──────────────┐   ┌──────────────┐
+    │ hub.simplia  │   │ tq.simplia   │
+    │ (Client App) │   │ (Client App) │
+    └──────────────┘   └──────────────┘
+```
 
-Se precisar de **proteção extra**, vocês podem:
-1. **Ofuscar**: Minificar o template JSON antes de enviar
-2. **Validar no backend**: Checar se quote ainda está ativa antes de retornar dados
-3. **Rate limit**: Limitar tentativas de senha por IP
+### **Fluxo:**
+1. **User acessa hub.simplia** (não autenticado)
+2. **Hub redireciona** → `auth.simplia/login?redirect_uri=hub.simplia&client_id=hub`
+3. **User faz login** no Auth Server
+4. **Auth Server cria sessão** (cookie em `.simplia.com`)
+5. **Auth Server redireciona** → `hub.simplia?code=ABC123`
+6. **Hub troca code** por token JWT com backend
+7. **User clica em TQ** no Hub
+8. **TQ verifica sessão** → Cookie `.simplia.com` existe?
+   - ✅ **Se sim:** Silent auth (renova token automaticamente)
+   - ❌ **Se não:** Redireciona para auth.simplia
 
-Mantenha como está! 👍
+### **Single Logout:**
+```javascript
+// User faz logout no TQ
+POST auth.simplia/logout → Invalida sessão central
+// Hub detecta logout automaticamente (cookie inválido)
+```
+
+### **Vantagens:**
+- ✅ Sessão única entre todos os apps
+- ✅ Single Logout funciona
+- ✅ Escalável (adicionar novos apps é fácil)
+- ✅ Seguro (tokens de curta duração, refresh tokens)
+- ✅ Padrão da indústria (Google, Microsoft, Auth0)
+
+### **Desvantagens:**
+- ❌ Complexidade média de implementação
+- ❌ Requer servidor de autenticação dedicado
+
+---
+
+## Opção 2: **Shared Cookie (Subdomain)** 🔄 Mais Simples
+
+### **Arquitetura:**
+```javascript
+// Cookie compartilhado em .simplia.com
+document.cookie = "auth_token=JWT; domain=.simplia.com; secure; httpOnly";
+```
+
+### **Fluxo:**
+1. **User faz login no Hub** → Cookie em `.simplia.com`
+2. **Hub e TQ compartilham** mesmo cookie
+3. **User acessa TQ** → Cookie já existe → Auto-autenticado
+4. **Logout em qualquer app** → Deleta cookie → Afeta todos
+
+### **Vantagens:**
+- ✅ Implementação simples
+- ✅ Sessão compartilhada automaticamente
+- ✅ Single logout funciona
+
+### **Desvantagens:**
+- ❌ **Só funciona em subdomínios** (`.simplia.com`)
+- ❌ Não funciona se hub e TQ tiverem **domínios completamente diferentes**
+- ❌ Menos flexível que OAuth2
+
+---
+
+## Opção 3: **Token via Postmessage** 📨 Solução Temporária
+
+### **Arquitetura:**
+```javascript
+// No Hub
+window.open('https://tq.simplia.com/?auth_flow=sso');
+
+// No TQ (ao abrir)
+window.addEventListener('message', (event) => {
+  if (event.origin === 'https://hub.simplia.com') {
+    const token = event.data.token;
+    localStorage.setItem('auth_token', token);
+  }
+});
+
+// Hub envia token
+tqWindow.postMessage({ token: authToken }, 'https://tq.simplia.com');
+```
+
+### **Vantagens:**
+- ✅ Funciona entre domínios diferentes
+- ✅ Implementação rápida
+
+### **Desvantagens:**
+- ❌ **Inseguro** (token exposto via postMessage)
+- ❌ Sessões ainda são independentes (logout não sincroniza)
+- ❌ Não é escalável
+- ❌ **Não recomendado para produção**
+
+---
+
+## 🏆 Recomendação
+
+Para o cenário de **múltiplos domínios** (`hub.simplia.com`, `tq.simplia.com`, etc.), recomendo:
+
+### **Fase 1 (Curto Prazo): Shared Cookie**
+Se todos os apps serão **subdomínios** de `simplia.com`:
+- ✅ Use cookie compartilhado (`.simplia.com`)
+- ✅ Sessão única automática
+- ✅ Single logout funciona
+- ✅ Implementação em 1-2 dias
+
+### **Fase 2 (Longo Prazo): True SSO**
+Se apps terão **domínios diferentes** OU você quer **arquitetura profissional**:
+- ✅ Implemente OAuth2/OIDC
+- ✅ Auth server central (`auth.simplia.com`)
+- ✅ Authorization Code Flow
+- ✅ Refresh tokens com rotação
+- ✅ Escalável para dezenas de apps
+
+---
+
+## 💡 Pergunta para Você
+
+**Cenário de domínios:**
+1. Todos os apps serão subdomínios (`hub.simplia.com`, `tq.simplia.com`)? → **Opção 2 (Cookie)**
+2. Apps terão domínios diferentes (`hub.app`, `tq.io`)? → **Opção 1 (SSO)**
+3. Quantos apps você planeja ter (2, 5, 10+)?
+
+**Prioridade:**
+- Precisa funcionar **agora** (MVP)? → **Opção 2**
+- Pode investir 1-2 semanas? → **Opção 1**
+
+---
+
+## 📊 Comparação Rápida
+
+| Critério | Shared Cookie | True SSO | PostMessage |
+|----------|---------------|----------|-------------|
+| **Complexidade** | 🟢 Baixa | 🟡 Média | 🟢 Baixa |
+| **Segurança** | 🟢 Boa | 🟢 Excelente | 🔴 Fraca |
+| **Multi-domínio** | 🔴 Não | 🟢 Sim | 🟢 Sim |
+| **Single Logout** | 🟢 Sim | 🟢 Sim | 🔴 Não |
+| **Escalabilidade** | 🟡 Média | 🟢 Alta | 🔴 Baixa |
+| **Tempo Impl** | 1-2 dias | 1-2 semanas | 1 dia |
+
+---
+
+**O que você prefere?** Me diga o cenário de domínios e posso detalhar a implementação! 🚀

@@ -54,15 +54,17 @@ const brandingStorage = new SupabaseStorageService(
 
 /**
  * Helper function to extract storage path from Supabase URL
+ * Handles both public URLs (permanent) and signed URLs (temporary)
  * @param {string} url - Full Supabase storage URL
  * @returns {string|null} - Storage path or null
  */
 const extractStoragePath = (url) => {
   if (!url) return null;
   try {
-    // URL format: https://xxx.supabase.co/storage/v1/object/public/bucket-name/path/to/file.ext
-    // Extract: path/to/file.ext
-    const match = url.match(/\/object\/public\/[^/]+\/(.+)$/);
+    // Public URL format: https://xxx.supabase.co/storage/v1/object/public/bucket-name/path/to/file.ext
+    // Signed URL format: https://xxx.supabase.co/storage/v1/object/sign/bucket-name/path/to/file.ext?token=...
+    // Extract: path/to/file.ext (everything after bucket-name/)
+    const match = url.match(/\/object\/(?:public|sign)\/[^/]+\/(.+?)(?:\?|$)/);
     return match ? match[1] : null;
   } catch (error) {
     console.warn('Failed to extract storage path from URL:', url, error);
@@ -407,22 +409,17 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
     // Ensure bucket exists
     await brandingStorage.ensureBucketExists();
 
-    // Upload to Supabase - service will handle tenant folder structure and file extension
-    const uploadResult = await brandingStorage.uploadFile(
-      req.file.buffer,
-      req.file.originalname,
-      type, // Just the type (logo/favicon), service will add extension from originalname
-      tenantId,
-      req.file.mimetype
-    );
-
-    // Get existing branding first to preserve other fields
+    // Get existing branding FIRST to check for old files
     const existingBranding = await TenantBranding.findByTenant(tenantId);
 
-    // Delete old file if it exists (when replacing)
+    // Extract file extension from new file
+    const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
+    const newPath = `tenant_${tenantId}/${type}.${fileExtension}`;
+
+    // Delete old file ONLY if it's different from the new one
     const oldUrl = type === 'logo' ? existingBranding.logoUrl : existingBranding.faviconUrl;
     const oldPath = extractStoragePath(oldUrl);
-    if (oldPath) {
+    if (oldPath && oldPath !== newPath) {
       try {
         await brandingStorage.deleteFile(oldPath);
         console.log(`Deleted old ${type} from storage: ${oldPath}`);
@@ -431,6 +428,15 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
         // Continue even if deletion fails
       }
     }
+
+    // NOW upload the new file (upsert will replace if same name)
+    const uploadResult = await brandingStorage.uploadFile(
+      req.file.buffer,
+      req.file.originalname,
+      type, // Just the type (logo/favicon), service will add extension from originalname
+      tenantId,
+      req.file.mimetype
+    );
 
     // Update branding configuration with new image URL
     const updateData = {
@@ -532,21 +538,16 @@ router.post('/upload-video', videoUpload.single('video'), async (req, res) => {
     // Ensure bucket exists
     await brandingStorage.ensureBucketExists();
 
-    // Upload to Supabase - use 'background-video' as the type
-    const uploadResult = await brandingStorage.uploadFile(
-      req.file.buffer,
-      req.file.originalname,
-      'background-video',
-      tenantId,
-      req.file.mimetype
-    );
-
-    // Get existing branding first to preserve other fields
+    // Get existing branding FIRST to check for old files
     const existingBranding = await TenantBranding.findByTenant(tenantId);
 
-    // Delete old video if it exists (when replacing)
+    // Extract file extension from new file
+    const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
+    const newPath = `tenant_${tenantId}/background-video.${fileExtension}`;
+
+    // Delete old video ONLY if it's different from the new one
     const oldPath = extractStoragePath(existingBranding.backgroundVideoUrl);
-    if (oldPath) {
+    if (oldPath && oldPath !== newPath) {
       try {
         await brandingStorage.deleteFile(oldPath);
         console.log(`Deleted old video from storage: ${oldPath}`);
@@ -555,6 +556,15 @@ router.post('/upload-video', videoUpload.single('video'), async (req, res) => {
         // Continue even if deletion fails
       }
     }
+
+    // NOW upload the new file (upsert will replace if same name)
+    const uploadResult = await brandingStorage.uploadFile(
+      req.file.buffer,
+      req.file.originalname,
+      'background-video',
+      tenantId,
+      req.file.mimetype
+    );
 
     // Update branding configuration with new video URL
     const updateData = {

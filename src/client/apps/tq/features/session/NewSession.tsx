@@ -40,6 +40,7 @@ import { clinicalReportsService } from '../../services/clinicalReports'
 import { aiAgentService } from '../../services/aiAgentService'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
+import { plainTextToHtml } from '../../lib/textToHtml'
 import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 import { AIAgentModal } from '../../components/ai-agent/AIAgentModal'
@@ -494,23 +495,13 @@ export const NewSession: React.FC = () => {
       console.log('💰 [NewSession] Creating quote for session:', currentSession.id)
       const rawContent = aiSummary || transcription // Use AI summary if provided, otherwise fallback to transcription
       console.log('📄 [NewSession] Quote content source:', aiSummary ? 'AI Summary' : 'Transcription')
-
-      // Convert plain text with line breaks to HTML paragraphs
-      // Also convert markdown-style bold (**text**) to HTML <strong>
-      const quoteContent = rawContent
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => {
-          // Convert markdown bold (**text**) to HTML <strong>
-          const htmlLine = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-          return `<p class="editor-paragraph" style="text-align: left;">${htmlLine}</p>`
-        })
-        .join('')
+      
+      // Convert plain text to HTML for TipTap editor (preserves line breaks and paragraphs)
+      const htmlContent = plainTextToHtml(rawContent)
 
       const quoteData: CreateQuoteRequest = {
         sessionId: currentSession.id,
-        content: quoteContent,
+        content: htmlContent,
         status: 'draft'
       }
       const newQuote = await quotesService.createQuote(quoteData)
@@ -563,22 +554,13 @@ export const NewSession: React.FC = () => {
       console.log('📋 [NewSession] Creating clinical report for session:', currentSession.id)
       const rawContent = aiSummary || transcription
       console.log('📄 [NewSession] Clinical report content source:', aiSummary ? 'AI Summary' : 'Transcription')
-
-      // Convert plain text with line breaks to HTML paragraphs
-      const reportContent = rawContent
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .map(line => {
-          // Convert markdown bold (**text**) to HTML <strong>
-          const htmlLine = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-          return `<p class="editor-paragraph" style="text-align: left;">${htmlLine}</p>`
-        })
-        .join('')
+      
+      // Convert plain text to HTML for TipTap editor (preserves line breaks and paragraphs)
+      const htmlContent = plainTextToHtml(rawContent)
 
       const reportData = {
         sessionId: currentSession.id,
-        content: reportContent
+        content: htmlContent
       }
       const newReport = await clinicalReportsService.create(reportData)
       console.log('✅ [NewSession] Clinical report created successfully:', newReport)
@@ -1206,6 +1188,8 @@ export const NewSession: React.FC = () => {
         onClose={() => setShowAIAgentModal(false)}
         transcription={transcription}
         patient={selectedPatient || createdPatient}
+        sessionId={session?.id}
+        patientId={(selectedPatient || createdPatient)?.id}
         onCreateSessionAndQuote={handleNewSessionAndQuote}
         onCreateClinicalReport={handleNewClinicalReport}
       />

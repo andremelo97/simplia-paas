@@ -208,6 +208,183 @@ proxy: {
 }
 ```
 
+## Hub Branding Configuration System
+
+### Overview
+The Branding Configuration system allows tenants to customize their brand identity (colors, logo, company information) across all applications. Branding data is stored globally and used by Public Quote Access and other tenant-facing features.
+
+### Database Schema
+```sql
+-- Global branding table (NOT tenant-scoped)
+CREATE TABLE public.tenant_branding (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL UNIQUE REFERENCES public.tenants(id) ON DELETE CASCADE,
+  company_name VARCHAR(255),
+  primary_color VARCHAR(7) DEFAULT '#B725B7',
+  secondary_color VARCHAR(7) DEFAULT '#E91E63',
+  accent_color VARCHAR(7) DEFAULT '#5ED6CE',
+  logo_url TEXT,
+  favicon_url TEXT,
+  background_video_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes
+CREATE INDEX tenant_branding_tenant_id_idx ON public.tenant_branding(tenant_id_fk);
+```
+
+### Default Colors
+- **Primary**: `#B725B7` (Purple)
+- **Secondary**: `#E91E63` (Pink)
+- **Accent**: `#5ED6CE` (Cyan)
+
+### API Endpoints
+
+**Branding Configuration** (`/internal/api/v1/branding`):
+- `GET /` - Get current tenant branding (creates default if not exists)
+- `POST /` - Create or update branding (upsert)
+- File uploads: `logo`, `favicon`, `backgroundVideo` (multipart/form-data)
+
+### Supabase Storage Integration
+
+**Bucket**: `branding-assets`
+**Structure**:
+```
+branding-assets/
+├── tenant_1/
+│   ├── logo.png
+│   ├── favicon.ico
+│   └── background-video.mp4
+├── tenant_2/
+│   └── ...
+```
+
+**Upload Implementation** (`src/server/services/supabaseStorage.js`):
+- `uploadBrandingAsset()` - Upload logo/favicon/video
+- **Public URLs**: Permanent, non-expiring URLs (not signed URLs)
+- **File Management**: Deletes old file before uploading new one (if different path)
+- **MIME Types**: Validates file types (images: PNG/JPG/SVG, video: MP4)
+
+**Fixed Issues**:
+- ✅ URLs no longer expire after 24 hours (using Public URLs)
+- ✅ Order of operations: Upload → Delete old (not delete → upload)
+- ✅ Comparison check: Only delete if `oldPath !== newPath`
+
+### Frontend Implementation
+
+**Configuration Page** (`src/client/apps/hub/features/configurations/BrandingConfiguration.tsx`):
+- Form fields: Company Name, Primary/Secondary/Accent Colors
+- File uploads: Logo, Favicon, Background Video
+- Color pickers for brand colors
+- Preview of uploaded assets
+- "Save Changes" button → POST `/internal/api/v1/branding`
+
+**Configuration Layout** (`src/client/common/ui/ConfigurationLayout.tsx`):
+- Shared component used by both Hub and TQ
+- 2-column layout: 20% sidebar, 80% content area
+- Consistent design pattern
+
+**Configuration Wrapper** (`src/client/apps/hub/features/configurations/Configurations.tsx`):
+- Route: `/configurations`
+- Renders `BrandingConfiguration` component
+- Navigation in Hub sidebar (admin-only)
+
+### Backend Implementation
+
+**Model** (`src/server/infra/models/TenantBranding.js`):
+- `findByTenantId(tenantId)` - Get branding for tenant
+- `upsert(tenantId, data)` - Create or update branding
+- `getDefaults()` - Returns default color values
+
+**Routes** (`src/server/api/internal/routes/branding.js`):
+- `GET /` - Fetch branding (creates defaults if missing)
+- `POST /` - Upsert branding with file uploads
+- File handling: Multipart uploads via `multer`
+- Supabase integration for asset storage
+
+**Provisioner**:
+- No seeding required - branding created on-demand via upsert
+- Defaults applied automatically if no branding exists
+
+### Public Quote Integration
+
+**Usage**: Public Quote Access (`/api/tq/v1/pq/:accessToken`) returns branding data alongside quote content:
+
+```json
+{
+  "contentPackage": { /* quote data */ },
+  "branding": {
+    "companyName": "ACME Medical",
+    "primaryColor": "#B725B7",
+    "logoUrl": "https://supabase.co/storage/v1/object/public/branding-assets/tenant_2/logo.png"
+  }
+}
+```
+
+**Frontend Rendering**: Public quote pages use branding colors/logo for customized client experience
+
+### Navigation & Access Control
+
+**Sidebar Item** (`src/client/apps/hub/shared/components/Sidebar.tsx`):
+- "Configurations" menu item (admin-only)
+- Icon: `Settings`
+- Route: `/configurations`
+
+**Route** (`src/client/apps/hub/routes/index.tsx`):
+- `/configurations` → `Configurations` component wrapper
+- Renders `BrandingConfiguration` for branding settings
+
+### Service Layer
+
+**Frontend Service** (inline in component):
+```typescript
+// GET branding
+const response = await http.get('/internal/api/v1/branding')
+
+// POST branding with files
+const formData = new FormData()
+formData.append('companyName', companyName)
+formData.append('primaryColor', primaryColor)
+formData.append('logo', logoFile)
+await http.post('/internal/api/v1/branding', formData)
+```
+
+### File Upload Flow
+
+1. User selects logo/favicon/video file
+2. Frontend creates `FormData` with file + branding data
+3. Backend receives multipart upload via `multer`
+4. Supabase uploads file to `branding-assets/tenant_{id}/`
+5. Public URL generated and stored in database
+6. Old file deleted (if different path)
+7. Response includes updated branding with new URLs
+
+### Environment Variables
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_BRANDING_BUCKET=branding-assets
+```
+
+### Implementation Best Practices
+
+1. **Global Table**: Branding stored in `public.tenant_branding` (not tenant-scoped schemas)
+2. **Public URLs**: Use permanent URLs for assets (not expiring signed URLs)
+3. **Upsert Pattern**: Single endpoint for create/update
+4. **Defaults on Demand**: Create default branding automatically if missing
+5. **File Validation**: Check MIME types before upload
+6. **Cleanup**: Delete old assets when uploading new ones
+
+### Common Issues & Solutions
+
+- **Expiring URLs**: Use `getPublicUrl()` instead of `createSignedUrl()` for permanent URLs
+- **Upload Failures**: Check Supabase environment variables are loaded
+- **File Deletion Errors**: Compare paths before deleting (`oldPath !== newPath`)
+- **CORS Issues**: Ensure Supabase bucket has public read access
+- **Missing Assets**: Verify bucket permissions and public URL settings
+
 ## API Route Categories
 - **Platform-Scoped** (no tenant header): `/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`, `/me/*`
 - **Tenant-Scoped** (requires x-tenant-id header): `/auth`, `/users`, `/entitlements` 
@@ -287,6 +464,7 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
   - `Button`, `Card`, `Select`, `Textarea`, `Progress`: Core UI primitives
   - `RichTextEditor`: Generic TipTap wrapper for rich text editing
   - `TemplateEditor`: Template-specific editor with syntax highlighting and variables palette
+  - `ConfigurationLayout`: Reusable 2-column layout for configuration pages (Hub & TQ) with 20% sidebar and 80% content area
 - **Server Services**: `src/server/services/` - Third-party integrations
   - `deepgram.js`: Audio transcription service integration
   - `supabaseStorage.js`: File storage management
@@ -500,6 +678,228 @@ const filledTemplateHtml = filledTemplate // Already HTML from AI
 - **Tenant Schema**: Use `req.tenant?.schema` (not `req.tenantSchema`) for consistency
 - **Response Format**: Backend returns `data/meta` structure, frontend handles gracefully
 - **Middleware**: Global TQ middlewares handle auth/tenant - no individual route middleware needed
+
+## TQ AI Agent Configuration System
+
+### Overview
+The AI Agent Configuration system allows admins to customize the `system_message` that defines how the AI Agent generates medical summaries from transcriptions, with support for dynamic template variables.
+
+### Database Schema
+```sql
+-- Per-tenant AI Agent configuration table
+CREATE TABLE tenant_{slug}.ai_agent_configuration (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  system_message TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE '{timeZone}')
+);
+
+-- Auto-update timestamp trigger
+CREATE TRIGGER ai_agent_configuration_updated_at_trigger
+  BEFORE UPDATE ON tenant_{slug}.ai_agent_configuration
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+```
+
+### Template Variables Support
+AI Agent system messages support dynamic variables that are resolved before sending to OpenAI:
+
+**Patient Variables:**
+- `$patient.first_name$` - Patient's first name
+- `$patient.last_name$` - Patient's last name
+- `$patient.fullName$` - Patient's full name (first + last)
+
+**Date Variables:**
+- `$date.now$` - Current date (formatted)
+- `$session.created_at$` - Session creation date (formatted)
+
+**Session Variables:**
+- `$transcription$` - Full session transcription text (automatically loaded)
+
+**Provider Variables:**
+- `$me.first_name$` - Provider's first name (from JWT)
+- `$me.last_name$` - Provider's last name (from JWT)
+- `$me.fullName$` - Provider's full name (first + last)
+
+### API Endpoints
+
+**AI Agent Configuration** (`/api/tq/v1/configurations/ai-agent`):
+- `GET /` - Get current configuration
+- `PUT /` - Update system message
+- `POST /reset` - Reset to default system message
+
+### Default System Message
+Stored in `src/server/infra/utils/aiAgentDefaults.js`:
+```javascript
+export const DEFAULT_SYSTEM_MESSAGE = `You are a medical assistant creating patient-friendly treatment summaries.
+
+Patient: $patient.fullName$
+Provider: $me.fullName$
+Date: $date.now$
+
+Transcription:
+$transcription$
+
+Create a clear, professional summary.`;
+```
+
+### AI Agent Chat Integration
+
+**Updated Chat Flow:**
+1. **Initial Conversation**: Frontend sends empty `messages` array + `sessionId` + `patientId`
+2. **Backend Resolution**:
+   - Fetch `system_message` from `ai_agent_configuration` table
+   - Load Session with `includePatient=true` (loads transcription via JOIN)
+   - Extract transcription text from `session.transcription?.text`
+   - Resolve all template variables in system message
+3. **OpenAI Call**: System message with resolved variables sent to OpenAI
+4. **Response**: Backend returns `{response, systemMessageUsed}` where `systemMessageUsed` contains the exact message sent to OpenAI
+5. **Frontend Display**: Shows `systemMessageUsed` with transcription truncated to first 3 words + "..." for UI clarity
+
+**API Request (Initial):**
+```json
+{
+  "messages": [],
+  "sessionId": "uuid-string",
+  "patientId": "uuid-string"
+}
+```
+
+**API Response:**
+```json
+{
+  "data": {
+    "response": "Patient Name: John Doe...",
+    "systemMessageUsed": "You are a medical assistant...\n\nPatient: John Doe\nProvider: Dr. Smith\nDate: October 8, 2025\n\nTranscription:\nPatient presented with..."
+  },
+  "meta": {
+    "code": "AI_RESPONSE_GENERATED"
+  }
+}
+```
+
+### Frontend Implementation
+
+**Configuration Page** (`src/client/apps/tq/features/configurations/AIAgentConfiguration.tsx`):
+- Textarea with `system_message` pre-filled from backend
+- Helper text listing all available template variables
+- "Save Changes" button → PUT `/api/tq/v1/configurations/ai-agent`
+- "Reset to Default" button → POST `/api/tq/v1/configurations/ai-agent/reset`
+- States: loading, error, success (via HTTP interceptor feedback)
+
+**Configuration Layout** (`src/client/common/ui/ConfigurationLayout.tsx`):
+- Shared component used by both TQ and Hub
+- 2-column layout: 20% sidebar (navigation), 80% content area
+- Consistent design pattern across apps
+
+**AI Agent Modal** (`src/client/apps/tq/components/ai-agent/AIAgentModal.tsx`):
+- First message displays `systemMessageUsed` from backend
+- Transcription truncated to first 3 words + "..." (display only)
+- Backend receives full transcription (no truncation)
+- `whitespace-pre-wrap` preserves formatting
+
+### Backend Implementation
+
+**Model** (`src/server/infra/models/AIAgentConfiguration.js`):
+- `findByTenant(schema)` - Get configuration for tenant
+- `upsert(schema, systemMessage)` - Create or update configuration
+- `reset(schema)` - Reset to default from `aiAgentDefaults.js`
+- `getDefaultSystemMessage()` - Returns default system message constant
+
+**Routes** (`src/server/api/tq/routes/ai-agent-configuration.js`):
+- Mounted at `/configurations/ai-agent` in TQ API
+- 3 endpoints: GET, PUT, POST reset
+- Returns `meta.code` for automatic feedback toasts
+
+**AI Agent Route Updates** (`src/server/api/tq/routes/ai-agent.js`):
+- `/chat` endpoint modified to:
+  - Fetch configuration via `AIAgentConfiguration.findByTenant()`
+  - Load Session with `Session.findById(sessionId, schema, true)` (includes patient + transcription)
+  - Extract transcription: `session.transcription?.text || null`
+  - Resolve variables: `resolveTemplateVariables(systemMessage, context)`
+  - Add resolved system message to OpenAI messages
+  - Return `systemMessageUsed` in response
+
+**Template Variable Resolver** (`src/server/services/templateVariableResolver.js`):
+- Updated to support `$transcription$` variable
+- Context includes: patient, date, session, transcription, me (provider)
+- `validateTemplateVariables()` includes transcription validation
+
+**Provisioner** (`src/server/infra/provisioners/tq.js`):
+- Creates `ai_agent_configuration` table during tenant schema creation
+- Seeds default configuration using `DEFAULT_SYSTEM_MESSAGE` from `aiAgentDefaults.js`
+- Eliminates code duplication (single source of truth)
+
+### Navigation & Access Control
+
+**Sidebar Item** (`src/client/apps/tq/shared/components/Sidebar.tsx`):
+- "Configurations" menu item (admin-only visibility)
+- Icon: `Settings`
+- Route: `/configurations`
+
+**Route** (`src/client/apps/tq/routes/index.tsx`):
+- `/configurations` → `Configurations` component wrapper
+- Renders `AIAgentConfiguration` for AI Agent settings
+
+**Layout Adjustment** (`src/client/apps/tq/shared/components/Layout.tsx`):
+- Conditional padding removal on `/configurations` route
+- Prevents drawer overlap with sidebar
+
+### Service Layer
+
+**Frontend Service** (`src/client/apps/tq/services/aiAgentConfigurationService.ts`):
+```typescript
+export const aiAgentConfigurationService = {
+  getConfiguration: () => http.get('/api/tq/v1/configurations/ai-agent'),
+  updateConfiguration: (systemMessage: string) =>
+    http.put('/api/tq/v1/configurations/ai-agent', { systemMessage }),
+  resetConfiguration: () =>
+    http.post('/api/tq/v1/configurations/ai-agent/reset', {})
+}
+```
+
+### Feedback Codes
+
+**New Feedback Catalog Entries** (`src/client/common/feedback/catalog.ts`):
+```typescript
+AI_AGENT_CONFIGURATION_UPDATED: {
+  title: "Configuration Updated",
+  message: "AI Agent configuration updated successfully."
+},
+AI_AGENT_CONFIGURATION_RESET: {
+  title: "Configuration Reset",
+  message: "AI Agent configuration reset to default."
+}
+```
+
+### Text-to-HTML Conversion
+
+**Utility** (`src/client/apps/tq/lib/textToHtml.ts`):
+- `plainTextToHtml()` - Converts AI Agent responses to TipTap-compatible HTML
+- **Rules**:
+  - Double line breaks (`\n\n`) → `<p></p>` empty spacer (section breaks)
+  - Single line breaks (`\n`) → separate `<p>` tags (no `<br>`)
+  - `**text**` → `<strong>text</strong>` (bold conversion)
+  - Matches `simple-editor` output format exactly
+- **Usage**: AI Agent responses formatted before insertion into Clinical Reports/Quotes
+
+### Implementation Best Practices
+
+1. **Single Source of Truth**: Default system message in `aiAgentDefaults.js` used by both provisioner and reset
+2. **Backend-Only Variable Resolution**: Frontend displays resolved values, never resolves itself
+3. **Transparent Display**: Frontend shows exact system message sent to OpenAI (with truncation for readability)
+4. **Automatic Feedback**: No manual `publishFeedback()` calls - HTTP interceptor handles all feedback
+5. **Validation**: Empty `messages` array allowed when `sessionId` present (initial conversation)
+6. **Error Handling**: Defensive checks for missing transcription, patient, or configuration data
+
+### Common Issues & Solutions
+
+- **Configuration Not Loading**: Ensure frontend calls `/api/tq/v1/configurations/ai-agent` (not `/tq/configurations/...`)
+- **Variables Not Resolving**: Backend must load Session with `includePatient=true` to get transcription
+- **Textarea Styling Issues**: Use `Textarea` component from `@client/common/ui` for consistent borders
+- **Duplicated System Message**: Frontend sends empty array, backend handles everything
+- **Transcription Overflow**: Truncate in frontend display only, send full text to backend
+- **SQL Errors**: Avoid single quotes in default message (use `do not` instead of `don't` or escape with `''`)
 
 ## TQ Public Quote System
 

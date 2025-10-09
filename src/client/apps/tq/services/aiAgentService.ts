@@ -7,6 +7,8 @@ export interface ChatMessage {
 
 export interface AIChatRequest {
   messages: ChatMessage[]
+  sessionId?: string
+  patientId?: string
 }
 
 export interface AIChatResponse {
@@ -36,58 +38,45 @@ export interface Patient {
 export const aiAgentService = {
   /**
    * Send messages to AI Agent for chat completion
+   * Returns both the AI response and the system message used (for display)
    */
-  async sendMessage(messages: ChatMessage[]): Promise<string> {
+  async sendMessage(messages: ChatMessage[], sessionId?: string, patientId?: string): Promise<{response: string, systemMessageUsed?: string}> {
     const response = await api.post('/api/tq/v1/ai-agent/chat', {
-      messages
+      messages,
+      sessionId,
+      patientId
     })
 
     if (!response.data || !response.data.response) {
       throw new Error('Invalid AI response format')
     }
 
-    return response.data.response
+    return {
+      response: response.data.response,
+      systemMessageUsed: response.data.systemMessageUsed
+    }
   },
 
   /**
-   * Create initial AI prompt for medical summary generation
+   * Create initial user message with system message preview
+   * Shows the configured system message but replaces $transcription$ with "..."
+   * The full text is sent to backend for processing
    */
-  createInitialPrompt(transcription: string, patient: Patient | null): ChatMessage[] {
-    const patientName = patient
-      ? `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || '[Patient Name]'
-      : '[Patient Name]'
-
-    const today = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-
-    const initialPrompt = `Below I'm sending a consultation transcription. Create a clear and comprehensive treatment summary written directly for the patient.
-
-Rules:
-• Write in 2nd person not 3rd person
-• Use only what is explicitly stated in the transcript. Do not invent, assume, or infer anything.
-• Do not include anything related to prices or costs.
-• Do not send your response in markdown or html format. Use plain text only.
-• Do not use special characters like emojis, special symbols, * etc. Use plain text only.
-• Begin the summary with:
-Patient Name: ${patientName}
-Date of Visit: ${today}
-• Structure the summary in clear sections
-• Do not add any conclusion, just end the summary with this exact closing text:
-
-If you have any questions or concerns about your treatment, please don't hesitate to contact us. We are here to help you understand and feel comfortable with your dental care.
-We appreciate the opportunity to care for your smile and look forward to seeing you at your next visit.
-
-Here is the transcription:
-
-${transcription}`
-
+  createInitialMessage(systemMessage: string, transcription: string): ChatMessage[] {
+    // Get first 3 words of transcription for preview
+    const words = transcription.trim().split(/\s+/)
+    const transcriptionPreview = words.length > 3 
+      ? words.slice(0, 3).join(' ') + '...'
+      : transcription
+    
+    // Replace $transcription$ variable with truncated version for display
+    // All other variables will be resolved by backend
+    const displayContent = systemMessage.replace(/\$transcription\$/g, transcriptionPreview)
+    
     return [
       {
         role: 'user',
-        content: initialPrompt
+        content: displayContent
       }
     ]
   },
@@ -108,12 +97,13 @@ ${transcription}`
   /**
    * Add AI response to conversation
    */
-  addAIResponse(messages: ChatMessage[], aiResponse: string): ChatMessage[] {
+  addAIResponse(messages: ChatMessage[], aiResponse: string | {response: string, systemMessageUsed?: string}): ChatMessage[] {
+    const content = typeof aiResponse === 'string' ? aiResponse : aiResponse.response
     return [
       ...messages,
       {
         role: 'assistant',
-        content: aiResponse
+        content
       }
     ]
   },

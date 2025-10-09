@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
-import { Palette } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { ConfigurationLayout, ConfigurationOption } from '@client/common/ui';
-import { BrandingConfiguration } from './BrandingConfiguration';
+import { AIAgentConfiguration } from './AIAgentConfiguration';
 
-type ConfigurationSection = 'branding';
+type ConfigurationSection = 'ai-agent';
 
 export const Configurations: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<ConfigurationSection>('branding');
+  const [activeSection, setActiveSection] = useState<ConfigurationSection>('ai-agent');
 
   const configOptions: ConfigurationOption<ConfigurationSection>[] = [
     {
-      id: 'branding',
-      name: 'Branding',
-      icon: Palette,
-      description: 'Customize colors, logo, and company identity'
+      id: 'ai-agent',
+      name: 'AI Agents',
+      icon: Bot,
+      description: 'Configure AI Agent behavior and system prompts'
     }
   ];
 
@@ -23,7 +23,8 @@ export const Configurations: React.FC = () => {
       activeSection={activeSection}
       onSectionChange={setActiveSection}
     >
-      {activeSection === 'branding' && <BrandingConfiguration />}
+      {activeSection === 'ai-agent' && <AIAgentConfiguration />}
     </ConfigurationLayout>
   );
 };
+

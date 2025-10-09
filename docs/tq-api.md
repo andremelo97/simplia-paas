@@ -171,12 +171,21 @@ Retrieve patient details.
 
 ### AI Agent
 
-Generate intelligent medical summaries from transcriptions using OpenAI.
+Generate intelligent medical summaries from transcriptions using OpenAI with customizable system messages.
 
 #### POST /ai-agent/chat
 Send messages to AI Agent for creating medical summaries.
 
-**Request:**
+**Request (Initial Conversation):**
+```json
+{
+  "messages": [],
+  "sessionId": "uuid-string",
+  "patientId": "uuid-string"
+}
+```
+
+**Request (Continuing Conversation):**
 ```json
 {
   "messages": [
@@ -192,7 +201,9 @@ Send messages to AI Agent for creating medical summaries.
       "role": "user",
       "content": "Please add a section about follow-up care"
     }
-  ]
+  ],
+  "sessionId": "uuid-string",
+  "patientId": "uuid-string"
 }
 ```
 
@@ -200,7 +211,8 @@ Send messages to AI Agent for creating medical summaries.
 ```json
 {
   "data": {
-    "response": "Patient Name: John Doe\nDate of Visit: September 27, 2025\n\n## Treatment Summary\nDuring your consultation today...\n\n## Follow-up Care\nPlease schedule a follow-up appointment in 2 weeks..."
+    "response": "Patient Name: John Doe\nDate of Visit: September 27, 2025\n\n## Treatment Summary\nDuring your consultation today...\n\n## Follow-up Care\nPlease schedule a follow-up appointment in 2 weeks...",
+    "systemMessageUsed": "You are a medical assistant creating patient summaries.\n\nPatient: John Doe\nDate: October 8, 2025\nProvider: Dr. Smith\n\nTranscription:\nPatient presented with dental concerns..."
   },
   "meta": {
     "code": "AI_RESPONSE_GENERATED",
@@ -210,10 +222,90 @@ Send messages to AI Agent for creating medical summaries.
 ```
 
 **Features:**
+- **Customizable System Message**: Admins can configure AI behavior via `/configurations/ai-agent`
+- **Template Variables**: System message supports dynamic variables:
+  - `$patient.first_name$`, `$patient.last_name$`, `$patient.fullName$`
+  - `$date.now$`, `$session.created_at$`
+  - `$transcription$` (full session transcription text)
+  - `$me.first_name$`, `$me.last_name$`, `$me.fullName$` (provider info)
 - **Interactive Chat**: Users can iterate and refine summaries
 - **Medical Focus**: Optimized prompts for dental/medical summaries
 - **Template-Based**: Structured output format for consistency
 - **Integration**: Direct quote creation from AI summaries
+- **Transparent Display**: Frontend shows exact system message sent to OpenAI
+
+### AI Agent Configuration
+
+Manage AI Agent system message configuration (admin-only).
+
+#### GET /configurations/ai-agent
+Retrieve current AI Agent configuration for the tenant.
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "systemMessage": "You are a medical assistant...\n\nPatient: $patient.fullName$\nDate: $date.now$\n\nTranscription:\n$transcription$",
+    "createdAt": "2025-10-08T10:00:00Z",
+    "updatedAt": "2025-10-08T10:00:00Z"
+  }
+}
+```
+
+#### PUT /configurations/ai-agent
+Update AI Agent system message configuration.
+
+**Request:**
+```json
+{
+  "systemMessage": "You are a dental assistant creating patient summaries.\n\nPatient: $patient.fullName$\nProvider: $me.fullName$\nDate: $date.now$\n\nTranscription:\n$transcription$\n\nCreate a clear, professional summary."
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "systemMessage": "You are a dental assistant...",
+    "updatedAt": "2025-10-08T11:00:00Z"
+  },
+  "meta": {
+    "code": "AI_AGENT_CONFIGURATION_UPDATED",
+    "message": "AI Agent configuration updated successfully"
+  }
+}
+```
+
+#### POST /configurations/ai-agent/reset
+Reset AI Agent configuration to default system message.
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "systemMessage": "You are a medical assistant creating patient-friendly treatment summaries...",
+    "updatedAt": "2025-10-08T11:30:00Z"
+  },
+  "meta": {
+    "code": "AI_AGENT_CONFIGURATION_RESET",
+    "message": "AI Agent configuration reset to default"
+  }
+}
+```
+
+**Available Template Variables:**
+- `$patient.first_name$` - Patient's first name
+- `$patient.last_name$` - Patient's last name
+- `$patient.fullName$` - Patient's full name (first + last)
+- `$date.now$` - Current date (formatted)
+- `$session.created_at$` - Session creation date (formatted)
+- `$transcription$` - Full session transcription text
+- `$me.first_name$` - Provider's first name (from JWT)
+- `$me.last_name$` - Provider's last name (from JWT)
+- `$me.fullName$` - Provider's full name
 
 ### Quotes
 
@@ -765,6 +857,23 @@ CREATE TRIGGER clinical_report_updated_at_trigger
     EXECUTE FUNCTION update_updated_at_column();
 ```
 
+### AI Agent Configuration Table
+```sql
+-- Per-tenant ai_agent_configuration table for customizable system messages
+CREATE TABLE tenant_{slug}.ai_agent_configuration (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  system_message TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE '{timeZone}'),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE '{timeZone}')
+);
+
+-- Auto-update timestamp trigger
+CREATE TRIGGER ai_agent_configuration_updated_at_trigger
+    BEFORE UPDATE ON tenant_{slug}.ai_agent_configuration
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+```
+
 ### Public Quote Template Table
 ```sql
 -- Per-tenant public_quote_template table for customizable quote layouts
@@ -1207,6 +1316,8 @@ All TQ API mutation endpoints (POST, PUT, PATCH, DELETE) return standardized res
 | `CLINICAL_REPORT_CREATED` | Clinical Report Created | Clinical report created successfully. |
 | `CLINICAL_REPORT_UPDATED` | Clinical Report Updated | Clinical report updated successfully. |
 | `CLINICAL_REPORT_DELETED` | Clinical Report Deleted | Clinical report deleted successfully. |
+| `AI_AGENT_CONFIGURATION_UPDATED` | Configuration Updated | AI Agent configuration updated successfully. |
+| `AI_AGENT_CONFIGURATION_RESET` | Configuration Reset | AI Agent configuration reset to default. |
 
 ### How It Works
 

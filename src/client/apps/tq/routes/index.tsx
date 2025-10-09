@@ -33,6 +33,7 @@ import { DesignPublicQuoteTemplate } from '../features/public-quotes/DesignPubli
 import { PreviewPublicQuoteTemplate } from '../features/public-quotes/PreviewPublicQuoteTemplate'
 import { PublicQuoteAccess } from '../features/public-quotes/PublicQuoteAccess'
 import { PreviewPublicQuoteLink } from '../features/public-quotes/PreviewPublicQuoteLink'
+import { Configurations } from '../features/configurations/Configurations'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -160,6 +161,9 @@ export const AppRoutes: React.FC = () => {
 
         {/* Design Public Quote Template - Full screen Puck editor */}
         <Route path="public-quotes/templates/:id/design" element={<DesignPublicQuoteTemplate />} />
+
+        {/* Configurations */}
+        <Route path="configurations" element={<Configurations />} />
 
         <Route path="*" element={<NotFound />} />
       </Route>

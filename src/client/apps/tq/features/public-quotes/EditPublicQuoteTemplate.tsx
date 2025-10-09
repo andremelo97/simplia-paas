@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Textarea, Checkbox } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Textarea, Checkbox, ConfirmDialog } from '@client/common/ui'
 import { publicQuotesService, UpdateTemplateRequest } from '../../services/publicQuotes'
 
 export const EditPublicQuoteTemplate: React.FC = () => {
@@ -17,6 +17,8 @@ export const EditPublicQuoteTemplate: React.FC = () => {
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDuplicating, setIsDuplicating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -171,6 +173,25 @@ export const EditPublicQuoteTemplate: React.FC = () => {
     }
   }
 
+  const handleDelete = async () => {
+    if (!id) return
+
+    setIsDeleting(true)
+
+    try {
+      await publicQuotesService.deleteTemplate(id)
+      // Feedback is handled automatically by HTTP interceptor
+      // Navigate back to templates list
+      navigate('/public-quotes/templates')
+    } catch (error) {
+      console.error('Failed to delete template:', error)
+      // Error feedback is also handled by HTTP interceptor
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -193,7 +214,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             type="button"
             variant="tertiary"
             onClick={handleDesignLayout}
-            disabled={isSubmitting || isDuplicating}
+            disabled={isSubmitting || isDuplicating || isDeleting}
           >
             Design Layout
           </Button>
@@ -202,9 +223,17 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             variant="primary"
             onClick={handleDuplicate}
             isLoading={isDuplicating}
-            disabled={isSubmitting || isDuplicating}
+            disabled={isSubmitting || isDuplicating || isDeleting}
           >
             {isDuplicating ? 'Duplicating...' : 'Duplicate'}
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={isSubmitting || isDuplicating || isDeleting}
+          >
+            Delete
           </Button>
         </div>
       </div>
@@ -286,6 +315,18 @@ export const EditPublicQuoteTemplate: React.FC = () => {
           </Button>
         </div>
       </form>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDelete}
+        title="Delete Template?"
+        description={`Are you sure you want to delete "${formData.name}"? This action cannot be undone.`}
+        confirmText="Delete Template"
+        variant="delete"
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

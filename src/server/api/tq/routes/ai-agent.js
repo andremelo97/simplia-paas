@@ -6,6 +6,7 @@ const { stripHtmlToText, textToHtml } = require('../../../infra/utils/htmlConver
 const { Template, TemplateNotFoundError } = require('../../../infra/models/Template');
 const { Patient, PatientNotFoundError } = require('../../../infra/models/Patient');
 const { Session, SessionNotFoundError } = require('../../../infra/models/Session');
+const { AIAgentConfiguration } = require('../../../infra/models/AIAgentConfiguration');
 
 const router = express.Router();
 
@@ -98,12 +99,21 @@ router.post('/chat', async (req, res) => {
       });
     }
 
-    const { messages } = req.body;
+    const { messages, sessionId, patientId } = req.body;
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    // Allow empty messages array if sessionId is provided (initial conversation)
+    // Backend will add system message with resolved variables
+    if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({
         error: 'Validation Error',
-        message: 'Messages array is required and cannot be empty'
+        message: 'Messages array is required'
+      });
+    }
+
+    if (messages.length === 0 && !sessionId) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Messages array cannot be empty unless sessionId is provided for initial conversation'
       });
     }
 
@@ -131,7 +141,59 @@ router.post('/chat', async (req, res) => {
       });
     }
 
-    // Call OpenAI Responses API
+    // Get AI Agent configuration
+    const aiConfig = await AIAgentConfiguration.findByTenant(schema);
+    let systemMessage = aiConfig.systemMessage || AIAgentConfiguration.getDefaultSystemMessage();
+
+    // Load session and patient data if provided (for variable resolution)
+    let session = null;
+    let patient = null;
+    let transcription = null;
+
+    if (sessionId) {
+      try {
+        // Session.findById(id, schema, includePatient)
+        session = await Session.findById(sessionId, schema, true);
+        if (session) {
+          // Session já vem com patient e transcription carregados
+          patient = session.patient || null;
+          transcription = session.transcription?.text || null;
+          
+          console.log('🔍 [AI Agent] Session loaded:', {
+            sessionId: session.id,
+            hasPatient: !!patient,
+            hasTranscription: !!transcription,
+            transcriptionLength: transcription?.length || 0
+          });
+        }
+      } catch (error) {
+        console.warn(`[AI Agent] Session ${sessionId} not found:`, error.message);
+      }
+    }
+
+    if (!patient && patientId) {
+      try {
+        patient = await Patient.findById(patientId, schema);
+      } catch (error) {
+        console.warn(`[AI Agent] Patient ${patientId} not found:`, error.message);
+      }
+    }
+
+    // Resolve variables in system message
+    const variableContext = {
+      patient,
+      session,
+      transcription,
+      user: req.user,
+      tenantId: req.tenant?.id
+    };
+
+    systemMessage = resolveTemplateVariables(systemMessage, variableContext);
+
+    console.log('🤖 [AI Agent] System message after variable resolution:', systemMessage.substring(0, 200));
+    console.log('🤖 [AI Agent] Has transcription:', !!transcription);
+
+    // Call OpenAI Responses API with system message prepended
     const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -140,7 +202,7 @@ router.post('/chat', async (req, res) => {
       },
       body: JSON.stringify({
         model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-        input: messages // Array estruturado mantendo contexto clínico
+        input: `${systemMessage}\n\n${messages.map(m => `${m.role}: ${m.content}`).join('\n\n')}`
       })
     });
 
@@ -209,7 +271,8 @@ router.post('/chat', async (req, res) => {
 
     res.json({
       data: {
-        response: aiResponse
+        response: aiResponse,
+        systemMessageUsed: systemMessage // Return resolved system message to frontend
       },
       meta: {
         code: 'AI_RESPONSE_GENERATED',

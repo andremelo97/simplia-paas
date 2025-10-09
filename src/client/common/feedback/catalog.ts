@@ -203,6 +203,20 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Failed to revoke link. Please try again."
   },
 
+  // TQ - Public Quote Template operations
+  PUBLIC_QUOTE_TEMPLATE_CREATED: {
+    title: "Template Created",
+    message: "Public quote template created successfully."
+  },
+  PUBLIC_QUOTE_TEMPLATE_UPDATED: {
+    title: "Template Updated",
+    message: "Public quote template updated successfully."
+  },
+  PUBLIC_QUOTE_TEMPLATE_DELETED: {
+    title: "Template Deleted",
+    message: "Public quote template deleted successfully."
+  },
+
   // Branding operations
   BRANDING_UPDATED: {
     title: "Branding Updated",

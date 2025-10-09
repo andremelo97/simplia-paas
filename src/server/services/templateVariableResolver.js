@@ -20,7 +20,7 @@ function resolveTemplateVariables(template, context) {
     return template
   }
 
-  const { patient, session, user } = context
+  const { patient, session, user, transcription } = context
 
   // Define variable resolvers
   const variables = {
@@ -45,6 +45,9 @@ function resolveTemplateVariables(template, context) {
         month: 'long',
         day: 'numeric'
       }) : '',
+
+    // Transcription variables
+    'transcription': transcription || session?.transcription?.text || '',
 
     // Current user (me) variables
     'me.first_name': user?.first_name || '',
@@ -99,6 +102,7 @@ function validateTemplateVariables(template) {
     'patient.fullName',
     'date.now',
     'session.created_at',
+    'transcription',
     'me.first_name',
     'me.last_name',
     'me.fullName',

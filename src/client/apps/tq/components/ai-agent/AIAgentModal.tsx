@@ -24,6 +24,8 @@ interface AIAgentModalProps {
   onClose: () => void
   transcription: string
   patient: Patient | null
+  sessionId?: string
+  patientId?: string
   onCreateSessionAndQuote: (aiSummary: string) => void
   onCreateClinicalReport: (aiSummary: string) => void
 }
@@ -33,6 +35,8 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
   onClose,
   transcription,
   patient,
+  sessionId,
+  patientId,
   onCreateSessionAndQuote,
   onCreateClinicalReport
 }) => {
@@ -91,11 +95,31 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
     setError(null)
 
     try {
-      const initialMessages = aiAgentService.createInitialPrompt(transcription, patient)
-      setMessages(initialMessages)
-
-      const aiResponse = await aiAgentService.sendMessage(initialMessages)
-      const updatedMessages = aiAgentService.addAIResponse(initialMessages, aiResponse)
+      // Send EMPTY messages to backend - backend will resolve system message and add it
+      // Backend gets full transcription via sessionId and resolves all variables
+      const result = await aiAgentService.sendMessage([], sessionId, patientId)
+      
+      // Backend returns the resolved system message - use it for display
+      // Replace full transcription with truncated version for UI
+      let displaySystemMessage = result.systemMessageUsed || 'Processing transcription...'
+      
+      if (result.systemMessageUsed && transcription) {
+        // Get first 3 words of transcription for preview
+        const words = transcription.trim().split(/\s+/)
+        const transcriptionPreview = words.length > 3 
+          ? words.slice(0, 3).join(' ') + '...'
+          : transcription
+        
+        // Replace full transcription with preview in display message
+        displaySystemMessage = displaySystemMessage.replace(
+          new RegExp(transcription.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+          transcriptionPreview
+        )
+      }
+      
+      // Create display messages with resolved system message (transcription truncated)
+      const displayMessages = [{ role: 'user' as const, content: displaySystemMessage }]
+      const updatedMessages = aiAgentService.addAIResponse(displayMessages, result.response)
       setMessages(updatedMessages)
       setHasInitialized(true)
     } catch (error) {
@@ -120,8 +144,8 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
       setMessages(messagesWithUser)
 
       // Get AI response
-      const aiResponse = await aiAgentService.sendMessage(messagesWithUser)
-      const finalMessages = aiAgentService.addAIResponse(messagesWithUser, aiResponse)
+      const result = await aiAgentService.sendMessage(messagesWithUser, sessionId, patientId)
+      const finalMessages = aiAgentService.addAIResponse(messagesWithUser, result.response)
       setMessages(finalMessages)
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -206,7 +230,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
             )}
 
             <div className="space-y-4">
-              {messages.slice(1).map((message, index) => (
+              {messages.map((message, index) => (
                 message.role === 'assistant' ? (
                   <div key={`assistant-${index}`} className="flex gap-3">
                     <div className="flex-shrink-0">
@@ -254,9 +278,9 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                   <div key={`user-${index}`} className="flex gap-3 justify-end">
                     <Card className="flex-1 max-w-2xl">
                       <CardContent className="p-4">
-                        <div className="text-sm text-gray-800">
+                        <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800 m-0" style={{ lineHeight: '1.8' }}>
                           {message.content}
-                        </div>
+                        </pre>
                       </CardContent>
                     </Card>
                     <div className="flex-shrink-0">

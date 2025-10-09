@@ -61,7 +61,7 @@ WHERE a.active = TRUE
   AND ut.active = TRUE;
 
 -- =============================================
--- ADMIN USER (consultoriasimplia@gmail.com)
+-- ADMIN USERS
 -- =============================================
 
 -- Insert admin user for default tenant (password: 1234)
@@ -92,6 +92,7 @@ SELECT
 FROM user_types ut, tenants t
 WHERE ut.slug = 'admin' AND t.subdomain = 'default'
 ON CONFLICT (email) DO NOTHING;
+
 
 -- =============================================
 -- SEED DOCUMENTATION

@@ -376,7 +376,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           case 'tertiary':
             return branding.tertiaryColor
           case 'dark':
-            return '#111827'
+            return '#000000'
           case 'white':
           default:
             return '#ffffff'

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardTitle, CardContent, LinkToast } from '@client/common/ui'
+import { Card, CardHeader, CardTitle, CardContent, LinkToast, ConfirmDialog } from '@client/common/ui'
 import { LinksEmpty } from '../../../components/public-quotes/LinksEmpty'
 import { PublicQuoteLinksFilters } from '../../../components/public-quotes/PublicQuoteLinksFilters'
 import { PublicQuoteLinkRow } from '../../../components/public-quotes/PublicQuoteLinkRow'
@@ -16,10 +16,15 @@ export const LinksTab: React.FC = () => {
   const [createdTo, setCreatedTo] = useState('')
   const [publicQuotes, setPublicQuotes] = useState<PublicQuote[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  
+
   // LinkToast state for new password
   const [showLinkToast, setShowLinkToast] = useState(false)
   const [toastData, setToastData] = useState<{publicQuoteId: string, publicUrl: string, password: string, quoteNumber: string} | null>(null)
+
+  // ConfirmDialog state for revoke
+  const [showRevokeDialog, setShowRevokeDialog] = useState(false)
+  const [revokeTarget, setRevokeTarget] = useState<{id: string, quoteNumber: string} | null>(null)
+  const [isRevoking, setIsRevoking] = useState(false)
 
   useEffect(() => {
     loadPublicQuotes()
@@ -69,13 +74,30 @@ export const LinksTab: React.FC = () => {
     }
   }
 
-  const handleRevoke = async (id: string) => {
+  const handleRevokeClick = (publicQuote: PublicQuote) => {
+    setRevokeTarget({
+      id: publicQuote.id,
+      quoteNumber: publicQuote.quote?.number || 'N/A'
+    })
+    setShowRevokeDialog(true)
+  }
+
+  const handleRevokeConfirm = async () => {
+    if (!revokeTarget) return
+
+    setIsRevoking(true)
     try {
-      await publicQuotesService.revokePublicQuote(id)
+      await publicQuotesService.revokePublicQuote(revokeTarget.id)
+      // Feedback is handled automatically by HTTP interceptor
       // Reload list
       await loadPublicQuotes()
     } catch (error) {
       console.error('Failed to revoke public quote:', error)
+      // Error feedback is also handled by HTTP interceptor
+    } finally {
+      setIsRevoking(false)
+      setShowRevokeDialog(false)
+      setRevokeTarget(null)
     }
   }
 
@@ -152,7 +174,7 @@ export const LinksTab: React.FC = () => {
                 <PublicQuoteLinkRow
                   key={publicQuote.id}
                   publicQuote={publicQuote}
-                  onRevoke={() => handleRevoke(publicQuote.id)}
+                  onRevoke={() => handleRevokeClick(publicQuote)}
                   onNewPassword={() => handleNewPassword(publicQuote)}
                 />
               ))}
@@ -175,6 +197,18 @@ export const LinksTab: React.FC = () => {
           darkBackground={true}
         />
       )}
+
+      {/* Revoke Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showRevokeDialog}
+        onClose={() => setShowRevokeDialog(false)}
+        onConfirm={handleRevokeConfirm}
+        title="Revoke Public Link?"
+        description={`Are you sure you want to revoke the public link for quote ${revokeTarget?.quoteNumber}? This will make the link inactive and inaccessible.`}
+        confirmText="Revoke Link"
+        variant="delete"
+        isLoading={isRevoking}
+      />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X,
@@ -40,6 +41,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
   onCreateSessionAndQuote,
   onCreateClinicalReport
 }) => {
+  const { t } = useTranslation('tq')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [userInput, setUserInput] = useState('')
@@ -87,7 +89,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
 
   const initializeConversation = async () => {
     if (!transcription.trim()) {
-      setError('No transcription available to analyze')
+      setError(t('modals.ai_agent.no_transcription'))
       return
     }
 
@@ -124,7 +126,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
       setHasInitialized(true)
     } catch (error) {
       console.error('Failed to initialize AI conversation:', error)
-      setError(error instanceof Error ? error.message : 'Failed to generate summary')
+      setError(error instanceof Error ? error.message : t('modals.ai_agent.failed_to_generate'))
     } finally {
       setIsLoading(false)
     }
@@ -149,7 +151,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
       setMessages(finalMessages)
     } catch (error) {
       console.error('Failed to send message:', error)
-      setError(error instanceof Error ? error.message : 'Failed to send message')
+      setError(error instanceof Error ? error.message : t('modals.ai_agent.failed_to_send'))
     } finally {
       setIsLoading(false)
     }
@@ -203,11 +205,11 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                 <Bot className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">AI Medical Summary</h2>
+                <h2 className="text-xl font-semibold text-gray-900">{t('modals.ai_agent.title')}</h2>
                 <p className="text-sm text-gray-600">
-                  Creating treatment summary for {patient ?
-                    `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Patient' :
-                    'Patient'}
+                  {t('modals.ai_agent.creating_summary_for')} {patient ?
+                    `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || t('modals.ai_agent.patient_label') :
+                    t('modals.ai_agent.patient_label')}
                 </p>
               </div>
             </div>
@@ -257,7 +259,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                             className="flex items-center gap-2"
                           >
                             <Receipt className="w-4 h-4" />
-                            Create Quote
+                            {t('modals.ai_agent.create_quote')}
                           </Button>
                           <Button
                             onClick={() => {
@@ -268,7 +270,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                             className="flex items-center gap-2"
                           >
                             <FileText className="w-4 h-4" />
-                            Create Clinical Report
+                            {t('modals.ai_agent.create_clinical_report')}
                           </Button>
                         </div>
                       </CardContent>
@@ -317,7 +319,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
               <div className="flex gap-3">
                 <Input
                   ref={inputRef}
-                  placeholder="Ask the AI to modify the summary, add sections, or make changes..."
+                  placeholder={t('modals.ai_agent.placeholder')}
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={handleKeyPress}

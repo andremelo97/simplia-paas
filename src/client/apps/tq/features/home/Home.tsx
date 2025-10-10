@@ -244,9 +244,9 @@ export const Home: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
+          {t('home.welcome_back')}{user?.firstName ? `, ${user.firstName}` : ''}!
         </h1>
-        <p className="text-gray-600 mt-1">TQ - Transcription Quote System</p>
+        <p className="text-gray-600 mt-1">{t('app_name')}</p>
       </div>
 
       {/* Quick Actions */}
@@ -300,7 +300,7 @@ export const Home: React.FC = () => {
           <Card>
             <CardHeader className="text-center py-8">
               <CardTitle className="text-gray-500 text-base font-normal">
-                No quotes yet. Start a new session to create your first quote.
+                {t('quotes.no_quotes_home')}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -333,7 +333,7 @@ export const Home: React.FC = () => {
           <Card>
             <CardHeader className="text-center py-8">
               <CardTitle className="text-gray-500 text-base font-normal">
-                No clinical reports yet. Create your first report to get started.
+                {t('clinical_reports.no_reports_home')}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -366,7 +366,7 @@ export const Home: React.FC = () => {
           <Card>
             <CardHeader className="text-center py-8">
               <CardTitle className="text-gray-500 text-base font-normal">
-                No sessions yet. Start a new session to get started.
+                {t('sessions.no_sessions_home')}
               </CardTitle>
             </CardHeader>
           </Card>
@@ -406,7 +406,7 @@ export const Home: React.FC = () => {
             <Card>
               <CardHeader className="text-center py-8">
                 <CardTitle className="text-gray-500 text-base font-normal">
-                  No patients yet. Add your first patient to get started.
+                  {t('patients.no_patients_home')}
                 </CardTitle>
               </CardHeader>
             </Card>

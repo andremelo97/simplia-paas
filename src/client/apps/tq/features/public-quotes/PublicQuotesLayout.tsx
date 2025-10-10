@@ -1,11 +1,14 @@
 import React from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@client/common/ui'
 
 export const PublicQuotesLayout: React.FC = () => {
+  const { t } = useTranslation('tq')
+
   const tabs = [
-    { label: 'Links', path: '/public-quotes/links' },
-    { label: 'Templates', path: '/public-quotes/templates' }
+    { label: t('public_quotes.pages.tab_links'), path: '/public-quotes/links' },
+    { label: t('public_quotes.pages.tab_templates'), path: '/public-quotes/templates' }
   ]
 
   return (
@@ -15,9 +18,9 @@ export const PublicQuotesLayout: React.FC = () => {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Public Quotes</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('public_quotes.pages.public_quotes_title')}</h1>
               <p className="text-gray-600 mt-1">
-                Share quotes externally with customizable templates
+                {t('public_quotes.pages.public_quotes_subtitle')}
               </p>
             </div>
           </div>

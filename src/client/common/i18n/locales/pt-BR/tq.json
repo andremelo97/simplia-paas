@@ -1,7 +1,47 @@
 {
-  "app_name": "TQ - Sistema de Cotação de Transcrição",
+  "app_name": "TQ - Transcription & Quote",
+  "modals": {
+    "ai_agent": {
+      "title": "Resumo Médico com IA",
+      "creating_summary_for": "Criando resumo de tratamento para",
+      "patient_label": "Paciente",
+      "create_quote": "Criar Cotação",
+      "create_clinical_report": "Criar Relatório Clínico",
+      "placeholder": "Peça à IA para modificar o resumo, adicionar seções ou fazer alterações...",
+      "no_transcription": "Nenhuma transcrição disponível para análise",
+      "failed_to_generate": "Falha ao gerar resumo",
+      "failed_to_send": "Falha ao enviar mensagem"
+    },
+    "audio_upload": {
+      "title": "Enviar Arquivo de Áudio",
+      "upload_instruction": "Arraste e solte um arquivo de áudio aqui ou clique para selecionar",
+      "supported_formats": "Formatos suportados: MP3, WAV, M4A, WEBM",
+      "max_size": "Tamanho máximo: 500MB",
+      "select_file": "Selecionar Arquivo",
+      "uploading": "Enviando...",
+      "transcribing": "Transcrevendo...",
+      "upload_complete": "Upload Completo",
+      "transcription_complete": "Transcrição Completa"
+    },
+    "template_quote": {
+      "title": "Criar Cotação com Template",
+      "select_template": "Selecionar Template",
+      "no_templates": "Nenhum template disponível",
+      "fill_with_ai": "Preencher com IA",
+      "create": "Criar Cotação"
+    },
+    "generate_public_quote": {
+      "title": "Gerar Link Público da Cotação",
+      "select_template": "Selecionar Template",
+      "password_optional": "Senha (Opcional)",
+      "password_helper": "Deixe em branco para links sem senha",
+      "generate_link": "Gerar Link",
+      "copy_link": "Copiar Link"
+    }
+  },
   "common": {
     "created_at": "Criado em",
+    "created": "Criado",
     "updated_at": "Atualizado em",
     "save": "Salvar",
     "save_changes": "Salvar Alterações",
@@ -21,7 +61,38 @@
     "select": "Selecionar",
     "notes": "Observações",
     "password": "Senha",
-    "enter_password": "Digite a senha"
+    "enter_password": "Digite a senha",
+    "try_again": "Tentar novamente",
+    "name": "Nome",
+    "description": "Descrição",
+    "status": "Status",
+    "patient": "Paciente",
+    "session": "Sessão",
+    "total": "Total",
+    "title": "Título",
+    "usage": "Uso",
+    "of": "de",
+    "view_all": "Ver Todos",
+    "no_results": "Nenhum resultado encontrado",
+    "active": "Ativo",
+    "inactive": "Inativo"
+  },
+  "home": {
+    "welcome_back": "Bem-vindo de volta",
+    "quick_actions": "Ações Rápidas",
+    "latest_quotes": "Últimas Cotações",
+    "latest_reports": "Últimos Relatórios",
+    "sessions_this_week": "Sessões Esta Semana",
+    "patients_recently_added": "Pacientes Adicionados Recentemente",
+    "recent_activity": "Atividade Recente",
+    "start_new_session": "Iniciar Nova Sessão",
+    "add_patient": "Adicionar Paciente",
+    "view_sessions": "Ver Sessões",
+    "no_quotes_yet": "Nenhuma cotação ainda",
+    "no_reports_yet": "Nenhum relatório ainda",
+    "no_sessions_yet": "Nenhuma sessão ainda",
+    "no_patients_yet": "Nenhum paciente ainda",
+    "no_activity_yet": "Nenhuma atividade ainda"
   },
   "patients": {
     "title": "Pacientes",
@@ -34,11 +105,18 @@
     "phone": "Telefone",
     "date_of_birth": "Data de Nascimento",
     "no_patients": "Nenhum paciente ainda. Adicione seu primeiro paciente para começar.",
+    "no_patients_home": "Nenhum paciente ainda. Adicione seu primeiro paciente para começar.",
     "recently_added": "Pacientes Adicionados Recentemente",
     "patient_registered": "Paciente Registrado",
     "patient_history": "Histórico do Paciente",
     "loading_patient": "Carregando dados do paciente...",
     "error_loading": "Erro ao Carregar Paciente",
+    "pages": {
+      "management_title": "Gerenciamento de Pacientes",
+      "management_subtitle": "Gerencie registros e informações de pacientes",
+      "list_title": "Lista de Pacientes",
+      "add_patient": "Adicionar Paciente"
+    },
     "placeholders": {
       "first_name": "ex: João",
       "last_name": "ex: Silva",
@@ -56,14 +134,31 @@
     "start_transcribing": "Iniciar Transcrição",
     "upload_audio": "Enviar Áudio",
     "no_sessions": "Nenhuma sessão ainda. Inicie uma nova sessão para começar.",
+    "no_sessions_home": "Nenhuma sessão ainda. Inicie uma nova sessão para começar.",
     "this_week": "Sessões Esta Semana",
     "session_created": "Sessão criada para",
     "loading_session": "Carregando dados da sessão...",
     "error_loading": "Erro ao Carregar Sessão",
     "select_microphone": "Selecionar microfone",
+    "resume": "Continuar",
+    "pause": "Pausar",
+    "stop": "Parar",
+    "session_transcription": "Transcrição da Sessão",
+    "create_new_patient": "Criar novo paciente",
+    "add_patient_details": "Adicionar Detalhes do Paciente",
+    "call_ai_agent": "Chamar Agente de IA",
+    "new_quote_or_clinical": "Nova Cotação ou Relatório",
+    "pages": {
+      "management_title": "Gerenciamento de Sessões",
+      "management_subtitle": "Visualize e gerencie suas sessões de transcrição",
+      "list_title": "Lista de Sessões",
+      "sessions": "sessões"
+    },
     "placeholders": {
       "transcription": "Envie um arquivo de áudio ou inicie a transcrição... O texto aparecerá aqui automaticamente.",
-      "transcription_edit": "O conteúdo da transcrição aparecerá aqui..."
+      "transcription_edit": "O conteúdo da transcrição aparecerá aqui...",
+      "search_patient": "Buscar paciente por nome…",
+      "enter_patient_name": "Digite o nome do paciente…"
     },
     "helper_text": {
       "edit_transcription": "Edite o conteúdo da transcrição"
@@ -77,6 +172,7 @@
     "content": "Conteúdo",
     "items": "Itens",
     "no_quotes": "Nenhuma cotação ainda. Inicie uma nova sessão para criar sua primeira cotação.",
+    "no_quotes_home": "Nenhuma cotação ainda. Inicie uma nova sessão para criar sua primeira cotação.",
     "latest": "Últimas Cotações",
     "quote_created": "Cotação criada para",
     "quote_information": "Informações da Cotação",
@@ -87,6 +183,14 @@
     "preview_template": "Visualizar Template",
     "loading_quote": "Carregando cotação...",
     "quote_not_found": "Cotação não encontrada",
+    "pages": {
+      "management_title": "Gerenciamento de Cotações",
+      "management_subtitle": "Gerencie suas cotações de consulta e itens de catálogo",
+      "list_title": "Lista de Cotações",
+      "quotes": "cotações",
+      "tab_quotes": "Cotações",
+      "tab_items": "Itens"
+    },
     "placeholders": {
       "content": "Conteúdo da cotação...",
       "search_items": "Digite para buscar itens..."
@@ -96,6 +200,12 @@
     "loading_item": "Carregando detalhes do item...",
     "name": "Nome",
     "description": "Descrição",
+    "base_price": "Preço Base",
+    "pages": {
+      "list_title": "Itens",
+      "items": "itens",
+      "create_item": "Criar Item"
+    },
     "placeholders": {
       "name": "ex: Sessão de Consulta",
       "description": "Descreva o que este serviço ou produto inclui (opcional)"
@@ -110,6 +220,7 @@
     "content": "Conteúdo",
     "no_reports": "Nenhum relatório clínico ainda. Crie seu primeiro relatório para começar.",
     "latest": "Últimos Relatórios",
+    "no_reports_home": "Nenhum relatório clínico ainda. Crie seu primeiro relatório para começar.",
     "report_created": "Relatório clínico criado para",
     "print_pdf": "Imprimir/PDF",
     "loading_report": "Carregando relatório clínico...",
@@ -121,6 +232,18 @@
     "session": "Sessão",
     "no_patient_data": "Sem dados do paciente",
     "no_session_data": "Sem dados da sessão",
+    "pages": {
+      "list_title": "Lista de Relatórios",
+      "reports": "relatórios",
+      "management_subtitle": "Visualize e gerencie relatórios clínicos de seus pacientes",
+      "view_title": "Relatório Clínico",
+      "print_save_pdf": "Imprimir/Salvar como PDF",
+      "back_to_reports": "Voltar para Relatórios Clínicos",
+      "generated_on": "Gerado em",
+      "disclaimer": "Este relatório clínico foi gerado automaticamente. Por favor, verifique todas as informações antes de usar.",
+      "unknown_patient": "Paciente Desconhecido",
+      "report": "Relatório"
+    },
     "placeholders": {
       "content": "Conteúdo do relatório clínico..."
     }
@@ -134,6 +257,13 @@
     "no_templates": "Nenhum template ainda. Crie seu primeiro template para começar.",
     "template_created": "Template criado",
     "content": "Conteúdo",
+    "pages": {
+      "management_title": "Gerenciamento de Templates",
+      "management_subtitle": "Gerencie templates de documentação clínica e padronize suas anotações",
+      "list_title": "Lista de Templates",
+      "templates": "templates",
+      "add_template": "Adicionar Template"
+    },
     "validation_errors": {
       "content": "O conteúdo não pode estar vazio"
     },
@@ -149,6 +279,22 @@
     "loading_preview": "Carregando visualização...",
     "failed_to_load": "Falha ao carregar visualização",
     "loading_quote": "Carregando cotação...",
+    "pages": {
+      "public_quotes_title": "Cotações Públicas",
+      "public_quotes_subtitle": "Compartilhe cotações externamente com templates customizáveis",
+      "tab_links": "Links",
+      "tab_templates": "Templates",
+      "public_quote_links": "Links de Cotações Públicas",
+      "templates_list": "Templates",
+      "create_template": "Criar Template",
+      "loading_templates": "Carregando templates...",
+      "revoke_link_title": "Revogar Link Público?",
+      "revoke_link_description": "Tem certeza que deseja revogar o link público da cotação {quoteNumber}? Isso tornará o link inativo e inacessível.",
+      "revoke_link": "Revogar Link",
+      "back_to_quote": "Voltar para Cotação",
+      "no_content": "Sem Conteúdo",
+      "no_content_description": "Este template ainda não tem conteúdo."
+    },
     "placeholders": {
       "template_name": "ex: Layout Padrão de Cotação",
       "template_description": "Descreva este layout de template (opcional)",
@@ -182,5 +328,26 @@
     "quotes": "Cotações",
     "clinical": "Clínico",
     "timeline": "Linha do Tempo"
+  },
+  "configurations": {
+    "ai_agent": {
+      "menu_title": "Agentes de IA",
+      "menu_description": "Configure o comportamento e prompts do sistema do Agente de IA",
+      "page_title": "Configuração do Agente de IA",
+      "page_description": "Configure o comportamento e mensagem inicial do Agente de IA",
+      "system_message_title": "Mensagem do Sistema",
+      "system_message_description": "Esta mensagem define como o Agente de IA deve se comportar e responder. É a primeira mensagem enviada em cada conversa para estabelecer contexto e diretrizes.",
+      "transcription_required": "A variável $transcription$ é necessária para garantir que a transcrição da consulta seja enviada ao agente.",
+      "available_variables": "Variáveis disponíveis:",
+      "save_changes": "Salvar Alterações",
+      "reset_to_default": "Redefinir para Padrão",
+      "saving": "Salvando...",
+      "loading": "Carregando configuração do Agente de IA...",
+      "failed_to_load": "Falha ao carregar configuração. Por favor, tente novamente.",
+      "failed_to_save": "Falha ao salvar configuração. Por favor, tente novamente.",
+      "failed_to_reset": "Falha ao redefinir configuração. Por favor, tente novamente.",
+      "reset_confirm": "Tem certeza que deseja redefinir a configuração do Agente de IA para o padrão?",
+      "last_updated": "Última atualização:"
+    }
   }
 }

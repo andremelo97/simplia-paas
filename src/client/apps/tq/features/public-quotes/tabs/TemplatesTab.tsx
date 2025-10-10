@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@client/common/ui'
 import { Plus } from 'lucide-react'
 import { publicQuotesService, PublicQuoteTemplate } from '../../../services/publicQuotes'
@@ -8,6 +9,7 @@ import { TemplatesEmpty } from '../../../components/public-quotes/TemplatesEmpty
 import { TemplateCard } from '../../../components/public-quotes/TemplateCard'
 
 export const TemplatesTab: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -42,7 +44,7 @@ export const TemplatesTab: React.FC = () => {
       <CardHeader className="py-4 px-6">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">
-            Templates ({templates?.length || 0} of 3)
+            {t('public_quotes.pages.templates_list')} ({templates?.length || 0} {t('common.of')} 3)
           </CardTitle>
           <Button
             variant="primary"
@@ -50,7 +52,7 @@ export const TemplatesTab: React.FC = () => {
             onClick={() => navigate('/public-quotes/templates/create')}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Create Template
+            {t('public_quotes.pages.create_template')}
           </Button>
         </div>
       </CardHeader>
@@ -58,7 +60,7 @@ export const TemplatesTab: React.FC = () => {
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-12">
-            <div className="text-gray-500">Loading templates...</div>
+            <div className="text-gray-500">{t('public_quotes.pages.loading_templates')}</div>
           </div>
         )}
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardContent,
@@ -18,6 +19,7 @@ import { ItemFilters } from '../../../components/items/ItemFilters'
 import { Item } from '../../../services/items'
 
 export const ItemsTab: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [searchQuery, setSearchQuery] = useState('')
   const [includeInactive, setIncludeInactive] = useState(false)
   const navigate = useNavigate()
@@ -77,14 +79,14 @@ export const ItemsTab: React.FC = () => {
         <CardHeader className="py-4 px-6">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">
-              Items ({items?.length || 0} of {total} items)
+              {t('quote_items.pages.list_title')} ({items?.length || 0} {t('common.of')} {total} {t('quote_items.pages.items')})
             </CardTitle>
             <Button
               onClick={handleCreateItem}
               variant="primary"
             >
               <Plus className="w-4 h-4 mr-2" />
-              Create Item
+              {t('quote_items.pages.create_item')}
             </Button>
           </div>
         </CardHeader>
@@ -98,7 +100,7 @@ export const ItemsTab: React.FC = () => {
                   onClick={refresh}
                   className="text-purple-600 hover:text-purple-800 underline"
                 >
-                  Try again
+                  {t('common.try_again')}
                 </button>
               </AlertDescription>
             </Alert>
@@ -129,11 +131,11 @@ export const ItemsTab: React.FC = () => {
             <>
               {/* Header Row */}
               <div className="flex items-center gap-6 py-2 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
-                <div className="w-24">Created</div>
-                <div className="flex-1">Name</div>
-                <div className="flex-1">Description</div>
-                <div className="flex-1">Base Price</div>
-                <div className="flex-1">Status</div>
+                <div className="w-24">{t('common.created')}</div>
+                <div className="flex-1">{t('common.name')}</div>
+                <div className="flex-1">{t('common.description')}</div>
+                <div className="flex-1">{t('quote_items.base_price')}</div>
+                <div className="flex-1">{t('common.status')}</div>
                 <div className="w-24"></div> {/* Space for actions */}
               </div>
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardContent,
@@ -18,6 +19,7 @@ import { Session } from '../../services/sessions'
 import { SessionStatus } from '../../types/sessionStatus'
 
 export const Sessions: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all')
   const navigate = useNavigate()
@@ -67,9 +69,9 @@ export const Sessions: React.FC = () => {
       {/* Header with Title */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Session Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.pages.management_title')}</h1>
           <p className="text-gray-600 mt-1">
-            View and manage your transcription sessions
+            {t('sessions.pages.management_subtitle')}
           </p>
         </div>
       </div>
@@ -86,7 +88,7 @@ export const Sessions: React.FC = () => {
       <Card>
         <CardHeader className="py-4 px-6">
           <CardTitle className="text-base">
-            Session List ({sessions?.length || 0} of {total} sessions)
+            {t('sessions.pages.list_title')} ({sessions?.length || 0} {t('common.of')} {total} {t('sessions.pages.sessions')})
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6"> {/* Added horizontal and bottom padding to match header */}
@@ -99,7 +101,7 @@ export const Sessions: React.FC = () => {
                   onClick={refresh}
                   className="text-purple-600 hover:text-purple-800 underline"
                 >
-                  Try again
+                  {t('common.try_again')}
                 </button>
               </AlertDescription>
             </Alert>
@@ -130,10 +132,10 @@ export const Sessions: React.FC = () => {
             <>
               {/* Header Row */}
               <div className="flex items-center gap-6 py-2 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
-                <div className="w-24">Created</div>
-                <div className="flex-1">Session</div>
-                <div className="flex-1">Status</div>
-                <div className="flex-1">Patient</div>
+                <div className="w-24">{t('common.created')}</div>
+                <div className="flex-1">{t('common.session')}</div>
+                <div className="flex-1">{t('common.status')}</div>
+                <div className="flex-1">{t('common.patient')}</div>
                 <div className="w-24"></div> {/* Space for actions */}
               </div>
 

@@ -818,9 +818,9 @@ export const NewSession: React.FC = () => {
       {/* Header with Title and Controls */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">New Session</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
           <p className="text-gray-600 mt-1">
-            Create and record a new transcription session
+            {t('sessions.pages.management_subtitle')}
           </p>
         </div>
 
@@ -870,12 +870,12 @@ export const NewSession: React.FC = () => {
                 {transcribeMode === 'start' ? (
                   <>
                     <Play className="w-4 h-4 mr-2" />
-                    Start Transcribing
+                    {t('sessions.start_transcribing')}
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4 mr-2" />
-                    Upload Audio
+                    {t('sessions.upload_audio')}
                   </>
                 )}
               </Button>
@@ -898,12 +898,12 @@ export const NewSession: React.FC = () => {
                   {transcribeMode === 'start' ? (
                     <DropdownMenuItem onClick={() => handleTranscribeModeSelect('upload')}>
                       <Upload className="w-4 h-4 mr-2" />
-                      Upload Audio
+                      {t('sessions.upload_audio')}
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem onClick={() => handleTranscribeModeSelect('start')}>
                       <Play className="w-4 h-4 mr-2" />
-                      Start Transcribing
+                      {t('sessions.start_transcribing')}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -924,12 +924,12 @@ export const NewSession: React.FC = () => {
                 {isPaused ? (
                   <>
                     <Play className="w-4 h-4 mr-2" />
-                    Resume
+                    {t('sessions.resume')}
                   </>
                 ) : (
                   <>
                     <Pause className="w-4 h-4 mr-2" />
-                    Pause
+                    {t('sessions.pause')}
                   </>
                 )}
               </Button>
@@ -942,7 +942,7 @@ export const NewSession: React.FC = () => {
                 className="font-semibold"
               >
                 <Square className="w-4 h-4 mr-2" />
-                Stop
+                {t('sessions.stop')}
               </Button>
             </div>
           )}
@@ -956,7 +956,7 @@ export const NewSession: React.FC = () => {
         {/* Title with icon */}
         <h2 className="flex items-center text-lg font-semibold text-gray-900">
           <User className="w-5 h-5 mr-2" />
-          Add Patient Details
+          {t('sessions.add_patient_details')}
         </h2>
 
         {/* Input and buttons in same line - left side: patient input, right side: action buttons */}
@@ -967,8 +967,8 @@ export const NewSession: React.FC = () => {
               <Input
                 placeholder={
                   patientMode === 'search'
-                    ? "Search patient by name…"
-                    : "Enter patient name…"
+                    ? t('sessions.placeholders.search_patient')
+                    : t('sessions.placeholders.enter_patient_name')
                 }
                 value={patientMode === 'search' ? searchQuery : patientName}
                 onChange={(e) => {
@@ -1050,18 +1050,18 @@ export const NewSession: React.FC = () => {
                 {patientMode === 'search' ? (
                   <>
                     <Plus className="w-4 h-4" />
-                    Create new patient
+                    {t('sessions.create_new_patient')}
                   </>
                 ) : (
                   <>
                     {isCreatingPatient ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mr-1" />
-                        Creating...
+                        {t('common.saving')}
                       </>
                     ) : (
                       <>
-                        Save
+                        {t('common.save')}
                       </>
                     )}
                   </>
@@ -1094,12 +1094,12 @@ export const NewSession: React.FC = () => {
                 {isCreatingSession ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />
-                    Creating...
+                    {t('common.saving')}
                   </>
                 ) : (
                   <>
                     <Plus className="w-4 h-4" />
-                    New Session
+                    {t('sessions.create')}
                   </>
                 )}
               </Button>
@@ -1132,7 +1132,7 @@ export const NewSession: React.FC = () => {
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              New Quote or Clinical
+              {t('sessions.new_quote_or_clinical')}
             </Button>
 
             {/* Call AI Agent - Only enabled after session created */}
@@ -1146,7 +1146,7 @@ export const NewSession: React.FC = () => {
               className="flex items-center gap-2"
             >
               <Bot className="w-4 h-4" />
-              Call AI Agent
+              {t('sessions.call_ai_agent')}
             </Button>
           </div>
         </div>
@@ -1158,11 +1158,11 @@ export const NewSession: React.FC = () => {
       <Card>
         <CardHeader className="py-4 px-6"> {/* Reduced vertical padding, kept horizontal */}
           <CardTitle className="flex items-center justify-between text-base"> {/* Reduced font size from default */}
-            Session Transcription
+            {t('sessions.session_transcription')}
             {isSaving && (
               <div className="flex items-center text-sm" style={{ color: 'var(--brand-primary)' }}>
                 <Save className="w-4 h-4 mr-1 animate-pulse" />
-                Saving...
+                {t('common.saving')}
               </div>
             )}
           </CardTitle>

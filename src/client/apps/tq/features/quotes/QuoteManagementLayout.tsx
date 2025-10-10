@@ -1,11 +1,14 @@
 import React from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@client/common/ui'
 
 export const QuoteManagementLayout: React.FC = () => {
+  const { t } = useTranslation('tq')
+
   const tabs = [
-    { label: 'Quotes', path: '/quotes/overview' },
-    { label: 'Items', path: '/quotes/items' }
+    { label: t('quotes.pages.tab_quotes'), path: '/quotes/overview' },
+    { label: t('quotes.pages.tab_items'), path: '/quotes/items' }
   ]
 
   return (
@@ -15,9 +18,9 @@ export const QuoteManagementLayout: React.FC = () => {
         <div className="px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Quote Management</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('quotes.pages.management_title')}</h1>
               <p className="text-gray-600 mt-1">
-                Manage your consultation quotes and catalog items
+                {t('quotes.pages.management_subtitle')}
               </p>
             </div>
           </div>

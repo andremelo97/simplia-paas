@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Plus } from 'lucide-react'
 import {
   Card,
@@ -20,6 +21,7 @@ import { PatientFilters } from '../../components/patients/PatientFilters'
 import { Patient } from '../../services/patients'
 
 export const Patients: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
 
@@ -66,9 +68,9 @@ export const Patients: React.FC = () => {
       {/* Header with Title and Controls */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Patient Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('patients.pages.management_title')}</h1>
           <p className="text-gray-600 mt-1">
-            Manage patient records and information
+            {t('patients.pages.management_subtitle')}
           </p>
         </div>
         {/* Add Patient Button */}
@@ -78,7 +80,7 @@ export const Patients: React.FC = () => {
           className="flex items-center gap-2"
         >
           <Plus className="w-4 h-4" />
-          Add Patient
+          {t('patients.pages.add_patient')}
         </Button>
       </div>
 
@@ -92,7 +94,7 @@ export const Patients: React.FC = () => {
       <Card>
         <CardHeader className="py-4 px-6">
           <CardTitle className="text-base">
-            Patient List ({patients?.length || 0} of {total} patients)
+            {t('patients.pages.list_title')} ({patients?.length || 0} {t('common.of')} {total} {t('patients.title').toLowerCase()})
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6"> {/* Added horizontal and bottom padding to match header */}
@@ -105,7 +107,7 @@ export const Patients: React.FC = () => {
                   onClick={refresh}
                   className="text-purple-600 hover:text-purple-800 underline"
                 >
-                  Try again
+                  {t('common.try_again')}
                 </button>
               </AlertDescription>
             </Alert>
@@ -136,10 +138,10 @@ export const Patients: React.FC = () => {
             <>
               {/* Header Row */}
               <div className="flex items-center gap-6 py-2 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
-                <div className="w-24">Created</div>
-                <div className="flex-1">Name</div>
-                <div className="flex-1">Email</div>
-                <div className="flex-1">Phone</div>
+                <div className="w-24">{t('common.created')}</div>
+                <div className="flex-1">{t('common.name')}</div>
+                <div className="flex-1">{t('patients.email')}</div>
+                <div className="flex-1">{t('patients.phone')}</div>
                 <div className="w-24"></div> {/* Space for actions */}
               </div>
 

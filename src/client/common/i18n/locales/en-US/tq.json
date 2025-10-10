@@ -1,7 +1,47 @@
 {
   "app_name": "TQ - Transcription Quote System",
+  "modals": {
+    "ai_agent": {
+      "title": "AI Medical Summary",
+      "creating_summary_for": "Creating treatment summary for",
+      "patient_label": "Patient",
+      "create_quote": "Create Quote",
+      "create_clinical_report": "Create Clinical Report",
+      "placeholder": "Ask the AI to modify the summary, add sections, or make changes...",
+      "no_transcription": "No transcription available to analyze",
+      "failed_to_generate": "Failed to generate summary",
+      "failed_to_send": "Failed to send message"
+    },
+    "audio_upload": {
+      "title": "Upload Audio File",
+      "upload_instruction": "Drag and drop an audio file here or click to select",
+      "supported_formats": "Supported formats: MP3, WAV, M4A, WEBM",
+      "max_size": "Maximum size: 500MB",
+      "select_file": "Select File",
+      "uploading": "Uploading...",
+      "transcribing": "Transcribing...",
+      "upload_complete": "Upload Complete",
+      "transcription_complete": "Transcription Complete"
+    },
+    "template_quote": {
+      "title": "Create Quote with Template",
+      "select_template": "Select Template",
+      "no_templates": "No templates available",
+      "fill_with_ai": "Fill with AI",
+      "create": "Create Quote"
+    },
+    "generate_public_quote": {
+      "title": "Generate Public Quote Link",
+      "select_template": "Select Template",
+      "password_optional": "Password (Optional)",
+      "password_helper": "Leave blank for password-free links",
+      "generate_link": "Generate Link",
+      "copy_link": "Copy Link"
+    }
+  },
   "common": {
     "created_at": "Created At",
+    "created": "Created",
     "updated_at": "Updated At",
     "save": "Save",
     "save_changes": "Save Changes",
@@ -21,7 +61,38 @@
     "select": "Select",
     "notes": "Notes",
     "password": "Password",
-    "enter_password": "Enter password"
+    "enter_password": "Enter password",
+    "try_again": "Try again",
+    "name": "Name",
+    "description": "Description",
+    "status": "Status",
+    "patient": "Patient",
+    "session": "Session",
+    "total": "Total",
+    "title": "Title",
+    "usage": "Usage",
+    "of": "of",
+    "view_all": "View All",
+    "no_results": "No results found",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "home": {
+    "welcome_back": "Welcome back",
+    "quick_actions": "Quick Actions",
+    "latest_quotes": "Latest Quotes",
+    "latest_reports": "Latest Reports",
+    "sessions_this_week": "Sessions This Week",
+    "patients_recently_added": "Patients Recently Added",
+    "recent_activity": "Recent Activity",
+    "start_new_session": "Start New Session",
+    "add_patient": "Add Patient",
+    "view_sessions": "View Sessions",
+    "no_quotes_yet": "No quotes yet",
+    "no_reports_yet": "No reports yet",
+    "no_sessions_yet": "No sessions yet",
+    "no_patients_yet": "No patients yet",
+    "no_activity_yet": "No activity yet"
   },
   "patients": {
     "title": "Patients",
@@ -34,11 +105,18 @@
     "phone": "Phone",
     "date_of_birth": "Date of Birth",
     "no_patients": "No patients yet. Add your first patient to get started.",
+    "no_patients_home": "No patients yet. Add your first patient to get started.",
     "recently_added": "Patients Recently Added",
     "patient_registered": "Patient Registered",
     "patient_history": "Patient History",
     "loading_patient": "Loading patient data...",
     "error_loading": "Error Loading Patient",
+    "pages": {
+      "management_title": "Patient Management",
+      "management_subtitle": "Manage patient records and information",
+      "list_title": "Patient List",
+      "add_patient": "Add Patient"
+    },
     "placeholders": {
       "first_name": "e.g., John",
       "last_name": "e.g., Doe",
@@ -56,14 +134,31 @@
     "start_transcribing": "Start Transcribing",
     "upload_audio": "Upload Audio",
     "no_sessions": "No sessions yet. Start a new session to get started.",
+    "no_sessions_home": "No sessions yet. Start a new session to get started.",
     "this_week": "Sessions This Week",
     "session_created": "Session created for",
     "loading_session": "Loading session data...",
     "error_loading": "Error Loading Session",
     "select_microphone": "Select microphone",
+    "resume": "Resume",
+    "pause": "Pause",
+    "stop": "Stop",
+    "session_transcription": "Session Transcription",
+    "create_new_patient": "Create new patient",
+    "add_patient_details": "Add Patient Details",
+    "call_ai_agent": "Call AI Agent",
+    "new_quote_or_clinical": "New Quote or Clinical",
+    "pages": {
+      "management_title": "Session Management",
+      "management_subtitle": "View and manage your transcription sessions",
+      "list_title": "Session List",
+      "sessions": "sessions"
+    },
     "placeholders": {
       "transcription": "Upload an audio file or start transcribing... Text will appear here automatically.",
-      "transcription_edit": "Transcription content will appear here..."
+      "transcription_edit": "Transcription content will appear here...",
+      "search_patient": "Search patient by name…",
+      "enter_patient_name": "Enter patient name…"
     },
     "helper_text": {
       "edit_transcription": "Edit the transcription content"
@@ -77,6 +172,7 @@
     "content": "Content",
     "items": "Items",
     "no_quotes": "No quotes yet. Start a new session to create your first quote.",
+    "no_quotes_home": "No quotes yet. Start a new session to create your first quote.",
     "latest": "Latest Quotes",
     "quote_created": "Quote created for",
     "quote_information": "Quote Information",
@@ -87,6 +183,14 @@
     "preview_template": "Preview Template",
     "loading_quote": "Loading quote...",
     "quote_not_found": "Quote not found",
+    "pages": {
+      "management_title": "Quote Management",
+      "management_subtitle": "Manage your consultation quotes and catalog items",
+      "list_title": "Quotes list",
+      "quotes": "quotes",
+      "tab_quotes": "Quotes",
+      "tab_items": "Items"
+    },
     "placeholders": {
       "content": "Quote content...",
       "search_items": "Type to search items..."
@@ -96,6 +200,12 @@
     "loading_item": "Loading item details...",
     "name": "Name",
     "description": "Description",
+    "base_price": "Base Price",
+    "pages": {
+      "list_title": "Items",
+      "items": "items",
+      "create_item": "Create Item"
+    },
     "placeholders": {
       "name": "e.g., Consultation Session",
       "description": "Describe what this service or product includes (optional)"
@@ -109,6 +219,7 @@
     "number": "Number",
     "content": "Content",
     "no_reports": "No clinical reports yet. Create your first report to get started.",
+    "no_reports_home": "No clinical reports yet. Create your first report to get started.",
     "latest": "Latest Reports",
     "report_created": "Clinical report created for",
     "print_pdf": "Print/PDF",
@@ -121,6 +232,18 @@
     "session": "Session",
     "no_patient_data": "No patient data",
     "no_session_data": "No session data",
+    "pages": {
+      "list_title": "Reports List",
+      "reports": "reports",
+      "management_subtitle": "View and manage clinical reports for your patients",
+      "view_title": "Clinical Report",
+      "print_save_pdf": "Print/Save as PDF",
+      "back_to_reports": "Back to Clinical Reports",
+      "generated_on": "Generated on",
+      "disclaimer": "This clinical report was generated automatically. Please verify all information before use.",
+      "unknown_patient": "Unknown Patient",
+      "report": "Report"
+    },
     "placeholders": {
       "content": "Clinical report content..."
     }
@@ -134,6 +257,13 @@
     "no_templates": "No templates yet. Create your first template to get started.",
     "template_created": "Template created",
     "content": "Content",
+    "pages": {
+      "management_title": "Template Management",
+      "management_subtitle": "Manage clinical documentation templates and standardize your notes",
+      "list_title": "Template List",
+      "templates": "templates",
+      "add_template": "Add Template"
+    },
     "validation_errors": {
       "content": "Content cannot be empty"
     },
@@ -149,6 +279,22 @@
     "loading_preview": "Loading preview...",
     "failed_to_load": "Failed to load preview",
     "loading_quote": "Loading quote...",
+    "pages": {
+      "public_quotes_title": "Public Quotes",
+      "public_quotes_subtitle": "Share quotes externally with customizable templates",
+      "tab_links": "Links",
+      "tab_templates": "Templates",
+      "public_quote_links": "Public Quote Links",
+      "templates_list": "Templates",
+      "create_template": "Create Template",
+      "loading_templates": "Loading templates...",
+      "revoke_link_title": "Revoke Public Link?",
+      "revoke_link_description": "Are you sure you want to revoke the public link for quote {quoteNumber}? This will make the link inactive and inaccessible.",
+      "revoke_link": "Revoke Link",
+      "back_to_quote": "Back to Quote",
+      "no_content": "No Content",
+      "no_content_description": "This template doesn't have any content yet."
+    },
     "placeholders": {
       "template_name": "e.g., Default Quote Layout",
       "template_description": "Describe this template layout (optional)",
@@ -182,5 +328,26 @@
     "quotes": "Quotes",
     "clinical": "Clinical",
     "timeline": "Timeline"
+  },
+  "configurations": {
+    "ai_agent": {
+      "menu_title": "AI Agents",
+      "menu_description": "Configure AI Agent behavior and system prompts",
+      "page_title": "AI Agent Configuration",
+      "page_description": "Configure the AI Agent's behavior and initial system message",
+      "system_message_title": "System Message",
+      "system_message_description": "This message defines how the AI Agent should behave and respond. It's the first message sent in every conversation to establish context and guidelines.",
+      "transcription_required": "The $transcription$ variable is required to ensure the consultation transcription is sent to the agent.",
+      "available_variables": "Available variables:",
+      "save_changes": "Save Changes",
+      "reset_to_default": "Reset to Default",
+      "saving": "Saving...",
+      "loading": "Loading AI Agent configuration...",
+      "failed_to_load": "Failed to load configuration. Please try again.",
+      "failed_to_save": "Failed to save configuration. Please try again.",
+      "failed_to_reset": "Failed to reset configuration. Please try again.",
+      "reset_confirm": "Are you sure you want to reset the AI Agent configuration to default?",
+      "last_updated": "Last updated:"
+    }
   }
 }

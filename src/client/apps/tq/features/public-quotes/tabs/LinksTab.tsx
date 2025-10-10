@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardTitle, CardContent, LinkToast, ConfirmDialog } from '@client/common/ui'
 import { LinksEmpty } from '../../../components/public-quotes/LinksEmpty'
 import { PublicQuoteLinksFilters } from '../../../components/public-quotes/PublicQuoteLinksFilters'
@@ -7,6 +8,7 @@ import { PublicQuoteLinkRow } from '../../../components/public-quotes/PublicQuot
 import { publicQuotesService, PublicQuote } from '../../../services/publicQuotes'
 
 export const LinksTab: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const [quoteFilter, setQuoteFilter] = useState(searchParams.get('quote') || '')
@@ -160,12 +162,12 @@ export const LinksTab: React.FC = () => {
       <Card>
         <CardHeader className="py-4 px-6">
           <CardTitle className="text-base">
-            Public Quote Links ({filteredQuotes.length})
+            {t('public_quotes.pages.public_quote_links')} ({filteredQuotes.length})
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6">
           {isLoading ? (
-            <div className="text-center py-8 text-gray-500">Loading...</div>
+            <div className="text-center py-8 text-gray-500">{t('common.loading')}</div>
           ) : filteredQuotes.length === 0 ? (
             <LinksEmpty />
           ) : (
@@ -203,9 +205,9 @@ export const LinksTab: React.FC = () => {
         isOpen={showRevokeDialog}
         onClose={() => setShowRevokeDialog(false)}
         onConfirm={handleRevokeConfirm}
-        title="Revoke Public Link?"
-        description={`Are you sure you want to revoke the public link for quote ${revokeTarget?.quoteNumber}? This will make the link inactive and inaccessible.`}
-        confirmText="Revoke Link"
+        title={t('public_quotes.pages.revoke_link_title')}
+        description={t('public_quotes.pages.revoke_link_description', { quoteNumber: revokeTarget?.quoteNumber })}
+        confirmText={t('public_quotes.pages.revoke_link')}
         variant="delete"
         isLoading={isRevoking}
       />

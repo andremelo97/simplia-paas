@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Printer, Edit } from 'lucide-react'
 import {
   Card,
@@ -13,6 +14,7 @@ import { clinicalReportsService, ClinicalReport } from '../../services/clinicalR
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 export const ViewClinicalReport: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { formatLongDate } = useDateFormatter()
@@ -58,8 +60,8 @@ export const ViewClinicalReport: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clinical Report</h1>
-          <p className="text-gray-600 mt-1">Loading...</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('clinical_reports.pages.view_title')}</h1>
+          <p className="text-gray-600 mt-1">{t('common.loading')}</p>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B725B7]"></div>
@@ -72,15 +74,15 @@ export const ViewClinicalReport: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clinical Report</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('clinical_reports.pages.view_title')}</h1>
         </div>
         <Alert variant="destructive">
           <AlertDescription>
-            {loadError || 'Clinical report not found'}
+            {loadError || t('clinical_reports.report_not_found')}
           </AlertDescription>
         </Alert>
-        <Button variant="secondary" onClick={handleBack}>
-          Back to Clinical Reports
+        <Button variant="secondary" onClick={() => navigate('/clinical-reports')}>
+          {t('clinical_reports.pages.back_to_reports')}
         </Button>
       </div>
     )
@@ -88,15 +90,15 @@ export const ViewClinicalReport: React.FC = () => {
 
   const patientName = report.patient_first_name || report.patient_last_name
     ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim()
-    : 'Unknown Patient'
+    : t('clinical_reports.pages.unknown_patient')
 
   return (
     <div className="space-y-6">
       {/* Header - Hide on print */}
       <div className="flex items-center justify-between print:hidden">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clinical Report {report.number}</h1>
-          <p className="text-gray-600 mt-1">Patient: {patientName}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('clinical_reports.pages.view_title')} {report.number}</h1>
+          <p className="text-gray-600 mt-1">{t('common.patient')}: {patientName}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -105,7 +107,7 @@ export const ViewClinicalReport: React.FC = () => {
             className="flex items-center gap-2"
           >
             <Edit className="w-4 h-4" />
-            Edit
+            {t('common.edit')}
           </Button>
           <Button
             variant="primary"
@@ -113,7 +115,7 @@ export const ViewClinicalReport: React.FC = () => {
             className="flex items-center gap-2"
           >
             <Printer className="w-4 h-4" />
-            Print/Save as PDF
+            {t('clinical_reports.pages.print_save_pdf')}
           </Button>
         </div>
       </div>
@@ -124,13 +126,13 @@ export const ViewClinicalReport: React.FC = () => {
           {/* Report Header */}
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Clinical Report {report.number}
+              {t('clinical_reports.pages.view_title')} {report.number}
             </h2>
             <p className="text-gray-700 mb-1">
-              <strong>Patient:</strong> {patientName}
+              <strong>{t('common.patient')}:</strong> {patientName}
             </p>
             <p className="text-sm text-gray-600">
-              <strong>Generated on:</strong> {formatDate(report.created_at)}
+              <strong>{t('clinical_reports.pages.generated_on')}:</strong> {formatDate(report.created_at)}
             </p>
           </div>
 
@@ -148,7 +150,7 @@ export const ViewClinicalReport: React.FC = () => {
           {/* Footer disclaimer */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500 italic">
-              This clinical report was generated automatically. Please verify all information before use.
+              {t('clinical_reports.pages.disclaimer')}
             </p>
           </div>
         </CardContent>
@@ -159,13 +161,13 @@ export const ViewClinicalReport: React.FC = () => {
         {/* Report Header */}
         <div className="print-header">
           <h2 className="print-title">
-            Clinical Report {report.number}
+            {t('clinical_reports.pages.view_title')} {report.number}
           </h2>
           <p className="print-patient">
-            <strong>Patient:</strong> {patientName}
+            <strong>{t('common.patient')}:</strong> {patientName}
           </p>
           <p className="print-date">
-            <strong>Generated on:</strong> {formatDate(report.created_at)}
+            <strong>{t('clinical_reports.pages.generated_on')}:</strong> {formatDate(report.created_at)}
           </p>
         </div>
 

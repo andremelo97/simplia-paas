@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardHeader,
@@ -15,6 +16,7 @@ import { patientsService } from '../../services/patients'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { QuoteItemsManager } from './QuoteItemsManager'
 import { GeneratePublicQuoteModal } from '../../components/quotes/GeneratePublicQuoteModal'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 const QUOTE_STATUS_OPTIONS = [
   { value: 'draft', label: 'Draft' },
@@ -25,8 +27,10 @@ const QUOTE_STATUS_OPTIONS = [
 ]
 
 export const EditQuote: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { formatDateTime } = useDateFormatter()
 
   const [quote, setQuote] = useState<Quote | null>(null)
   const [content, setContent] = useState('')
@@ -288,13 +292,7 @@ export const EditQuote: React.FC = () => {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    return formatDateTime(dateString)
   }
 
   if (isLoading) {
@@ -302,7 +300,7 @@ export const EditQuote: React.FC = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
-          <p className="text-gray-600 mt-1">Loading quote...</p>
+          <p className="text-gray-600 mt-1">{t('quotes.loading_quote')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -327,7 +325,7 @@ export const EditQuote: React.FC = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
-          <p className="text-red-600 mt-1">{loadError || 'Quote not found'}</p>
+          <p className="text-red-600 mt-1">{loadError || t('quotes.quote_not_found')}</p>
         </div>
         <Button variant="secondary" onClick={() => navigate('/quotes')}>
           Back to Quotes
@@ -389,14 +387,14 @@ export const EditQuote: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <Input
-                    label="Created At"
+                    label={t('common.created_at')}
                     value={formatDate(quote.created_at)}
                     disabled
                     readOnly
                   />
 
                   <Input
-                    label="Updated At"
+                    label={t('common.updated_at')}
                     value={formatDate(quote.updated_at)}
                     disabled
                     readOnly
@@ -415,7 +413,7 @@ export const EditQuote: React.FC = () => {
                 <TemplateEditor
                   content={content}
                   onChange={handleContentChange}
-                  placeholder="Quote content..."
+                  placeholder={t('quotes.placeholders.content')}
                   readonly={isSaving}
                   minHeight="500px"
                 />

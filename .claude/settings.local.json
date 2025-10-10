@@ -28,7 +28,10 @@
       "Bash(npx:*)",
       "Bash(tree:*)",
       "Bash(npm uninstall:*)",
-      "Bash(set PGPASSWORD=1234)"
+      "Bash(set PGPASSWORD=1234)",
+      "Bash(for file in \"src/client/apps/tq/features/home/Home.tsx\" \"src/client/apps/tq/components/home/RecentPatientRow.tsx\" \"src/client/apps/tq/components/home/ReportCard.tsx\" \"src/client/apps/tq/components/home/SessionCard.tsx\" \"src/client/apps/tq/components/home/QuoteCard.tsx\")",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

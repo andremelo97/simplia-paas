@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Puck, Render } from '@measured/puck'
 import { publicQuotesService, PublicQuote } from '../../services/publicQuotes'
 import { quotesService } from '../../services/quotes'
@@ -12,6 +13,7 @@ import '@measured/puck/puck.css'
  * This is a read-only preview within the application context
  */
 export const PreviewPublicQuoteLink: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const [publicQuote, setPublicQuote] = useState<PublicQuote | null>(null)
   const [quote, setQuote] = useState<any>(null)
@@ -76,7 +78,7 @@ export const PreviewPublicQuoteLink: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-gray-500">Loading preview...</div>
+        <div className="text-gray-500">{t('public_quotes.loading_preview')}</div>
       </div>
     )
   }
@@ -84,7 +86,7 @@ export const PreviewPublicQuoteLink: React.FC = () => {
   if (error || !previewConfig) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
-        <div className="text-red-600">{error || 'Failed to load preview'}</div>
+        <div className="text-red-600">{error || t('public_quotes.failed_to_load')}</div>
       </div>
     )
   }

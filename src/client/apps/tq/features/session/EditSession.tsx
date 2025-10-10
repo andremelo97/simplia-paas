@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Save, FileText } from 'lucide-react'
 import {
   Card,
@@ -22,6 +23,7 @@ import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentServi
 import { clinicalReportsService, CreateClinicalReportRequest } from '../../services/clinicalReports'
 
 export const EditSession: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -183,7 +185,7 @@ export const EditSession: React.FC = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Session</h1>
-          <p className="text-gray-600 mt-1">Loading session data...</p>
+          <p className="text-gray-600 mt-1">{t('sessions.loading_session')}</p>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B725B7]"></div>
@@ -202,7 +204,7 @@ export const EditSession: React.FC = () => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6" role="alert" aria-live="assertive">
           <div className="flex items-center">
             <div className="text-red-800">
-              <h3 className="font-medium">Error Loading Session</h3>
+              <h3 className="font-medium">{t('sessions.error_loading')}</h3>
               <p className="mt-1">{loadError}</p>
             </div>
           </div>
@@ -293,7 +295,7 @@ export const EditSession: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="Created At"
+                  label={t('common.created_at')}
                   value={new Date(session.created_at).toLocaleString()}
                   disabled
                   helperText="When this session was created"
@@ -325,11 +327,11 @@ export const EditSession: React.FC = () => {
             <CardContent className="space-y-6 px-6 pb-6">
               <Textarea
                 label="Transcription Content"
-                placeholder="Transcription content will appear here..."
+                placeholder={t('sessions.placeholders.transcription_edit')}
                 value={transcription}
                 onChange={(e) => setTranscription(e.target.value)}
                 className="min-h-96 resize-none font-mono"
-                helperText="Edit the transcription content"
+                helperText={t('sessions.helper_text.edit_transcription')}
                 disabled={isSubmitting}
               />
             </CardContent>

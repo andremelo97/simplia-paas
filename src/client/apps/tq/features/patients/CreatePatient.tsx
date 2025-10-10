@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea } from '@client/common/ui'
 import { patientsService } from '../../services/patients'
 
@@ -12,6 +13,7 @@ interface PatientFormData {
 }
 
 export const CreatePatient: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [formData, setFormData] = useState<PatientFormData>({
     first_name: '',
     last_name: '',
@@ -159,22 +161,22 @@ export const CreatePatient: React.FC = () => {
             <CardContent className="space-y-6 px-6 pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="First Name"
+                  label={t('patients.first_name')}
                   value={formData.first_name}
                   onChange={handleInputChange('first_name')}
                   error={validationErrors.first_name}
-                  placeholder="e.g., John"
+                  placeholder={t('patients.placeholders.first_name')}
                   helperText="Patient's first name (required)"
                   required
                   disabled={isSubmitting}
                 />
 
                 <Input
-                  label="Last Name"
+                  label={t('patients.last_name')}
                   value={formData.last_name}
                   onChange={handleInputChange('last_name')}
                   error={validationErrors.last_name}
-                  placeholder="e.g., Doe"
+                  placeholder={t('patients.placeholders.last_name')}
                   helperText="Patient's last name (optional)"
                   disabled={isSubmitting}
                 />
@@ -182,23 +184,23 @@ export const CreatePatient: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="Email"
+                  label={t('patients.email')}
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange('email')}
                   error={validationErrors.email}
-                  placeholder="e.g., john.doe@example.com"
+                  placeholder={t('patients.placeholders.email')}
                   helperText="Patient's email address (optional)"
                   disabled={isSubmitting}
                 />
 
                 <Input
-                  label="Phone"
+                  label={t('patients.phone')}
                   type="tel"
                   value={formData.phone}
                   onChange={handleInputChange('phone')}
                   error={validationErrors.phone}
-                  placeholder="e.g., +55 11 99999-9999"
+                  placeholder={t('patients.placeholders.phone')}
                   helperText="Patient's phone number (optional)"
                   disabled={isSubmitting}
                 />
@@ -206,11 +208,11 @@ export const CreatePatient: React.FC = () => {
 
               <div>
                 <Textarea
-                  label="Notes"
+                  label={t('common.notes')}
                   value={formData.notes}
                   onChange={handleInputChange('notes')}
                   error={validationErrors.notes}
-                  placeholder="Additional notes about the patient (optional)"
+                  placeholder={t('patients.placeholders.notes')}
                   helperText="Any additional information about the patient (optional)"
                   rows={4}
                   disabled={isSubmitting}

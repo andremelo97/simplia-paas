@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import {
   Card,
@@ -20,6 +21,7 @@ interface TemplateFormData {
 }
 
 export const EditTemplate: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -274,7 +276,7 @@ export const EditTemplate: React.FC = () => {
                       value={formData.title}
                       onChange={handleInputChange('title')}
                       error={validationErrors.title}
-                      placeholder="e.g., Dental Consultation Summary"
+                      placeholder={t('templates.placeholders.title')}
                       helperText="Descriptive name for this template (required)"
                       required
                       disabled={isSubmitting}
@@ -284,7 +286,7 @@ export const EditTemplate: React.FC = () => {
                       label="Description"
                       value={formData.description}
                       onChange={handleInputChange('description')}
-                      placeholder="Optional description to help identify this template"
+                      placeholder={t('templates.placeholders.description')}
                       helperText="Brief description of template purpose (optional)"
                       disabled={isSubmitting}
                     />
@@ -301,7 +303,7 @@ export const EditTemplate: React.FC = () => {
                       readonly={isSubmitting}
                     />
                     {validationErrors.content && (
-                      <p className="text-sm text-red-600 mt-1">{validationErrors.content}</p>
+                      <p className="text-sm text-red-600 mt-1">{t('templates.validation_errors.content')}</p>
                     )}
                   </div>
 

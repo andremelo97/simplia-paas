@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button, StatusBadge } from '@client/common/ui'
 import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key } from 'lucide-react'
 import { PublicQuote } from '../../services/publicQuotes'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface PublicQuoteLinkRowProps {
   publicQuote: PublicQuote
@@ -17,24 +18,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
 }) => {
   const navigate = useNavigate()
   const [copied, setCopied] = React.useState(false)
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
-  }
-
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
+  const { formatShortDate, formatDateTime } = useDateFormatter()
 
   const handleCopy = () => {
     if (publicQuote.publicUrl) {
@@ -66,7 +50,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
     const isExpired = expiryDate < now
 
     if (isExpired) {
-      return { text: formatDate(publicQuote.expiresAt), className: 'text-red-600 font-medium' }
+      return { text: formatShortDate(publicQuote.expiresAt), className: 'text-red-600 font-medium' }
     }
 
     const daysUntilExpiry = Math.ceil(
@@ -74,10 +58,10 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
     )
 
     if (daysUntilExpiry <= 7) {
-      return { text: formatDate(publicQuote.expiresAt), className: 'text-orange-600 font-medium' }
+      return { text: formatShortDate(publicQuote.expiresAt), className: 'text-orange-600 font-medium' }
     }
 
-    return { text: formatDate(publicQuote.expiresAt), className: 'text-gray-900' }
+    return { text: formatShortDate(publicQuote.expiresAt), className: 'text-gray-900' }
   }
 
   const expirationStatus = getExpirationStatus()

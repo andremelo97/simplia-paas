@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
 import { useAuthStore } from '../../shared/store'
@@ -11,6 +12,7 @@ import { publishFeedback, resolveFeedbackMessage } from '@client/common/feedback
 import { consumeSso, hasSsoParams } from '../../lib/consumeSso'
 
 export const Login: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -188,7 +190,7 @@ export const Login: React.FC = () => {
                   value={credentials.email}
                   onChange={handleInputChange('email')}
                   error={allFieldErrors.email}
-                  placeholder="your.email@company.com"
+                  placeholder={t('auth.placeholders.email')}
                   autoComplete="email"
                   disabled={isLoading}
                   className="w-full"
@@ -201,7 +203,7 @@ export const Login: React.FC = () => {
                     value={credentials.password}
                     onChange={handleInputChange('password')}
                     error={allFieldErrors.password}
-                    placeholder="Enter your password"
+                    placeholder={t('auth.placeholders.password')}
                     autoComplete="current-password"
                     disabled={isLoading}
                     className="w-full pr-8"

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Card, CardHeader, CardContent, StatusBadge, Badge, Table, EmptyState, Button } from '@client/common/ui'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { getRoleBadgeVariant } from '@client/common/utils/badgeUtils'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface EntitlementUser {
   email: string
@@ -28,13 +29,10 @@ interface EntitlementAppCardProps {
 
 export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
   const [showUsers, setShowUsers] = useState(false)
+  const { formatShortDate } = useDateFormatter()
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
+    return formatShortDate(dateString)
   }
 
   const getUserDisplayName = (user: EntitlementUser) => {

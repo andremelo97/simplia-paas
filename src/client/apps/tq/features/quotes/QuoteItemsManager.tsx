@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, PriceInput } from '@client/common/ui'
 import { itemsService, Item } from '../../services/items'
 import { QuoteItemInput } from '../../services/quotes'
@@ -22,6 +23,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
   initialItems = [],
   onItemsChange
 }) => {
+  const { t } = useTranslation('tq')
   const [items, setItems] = useState<LocalQuoteItem[]>([])
   const [searchQuery, setSearchQuery] = useState<{ [key: string]: string }>({})
   const [searchResults, setSearchResults] = useState<{ [key: string]: Item[] }>({})
@@ -185,7 +187,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                     <div className="flex-1 relative">
                       <Input
                         label="Search Item"
-                        placeholder="Type to search items..."
+                        placeholder={t('quotes.placeholders.search_items')}
                         value={searchQuery[item.localId] || ''}
                         onChange={(e) => handleSearch(item.localId, e.target.value)}
                         onFocus={() => {
@@ -215,7 +217,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                     <button
                       onClick={() => handleRemoveRow(item.localId)}
                       className="flex items-center space-x-1 px-2 py-1.5 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                      title="Cancel"
+                      title={t('common.cancel')}
                     >
                       <Trash2 className="w-3 h-3" />
                       <span>Cancel</span>

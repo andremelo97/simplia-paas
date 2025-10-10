@@ -4,6 +4,7 @@ import { Button, Badge } from '@client/common/ui'
 import { Quote } from '../../services/quotes'
 import { formatQuoteStatus } from '../../hooks/useQuotes'
 import { getQuoteStatusColor } from '../../types/quoteStatus'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface QuoteRowProps {
   quote: Quote
@@ -19,6 +20,7 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
   onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const { formatShortDate } = useDateFormatter()
 
   const handleEdit = () => {
     onEdit?.(quote)
@@ -49,11 +51,7 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         {/* Created At */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
-            {new Date(quote.created_at).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            })}
+            {formatShortDate(quote.created_at)}
           </span>
         </div>
 

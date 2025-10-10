@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { Render } from '@measured/puck'
 import '@measured/puck/puck.css'
@@ -7,6 +8,7 @@ import { brandingService, BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
 
 export const PreviewPublicQuoteTemplate: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const [template, setTemplate] = useState<any>(null)
   const [branding, setBranding] = useState<BrandingData | null>(null)
@@ -58,7 +60,7 @@ export const PreviewPublicQuoteTemplate: React.FC = () => {
   if (loading || !template || !config || !branding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading preview...</div>
+        <div className="text-gray-500">{t('public_quotes.loading_preview')}</div>
       </div>
     )
   }

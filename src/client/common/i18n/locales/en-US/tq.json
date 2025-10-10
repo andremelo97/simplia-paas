@@ -1,0 +1,186 @@
+{
+  "app_name": "TQ - Transcription Quote System",
+  "common": {
+    "created_at": "Created At",
+    "updated_at": "Updated At",
+    "save": "Save",
+    "save_changes": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "back": "Back",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "failed": "Failed",
+    "not_found": "Not found",
+    "search": "Search",
+    "type_to_search": "Type to search...",
+    "select": "Select",
+    "notes": "Notes",
+    "password": "Password",
+    "enter_password": "Enter password"
+  },
+  "patients": {
+    "title": "Patients",
+    "create": "Create Patient",
+    "edit": "Edit Patient",
+    "view_history": "View History",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "email": "Email",
+    "phone": "Phone",
+    "date_of_birth": "Date of Birth",
+    "no_patients": "No patients yet. Add your first patient to get started.",
+    "recently_added": "Patients Recently Added",
+    "patient_registered": "Patient Registered",
+    "patient_history": "Patient History",
+    "loading_patient": "Loading patient data...",
+    "error_loading": "Error Loading Patient",
+    "placeholders": {
+      "first_name": "e.g., John",
+      "last_name": "e.g., Doe",
+      "email": "e.g., john.doe@example.com",
+      "phone": "e.g., +55 11 99999-9999",
+      "notes": "Additional notes about the patient (optional)"
+    }
+  },
+  "sessions": {
+    "title": "Sessions",
+    "create": "New Session",
+    "edit": "Edit Session",
+    "number": "Session Number",
+    "transcription": "Transcription",
+    "start_transcribing": "Start Transcribing",
+    "upload_audio": "Upload Audio",
+    "no_sessions": "No sessions yet. Start a new session to get started.",
+    "this_week": "Sessions This Week",
+    "session_created": "Session created for",
+    "loading_session": "Loading session data...",
+    "error_loading": "Error Loading Session",
+    "select_microphone": "Select microphone",
+    "placeholders": {
+      "transcription": "Upload an audio file or start transcribing... Text will appear here automatically.",
+      "transcription_edit": "Transcription content will appear here..."
+    },
+    "helper_text": {
+      "edit_transcription": "Edit the transcription content"
+    }
+  },
+  "quotes": {
+    "title": "Quotes",
+    "create": "Create Quote",
+    "edit": "Edit Quote",
+    "number": "Number",
+    "content": "Content",
+    "items": "Items",
+    "no_quotes": "No quotes yet. Start a new session to create your first quote.",
+    "latest": "Latest Quotes",
+    "quote_created": "Quote created for",
+    "quote_information": "Quote Information",
+    "quote_content": "Quote Content",
+    "public_quote": "Public Quote",
+    "view_public_link": "View Public Link",
+    "generate_public_quote": "Generate Public Quote",
+    "preview_template": "Preview Template",
+    "loading_quote": "Loading quote...",
+    "quote_not_found": "Quote not found",
+    "placeholders": {
+      "content": "Quote content...",
+      "search_items": "Type to search items..."
+    }
+  },
+  "quote_items": {
+    "loading_item": "Loading item details...",
+    "name": "Name",
+    "description": "Description",
+    "placeholders": {
+      "name": "e.g., Consultation Session",
+      "description": "Describe what this service or product includes (optional)"
+    }
+  },
+  "clinical_reports": {
+    "title": "Clinical Reports",
+    "create": "Create Report",
+    "edit": "Edit Report",
+    "view": "View Report",
+    "number": "Number",
+    "content": "Content",
+    "no_reports": "No clinical reports yet. Create your first report to get started.",
+    "latest": "Latest Reports",
+    "report_created": "Clinical report created for",
+    "print_pdf": "Print/PDF",
+    "loading_report": "Loading clinical report...",
+    "report_not_found": "Clinical report not found",
+    "information": "Clinical Report Information",
+    "content_section": "Clinical Report Content",
+    "patient_session_info": "Patient and Session Information",
+    "patient": "Patient",
+    "session": "Session",
+    "no_patient_data": "No patient data",
+    "no_session_data": "No session data",
+    "placeholders": {
+      "content": "Clinical report content..."
+    }
+  },
+  "templates": {
+    "title": "Templates",
+    "create": "Create Template",
+    "edit": "Edit Template",
+    "template_title": "Title",
+    "description": "Description",
+    "no_templates": "No templates yet. Create your first template to get started.",
+    "template_created": "Template created",
+    "content": "Content",
+    "validation_errors": {
+      "content": "Content cannot be empty"
+    },
+    "placeholders": {
+      "title": "e.g., Dental Consultation Summary",
+      "description": "Optional description to help identify this template"
+    }
+  },
+  "public_quotes": {
+    "delete_template": "Delete Template?",
+    "delete_template_confirm": "Delete Template",
+    "loading_template": "Loading template...",
+    "loading_preview": "Loading preview...",
+    "failed_to_load": "Failed to load preview",
+    "loading_quote": "Loading quote...",
+    "placeholders": {
+      "template_name": "e.g., Default Quote Layout",
+      "template_description": "Describe this template layout (optional)",
+      "password": "Enter password"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "placeholders": {
+      "email": "your.email@company.com",
+      "password": "Enter your password"
+    }
+  },
+  "home": {
+    "quick_actions": "Quick Actions",
+    "start_new_session": "Start New Session",
+    "add_patient": "Add Patient",
+    "view_sessions": "View Sessions",
+    "recent_activity": "Recent Activity"
+  },
+  "metrics": {
+    "total_sessions": "Total Sessions",
+    "total_quotes": "Total Quotes",
+    "approved_quotes": "Approved Quotes",
+    "total_reports": "Total Reports"
+  },
+  "tabs": {
+    "sessions": "Sessions",
+    "quotes": "Quotes",
+    "clinical": "Clinical",
+    "timeline": "Timeline"
+  }
+}

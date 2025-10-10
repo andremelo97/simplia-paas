@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Patient } from '../../services/patients'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface RecentPatientRowProps {
   patient: Patient
@@ -13,6 +14,7 @@ export const RecentPatientRow: React.FC<RecentPatientRowProps> = ({
   isLast = false
 }) => {
   const [isFlashing, setIsFlashing] = useState(false)
+  const { formatMonthYear } = useDateFormatter()
 
   const handleDoubleClick = () => {
     setIsFlashing(true)
@@ -52,10 +54,7 @@ export const RecentPatientRow: React.FC<RecentPatientRowProps> = ({
       {/* Date */}
       <div className="flex-shrink-0">
         <p className="text-xs text-gray-500">
-          {new Date(patient.created_at).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric'
-          })}
+          {formatMonthYear(patient.created_at)}
         </p>
       </div>
     </div>

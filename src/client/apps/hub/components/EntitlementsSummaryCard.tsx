@@ -1,5 +1,6 @@
 import React from 'react'
 import { Card, CardHeader, CardContent, Table, Badge } from '@client/common/ui'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface EntitlementUser {
   email: string
@@ -30,6 +31,8 @@ interface EntitlementsSummaryCardProps {
 }
 
 export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSummaryCardProps) {
+  const { formatShortDate } = useDateFormatter()
+
   const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' => {
     switch (status) {
       case 'active': return 'success'
@@ -42,7 +45,7 @@ export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSumma
 
   const formatDate = (date: string | null) => {
     if (!date) return '—'
-    return new Date(date).toLocaleDateString('pt-BR')
+    return formatShortDate(date)
   }
 
   const getTotalUsers = (license: EntitlementLicense) => {

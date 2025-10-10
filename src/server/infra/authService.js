@@ -132,9 +132,26 @@ class AuthService {
     const tenantIdFk = tenantContext.id || tenantContext.tenantId;
     const { allowedApps, userType } = await this.getUserEntitlements(user, tenantIdFk);
 
-    // Generate JWT payload with entitlements
-    const jwtPayload = createJwtPayload(user, tenantContext, allowedApps, userType);
-    
+    // Ensure tenant context includes timezone (fetch from DB if missing)
+    let enrichedTenantContext = tenantContext;
+    if (!tenantContext.timezone) {
+      try {
+        const Tenant = require('./models/Tenant');
+        const tenant = await Tenant.findById(tenantIdFk);
+        if (tenant) {
+          enrichedTenantContext = {
+            ...tenantContext,
+            timezone: tenant.timezone
+          };
+        }
+      } catch (error) {
+        console.warn('Failed to fetch tenant timezone, using default:', error.message);
+      }
+    }
+
+    // Generate JWT payload with entitlements (includes timezone & locale)
+    const jwtPayload = createJwtPayload(user, enrichedTenantContext, allowedApps, userType);
+
     // Generate token
     const token = this.generateToken(jwtPayload);
 
@@ -254,9 +271,26 @@ class AuthService {
     const tenantIdFk = tenantContext.id || tenantContext.tenantId;
     const { allowedApps, userType } = await this.getUserEntitlements(user, tenantIdFk);
 
-    // Generate JWT payload with entitlements
-    const jwtPayload = createJwtPayload(user, tenantContext, allowedApps, userType);
-    
+    // Ensure tenant context includes timezone (fetch from DB if missing)
+    let enrichedTenantContext = tenantContext;
+    if (!tenantContext.timezone) {
+      try {
+        const Tenant = require('./models/Tenant');
+        const tenant = await Tenant.findById(tenantIdFk);
+        if (tenant) {
+          enrichedTenantContext = {
+            ...tenantContext,
+            timezone: tenant.timezone
+          };
+        }
+      } catch (error) {
+        console.warn('Failed to fetch tenant timezone, using default:', error.message);
+      }
+    }
+
+    // Generate JWT payload with entitlements (includes timezone & locale)
+    const jwtPayload = createJwtPayload(user, enrichedTenantContext, allowedApps, userType);
+
     // Generate token
     const token = this.generateToken(jwtPayload);
 
@@ -275,7 +309,7 @@ class AuthService {
   async refreshToken(oldToken) {
     try {
       const payload = this.verifyToken(oldToken);
-      
+
       // For platform admin tokens, use global lookup
       let user;
       if (payload.type === 'platform_admin') {
@@ -285,7 +319,7 @@ class AuthService {
         const tenantIdFk = payload.tenantId; // Should be numeric in new tokens
         user = await User.findById(payload.userId, tenantIdFk);
       }
-      
+
       if (user.status !== 'active') {
         throw new Error('User account is no longer active');
       }
@@ -294,10 +328,27 @@ class AuthService {
       const tenantIdFk = payload.tenantId; // Use numeric ID from JWT
       const { allowedApps, userType } = await this.getUserEntitlements(user, tenantIdFk);
 
-      // Create new token with fresh entitlements
-      const tenantContext = { tenantId: tenantIdFk, schema: payload.schema, id: tenantIdFk };
+      // Fetch fresh tenant timezone (might have changed)
+      let tenantContext = {
+        tenantId: tenantIdFk,
+        schema: payload.schema,
+        id: tenantIdFk,
+        timezone: payload.timezone // Use existing timezone from old token as fallback
+      };
+
+      try {
+        const Tenant = require('./models/Tenant');
+        const tenant = await Tenant.findById(tenantIdFk);
+        if (tenant) {
+          tenantContext.timezone = tenant.timezone;
+        }
+      } catch (error) {
+        console.warn('Failed to fetch tenant timezone during refresh, using token value:', error.message);
+      }
+
+      // Create new token with fresh entitlements and timezone
       const newPayload = createJwtPayload(user, tenantContext, allowedApps, userType);
-      
+
       const newToken = this.generateToken(newPayload);
 
       return {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardTitle } from '@client/common/ui'
 import { Mic, UserPlus, List } from 'lucide-react'
 import { useAuthStore } from '../../shared/store'
@@ -16,10 +17,13 @@ import { SessionCard } from '../../components/home/SessionCard'
 import { ReportCard } from '../../components/home/ReportCard'
 import { RecentPatientRow } from '../../components/home/RecentPatientRow'
 import { ActivityFeed } from '../../components/home/ActivityFeed'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 export const Home: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { user } = useAuthStore()
   const navigate = useNavigate()
+  const { formatDateTime } = useDateFormatter()
 
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
@@ -52,12 +56,7 @@ export const Home: React.FC = () => {
         id: `patient-${patient.id}`,
         type: 'patient_added',
         message: `Patient ${patient.first_name} ${patient.last_name} was added`,
-        timestamp: new Date(patient.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        timestamp: formatDateTime(patient.created_at),
         icon: 'patient',
         date: new Date(patient.created_at),
         path: `/patients/${patient.id}/edit`
@@ -73,12 +72,7 @@ export const Home: React.FC = () => {
         id: `session-${session.id}`,
         type: 'session_created',
         message: `Session ${session.number} created for ${patientName}`,
-        timestamp: new Date(session.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        timestamp: formatDateTime(session.created_at),
         icon: 'session',
         date: new Date(session.created_at),
         path: `/sessions/${session.id}/edit`
@@ -94,12 +88,7 @@ export const Home: React.FC = () => {
         id: `quote-${quote.id}`,
         type: 'quote_created',
         message: `Quote ${quote.number} created for ${patientName}`,
-        timestamp: new Date(quote.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        timestamp: formatDateTime(quote.created_at),
         icon: 'quote',
         date: new Date(quote.created_at),
         path: `/quotes/${quote.id}/edit`
@@ -115,12 +104,7 @@ export const Home: React.FC = () => {
         id: `report-${report.id}`,
         type: 'report_created',
         message: `Clinical report ${report.number} created for ${patientName}`,
-        timestamp: new Date(report.created_at).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        timestamp: formatDateTime(report.created_at),
         icon: 'report',
         date: new Date(report.created_at),
         path: `/clinical-reports/${report.id}/edit`
@@ -134,12 +118,7 @@ export const Home: React.FC = () => {
         id: `public-quote-${pq.id}`,
         type: 'public_quote_created',
         message: `Public quote link created for Quote ${quoteNumber}`,
-        timestamp: new Date(pq.createdAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        timestamp: formatDateTime(pq.createdAt),
         icon: 'public_quote',
         date: new Date(pq.createdAt),
         path: `/public-quotes/links?quote=${encodeURIComponent(quoteNumber)}`,
@@ -153,12 +132,7 @@ export const Home: React.FC = () => {
         id: `public-quote-template-${pqt.id}`,
         type: 'public_quote_template_created',
         message: `Public quote template "${pqt.name}" was created`,
-        timestamp: new Date(pqt.createdAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        timestamp: formatDateTime(pqt.createdAt),
         icon: 'public_quote_template',
         date: new Date(pqt.createdAt),
         path: `/public-quotes/templates/${pqt.id}/edit`
@@ -171,12 +145,7 @@ export const Home: React.FC = () => {
         id: `template-${template.id}`,
         type: 'template_created',
         message: `Template "${template.title}" was created`,
-        timestamp: new Date(template.createdAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        timestamp: formatDateTime(template.createdAt),
         icon: 'template',
         date: new Date(template.createdAt),
         path: `/templates/${template.id}/edit`
@@ -188,7 +157,7 @@ export const Home: React.FC = () => {
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5)
       .map(({ date, ...rest }) => rest)
-  }, [patients, sessions, quotes, reports, publicQuotes, publicQuoteTemplates, templates])
+  }, [patients, sessions, quotes, reports, publicQuotes, publicQuoteTemplates, templates, formatDateTime])
 
   // Handle SSO on home page load
   useEffect(() => {
@@ -282,23 +251,23 @@ export const Home: React.FC = () => {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('home.quick_actions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-x-auto md:overflow-visible">
           <QuickActionCard
             icon={Mic}
-            title="Start New Session"
+            title={t('home.start_new_session')}
             onClick={() => navigate('/new-session')}
             colorClass="purple"
           />
           <QuickActionCard
             icon={UserPlus}
-            title="Add Patient"
+            title={t('home.add_patient')}
             onClick={() => navigate('/patients/create')}
             colorClass="pink"
           />
           <QuickActionCard
             icon={List}
-            title="View Sessions"
+            title={t('home.view_sessions')}
             onClick={() => navigate('/sessions')}
             colorClass="blue"
           />
@@ -310,7 +279,7 @@ export const Home: React.FC = () => {
 
       {/* Latest Quotes */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Latest Quotes</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('quotes.latest')}</h2>
         {isLoadingQuotes ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -343,7 +312,7 @@ export const Home: React.FC = () => {
 
       {/* Latest Reports */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Latest Reports</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clinical_reports.latest')}</h2>
         {isLoadingReports ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -376,7 +345,7 @@ export const Home: React.FC = () => {
 
       {/* Sessions This Week */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Sessions This Week</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('sessions.this_week')}</h2>
         {isLoadingSessions ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -411,7 +380,7 @@ export const Home: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Patients Recently Added */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Patients Recently Added</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('patients.recently_added')}</h2>
           {isLoadingPatients ? (
             <Card>
               <div className="divide-y divide-gray-100">
@@ -446,7 +415,7 @@ export const Home: React.FC = () => {
 
         {/* Activity Feed */}
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('home.recent_activity')}</h2>
           <ActivityFeed
             activities={activities}
             isLoading={isLoadingQuotes || isLoadingPatients || isLoadingSessions || isLoadingReports}

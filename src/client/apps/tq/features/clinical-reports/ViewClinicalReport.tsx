@@ -10,10 +10,12 @@ import {
   TemplateEditor
 } from '@client/common/ui'
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 export const ViewClinicalReport: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { formatLongDate } = useDateFormatter()
 
   const [report, setReport] = useState<ClinicalReport | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -49,11 +51,7 @@ export const ViewClinicalReport: React.FC = () => {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
+    return formatLongDate(dateString)
   }
 
   if (isLoading) {

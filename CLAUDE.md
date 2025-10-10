@@ -385,6 +385,340 @@ SUPABASE_BRANDING_BUCKET=branding-assets
 - **CORS Issues**: Ensure Supabase bucket has public read access
 - **Missing Assets**: Verify bucket permissions and public URL settings
 
+## Timezone & Internationalization System
+
+### Overview
+The platform serves multiple countries (Brazil, Australia) with different timezones and languages. The Timezone & i18n system ensures dates/times display correctly in the user's timezone and UI text appears in the appropriate language.
+
+### Supported Locales
+- **Brazil**: `pt-BR` (Portuguese) → `America/Sao_Paulo` timezone
+- **Australia**: `en-AU` (English) → `Australia/Gold_Coast` timezone
+- **Fallback**: `en-US` (English) for other regions
+
+### Database Schema
+Timezone is stored immutably in the tenants table:
+```sql
+CREATE TABLE public.tenants (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  subdomain VARCHAR(63) NOT NULL UNIQUE,
+  schema_name VARCHAR(63) NOT NULL UNIQUE,
+  timezone VARCHAR(100) NOT NULL, -- IANA timezone identifier (e.g., 'America/Sao_Paulo')
+  status VARCHAR(20) DEFAULT 'active',
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**IMPORTANT**: Timezone is set once at tenant creation and cannot be changed.
+
+### JWT Payload with Timezone & Locale
+**Modified Files**:
+- `src/shared/types/user.js` - `createJwtPayload()` function
+- `src/server/infra/authService.js` - `login()`, `register()`, `refreshToken()` methods
+
+**JWT Payload Structure**:
+```javascript
+{
+  userId: 123,
+  tenantId: 456,
+  email: "user@example.com",
+  name: "John Doe",
+  role: "admin",
+  schema: "tenant_acme",
+  timezone: "America/Sao_Paulo",  // NEW: IANA timezone from tenants table
+  locale: "pt-BR",                // NEW: Derived from timezone via mapping utility
+  allowedApps: [...],
+  userType: {...},
+  platformRole: null,
+  iat: 1234567890
+}
+```
+
+**How It Works**:
+1. User logs into Hub or TQ
+2. Backend queries `tenants.timezone` from database
+3. Backend derives `locale` from timezone using mapping utility
+4. Both `timezone` and `locale` added to JWT payload
+5. JWT passed to TQ via SSO URL parameters
+6. Frontend decodes JWT and extracts timezone/locale
+7. Frontend stores in Auth Store for global access
+
+### Backend Implementation
+
+**Locale Mapping Utility** (`src/server/infra/utils/localeMapping.js`):
+```javascript
+// Maps IANA timezone to locale code
+getLocaleFromTimezone('America/Sao_Paulo')      // → 'pt-BR'
+getLocaleFromTimezone('Australia/Gold_Coast')   // → 'en-AU'
+getLocaleFromTimezone('America/New_York')       // → 'en-US' (fallback)
+
+// Extract language code from locale
+getLanguageFromLocale('pt-BR')  // → 'pt'
+getLanguageFromLocale('en-AU')  // → 'en'
+
+// Validate timezone support
+isSupportedTimezone('America/Sao_Paulo')  // → true
+isSupportedTimezone('Invalid/Timezone')   // → false
+
+// Get locale metadata (currency, date format, etc.)
+getLocaleMetadata('pt-BR')  // → { currency: 'BRL', dateFormat: 'DD/MM/YYYY', ... }
+```
+
+**Modified createJwtPayload()** (`src/shared/types/user.js:47-83`):
+```javascript
+function createJwtPayload(user, tenant, allowedApps = [], userType = null) {
+  // Derive locale from timezone using mapping utility
+  let locale = 'pt-BR'; // Default to Brazilian Portuguese
+  if (tenant.timezone) {
+    try {
+      const { getLocaleFromTimezone } = require('../server/infra/utils/localeMapping');
+      locale = getLocaleFromTimezone(tenant.timezone);
+    } catch (error) {
+      console.warn('Failed to derive locale from timezone, using default pt-BR:', error.message);
+    }
+  }
+
+  return {
+    userId: user.id,
+    tenantId: numericTenantId,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    schema: tenant.schema,
+    timezone: tenant.timezone || 'America/Sao_Paulo', // IANA timezone identifier
+    locale: locale, // Derived from timezone (pt-BR, en-AU, etc.)
+    allowedApps: allowedApps,
+    userType: userType ? { ... } : null,
+    platformRole: user.platformRole || null,
+    iat: Math.floor(Date.now() / 1000)
+  };
+}
+```
+
+**Modified authService.js** (`src/server/infra/authService.js`):
+- **login()** method (lines 257-272): Fetches tenant timezone from DB if missing in context
+- **register()** method (lines 135-150): Same enrichment logic
+- **refreshToken()** method (lines 331-347): Fetches fresh timezone during refresh
+
+```javascript
+// Ensure tenant context includes timezone (fetch from DB if missing)
+let enrichedTenantContext = tenantContext;
+if (!tenantContext.timezone) {
+  try {
+    const Tenant = require('./models/Tenant');
+    const tenant = await Tenant.findById(tenantIdFk);
+    if (tenant) {
+      enrichedTenantContext = {
+        ...tenantContext,
+        timezone: tenant.timezone
+      };
+    }
+  } catch (error) {
+    console.warn('Failed to fetch tenant timezone, using default:', error.message);
+  }
+}
+
+// Generate JWT payload with entitlements (includes timezone & locale)
+const jwtPayload = createJwtPayload(user, enrichedTenantContext, allowedApps, userType);
+```
+
+### Frontend Implementation
+
+**Auth Store Updates** (`src/client/apps/tq/shared/store/auth.ts`):
+```typescript
+interface AuthState {
+  // ... existing fields
+  tenantTimezone?: string  // IANA timezone identifier (e.g., 'America/Sao_Paulo')
+  tenantLocale?: string    // Locale code (e.g., 'pt-BR', 'en-AU')
+  // ... rest
+}
+
+// SSO login method extracts timezone/locale from JWT
+loginWithToken: async (token: string, tenantId: number) => {
+  const payload = decodeJWTPayload(base64Payload)
+
+  set({
+    // ... existing fields
+    tenantTimezone: payload.timezone || 'America/Sao_Paulo',
+    tenantLocale: payload.locale || 'pt-BR',
+    // ... rest
+  })
+}
+
+// Persist timezone/locale in localStorage
+partialize: (state) => ({
+  // ... existing fields
+  tenantTimezone: state.tenantTimezone,
+  tenantLocale: state.tenantLocale
+})
+```
+
+**Date/Time Formatter Utilities** (`src/client/common/utils/dateTime.ts`):
+```typescript
+// Format date in short format (DD/MM/YYYY)
+formatShortDate(date, timezone, locale)
+
+// Format date in long format (DD de MMM de YYYY)
+formatLongDate(date, timezone, locale)
+
+// Format time in 24h format (HH:mm)
+formatTime(date, timezone, locale)
+
+// Format date and time (DD/MM/YYYY HH:mm)
+formatDateTime(date, timezone, locale)
+
+// Format relative time (e.g., "2 hours ago", "há 2 horas")
+formatRelativeTime(date, timezone, locale)
+
+// Format month and year (MMM YYYY)
+formatMonthYear(date, timezone, locale)
+
+// Get current date in tenant timezone
+getNowInTimezone(timezone)
+```
+
+**All formatters use native `Intl.DateTimeFormat` API** - no external dependencies.
+
+**useDateFormatter Hook** (`src/client/common/hooks/useDateFormatter.ts`):
+```typescript
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+
+const Component = () => {
+  const { formatShortDate, formatDateTime, getTimezone, getLocale } = useDateFormatter()
+
+  return (
+    <div>
+      <p>Date: {formatShortDate(session.created_at)}</p>
+      <p>Time: {formatDateTime(session.updated_at)}</p>
+      <p>Timezone: {getTimezone()}</p>
+      <p>Locale: {getLocale()}</p>
+    </div>
+  )
+}
+```
+
+**Hook automatically reads timezone/locale from Auth Store** - no manual passing required.
+
+### Component Migration Pattern
+
+**Before** (Hardcoded locale):
+```typescript
+// ❌ OLD - Hardcoded 'pt-BR'
+<span>
+  {new Date(session.created_at).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  })}
+</span>
+```
+
+**After** (Timezone-aware):
+```typescript
+// ✅ NEW - Uses tenant timezone/locale
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+
+const SessionRow = ({ session }) => {
+  const { formatShortDate } = useDateFormatter()
+
+  return <span>{formatShortDate(session.created_at)}</span>
+}
+```
+
+**Example Migration** (`src/client/apps/tq/components/session/SessionRow.tsx:45-49`):
+- Removed hardcoded `toLocaleDateString('pt-BR', ...)`
+- Added `useDateFormatter()` hook
+- Replaced with `formatShortDate(session.created_at)`
+
+### SSO Flow with Timezone
+1. **Hub Login**: User logs in, JWT includes `timezone` and `locale`
+2. **Open TQ**: Hub opens TQ with SSO URL: `http://localhost:3005/login?token={JWT}&tenantId={ID}`
+3. **TQ Decodes JWT**: Extracts timezone/locale from JWT payload
+4. **Store in Auth**: Stores in Zustand Auth Store (`tenantTimezone`, `tenantLocale`)
+5. **Persist**: Persists to localStorage for future sessions
+6. **Global Access**: All components use `useDateFormatter()` hook for consistent formatting
+
+### Implementation Status
+
+**✅ Phase 1 - Timezone Global (COMPLETED)**:
+- [x] Backend: Modify `createJwtPayload()` to include `timezone` and `locale`
+- [x] Backend: Query tenant timezone when generating JWT token
+- [x] Backend: Create timezone → locale mapping utility
+- [x] Frontend: Add `tenantTimezone` and `tenantLocale` to Auth Store interfaces
+- [x] Frontend: Auth stores decode JWT automatically and extract timezone/locale
+- [x] Frontend: Create `src/client/common/utils/dateTime.ts` formatters
+- [x] Frontend: Create `useDateFormatter()` hook
+- [x] Frontend: Example refactor of SessionRow component
+
+**✅ Phase 2 - Component Migration (COMPLETED)**:
+- [x] Migrated **10 files** to use `useDateFormatter()` hook
+- [x] Components migrated:
+  - `PublicQuoteLinkRow.tsx` - Public quote links with expiration dates
+  - `GeneratePublicQuoteModal.tsx` - Public quote generation modal
+  - `PatientRow.tsx` - Patient list rows
+  - `QuoteRow.tsx` - Quote list rows
+  - `ClinicalReportRow.tsx` - Clinical report list rows
+  - `ItemRow.tsx` - Item list rows
+  - `TemplateRow.tsx` - Template list rows
+  - `SessionRow.tsx` - Session list rows (Phase 1 example)
+- [x] Hooks migrated to use formatter utilities:
+  - `useQuotes.ts` - `formatDate()` helper function
+  - `useSessions.ts` - `formatDate()` helper function
+  - `usePatients.ts` - `formatDate()` helper function
+- [x] All hardcoded `toLocaleDateString('pt-BR')` calls replaced
+- [x] All components now respect tenant timezone and locale
+
+**📋 Phase 3 - i18n UI (PENDING)**:
+- [ ] Install react-i18next dependencies
+- [ ] Create translation files (pt-BR, en-AU, en-US)
+- [ ] Integrate i18n in App roots (TQ, Hub)
+- [ ] Translate main screens starting with TQ
+
+**📋 Phase 4 - AI Multilingual (PENDING)**:
+- [ ] Pass tenant locale to AI Agent route
+- [ ] Add language instruction to system message based on locale
+- [ ] Add language hint to Deepgram transcription requests
+
+### Best Practices
+
+**DO**:
+- ✅ Use `useDateFormatter()` hook in all components that display dates
+- ✅ Use `Intl.DateTimeFormat` API (native, no dependencies)
+- ✅ Store timezone/locale in Auth Store (single source of truth)
+- ✅ Extract timezone/locale from JWT (automatic via SSO)
+- ✅ Default to `America/Sao_Paulo` / `pt-BR` if missing
+
+**DON'T**:
+- ❌ Hardcode locale in `toLocaleDateString('pt-BR')` calls
+- ❌ Use external date libraries (moment.js, date-fns) - native API is sufficient
+- ❌ Pass timezone/locale as props to every component (use hook instead)
+- ❌ Modify tenant timezone after creation (immutable field)
+
+### Testing Timezone System
+
+**Manual Testing**:
+1. Create tenant with `America/Sao_Paulo` timezone
+2. Login to Hub, verify JWT contains `timezone` and `locale`
+3. Open TQ via SSO, verify Auth Store has correct values
+4. Check dates display in `DD/MM/YYYY` format (Brazilian standard)
+5. Create Australian tenant with `Australia/Gold_Coast` timezone
+6. Verify dates display in Australian format with correct timezone offset
+
+**Automated Testing**:
+```javascript
+// Test locale mapping
+const { getLocaleFromTimezone } = require('./localeMapping');
+expect(getLocaleFromTimezone('America/Sao_Paulo')).toBe('pt-BR');
+expect(getLocaleFromTimezone('Australia/Gold_Coast')).toBe('en-AU');
+
+// Test date formatters
+const { formatShortDate } = require('./dateTime');
+const date = new Date('2025-01-10T15:30:00Z');
+expect(formatShortDate(date, 'America/Sao_Paulo', 'pt-BR')).toBe('10/01/2025');
+```
+
 ## API Route Categories
 - **Platform-Scoped** (no tenant header): `/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`, `/me/*`
 - **Tenant-Scoped** (requires x-tenant-id header): `/auth`, `/users`, `/entitlements` 
@@ -1027,6 +1361,187 @@ async function withTenant(tenantSchema, fn) {
 }
 ```
 
+## Timezone & Internationalization System
+
+### Overview
+The platform implements a comprehensive timezone and internationalization system to support global operations (Brazil and Australia). Timezone data is propagated via JWT tokens and automatically applied to all date/time displays.
+
+### Implementation
+
+**Phase 1: Backend & Infrastructure (✅ COMPLETED)**
+
+1. **Locale Mapping Utility** (`src/server/infra/utils/localeMapping.js`):
+```javascript
+// Maps IANA timezone identifiers to locale codes
+getLocaleFromTimezone('America/Sao_Paulo')      // → 'pt-BR'
+getLocaleFromTimezone('Australia/Gold_Coast')   // → 'en-AU'
+getLanguageFromLocale('pt-BR')                  // → 'pt'
+isSupportedTimezone(timezone)                   // → boolean
+getLocaleMetadata(locale)                       // → {currency, dateFormat, ...}
+```
+
+2. **JWT Payload Enhancement** (`src/shared/types/user.js`):
+- Added `timezone` and `locale` fields to JWT payload
+- `locale` is automatically derived from `timezone` using localeMapping utility
+- Example: `{userId: 123, tenantId: 456, timezone: 'America/Sao_Paulo', locale: 'pt-BR', ...}`
+
+3. **Auth Service Updates** (`src/server/infra/authService.js`):
+- `login()`, `register()`, `refreshToken()` methods fetch tenant timezone from DB
+- Enriches tenant context before creating JWT payload
+- Ensures timezone is always present in JWT tokens
+
+4. **Auth Store Updates**:
+- **TQ Auth Store** (`src/client/apps/tq/shared/store/auth.ts`):
+  - Added `tenantTimezone` and `tenantLocale` fields
+  - SSO `loginWithToken()` extracts from JWT payload
+  - Persisted to localStorage via `partialize`
+- **Hub Auth Store** (`src/client/apps/hub/store/auth.ts`):
+  - Same fields and JWT extraction logic
+  - Works seamlessly with SSO flow from Hub to TQ
+
+5. **Date Formatting Utilities** (`src/client/common/utils/dateTime.ts`):
+```typescript
+// Pure utility functions using Intl.DateTimeFormat API
+formatShortDate(date, timezone, locale)     // → "15/01/2025"
+formatLongDate(date, timezone, locale)      // → "January 15, 2025"
+formatTime(date, timezone, locale)          // → "14:30"
+formatDateTime(date, timezone, locale)      // → "Jan 15, 2025, 2:30 PM"
+formatRelativeTime(date, timezone, locale)  // → "2 hours ago"
+formatMonthYear(date, timezone, locale)     // → "Jan 15"
+getNowInTimezone(timezone)                  // → Date object in timezone
+```
+
+6. **React Hook** (`src/client/common/hooks/useDateFormatter.ts`):
+```typescript
+// Automatic timezone/locale detection from auth store
+const { formatShortDate, formatLongDate, formatDateTime } = useDateFormatter()
+
+// Works in both TQ and Hub apps via dynamic imports
+// Falls back to 'America/Sao_Paulo' / 'pt-BR' if store not available
+```
+
+**Phase 2: Frontend Component Migration (✅ COMPLETED)**
+
+All 23 components migrated to use timezone-aware date formatting:
+
+**TQ Components (21):**
+- SessionRow, PublicQuoteLinkRow, GeneratePublicQuoteModal
+- PatientRow, QuoteRow, ClinicalReportRow, ItemRow, TemplateRow
+- useQuotes, useSessions, usePatients (hooks)
+- RecentPatientRow, ReportCard, SessionCard, QuoteCard
+- resolveTemplateVariables (utility)
+- Home (7 occurrences migrated)
+- EditQuote
+- PatientHistory (7 occurrences migrated)
+- ViewClinicalReport
+- EditClinicalReport
+
+**Hub Components (2):**
+- EntitlementsSummaryCard
+- EntitlementAppCard
+
+**Migration Pattern:**
+```typescript
+// Before
+const date = new Date(created_at).toLocaleDateString('pt-BR', {...})
+
+// After
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+const { formatShortDate } = useDateFormatter()
+const date = formatShortDate(created_at)
+```
+
+**Phase 3: UI Internationalization (✅ COMPLETED)**
+
+Language rule: **pt-BR for Brazil, en-US for everything else** (including Australia, USA, Europe, etc.)
+
+**Dependencies installed:**
+```bash
+npm install react-i18next i18next i18next-browser-languagedetector
+```
+
+**Translation files created:**
+- `src/client/common/i18n/locales/pt-BR/` - Brazilian Portuguese translations
+  - `common.json` - Common UI strings (save, cancel, delete, etc.)
+  - `tq.json` - TQ-specific strings (patients, sessions, quotes, etc.)
+  - `hub.json` - Hub-specific strings (entitlements, apps, etc.)
+- `src/client/common/i18n/locales/en-US/` - English translations
+  - `common.json`, `tq.json`, `hub.json` (same structure)
+
+**i18n Configuration** (`src/client/common/i18n/config.ts`):
+- Custom language detector reads `tenantLocale` from auth store (localStorage)
+- Automatic language switching: `pt-BR` → pt-BR, anything else → `en-US`
+- No caching (language managed via auth store)
+- Fallback language: `en-US`
+- Namespaces: `common`, `tq`, `hub`
+
+**App Integration:**
+- **TQ App** (`src/client/apps/tq/App.tsx`): Watches `tenantLocale` from auth store, calls `i18n.changeLanguage()` on change
+- **Hub App** (`src/client/apps/hub/main.tsx`): I18nSync component watches `tenantLocale`, syncs language
+
+**Usage Pattern:**
+```typescript
+import { useTranslation } from 'react-i18next'
+
+function MyComponent() {
+  const { t } = useTranslation('tq') // or 'hub' or 'common'
+
+  return (
+    <div>
+      <h1>{t('patients.title')}</h1>
+      <p>{t('common:welcome_back')}</p>
+      <Button>{t('common:save')}</Button>
+    </div>
+  )
+}
+```
+
+**Example Migration** (PatientRow.tsx):
+```typescript
+// Before
+<Button aria-label={`Edit ${formatPatientName(patient)}`}>
+
+// After
+const { t } = useTranslation('tq')
+<Button aria-label={`${t('patients.edit')} ${formatPatientName(patient)}`}>
+```
+
+**Phase 4: AI & Transcription Multilingual (NOT STARTED)**
+- Pass tenant locale to AI Agent routes
+- Add language instruction to OpenAI system messages
+- Add language hint to Deepgram transcription requests
+
+### Key Design Decisions
+- **Single Source of Truth**: Timezone stored in `tenants.timezone` (IANA format)
+- **Locale Derivation**: Automatic mapping from timezone (no separate locale field)
+- **JWT Propagation**: Timezone/locale included in JWT for SSO compatibility
+- **No External Dependencies**: Uses native `Intl.DateTimeFormat` API (Phase 1-2) and react-i18next (Phase 3)
+- **Two Languages Only**: pt-BR (Brazil) and en-US (rest of world)
+- **Universal Hook**: `useDateFormatter()` works in both TQ and Hub apps
+- **Graceful Fallbacks**: Defaults to 'America/Sao_Paulo' / 'pt-BR' if data missing
+
+### Files Modified/Created
+**Backend:**
+- `src/server/infra/utils/localeMapping.js` (created, updated for 2 languages only)
+- `src/shared/types/user.js` (modified - createJwtPayload)
+- `src/server/infra/authService.js` (modified - login, register, refreshToken)
+
+**Frontend - Phase 1&2:**
+- `src/client/common/utils/dateTime.ts` (created)
+- `src/client/common/hooks/useDateFormatter.ts` (created)
+- `src/client/apps/tq/shared/store/auth.ts` (modified)
+- `src/client/apps/hub/store/auth.ts` (modified)
+- 23 component files migrated to use `useDateFormatter()`
+
+**Frontend - Phase 3:**
+- `src/client/common/i18n/config.ts` (created)
+- `src/client/common/i18n/index.ts` (created)
+- `src/client/common/i18n/locales/pt-BR/*.json` (created - 3 files)
+- `src/client/common/i18n/locales/en-US/*.json` (created - 3 files)
+- `src/client/apps/tq/App.tsx` (modified - i18n sync)
+- `src/client/apps/hub/main.tsx` (modified - i18n sync)
+- `src/client/apps/tq/components/patients/PatientRow.tsx` (example migration)
+
 ## Development Best Practices
 - **Type Check**: Frontend uses TypeScript - check for errors with `npx tsc --noEmit --project src/client/`
 - **Test First**: Always run `npm test` before making significant changes
@@ -1035,6 +1550,8 @@ async function withTenant(tenantSchema, fn) {
 - **FK Suffix**: All foreign keys must use `_fk` suffix for consistency
 - **Transaction Scope**: Use proper database transactions for multi-step operations
 - **Feedback via HTTP**: NEVER use `publishFeedback()` in components - feedback is handled automatically via HTTP interceptors. Only add manual feedback if explicitly requested.
+- **Timezone-Aware Dates**: ALWAYS use `useDateFormatter()` hook for displaying dates/times - never use `toLocaleDateString()` directly
+- **i18n for UI Text**: ALWAYS use `useTranslation('tq')` or `useTranslation('hub')` hook for UI strings - never hardcode text in Portuguese or English
 
 ## Automatic Feedback System
 

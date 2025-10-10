@@ -4,6 +4,7 @@ import { Button, Badge } from '@client/common/ui'
 import { Session } from '../../services/sessions'
 import { formatSessionStatus } from '../../hooks/useSessions'
 import { getSessionStatusColor } from '../../types/sessionStatus'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface SessionRowProps {
   session: Session
@@ -19,6 +20,7 @@ export const SessionRow: React.FC<SessionRowProps> = ({
   onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const { formatShortDate } = useDateFormatter()
 
   const handleEdit = () => {
     onEdit?.(session)
@@ -42,11 +44,7 @@ export const SessionRow: React.FC<SessionRowProps> = ({
         {/* Created At */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
-            {new Date(session.created_at).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            })}
+            {formatShortDate(session.created_at)}
           </span>
         </div>
 

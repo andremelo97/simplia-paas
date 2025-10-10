@@ -98,6 +98,11 @@ const getDisplayRole = (user: any) => {
   if (user?.userType?.slug) {
     return user.userType.slug.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
   }
+  // Get TQ-specific role from allowedApps instead of global role
+  const tqApp = user?.allowedApps?.find((app: any) => app.slug === 'tq')
+  if (tqApp?.roleInApp) {
+    return tqApp.roleInApp.charAt(0).toUpperCase() + tqApp.roleInApp.slice(1)
+  }
   return user?.role || 'User'
 }
 

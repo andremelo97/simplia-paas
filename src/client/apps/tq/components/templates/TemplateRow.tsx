@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Edit } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { Template } from '../../services/templates'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface TemplateRowProps {
   template: Template
@@ -15,17 +16,10 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
   onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const { formatShortDate } = useDateFormatter()
 
   const handleEdit = () => {
     onEdit(template)
-  }
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    })
   }
 
   const truncateContent = (content: string, maxLength: number = 80) => {
@@ -44,7 +38,7 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
         {/* Created At */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
-            {formatDate(template.createdAt)}
+            {formatShortDate(template.createdAt)}
           </span>
         </div>
 

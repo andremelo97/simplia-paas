@@ -38,6 +38,8 @@ interface AuthState {
   tenantId: number | null
   tenantName?: string
   tenantSlug?: string
+  tenantTimezone?: string  // IANA timezone identifier (e.g., 'America/Sao_Paulo')
+  tenantLocale?: string    // Locale code (e.g., 'pt-BR', 'en-AU')
   isLoading: boolean
   error: AppError | null
   isHydrated: boolean
@@ -59,6 +61,8 @@ export const useAuthStore = create<AuthState>()(persist(
     tenantId: null,
     tenantName: undefined,
     tenantSlug: undefined,
+    tenantTimezone: undefined,
+    tenantLocale: undefined,
     isLoading: true, // Start with loading true until everything is ready
     error: null,
     isHydrated: false,
@@ -253,7 +257,7 @@ export const useAuthStore = create<AuthState>()(persist(
             email: payload.email,
             firstName: payload.firstName || payload.name?.split(' ')[0],
             lastName: payload.lastName || payload.name?.split(' ').slice(1).join(' '),
-            role: payload.role,
+            role: payload.role, // Temporary: will be updated by loadUserProfile
             tenantId: payload.tenantId,
             allowedApps: payload.allowedApps?.map(slug => ({ slug, name: slug, roleInApp: 'user', licenseStatus: 'active', expiresAt: null }))
           },
@@ -261,11 +265,17 @@ export const useAuthStore = create<AuthState>()(persist(
           tenantId: tenantId,
           tenantName: tenantName,
           tenantSlug: tenantSlug,
+          tenantTimezone: payload.timezone || 'America/Sao_Paulo', // Extract from JWT
+          tenantLocale: payload.locale || 'pt-BR', // Extract from JWT
           isLoading: false,
           error: null
         })
 
         console.log('✅ [TQ Auth] SSO login successful - final tenant name:', tenantName)
+
+        // Load fresh profile to get correct roleInApp for TQ
+        const { loadUserProfile } = get()
+        loadUserProfile().catch(console.error)
       } catch (error: any) {
         console.error('❌ [TQ Auth] SSO login failed:', error)
         const appError = isAppError(error) ? error : {
@@ -304,6 +314,8 @@ export const useAuthStore = create<AuthState>()(persist(
         tenantId: null,
         tenantName: undefined,
         tenantSlug: undefined,
+        tenantTimezone: undefined,
+        tenantLocale: undefined,
         error: null,
         isLoading: false,
       })
@@ -371,7 +383,9 @@ export const useAuthStore = create<AuthState>()(persist(
       token: state.token,
       tenantId: state.tenantId,
       tenantName: state.tenantName,
-      tenantSlug: state.tenantSlug
+      tenantSlug: state.tenantSlug,
+      tenantTimezone: state.tenantTimezone,
+      tenantLocale: state.tenantLocale
     }),
     onRehydrateStorage: () => (state) => {
       // Initialize after rehydration

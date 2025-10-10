@@ -385,9 +385,11 @@ router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('intern
 
     if (error.name === 'DuplicateUserError') {
       return res.status(409).json({
-        error: {
-          code: 409,
-          message: error.message
+        success: false,
+        data: null,
+        meta: {
+          code: 'USER_ALREADY_EXISTS',
+          message: error.message || 'A user with this email already exists'
         }
       });
     }

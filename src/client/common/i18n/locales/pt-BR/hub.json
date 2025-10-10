@@ -1,0 +1,22 @@
+{
+  "app_name": "Hub - Portal de Aplicativos",
+  "welcome": "Bem-vindo ao Hub",
+  "my_apps": "Meus Aplicativos",
+  "no_apps": "Você ainda não tem acesso a nenhum aplicativo.",
+  "entitlements": {
+    "title": "Direitos de Acesso",
+    "my_licenses": "Minhas Licenças",
+    "app_access": "Acesso a Aplicativos",
+    "activated_at": "Ativado em",
+    "team_members": "Membros da Equipe",
+    "show_team": "Mostrar Equipe",
+    "hide_team": "Ocultar Equipe",
+    "role_in_app": "Função no Aplicativo",
+    "access": "Acesso",
+    "granted": "Concedido",
+    "activated": "Ativado",
+    "expires": "Expira",
+    "never": "Nunca",
+    "no_team_members": "Nenhum membro da equipe tem acesso a este aplicativo ainda."
+  }
+}

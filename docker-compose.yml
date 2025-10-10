@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: simplia-postgres
+    restart: unless-stopped
+
+    # Force UTC timezone for PostgreSQL
+    environment:
+      POSTGRES_DB: simplia_paas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      PGTZ: UTC              # PostgreSQL timezone
+      TZ: UTC                # Container timezone
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      # Persist data between container restarts
+      - postgres-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+    driver: local

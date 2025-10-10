@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea, PriceInput, Checkbox } from '@client/common/ui'
 import { itemsService, CreateItemRequest, Item } from '../../../services/items'
 import { formatDate } from '@client/common/utils/dateUtils'
 
 export const EditItem: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [formData, setFormData] = useState<CreateItemRequest>({
     name: '',
     description: '',
@@ -149,7 +151,7 @@ export const EditItem: React.FC = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Item</h1>
-          <p className="text-gray-600 mt-1">Loading item details...</p>
+          <p className="text-gray-600 mt-1">{t('quote_items.loading_item')}</p>
         </div>
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -195,7 +197,7 @@ export const EditItem: React.FC = () => {
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
-                  placeholder="e.g., Consultation Session"
+                  placeholder={t('quote_items.placeholders.name')}
                   helperText="Service or product name (required)"
                   required
                   disabled={isSubmitting}
@@ -217,7 +219,7 @@ export const EditItem: React.FC = () => {
                   value={formData.description}
                   onChange={handleInputChange('description')}
                   error={validationErrors.description}
-                  placeholder="Describe what this service or product includes (optional)"
+                  placeholder={t('quote_items.placeholders.description')}
                   helperText="Additional details about the item (optional)"
                   rows={4}
                   disabled={isSubmitting}
@@ -246,14 +248,14 @@ export const EditItem: React.FC = () => {
               <CardContent className="space-y-6 px-6 pb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
-                    label="Created At"
+                    label={t('common.created_at')}
                     value={formatDate(originalItem.createdAt)}
                     disabled
                     helperText="When this item record was created"
                   />
 
                   <Input
-                    label="Updated At"
+                    label={t('common.updated_at')}
                     value={formatDate(originalItem.updatedAt)}
                     disabled
                     helperText="When this item record was last updated"

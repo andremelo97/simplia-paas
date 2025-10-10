@@ -30,15 +30,60 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
   try {
     await client.query('BEGIN');
 
+    // Note: Timezone is now set at pool level (database.js) to UTC for all connections
+    // This ensures all timestamps are stored in UTC regardless of server timezone
+    // The timeZone parameter is kept for backward compatibility but not used
+
     // Switch to the tenant schema for table creation
     await client.query(`SET LOCAL search_path TO ${schema}, public`);
+
+    // Create ENUMs FIRST (before tables that reference them)
+    // Check existence within the tenant schema
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type t
+          JOIN pg_namespace n ON t.typnamespace = n.oid
+          WHERE t.typname = 'transcript_status_enum' AND n.nspname = '${schema}'
+        ) THEN
+          CREATE TYPE transcript_status_enum AS ENUM ('created','uploading','uploaded','processing','completed','failed');
+        END IF;
+      END$$;
+    `);
+
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type t
+          JOIN pg_namespace n ON t.typnamespace = n.oid
+          WHERE t.typname = 'session_status_enum' AND n.nspname = '${schema}'
+        ) THEN
+          CREATE TYPE session_status_enum AS ENUM ('draft','pending','completed','cancelled');
+        END IF;
+      END$$;
+    `);
+
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type t
+          JOIN pg_namespace n ON t.typnamespace = n.oid
+          WHERE t.typname = 'quote_status_enum' AND n.nspname = '${schema}'
+        ) THEN
+          CREATE TYPE quote_status_enum AS ENUM ('draft','sent','approved','rejected','expired');
+        END IF;
+      END$$;
+    `);
 
     // Create patient table with essential fields only
     await client.query(`
       CREATE TABLE IF NOT EXISTS patient (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         first_name TEXT,
         last_name TEXT,
         email TEXT,
@@ -47,42 +92,12 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       )
     `);
 
-    // Create transcript_status_enum if it doesn't exist
-    await client.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'transcript_status_enum') THEN
-          CREATE TYPE transcript_status_enum AS ENUM ('created','uploading','uploaded','processing','completed','failed');
-        END IF;
-      END$$;
-    `);
-
-    // Create session_status_enum if it doesn't exist
-    await client.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'session_status_enum') THEN
-          CREATE TYPE session_status_enum AS ENUM ('draft','pending','completed','cancelled');
-        END IF;
-      END$$;
-    `);
-
-    // Create quote_status_enum if it doesn't exist
-    await client.query(`
-      DO $$
-      BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'quote_status_enum') THEN
-          CREATE TYPE quote_status_enum AS ENUM ('draft','sent','approved','rejected','expired');
-        END IF;
-      END$$;
-    `);
-
     // Create transcription table for audio processing
     await client.query(`
       CREATE TABLE IF NOT EXISTS transcription (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         audio_url TEXT,
         transcript_status transcript_status_enum NOT NULL DEFAULT 'created',
         deepgram_request_id TEXT,
@@ -124,8 +139,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS session (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('SES' || LPAD(nextval('session_number_seq')::text, 6, '0')),
         patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
         transcription_id UUID REFERENCES transcription(id) ON DELETE SET NULL,
@@ -137,8 +152,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS item (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         name TEXT NOT NULL,
         description TEXT,
         base_price NUMERIC(10, 2) NOT NULL,
@@ -150,8 +165,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS quote (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('QUO' || LPAD(nextval('quote_number_seq')::text, 6, '0')),
         session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
         content TEXT,
@@ -166,8 +181,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS quote_item (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
         item_id UUID NOT NULL REFERENCES item(id) ON DELETE CASCADE,
         name TEXT NOT NULL,
@@ -182,8 +197,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS template (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         title TEXT NOT NULL,
         content TEXT NOT NULL,
         description TEXT,
@@ -196,8 +211,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS clinical_report (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('CLR' || LPAD(nextval('clinical_report_number_seq')::text, 6, '0')),
         session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
         content TEXT NOT NULL
@@ -310,12 +325,12 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     `);
 
     // Create update triggers for updated_at timestamps
-    // Note: Function will be created in public schema if it doesn't exist
+    // Note: Saves in UTC, timezone conversion happens on read via SET timezone
     await client.query(`
       CREATE OR REPLACE FUNCTION update_updated_at_column()
       RETURNS TRIGGER AS $$
       BEGIN
-        NEW.updated_at = (now() AT TIME ZONE '${timeZone}');
+        NEW.updated_at = now();
         RETURN NEW;
       END;
       $$ LANGUAGE plpgsql
@@ -413,8 +428,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS public_quote_template (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         name VARCHAR(255) NOT NULL,
         description TEXT,
         content JSONB NOT NULL,
@@ -449,8 +464,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS public_quote (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         tenant_id INTEGER NOT NULL,
         quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
         template_id UUID REFERENCES public_quote_template(id) ON DELETE SET NULL,
@@ -504,8 +519,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
     await client.query(`
       CREATE TABLE IF NOT EXISTS ai_agent_configuration (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
-        updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE '${timeZone}'),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
         system_message TEXT
       )
     `);

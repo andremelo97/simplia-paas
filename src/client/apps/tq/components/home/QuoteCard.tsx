@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Card, CardContent } from '@client/common/ui'
 import { Quote } from '../../services/quotes'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface QuoteCardProps {
   quote: Quote
@@ -9,6 +10,7 @@ interface QuoteCardProps {
 
 export const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onDoubleClick }) => {
   const [isFlashing, setIsFlashing] = useState(false)
+  const { formatLongDate } = useDateFormatter()
 
   const handleDoubleClick = () => {
     setIsFlashing(true)
@@ -64,11 +66,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onDoubleClick }) =>
 
         {/* Date */}
         <p className="text-xs text-gray-500">
-          {new Date(quote.created_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          })}
+          {formatLongDate(quote.created_at)}
         </p>
       </CardContent>
     </Card>

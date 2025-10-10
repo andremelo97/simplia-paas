@@ -38,6 +38,8 @@ interface AuthState {
   tenantId: number | null
   tenantName?: string
   tenantSlug?: string
+  tenantTimezone?: string  // IANA timezone identifier (e.g., 'America/Sao_Paulo')
+  tenantLocale?: string    // Locale code (e.g., 'pt-BR', 'en-AU')
   isLoading: boolean
   error: AppError | null
   isHydrated: boolean
@@ -59,6 +61,8 @@ export const useAuthStore = create<AuthState>()(persist(
     tenantId: null,
     tenantName: undefined,
     tenantSlug: undefined,
+    tenantTimezone: undefined,
+    tenantLocale: undefined,
     isLoading: true, // Start with loading true until everything is ready
     error: null,
     isHydrated: false,
@@ -81,7 +85,21 @@ export const useAuthStore = create<AuthState>()(persist(
         })
         
         const { user, token } = response.data
-        
+
+        // Extract timezone and locale from JWT
+        let tenantTimezone = 'America/Sao_Paulo'
+        let tenantLocale = 'pt-BR'
+        try {
+          const base64Payload = token.split('.')[1]
+          const paddedBase64 = base64Payload + '==='.slice((base64Payload.length + 3) % 4)
+          const payload = JSON.parse(atob(paddedBase64))
+          tenantTimezone = payload.timezone || 'America/Sao_Paulo'
+          tenantLocale = payload.locale || 'pt-BR'
+          console.log('🌍 [Hub Auth] Extracted timezone/locale from JWT:', { tenantTimezone, tenantLocale })
+        } catch (error) {
+          console.warn('⚠️ [Hub Auth] Failed to extract timezone/locale from JWT, using defaults:', error)
+        }
+
         // Step 3: Save session with tenant info
         const session: AuthSession = {
           token,
@@ -92,18 +110,20 @@ export const useAuthStore = create<AuthState>()(persist(
           }
         }
         saveSession(session)
-        
-        console.log('✅ [Hub Auth] Login successful', { 
-          user: user?.email, 
+
+        console.log('✅ [Hub Auth] Login successful', {
+          user: user?.email,
           tenant: tenant.name,
           tenantId: tenant.id
         })
-        
+
         set({
           isAuthenticated: true,
           user: session.user,
           token: session.token,
           tenantId: session.tenantId,
+          tenantTimezone,
+          tenantLocale,
           isLoading: false,
           error: null
         })
@@ -221,6 +241,8 @@ export const useAuthStore = create<AuthState>()(persist(
         tenantId: null,
         tenantName: undefined,
         tenantSlug: undefined,
+        tenantTimezone: undefined,
+        tenantLocale: undefined,
         error: null,
         isLoading: false,
       })
@@ -257,7 +279,9 @@ export const useAuthStore = create<AuthState>()(persist(
       token: state.token,
       tenantId: state.tenantId,
       tenantName: state.tenantName,
-      tenantSlug: state.tenantSlug
+      tenantSlug: state.tenantSlug,
+      tenantTimezone: state.tenantTimezone,
+      tenantLocale: state.tenantLocale
     }),
     onRehydrateStorage: () => (state) => {
       // Initialize after rehydration

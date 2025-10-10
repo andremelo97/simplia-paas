@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { History } from 'lucide-react'
 import { Card, CardHeader, CardContent, Button, Input, Textarea } from '@client/common/ui'
 import { patientsService, Patient } from '../../services/patients'
@@ -14,6 +15,7 @@ interface PatientFormData {
 }
 
 export const EditPatient: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [formData, setFormData] = useState<PatientFormData>({
     first_name: '',
     last_name: '',
@@ -208,7 +210,7 @@ export const EditPatient: React.FC = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Patient</h1>
-          <p className="text-gray-600 mt-1">Loading patient data...</p>
+          <p className="text-gray-600 mt-1">{t('patients.loading_patient')}</p>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#B725B7]"></div>
@@ -227,7 +229,7 @@ export const EditPatient: React.FC = () => {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6" role="alert" aria-live="assertive">
           <div className="flex items-center">
             <div className="text-red-800">
-              <h3 className="font-medium">Error Loading Patient</h3>
+              <h3 className="font-medium">{t('patients.error_loading')}</h3>
               <p className="mt-1">{loadError}</p>
             </div>
           </div>
@@ -278,7 +280,7 @@ export const EditPatient: React.FC = () => {
                   value={formData.first_name}
                   onChange={handleInputChange('first_name')}
                   error={validationErrors.first_name}
-                  placeholder="e.g., John"
+                  placeholder={t('patients.placeholders.first_name')}
                   helperText="Patient's first name (required)"
                   required
                   disabled={isSubmitting}
@@ -289,7 +291,7 @@ export const EditPatient: React.FC = () => {
                   value={formData.last_name}
                   onChange={handleInputChange('last_name')}
                   error={validationErrors.last_name}
-                  placeholder="e.g., Doe"
+                  placeholder={t('patients.placeholders.last_name')}
                   helperText="Patient's last name (optional)"
                   disabled={isSubmitting}
                 />
@@ -302,7 +304,7 @@ export const EditPatient: React.FC = () => {
                   value={formData.email}
                   onChange={handleInputChange('email')}
                   error={validationErrors.email}
-                  placeholder="e.g., john.doe@example.com"
+                  placeholder={t('patients.placeholders.email')}
                   helperText="Patient's email address (optional)"
                   disabled={isSubmitting}
                 />
@@ -313,7 +315,7 @@ export const EditPatient: React.FC = () => {
                   value={formData.phone}
                   onChange={handleInputChange('phone')}
                   error={validationErrors.phone}
-                  placeholder="e.g., +55 11 99999-9999"
+                  placeholder={t('patients.placeholders.phone')}
                   helperText="Patient's phone number (optional)"
                   disabled={isSubmitting}
                 />
@@ -344,14 +346,14 @@ export const EditPatient: React.FC = () => {
               <CardContent className="space-y-6 px-6 pb-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
-                    label="Created At"
+                    label={t('common.created_at')}
                     value={formatDate(patientData.created_at)}
                     disabled
                     helperText="When this patient record was created"
                   />
 
                   <Input
-                    label="Updated At"
+                    label={t('common.updated_at')}
                     value={formatDate(patientData.updated_at)}
                     disabled
                     helperText="When this patient record was last updated"

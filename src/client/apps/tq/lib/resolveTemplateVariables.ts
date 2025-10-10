@@ -39,7 +39,7 @@ export const resolveTemplateVariables = (
       total: quote.total ? `$${parseFloat(quote.total).toFixed(2)}` : '$0.00',
       content: quote.content || '',
       status: quote.status || 'draft',
-      created_at: quote.created_at ? new Date(quote.created_at).toLocaleDateString() : ''
+      created_at: quote.created_at ? new Date(quote.created_at).toLocaleDateString('pt-BR') : ''
     },
     patient: {
       first_name: quote.patient_first_name || '',

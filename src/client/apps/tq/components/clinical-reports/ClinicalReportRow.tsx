@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Edit, FileText, Trash2 } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { ClinicalReport } from '../../services/clinicalReports'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface ClinicalReportRowProps {
   report: ClinicalReport
@@ -17,6 +18,7 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
   onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const { formatShortDate } = useDateFormatter()
 
   const handleEdit = () => {
     onEdit?.(report)
@@ -40,11 +42,7 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
         {/* Created At */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
-            {new Date(report.created_at).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            })}
+            {formatShortDate(report.created_at)}
           </span>
         </div>
 

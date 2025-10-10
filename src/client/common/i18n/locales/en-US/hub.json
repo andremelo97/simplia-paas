@@ -1,0 +1,22 @@
+{
+  "app_name": "Hub - Application Portal",
+  "welcome": "Welcome to Hub",
+  "my_apps": "My Applications",
+  "no_apps": "You don't have access to any applications yet.",
+  "entitlements": {
+    "title": "Entitlements",
+    "my_licenses": "My Licenses",
+    "app_access": "Application Access",
+    "activated_at": "Activated at",
+    "team_members": "Team Members",
+    "show_team": "Show Team",
+    "hide_team": "Hide Team",
+    "role_in_app": "Role in app",
+    "access": "Access",
+    "granted": "Granted",
+    "activated": "Activated",
+    "expires": "Expires",
+    "never": "Never",
+    "no_team_members": "No team members have access to this application yet."
+  }
+}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea, Checkbox, ConfirmDialog } from '@client/common/ui'
 import { publicQuotesService, UpdateTemplateRequest } from '../../services/publicQuotes'
 
 export const EditPublicQuoteTemplate: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -195,7 +197,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading template...</div>
+        <div className="text-gray-500">{t('public_quotes.loading_template')}</div>
       </div>
     )
   }
@@ -253,7 +255,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
-                  placeholder="e.g., Default Quote Layout"
+                  placeholder={t('public_quotes.placeholders.template_name')}
                   helperText="Template name (required)"
                   required
                   disabled={isSubmitting}
@@ -321,9 +323,9 @@ export const EditPublicQuoteTemplate: React.FC = () => {
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
-        title="Delete Template?"
+        title={t('public_quotes.delete_template')}
         description={`Are you sure you want to delete "${formData.name}"? This action cannot be undone.`}
-        confirmText="Delete Template"
+        confirmText={t('public_quotes.delete_template_confirm')}
         variant="delete"
         isLoading={isDeleting}
       />

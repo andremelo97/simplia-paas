@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Render } from '@measured/puck'
 import '@measured/puck/puck.css'
 import { Button, Input, Label, Card, CardContent } from '@client/common/ui'
@@ -22,8 +23,9 @@ interface PublicQuoteData {
 }
 
 export const PublicQuoteAccess: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { accessToken } = useParams<{ accessToken: string }>()
-  
+
   const [password, setPassword] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -120,7 +122,7 @@ export const PublicQuoteAccess: React.FC = () => {
                     setPassword(e.target.value)
                     setError(null) // Clear error when typing
                   }}
-                  placeholder="Enter password"
+                  placeholder={t('public_quotes.placeholders.password')}
                   autoFocus
                   disabled={isVerifying}
                 />
@@ -159,7 +161,7 @@ export const PublicQuoteAccess: React.FC = () => {
   if (!previewConfig || !quoteData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading quote...</div>
+        <div className="text-gray-500">{t('public_quotes.loading_quote')}</div>
       </div>
     )
   }

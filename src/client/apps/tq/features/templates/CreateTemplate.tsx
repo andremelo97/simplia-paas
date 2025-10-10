@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import {
   Card,
@@ -27,6 +28,7 @@ const INITIAL_FORM_DATA: TemplateFormData = {
 }
 
 export const CreateTemplate: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [formData, setFormData] = useState<TemplateFormData>(INITIAL_FORM_DATA)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -159,7 +161,7 @@ export const CreateTemplate: React.FC = () => {
                       value={formData.title}
                       onChange={handleInputChange('title')}
                       error={validationErrors.title}
-                      placeholder="e.g., Dental Consultation Summary"
+                      placeholder={t('templates.placeholders.title')}
                       helperText="Descriptive name for this template (required)"
                       required
                       disabled={isSubmitting}
@@ -169,7 +171,7 @@ export const CreateTemplate: React.FC = () => {
                       label="Description"
                       value={formData.description}
                       onChange={handleInputChange('description')}
-                      placeholder="Optional description to help identify this template"
+                      placeholder={t('templates.placeholders.description')}
                       helperText="Brief description of template purpose (optional)"
                       disabled={isSubmitting}
                     />
@@ -186,7 +188,7 @@ export const CreateTemplate: React.FC = () => {
                       readonly={isSubmitting}
                     />
                     {validationErrors.content && (
-                      <p className="text-sm text-red-600 mt-1">{validationErrors.content}</p>
+                      <p className="text-sm text-red-600 mt-1">{t('templates.validation_errors.content')}</p>
                     )}
                   </div>
 

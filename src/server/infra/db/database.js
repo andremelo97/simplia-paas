@@ -18,8 +18,11 @@ class Database {
   }
 
   setupPoolEvents() {
-    this.pool.on('connect', (client) => {
-      console.log('Database client connected');
+    this.pool.on('connect', async (client) => {
+      // Force UTC timezone for ALL connections to ensure data integrity
+      // This guarantees timestamps are stored in UTC regardless of server timezone
+      await client.query("SET TIME ZONE 'UTC'");
+      console.log('Database client connected with UTC timezone');
     });
 
     this.pool.on('error', (err) => {

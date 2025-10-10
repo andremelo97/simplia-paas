@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea, PriceInput, Checkbox } from '@client/common/ui'
 import { itemsService, CreateItemRequest } from '../../../services/items'
 
 export const CreateItem: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [formData, setFormData] = useState<CreateItemRequest>({
     name: '',
     description: '',
@@ -139,7 +141,7 @@ export const CreateItem: React.FC = () => {
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
-                  placeholder="e.g., Consultation Session"
+                  placeholder={t('quote_items.placeholders.name')}
                   helperText="Service or product name (required)"
                   required
                   disabled={isSubmitting}
@@ -161,7 +163,7 @@ export const CreateItem: React.FC = () => {
                   value={formData.description}
                   onChange={handleInputChange('description')}
                   error={validationErrors.description}
-                  placeholder="Describe what this service or product includes (optional)"
+                  placeholder={t('quote_items.placeholders.description')}
                   helperText="Additional details about the item (optional)"
                   rows={4}
                   disabled={isSubmitting}

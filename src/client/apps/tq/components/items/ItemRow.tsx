@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Edit, Trash2 } from 'lucide-react'
 import { Button, Badge } from '@client/common/ui'
 import { Item } from '../../services/items'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface ItemRowProps {
   item: Item
@@ -15,6 +16,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
   onDelete
 }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const { formatShortDate } = useDateFormatter()
 
   const handleEdit = () => {
     onEdit?.(item)
@@ -43,11 +45,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         {/* Created Date */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
-            {new Date(item.createdAt).toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric'
-            })}
+            {formatShortDate(item.createdAt)}
           </span>
         </div>
 

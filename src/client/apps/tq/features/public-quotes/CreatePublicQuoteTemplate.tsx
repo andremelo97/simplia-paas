@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea, Checkbox } from '@client/common/ui'
 import { publicQuotesService, CreateTemplateRequest } from '../../services/publicQuotes'
 
 export const CreatePublicQuoteTemplate: React.FC = () => {
+  const { t } = useTranslation('tq')
   const [formData, setFormData] = useState<CreateTemplateRequest>({
     name: 'Public Quote Template',
     description: 'Template layout for public quotes',
@@ -120,7 +122,7 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
-                  placeholder="e.g., Default Quote Layout"
+                  placeholder={t('public_quotes.placeholders.template_name')}
                   helperText="Template name (required)"
                   required
                   disabled={isSubmitting}
@@ -133,7 +135,7 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
                   value={formData.description}
                   onChange={handleInputChange('description')}
                   error={validationErrors.description}
-                  placeholder="Describe this template layout (optional)"
+                  placeholder={t('public_quotes.placeholders.template_description')}
                   helperText="Additional details about the template (optional)"
                   rows={3}
                   disabled={isSubmitting}

@@ -15,6 +15,7 @@ import { quotesService, Quote } from '../../services/quotes'
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
 import { HistoryRow } from '../../components/patients/history/HistoryRow'
 import { TimelineItem } from '../../components/patients/history/TimelineItem'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 // Timeline event type
 interface TimelineEvent {
@@ -30,6 +31,7 @@ interface TimelineEvent {
 export const PatientHistory: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { formatDateTime } = useDateFormatter()
 
   const [patient, setPatient] = useState<Patient | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
@@ -64,13 +66,7 @@ export const PatientHistory: React.FC = () => {
         type: 'patient_registered',
         title: 'Patient Registered',
         preview: `${patient.first_name} ${patient.last_name} was registered in the system`,
-        date: new Date(patient.created_at).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        date: formatDateTime(patient.created_at),
         timestamp: new Date(patient.created_at).getTime()
       })
     }
@@ -83,13 +79,7 @@ export const PatientHistory: React.FC = () => {
         title: `Session ${session.number}`,
         preview: session.transcription_text ? session.transcription_text.substring(0, 150) + '...' : undefined,
         status: session.status,
-        date: new Date(session.created_at).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        date: formatDateTime(session.created_at),
         timestamp: new Date(session.created_at).getTime()
       })
     })
@@ -102,13 +92,7 @@ export const PatientHistory: React.FC = () => {
         title: `Quote ${quote.number}`,
         preview: quote.content ? quote.content.substring(0, 150) + '...' : `Total: $${quote.total.toFixed(2)}`,
         status: quote.status,
-        date: new Date(quote.created_at).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        date: formatDateTime(quote.created_at),
         timestamp: new Date(quote.created_at).getTime()
       })
     })
@@ -120,20 +104,14 @@ export const PatientHistory: React.FC = () => {
         type: 'clinical',
         title: `Clinical Report ${report.number}`,
         preview: report.content ? report.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined,
-        date: new Date(report.created_at).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
+        date: formatDateTime(report.created_at),
         timestamp: new Date(report.created_at).getTime()
       })
     })
 
     // Sort newest first (descending by timestamp)
     return events.sort((a, b) => b.timestamp - a.timestamp)
-  }, [patient, sessions, quotes, clinicalReports])
+  }, [patient, sessions, quotes, clinicalReports, formatDateTime])
 
   const getEventIcon = (type: TimelineEvent['type']) => {
     const iconClasses = "h-10 w-10 rounded-full flex items-center justify-center"
@@ -389,13 +367,7 @@ export const PatientHistory: React.FC = () => {
                         title={`Session ${session.number}`}
                         preview={session.transcription_text ? session.transcription_text.substring(0, 150) + '...' : undefined}
                         status={session.status}
-                        date={new Date(session.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        date={formatDateTime(session.created_at)}
                         icon={getEventIcon('session')}
                         viewPath={`/sessions/${session.id}/edit`}
                       />
@@ -442,13 +414,7 @@ export const PatientHistory: React.FC = () => {
                         title={`Quote ${quote.number}`}
                         preview={`Total: $${quote.total.toFixed(2)}`}
                         status={quote.status}
-                        date={new Date(quote.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        date={formatDateTime(quote.created_at)}
                         icon={getEventIcon('quote')}
                         viewPath={`/quotes/${quote.id}/edit`}
                       />
@@ -494,13 +460,7 @@ export const PatientHistory: React.FC = () => {
                         type="clinical"
                         title={`Clinical Report ${report.number}`}
                         preview={report.content ? report.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined}
-                        date={new Date(report.created_at).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        date={formatDateTime(report.created_at)}
                         icon={getEventIcon('clinical')}
                         viewPath={`/clinical-reports/${report.id}/view`}
                       />

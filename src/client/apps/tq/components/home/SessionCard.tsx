@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Card, CardContent } from '@client/common/ui'
 import { Session } from '../../services/sessions'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface SessionCardProps {
   session: Session
@@ -9,6 +10,7 @@ interface SessionCardProps {
 
 export const SessionCard: React.FC<SessionCardProps> = ({ session, onDoubleClick }) => {
   const [isFlashing, setIsFlashing] = useState(false)
+  const { formatLongDate } = useDateFormatter()
 
   const handleDoubleClick = () => {
     setIsFlashing(true)
@@ -66,11 +68,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session, onDoubleClick
 
         {/* Date */}
         <p className="text-xs text-gray-500">
-          {new Date(session.created_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-          })}
+          {formatLongDate(session.created_at)}
         </p>
       </CardContent>
     </Card>

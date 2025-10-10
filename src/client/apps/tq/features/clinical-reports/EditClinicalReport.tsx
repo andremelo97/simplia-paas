@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Eye } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import {
   Card,
   CardHeader,
@@ -11,10 +12,13 @@ import {
 } from '@client/common/ui'
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
 import { patientsService } from '../../services/patients'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 export const EditClinicalReport: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { formatDateTime } = useDateFormatter()
 
   const [report, setReport] = useState<ClinicalReport | null>(null)
   const [content, setContent] = useState('')
@@ -139,13 +143,7 @@ export const EditClinicalReport: React.FC = () => {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
+    return formatDateTime(dateString)
   }
 
   if (isLoading) {
@@ -153,7 +151,7 @@ export const EditClinicalReport: React.FC = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Clinical Report</h1>
-          <p className="text-gray-600 mt-1">Loading clinical report...</p>
+          <p className="text-gray-600 mt-1">{t('clinical_reports.loading_report')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -178,7 +176,7 @@ export const EditClinicalReport: React.FC = () => {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Edit Clinical Report</h1>
-          <p className="text-red-600 mt-1">{loadError || 'Clinical report not found'}</p>
+          <p className="text-red-600 mt-1">{loadError || t('clinical_reports.report_not_found')}</p>
         </div>
         <Button variant="secondary" onClick={() => navigate('/clinical-reports')}>
           Back to Clinical Reports
@@ -219,14 +217,14 @@ export const EditClinicalReport: React.FC = () => {
               <CardContent className="space-y-4 px-6 pb-6">
                 <div className="grid grid-cols-2 gap-4">
                   <Input
-                    label="Report Number"
+                    label={t('clinical_reports.number')}
                     value={report.number}
                     disabled
                     readOnly
                   />
 
                   <Input
-                    label="Created At"
+                    label={t('common.created_at')}
                     value={formatDate(report.created_at)}
                     disabled
                     readOnly
@@ -235,7 +233,7 @@ export const EditClinicalReport: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <Input
-                    label="Updated At"
+                    label={t('common.updated_at')}
                     value={formatDate(report.updated_at)}
                     disabled
                     readOnly
@@ -254,7 +252,7 @@ export const EditClinicalReport: React.FC = () => {
                 <TemplateEditor
                   content={content}
                   onChange={handleContentChange}
-                  placeholder="Clinical report content..."
+                  placeholder={t('clinical_reports.placeholders.content')}
                   readonly={isSaving}
                 />
               </CardContent>

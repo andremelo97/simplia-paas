@@ -12,6 +12,7 @@ import {
 } from '@client/common/ui'
 import { Copy, CheckCircle2 } from 'lucide-react'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface GeneratePublicQuoteModalProps {
   open: boolean
@@ -36,6 +37,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   onSuccess,
   onShowToast
 }) => {
+  const { formatShortDate } = useDateFormatter()
   const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [expiresAt, setExpiresAt] = useState<string>('')
@@ -155,11 +157,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
     : ''
 
   const expirationDate = expiresAt
-    ? new Date(expiresAt).toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      })
+    ? formatShortDate(expiresAt)
     : 'Never'
 
   return (
@@ -345,7 +343,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                   <span className="text-gray-600">Expiration:</span>
                   <span className="font-medium">
                     {generatedQuote.expiresAt
-                      ? new Date(generatedQuote.expiresAt).toLocaleDateString('pt-BR')
+                      ? formatShortDate(generatedQuote.expiresAt)
                       : 'Never'}
                   </span>
                 </div>

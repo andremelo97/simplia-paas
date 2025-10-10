@@ -1,0 +1,186 @@
+{
+  "app_name": "TQ - Sistema de Cotação de Transcrição",
+  "common": {
+    "created_at": "Criado em",
+    "updated_at": "Atualizado em",
+    "save": "Salvar",
+    "save_changes": "Salvar Alterações",
+    "saving": "Salvando...",
+    "cancel": "Cancelar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "view": "Visualizar",
+    "back": "Voltar",
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "failed": "Falhou",
+    "not_found": "Não encontrado",
+    "search": "Buscar",
+    "type_to_search": "Digite para buscar...",
+    "select": "Selecionar",
+    "notes": "Observações",
+    "password": "Senha",
+    "enter_password": "Digite a senha"
+  },
+  "patients": {
+    "title": "Pacientes",
+    "create": "Criar Paciente",
+    "edit": "Editar Paciente",
+    "view_history": "Ver Histórico",
+    "first_name": "Primeiro Nome",
+    "last_name": "Sobrenome",
+    "email": "E-mail",
+    "phone": "Telefone",
+    "date_of_birth": "Data de Nascimento",
+    "no_patients": "Nenhum paciente ainda. Adicione seu primeiro paciente para começar.",
+    "recently_added": "Pacientes Adicionados Recentemente",
+    "patient_registered": "Paciente Registrado",
+    "patient_history": "Histórico do Paciente",
+    "loading_patient": "Carregando dados do paciente...",
+    "error_loading": "Erro ao Carregar Paciente",
+    "placeholders": {
+      "first_name": "ex: João",
+      "last_name": "ex: Silva",
+      "email": "ex: joao.silva@exemplo.com",
+      "phone": "ex: +55 11 99999-9999",
+      "notes": "Observações adicionais sobre o paciente (opcional)"
+    }
+  },
+  "sessions": {
+    "title": "Sessões",
+    "create": "Nova Sessão",
+    "edit": "Editar Sessão",
+    "number": "Número da Sessão",
+    "transcription": "Transcrição",
+    "start_transcribing": "Iniciar Transcrição",
+    "upload_audio": "Enviar Áudio",
+    "no_sessions": "Nenhuma sessão ainda. Inicie uma nova sessão para começar.",
+    "this_week": "Sessões Esta Semana",
+    "session_created": "Sessão criada para",
+    "loading_session": "Carregando dados da sessão...",
+    "error_loading": "Erro ao Carregar Sessão",
+    "select_microphone": "Selecionar microfone",
+    "placeholders": {
+      "transcription": "Envie um arquivo de áudio ou inicie a transcrição... O texto aparecerá aqui automaticamente.",
+      "transcription_edit": "O conteúdo da transcrição aparecerá aqui..."
+    },
+    "helper_text": {
+      "edit_transcription": "Edite o conteúdo da transcrição"
+    }
+  },
+  "quotes": {
+    "title": "Cotações",
+    "create": "Criar Cotação",
+    "edit": "Editar Cotação",
+    "number": "Número",
+    "content": "Conteúdo",
+    "items": "Itens",
+    "no_quotes": "Nenhuma cotação ainda. Inicie uma nova sessão para criar sua primeira cotação.",
+    "latest": "Últimas Cotações",
+    "quote_created": "Cotação criada para",
+    "quote_information": "Informações da Cotação",
+    "quote_content": "Conteúdo da Cotação",
+    "public_quote": "Cotação Pública",
+    "view_public_link": "Ver Link Público",
+    "generate_public_quote": "Gerar Cotação Pública",
+    "preview_template": "Visualizar Template",
+    "loading_quote": "Carregando cotação...",
+    "quote_not_found": "Cotação não encontrada",
+    "placeholders": {
+      "content": "Conteúdo da cotação...",
+      "search_items": "Digite para buscar itens..."
+    }
+  },
+  "quote_items": {
+    "loading_item": "Carregando detalhes do item...",
+    "name": "Nome",
+    "description": "Descrição",
+    "placeholders": {
+      "name": "ex: Sessão de Consulta",
+      "description": "Descreva o que este serviço ou produto inclui (opcional)"
+    }
+  },
+  "clinical_reports": {
+    "title": "Relatórios Clínicos",
+    "create": "Criar Relatório",
+    "edit": "Editar Relatório",
+    "view": "Visualizar Relatório",
+    "number": "Número",
+    "content": "Conteúdo",
+    "no_reports": "Nenhum relatório clínico ainda. Crie seu primeiro relatório para começar.",
+    "latest": "Últimos Relatórios",
+    "report_created": "Relatório clínico criado para",
+    "print_pdf": "Imprimir/PDF",
+    "loading_report": "Carregando relatório clínico...",
+    "report_not_found": "Relatório clínico não encontrado",
+    "information": "Informações do Relatório Clínico",
+    "content_section": "Conteúdo do Relatório Clínico",
+    "patient_session_info": "Informações do Paciente e Sessão",
+    "patient": "Paciente",
+    "session": "Sessão",
+    "no_patient_data": "Sem dados do paciente",
+    "no_session_data": "Sem dados da sessão",
+    "placeholders": {
+      "content": "Conteúdo do relatório clínico..."
+    }
+  },
+  "templates": {
+    "title": "Templates",
+    "create": "Criar Template",
+    "edit": "Editar Template",
+    "template_title": "Título",
+    "description": "Descrição",
+    "no_templates": "Nenhum template ainda. Crie seu primeiro template para começar.",
+    "template_created": "Template criado",
+    "content": "Conteúdo",
+    "validation_errors": {
+      "content": "O conteúdo não pode estar vazio"
+    },
+    "placeholders": {
+      "title": "ex: Resumo de Consulta Odontológica",
+      "description": "Descrição opcional para ajudar a identificar este template"
+    }
+  },
+  "public_quotes": {
+    "delete_template": "Excluir Template?",
+    "delete_template_confirm": "Excluir Template",
+    "loading_template": "Carregando template...",
+    "loading_preview": "Carregando visualização...",
+    "failed_to_load": "Falha ao carregar visualização",
+    "loading_quote": "Carregando cotação...",
+    "placeholders": {
+      "template_name": "ex: Layout Padrão de Cotação",
+      "template_description": "Descreva este layout de template (opcional)",
+      "password": "Digite a senha"
+    }
+  },
+  "auth": {
+    "login": "Entrar",
+    "email": "E-mail",
+    "password": "Senha",
+    "placeholders": {
+      "email": "seu.email@empresa.com",
+      "password": "Digite sua senha"
+    }
+  },
+  "home": {
+    "quick_actions": "Ações Rápidas",
+    "start_new_session": "Iniciar Nova Sessão",
+    "add_patient": "Adicionar Paciente",
+    "view_sessions": "Ver Sessões",
+    "recent_activity": "Atividade Recente"
+  },
+  "metrics": {
+    "total_sessions": "Total de Sessões",
+    "total_quotes": "Total de Cotações",
+    "approved_quotes": "Cotações Aprovadas",
+    "total_reports": "Total de Relatórios"
+  },
+  "tabs": {
+    "sessions": "Sessões",
+    "quotes": "Cotações",
+    "clinical": "Clínico",
+    "timeline": "Linha do Tempo"
+  }
+}

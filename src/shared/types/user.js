@@ -39,7 +39,7 @@ function createUser({ tenantId, email, passwordHash, name, role, status = USER_S
 /**
  * Create JWT payload
  * @param {Object} user - User object
- * @param {Object} tenant - Tenant context
+ * @param {Object} tenant - Tenant context (must include timezone)
  * @param {Array} allowedApps - Applications user has access to
  * @param {Object} userType - User type information
  * @returns {Object} JWT payload
@@ -51,6 +51,18 @@ function createJwtPayload(user, tenant, allowedApps = [], userType = null) {
     throw new Error(`JWT payload requires numeric tenant ID, got: ${numericTenantId}`);
   }
 
+  // Derive locale from timezone using mapping utility
+  let locale = 'en-US'; // Default to English US
+  if (tenant.timezone) {
+    try {
+      const { getLocaleFromTimezone } = require('../../server/infra/utils/localeMapping');
+      locale = getLocaleFromTimezone(tenant.timezone);
+      console.log(`[JWT] Derived locale '${locale}' from timezone '${tenant.timezone}'`);
+    } catch (error) {
+      console.warn('[JWT] Failed to derive locale from timezone, using default en-US:', error.message);
+    }
+  }
+
   return {
     userId: user.id,
     tenantId: numericTenantId, // ALWAYS numeric tenant ID (_fk)
@@ -58,6 +70,8 @@ function createJwtPayload(user, tenant, allowedApps = [], userType = null) {
     name: user.name,
     role: user.role,
     schema: tenant.schema,
+    timezone: tenant.timezone || 'America/Sao_Paulo', // IANA timezone identifier
+    locale: locale, // Derived from timezone (pt-BR, en-AU, etc.)
     allowedApps: allowedApps,
     userType: userType ? {
       id: userType.id,

@@ -108,11 +108,9 @@ export const formatPatientName = (patient: Patient): string => {
 }
 
 // Helper function to format date
+// Note: This uses default timezone/locale. For component usage, prefer useDateFormatter() hook
+import { formatShortDate as formatShortDateUtil } from '@client/common/utils/dateTime'
 export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
+  // Default to America/Sao_Paulo and pt-BR if not in React component context
+  return formatShortDateUtil(dateString, 'America/Sao_Paulo', 'pt-BR')
 }

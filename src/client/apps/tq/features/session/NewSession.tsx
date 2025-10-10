@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
 import {
   ChevronDown,
@@ -102,6 +103,7 @@ function useTimer(initialTime: number = 0) {
 }
 
 export const NewSession: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { user } = useAuthStore()
   const { state: transcriptionState, transcriptionId, actions: transcriptionActions } = useTranscription()
 
@@ -851,7 +853,7 @@ export const NewSession: React.FC = () => {
               value: device.deviceId,
               label: device.label || `Microphone ${device.deviceId.slice(0, 8)}...`
             }))}
-            placeholder="Select microphone"
+            placeholder={t('sessions.select_microphone')}
             className="w-40"
           />
 
@@ -1167,7 +1169,7 @@ export const NewSession: React.FC = () => {
         </CardHeader>
         <CardContent className="px-6 pb-6"> {/* Added horizontal and bottom padding to match header */}
           <Textarea
-            placeholder="Upload an audio file or start transcribing... Text will appear here automatically."
+            placeholder={t('sessions.placeholders.transcription')}
             value={transcription}
             onChange={(e) => setTranscription(e.target.value)}
             className="min-h-96 resize-none font-mono"

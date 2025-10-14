@@ -1,4 +1,20 @@
 import { FeedbackCatalog, AppError, AppErrorKind } from './types'
+import i18next from 'i18next'
+
+// Helper function to get translated feedback message
+function getTranslatedFeedback(code: string): { title?: string; message: string } | null {
+  const key = `common:feedback.${code}`
+
+  // Check if translation exists
+  if (i18next.exists(`${key}.title`) && i18next.exists(`${key}.message`)) {
+    return {
+      title: i18next.t(`${key}.title`),
+      message: i18next.t(`${key}.message`)
+    }
+  }
+
+  return null
+}
 
 export const FEEDBACK_CATALOG: FeedbackCatalog = {
   // Tenant operations
@@ -253,22 +269,28 @@ export const FALLBACK_MESSAGES: Record<string, string> = {
 }
 
 export function resolveFeedbackMessage(
-  code: string, 
+  code: string,
   fallbackMessage?: string,
   context?: { method: string; path: string }
 ): { title?: string; message: string } {
-  // Primeiro, tentar catálogo por código
+  // First, try to get translated message from i18next
+  const translatedFeedback = getTranslatedFeedback(code)
+  if (translatedFeedback) {
+    return translatedFeedback
+  }
+
+  // Second, try catalog by code (hardcoded fallback for non-TQ apps)
   const catalogEntry = FEEDBACK_CATALOG[code]
   if (catalogEntry) {
     return catalogEntry
   }
 
-  // Segundo, usar fallback fornecido pelo backend
+  // Third, use fallback provided by backend
   if (fallbackMessage) {
     return { message: fallbackMessage }
   }
 
-  // Terceiro, usar fallback por método + rota
+  // Fourth, use fallback by method + route
   if (context) {
     const routeKey = `${context.method} ${context.path.split('?')[0]}`
     const fallback = FALLBACK_MESSAGES[routeKey]

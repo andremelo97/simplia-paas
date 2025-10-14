@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Puck } from '@measured/puck'
 import '@measured/puck/puck.css'
 import { Button } from '@client/common/ui'
@@ -9,6 +10,7 @@ import { brandingService, BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
 
 export const DesignPublicQuoteTemplate: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [template, setTemplate] = useState<any>(null)
@@ -108,7 +110,7 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
               onClick={handleCancel}
               disabled={isSaving}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         </div>
@@ -140,7 +142,7 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
                   className="flex items-center gap-2"
                 >
                   <Save size={16} />
-                  {isSaving ? 'Saving...' : 'Save Layout'}
+                  {isSaving ? t('public_quotes.saving_layout') : t('public_quotes.save_layout')}
                 </Button>
                 <Button
                   type="button"
@@ -150,7 +152,7 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
                   className="flex items-center gap-2"
                 >
                   <Eye size={16} />
-                  Preview
+                  {t('public_quotes.preview')}
                 </Button>
                 <Button
                   type="button"
@@ -161,12 +163,12 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
                   {isFullscreen ? (
                     <>
                       <Minimize2 size={16} />
-                      Exit Fullscreen
+                      {t('public_quotes.exit_fullscreen')}
                     </>
                   ) : (
                     <>
                       <Maximize2 size={16} />
-                      Fullscreen
+                      {t('public_quotes.fullscreen')}
                     </>
                   )}
                 </Button>

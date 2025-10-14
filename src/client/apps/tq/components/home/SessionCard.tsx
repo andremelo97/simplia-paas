@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@client/common/ui'
 import { Session } from '../../services/sessions'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -9,6 +10,7 @@ interface SessionCardProps {
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({ session, onDoubleClick }) => {
+  const { t } = useTranslation('tq')
   const [isFlashing, setIsFlashing] = useState(false)
   const { formatLongDate } = useDateFormatter()
 
@@ -34,7 +36,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session, onDoubleClick
 
   const patientName = session.patient_first_name || session.patient_last_name
     ? `${session.patient_first_name || ''} ${session.patient_last_name || ''}`.trim()
-    : 'Unknown Patient'
+    : t('sessions.unknown_patient')
 
   const status = (session.status || 'draft') as keyof typeof statusColors
 
@@ -50,13 +52,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session, onDoubleClick
         <div className="flex items-start justify-between mb-3">
           <h3 className="font-semibold text-gray-900 text-lg">{session.number}</h3>
           <span className={`px-2 py-0.5 text-xs rounded-full ${statusColors[status]}`}>
-            {status}
+            {t(`sessions.status.${status}`)}
           </span>
         </div>
 
         {/* Patient name */}
         <p className="text-sm text-gray-600 mb-2">
-          <strong>Patient:</strong> {patientName}
+          <strong>{t('common.patient')}:</strong> {patientName}
         </p>
 
         {/* Transcription preview or placeholder */}

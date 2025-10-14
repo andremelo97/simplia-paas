@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@client/common/ui'
 import { Quote } from '../../services/quotes'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -9,6 +10,7 @@ interface QuoteCardProps {
 }
 
 export const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onDoubleClick }) => {
+  const { t } = useTranslation('tq')
   const [isFlashing, setIsFlashing] = useState(false)
   const { formatLongDate } = useDateFormatter()
 
@@ -36,7 +38,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onDoubleClick }) =>
 
   const patientName = quote.patient_first_name || quote.patient_last_name
     ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim()
-    : 'Unknown Patient'
+    : t('sessions.unknown_patient')
 
   return (
     <Card
@@ -50,13 +52,13 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onDoubleClick }) =>
         <div className="flex items-start justify-between mb-3">
           <h3 className="font-semibold text-gray-900 text-lg">{quote.number}</h3>
           <span className={`px-2 py-0.5 text-xs rounded-full ${statusColors[quote.status]}`}>
-            {quote.status}
+            {t(`quotes.status.${quote.status}`)}
           </span>
         </div>
 
         {/* Patient name */}
         <p className="text-sm text-gray-600 mb-2">
-          <strong>Patient:</strong> {patientName}
+          <strong>{t('common.patient')}:</strong> {patientName}
         </p>
 
         {/* Total value */}

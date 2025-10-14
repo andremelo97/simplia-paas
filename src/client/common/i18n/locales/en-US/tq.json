@@ -14,14 +14,22 @@
     },
     "audio_upload": {
       "title": "Upload Audio File",
+      "drop_here": "Drop audio file here",
       "upload_instruction": "Drag and drop an audio file here or click to select",
-      "supported_formats": "Supported formats: MP3, WAV, M4A, WEBM",
-      "max_size": "Maximum size: 500MB",
-      "select_file": "Select File",
+      "supported_formats": "Supported formats",
+      "max_size": "Maximum size",
+      "select_file": "Choose File",
       "uploading": "Uploading...",
       "transcribing": "Transcribing...",
-      "upload_complete": "Upload Complete",
-      "transcription_complete": "Transcription Complete"
+      "please_wait": "Please wait while we upload your audio file",
+      "upload_complete": "Upload Complete!",
+      "transcription_complete": "Audio transcription completed successfully",
+      "success_message": "Audio file uploaded successfully. You can now start transcription.",
+      "errors": {
+        "invalid_type": "Invalid file type. Supported formats: {{formats}}",
+        "file_too_large": "File too large. Maximum size is {{maxSize}}MB",
+        "not_audio": "Selected file is not an audio file"
+      }
     },
     "template_quote": {
       "title": "Create Quote with Template",
@@ -32,11 +40,28 @@
     },
     "generate_public_quote": {
       "title": "Generate Public Quote Link",
-      "select_template": "Select Template",
+      "creating_link_for": "Create shareable link for quote",
+      "select_template": "Template",
       "password_optional": "Password (Optional)",
       "password_helper": "Leave blank for password-free links",
       "generate_link": "Generate Link",
-      "copy_link": "Copy Link"
+      "generating": "Generating...",
+      "copy_link": "Copy Link",
+      "copied": "Copied!",
+      "expiration_label": "Link Expiration (Optional)",
+      "expiration_helper": "Leave blank for a link that never expires",
+      "days": "{{count}} days",
+      "summary": "Summary",
+      "template": "Template",
+      "expiration": "Expiration",
+      "link_created": "Public Quote Link Created!",
+      "share_instruction": "Share this link with your patient to view the quote",
+      "public_link": "Public Link",
+      "password_warning": "⚠️ Important: The access password was shown in the notification above. Make sure you copied it - it won't be shown again!",
+      "link_details": "Link Details",
+      "coming_soon": "💡 Coming soon: Send this link directly to your patient's email",
+      "open_link": "Open Link",
+      "done": "Done"
     }
   },
   "common": {
@@ -75,7 +100,8 @@
     "view_all": "View All",
     "no_results": "No results found",
     "active": "Active",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "never": "Never"
   },
   "home": {
     "welcome_back": "Welcome back",
@@ -92,25 +118,56 @@
     "no_reports_yet": "No reports yet",
     "no_sessions_yet": "No sessions yet",
     "no_patients_yet": "No patients yet",
-    "no_activity_yet": "No activity yet"
+    "no_activity_yet": "No activity yet",
+    "search": {
+      "no_contact": "No contact",
+      "no_description": "No description",
+      "badge_patient": "patient",
+      "badge_session": "session",
+      "badge_quote": "quote",
+      "badge_report": "report",
+      "badge_template": "template",
+      "badge_pq_template": "pq template"
+    },
+    "activities": {
+      "patient_added": "Patient {{firstName}} {{lastName}} was added",
+      "unknown_patient": "Unknown Patient",
+      "session_created": "Session {{number}} created for {{patientName}}",
+      "quote_created": "Quote {{number}} created for {{patientName}}",
+      "report_created": "Clinical report {{number}} created for {{patientName}}",
+      "public_quote_created": "Public quote link created for Quote {{quoteNumber}}",
+      "public_quote_template_created": "Public quote template \"{{name}}\" was created",
+      "template_created": "Template \"{{title}}\" was created"
+    }
   },
   "patients": {
     "title": "Patients",
     "create": "Create Patient",
+    "creating_patient": "Creating Patient...",
+    "create_subtitle": "Add a new patient to the system",
     "edit": "Edit Patient",
+    "edit_subtitle": "Update patient information",
     "view_history": "View History",
+    "back_to_list": "Back to List",
     "first_name": "First Name",
     "last_name": "Last Name",
     "email": "Email",
     "phone": "Phone",
     "date_of_birth": "Date of Birth",
+    "patient_information": "Patient Information",
+    "record_information": "Record Information",
     "no_patients": "No patients yet. Add your first patient to get started.",
     "no_patients_home": "No patients yet. Add your first patient to get started.",
     "recently_added": "Patients Recently Added",
     "patient_registered": "Patient Registered",
+    "unnamed_patient": "Unnamed Patient",
+    "no_contact_info": "No contact info",
     "patient_history": "Patient History",
     "loading_patient": "Loading patient data...",
     "error_loading": "Error Loading Patient",
+    "error_not_found": "Patient not found",
+    "error_server": "Server error. Please try again later.",
+    "error_load_failed": "Failed to load patient data. Please try again.",
     "pages": {
       "management_title": "Patient Management",
       "management_subtitle": "Manage patient records and information",
@@ -123,14 +180,51 @@
       "email": "e.g., john.doe@example.com",
       "phone": "e.g., +55 11 99999-9999",
       "notes": "Additional notes about the patient (optional)"
+    },
+    "helper": {
+      "first_name": "Patient's first name (required)",
+      "last_name": "Patient's last name (optional)",
+      "email": "Patient's email address (optional)",
+      "phone": "Patient's phone number (optional)",
+      "notes": "Any additional information about the patient (optional)",
+      "created_at": "When this patient record was created",
+      "updated_at": "When this patient record was last updated"
+    },
+    "validation": {
+      "first_name_required": "First name is required",
+      "first_name_min": "First name must be at least 2 characters",
+      "first_name_max": "First name must be less than 50 characters",
+      "last_name_max": "Last name must be less than 50 characters",
+      "email_invalid": "Invalid email format",
+      "phone_max": "Phone number must be less than 20 characters",
+      "notes_max": "Notes must be less than 500 characters"
+    },
+    "history": {
+      "registered_preview": "{{name}} was registered in the system",
+      "session_title": "Session {{number}}",
+      "quote_title": "Quote {{number}}",
+      "quote_preview_total": "Total: ${{total}}",
+      "report_title": "Report {{number}}"
+    },
+    "empty": {
+      "no_patients": "No patients yet",
+      "not_found": "No patients found",
+      "no_match": "No patients match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Get started by adding your first patient to begin managing transcription sessions."
+    },
+    "filters": {
+      "search_placeholder": "Search patients by name or email"
     }
   },
   "sessions": {
     "title": "Sessions",
     "create": "New Session",
     "edit": "Edit Session",
+    "session": "Session",
     "number": "Session Number",
     "transcription": "Transcription",
+    "transcription_content": "Transcription Content",
+    "session_details": "Session Details",
     "start_transcribing": "Start Transcribing",
     "upload_audio": "Upload Audio",
     "no_sessions": "No sessions yet. Start a new session to get started.",
@@ -139,6 +233,19 @@
     "session_created": "Session created for",
     "loading_session": "Loading session data...",
     "error_loading": "Error Loading Session",
+    "session_not_found": "Session not found",
+    "back_to_list": "Back to List",
+    "last_updated": "Last Updated",
+    "unknown_patient": "Unknown Patient",
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "completed": "Completed",
+      "in_progress": "In Progress",
+      "cancelled": "Cancelled"
+    },
+    "create_documents": "Create Documents",
+    "saving_changes": "Saving Changes...",
     "select_microphone": "Select microphone",
     "resume": "Resume",
     "pause": "Pause",
@@ -160,17 +267,49 @@
       "search_patient": "Search patient by name…",
       "enter_patient_name": "Enter patient name…"
     },
+    "helper": {
+      "session_number": "Unique session identifier",
+      "current_status": "Current session status",
+      "created_at": "When this session was created",
+      "updated_at": "When this session was last updated",
+      "associated_patient": "Patient associated with this session"
+    },
     "helper_text": {
       "edit_transcription": "Edit the transcription content"
+    },
+    "empty": {
+      "no_sessions": "No sessions yet",
+      "not_found": "No sessions found",
+      "no_match": "No sessions match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Start a new transcription session to see it appear here."
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "find_quickly": "Find your session quickly",
+      "search_placeholder": "Search by session number or patient name",
+      "all": "All"
     }
   },
   "quotes": {
     "title": "Quotes",
     "create": "Create Quote",
     "edit": "Edit Quote",
+    "quote": "Quote",
+    "quote_number": "Quote Number",
     "number": "Number",
     "content": "Content",
     "items": "Items",
+    "quote_items": "Quote Items",
+    "add_item": "Add Item",
+    "no_items_yet": "No items yet. Click \"Add Item\" to get started.",
+    "search_item": "Search Item",
+    "item_name": "Item",
+    "base_price": "Base Price",
+    "quantity": "Qty",
+    "discount": "Discount",
+    "remove_item": "Remove item",
+    "remove": "Remove",
+    "quote_total": "Quote Total",
     "no_quotes": "No quotes yet. Start a new session to create your first quote.",
     "no_quotes_home": "No quotes yet. Start a new session to create your first quote.",
     "latest": "Latest Quotes",
@@ -183,6 +322,20 @@
     "preview_template": "Preview Template",
     "loading_quote": "Loading quote...",
     "quote_not_found": "Quote not found",
+    "back_to_quotes": "Back to Quotes",
+    "patient_session_info": "Patient and Session Information",
+    "no_patient_data": "No patient data",
+    "no_session_data": "No session data",
+    "template": "Template",
+    "select_template": "Select a template...",
+    "select_template_helper": "Select a template to preview and generate a public quote link",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
     "pages": {
       "management_title": "Quote Management",
       "management_subtitle": "Manage your consultation quotes and catalog items",
@@ -194,10 +347,30 @@
     "placeholders": {
       "content": "Quote content...",
       "search_items": "Type to search items..."
+    },
+    "empty": {
+      "no_quotes": "No quotes yet",
+      "not_found": "No quotes found",
+      "no_match": "No quotes match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Create your first quote from a session to see it appear here."
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "find_quickly": "Find your quote quickly",
+      "search_placeholder": "Search by quote number or patient name",
+      "all": "All"
     }
   },
   "quote_items": {
     "loading_item": "Loading item details...",
+    "edit": "Edit Item",
+    "edit_subtitle": "Update the details for \"{{name}}\"",
+    "not_found": "Item not found",
+    "update": "Update Item",
+    "updating_item": "Updating Item...",
+    "item_information": "Item Information",
+    "record_information": "Record Information",
+    "active_checkbox": "When checked, this item will be available for use in quotes",
     "name": "Name",
     "description": "Description",
     "base_price": "Base Price",
@@ -209,6 +382,41 @@
     "placeholders": {
       "name": "e.g., Consultation Session",
       "description": "Describe what this service or product includes (optional)"
+    },
+    "helper": {
+      "name": "Service or product name (required)",
+      "base_price": "Standard price before discounts (required)",
+      "description": "Additional details about the item (optional)",
+      "created_at": "When this item record was created",
+      "updated_at": "When this item record was last updated"
+    },
+    "validation": {
+      "name_required": "Item name is required",
+      "name_min": "Item name must be at least 2 characters",
+      "name_max": "Item name must be less than 100 characters",
+      "price_greater_than_zero": "Base price must be greater than 0"
+    },
+    "errors": {
+      "update_failed": "Failed to update item. Please try again.",
+      "check_input": "Please check your input and try again.",
+      "already_exists": "Item already exists. Please check the information.",
+      "no_permission": "You do not have permission to update items.",
+      "session_expired": "Your session has expired. Please log in again.",
+      "server_error": "Server error occurred. Please try again later."
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "find_quickly": "Find items quickly",
+      "search_placeholder": "Search by item name or description",
+      "include_inactive": "Include inactive items"
+    }
+  },
+  "items": {
+    "empty": {
+      "no_items": "No items yet",
+      "not_found": "No items found",
+      "no_match": "No items match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Create your first item to start building quotes."
     }
   },
   "clinical_reports": {
@@ -216,6 +424,7 @@
     "create": "Create Report",
     "edit": "Edit Report",
     "view": "View Report",
+    "report": "Report",
     "number": "Number",
     "content": "Content",
     "no_reports": "No clinical reports yet. Create your first report to get started.",
@@ -225,7 +434,12 @@
     "print_pdf": "Print/PDF",
     "loading_report": "Loading clinical report...",
     "report_not_found": "Clinical report not found",
+    "back_to_reports": "Back to Clinical Reports",
     "information": "Clinical Report Information",
+    "patient_session_info": "Patient and Session Information",
+    "no_patient_data": "No patient data",
+    "no_session_data": "No session data",
+    "session": "Session",
     "content_section": "Clinical Report Content",
     "patient_session_info": "Patient and Session Information",
     "patient": "Patient",
@@ -246,17 +460,36 @@
     },
     "placeholders": {
       "content": "Clinical report content..."
+    },
+    "empty": {
+      "no_reports": "No clinical reports yet",
+      "not_found": "No clinical reports found",
+      "no_match": "No clinical reports match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Create a clinical report from a session to see it appear here."
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "find_quickly": "Find your clinical report quickly",
+      "search_placeholder": "Search by report number or patient name"
     }
   },
   "templates": {
     "title": "Templates",
     "create": "Create Template",
     "edit": "Edit Template",
+    "editing": "Editing",
+    "update": "Update Template",
+    "updating_template": "Updating Template...",
     "template_title": "Title",
     "description": "Description",
     "no_templates": "No templates yet. Create your first template to get started.",
     "template_created": "Template created",
     "content": "Content",
+    "create_subtitle": "Create a new clinical documentation template",
+    "template_information": "Template Information",
+    "template_content": "Template Content",
+    "creating_template": "Creating Template...",
+    "active_checkbox": "Template is active and available for use",
     "pages": {
       "management_title": "Template Management",
       "management_subtitle": "Manage clinical documentation templates and standardize your notes",
@@ -264,21 +497,74 @@
       "templates": "templates",
       "add_template": "Add Template"
     },
+    "validation": {
+      "title_required": "Title is required",
+      "title_min": "Title must be at least 3 characters"
+    },
     "validation_errors": {
       "content": "Content cannot be empty"
     },
     "placeholders": {
       "title": "e.g., Dental Consultation Summary",
-      "description": "Optional description to help identify this template"
+      "description": "Optional description to help identify this template",
+      "content": "Create your template using [placeholders], $variables$, and (instructions)..."
+    },
+    "helper": {
+      "title": "Descriptive name for this template (required)",
+      "description": "Brief description of template purpose (optional)"
+    },
+    "guide": {
+      "title": "Template Creation Guide",
+      "subtitle": "How to create dynamic templates for clinical documentation",
+      "placeholders_title": "Placeholders:",
+      "placeholders_description": "Wrapped in square brackets. These will be filled with information from the session dialogue, clinical notes, or contextual notes.",
+      "instructions_title": "Instructions:",
+      "instructions_description": "Wrapped in round brackets. These guide the AI on how to behave when information is missing. Instructions will not appear in the final output.",
+      "variables_title": "System Variables:",
+      "variables_description": "Wrapped in double dollar signs. These are filled with database values when the quote/report is created.",
+      "click_to_see_variables": "Click here to see the available variables",
+      "example_title": "Example:",
+      "example_content": "Dear $patient.fullName$, your appointment on $session.created_at$ was [summarize findings].\n\nDr. $me.fullName$ from $me.clinic$ recommends [treatment plan]. (Only include if mentioned in transcript)\n\nNext appointment: [next appointment details]"
+    },
+    "empty": {
+      "no_templates": "No templates yet",
+      "not_found": "No templates found",
+      "no_match": "No templates match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Get started by creating your first clinical documentation template."
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "find_quickly": "Find your template quickly",
+      "search_placeholder": "Search templates by title or description",
+      "include_inactive": "Include inactive templates"
     }
   },
   "public_quotes": {
+    "edit_template": "Edit Template",
+    "edit_template_subtitle": "Update template information and design layout",
+    "create_subtitle": "Create a new template for public quote layouts",
+    "creating_template": "Creating Template...",
+    "template_information": "Template Information",
+    "template_name": "Template Name",
+    "description": "Description",
+    "design_layout": "Design Layout",
+    "duplicate": "Duplicate",
+    "duplicating": "Duplicating...",
+    "set_as_default": "Set as Default",
+    "set_as_default_description": "Use this template by default when creating public quotes",
+    "active_description": "When checked, this template will be available for use",
     "delete_template": "Delete Template?",
+    "delete_template_description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "delete_template_confirm": "Delete Template",
     "loading_template": "Loading template...",
     "loading_preview": "Loading preview...",
     "failed_to_load": "Failed to load preview",
     "loading_quote": "Loading quote...",
+    "save_layout": "Save Layout",
+    "saving_layout": "Saving...",
+    "preview": "Preview",
+    "fullscreen": "Fullscreen",
+    "exit_fullscreen": "Exit Fullscreen",
     "pages": {
       "public_quotes_title": "Public Quotes",
       "public_quotes_subtitle": "Share quotes externally with customizable templates",
@@ -299,6 +585,56 @@
       "template_name": "e.g., Default Quote Layout",
       "template_description": "Describe this template layout (optional)",
       "password": "Enter password"
+    },
+    "helper": {
+      "template_name": "Template name (required)",
+      "description": "Additional details about the template (optional)"
+    },
+    "templates_empty": {
+      "no_templates": "No templates yet",
+      "get_started": "Create your first template to customize public quote layouts"
+    },
+    "links_empty": {
+      "no_links": "No public links yet",
+      "get_started": "Create public quote links from the Quotes page to share with clients"
+    },
+    "links": {
+      "card": {
+        "quote_title": "Quote #{{number}}",
+        "not_available": "N/A",
+        "template": "Template: {{name}}",
+        "template_default": "Default",
+        "expiration": "Expiration",
+        "views": "Views",
+        "created": "Created",
+        "copied": "Copied!",
+        "copy_link": "Copy Link",
+        "open": "Open",
+        "open_quote": "Open Quote",
+        "new_password": "New Password",
+        "revoke": "Revoke"
+      }
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "clear_filters": "Clear Filters",
+      "filter_by_quote": "Filter by Quote",
+      "quote_number_placeholder": "Quote number",
+      "created_from": "Created From",
+      "created_to": "Created To"
+    },
+    "validation": {
+      "name_required": "Template name is required",
+      "name_min": "Template name must be at least 2 characters",
+      "name_max": "Template name must be less than 255 characters"
+    },
+    "errors": {
+      "create_failed": "Failed to create template. Please try again.",
+      "max_templates": "Maximum of 3 templates allowed per tenant.",
+      "check_input": "Please check your input and try again.",
+      "no_permission": "You do not have permission to create templates.",
+      "session_expired": "Your session has expired. Please log in again.",
+      "server_error": "Server error occurred. Please try again later."
     }
   },
   "auth": {
@@ -328,6 +664,31 @@
     "quotes": "Quotes",
     "clinical": "Clinical",
     "timeline": "Timeline"
+  },
+  "sidebar": {
+    "home": "Home",
+    "new_session": "New Session",
+    "patients": "Patients",
+    "sessions": "Sessions",
+    "quotes": "Quotes",
+    "clinical_reports": "Clinical Reports",
+    "templates": "Templates",
+    "public_quotes": "Public Quotes",
+    "configurations": "Configurations"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "patients": "Patients",
+    "sessions": "Sessions",
+    "quotes": "Quotes",
+    "clinical_reports": "Clinical Reports",
+    "templates": "Templates",
+    "configurations": "Configurations",
+    "public_quotes": "Public Quotes",
+    "new_session": "New Session",
+    "create": "Create",
+    "edit": "Edit",
+    "design": "Design"
   },
   "configurations": {
     "ai_agent": {

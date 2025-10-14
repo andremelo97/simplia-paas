@@ -8,6 +8,7 @@ import { Quote } from '../../services/quotes'
 import { ClinicalReport } from '../../services/clinicalReports'
 import { Template } from '../../services/templates'
 import { PublicQuoteTemplate } from '../../services/publicQuotes'
+import { useTranslation } from 'react-i18next'
 
 interface SearchResult {
   id: string
@@ -27,6 +28,7 @@ interface QuickSearchBarProps {
 }
 
 export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessions, quotes, clinicalReports, templates, publicQuoteTemplates }) => {
+  const { t } = useTranslation('tq')
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [results, setResults] = useState<SearchResult[]>([])
@@ -59,7 +61,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
           id: p.id,
           type: 'patient',
           title: `${p.first_name} ${p.last_name}`,
-          subtitle: p.email || p.phone || 'No contact',
+          subtitle: p.email || p.phone || t('home.search.no_contact'),
           path: `/patients/${p.id}/edit`
         })
       })
@@ -113,7 +115,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
           id: r.id,
           type: 'clinical_report',
           title: r.number,
-          subtitle: `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || 'Unknown Patient',
+          subtitle: `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || t('sessions.unknown_patient'),
           path: `/clinical-reports/${r.id}/edit`
         })
       })
@@ -131,7 +133,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
           id: t.id,
           type: 'template',
           title: t.title,
-          subtitle: t.description || 'No description',
+          subtitle: t.description || t('home.search.no_description'),
           path: `/templates/${t.id}/edit`
         })
       })
@@ -149,7 +151,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
           id: pqt.id,
           type: 'public_quote_template',
           title: pqt.name,
-          subtitle: pqt.description || 'No description',
+          subtitle: pqt.description || t('home.search.no_description'),
           path: `/public-quotes/templates/${pqt.id}/edit`
         })
       })
@@ -236,7 +238,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onClear={clearSearch}
-        placeholder="Search..."
+        placeholder={t('common.search')}
       />
 
       {/* Dropdown Results */}
@@ -264,7 +266,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
 
               {/* Type badge */}
               <span className="flex-shrink-0 text-xs text-gray-400 uppercase">
-                {result.type === 'clinical_report' ? 'report' : result.type === 'public_quote_template' ? 'pq template' : result.type}
+                {result.type === 'clinical_report' ? t('home.search.badge_report') : result.type === 'public_quote_template' ? t('home.search.badge_pq_template') : t(`home.search.badge_${result.type}`)}
               </span>
             </div>
           ))}

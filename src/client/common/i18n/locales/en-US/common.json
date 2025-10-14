@@ -34,5 +34,115 @@
   "showing_results": "Showing {{from}} to {{to}} of {{total}} results",
   "no_results": "No results found",
   "error_loading": "Error loading data",
-  "error_saving": "Error saving"
+  "error_saving": "Error saving",
+  "feedback": {
+    "QUOTE_CREATED": {
+      "title": "Quote Created",
+      "message": "Quote created successfully."
+    },
+    "QUOTE_UPDATED": {
+      "title": "Quote Updated",
+      "message": "Quote updated successfully."
+    },
+    "QUOTE_DELETED": {
+      "title": "Quote Deleted",
+      "message": "Quote deleted successfully."
+    },
+    "SESSION_CREATED": {
+      "title": "Session Created",
+      "message": "Session created successfully."
+    },
+    "SESSION_UPDATED": {
+      "title": "Session Updated",
+      "message": "Session updated successfully."
+    },
+    "SESSION_DELETED": {
+      "title": "Session Deleted",
+      "message": "Session deleted successfully."
+    },
+    "PATIENT_CREATED": {
+      "title": "Patient Created",
+      "message": "Patient created successfully."
+    },
+    "PATIENT_UPDATED": {
+      "title": "Patient Updated",
+      "message": "Patient updated successfully."
+    },
+    "PATIENT_DELETED": {
+      "title": "Patient Deleted",
+      "message": "Patient deleted successfully."
+    },
+    "TEMPLATE_CREATED": {
+      "title": "Template Created",
+      "message": "Template created successfully."
+    },
+    "TEMPLATE_UPDATED": {
+      "title": "Template Updated",
+      "message": "Template updated successfully."
+    },
+    "TEMPLATE_DELETED": {
+      "title": "Template Deleted",
+      "message": "Template deleted successfully."
+    },
+    "TEMPLATE_FILLED": {
+      "title": "Template Filled",
+      "message": "Template filled successfully with AI."
+    },
+    "QUOTE_ITEMS_UPDATED": {
+      "title": "Items Updated",
+      "message": "Quote items updated successfully."
+    },
+    "PUBLIC_QUOTE_CREATED": {
+      "title": "Public Quote Created",
+      "message": "Public quote link created successfully!"
+    },
+    "PUBLIC_QUOTE_REVOKED": {
+      "title": "Link Revoked",
+      "message": "Public quote link has been revoked successfully."
+    },
+    "PUBLIC_QUOTE_NOT_FOUND": {
+      "title": "Not Found",
+      "message": "Public quote link not found."
+    },
+    "LOAD_FAILED": {
+      "title": "Load Failed",
+      "message": "Failed to load data. Please try again."
+    },
+    "REVOKE_FAILED": {
+      "title": "Revoke Failed",
+      "message": "Failed to revoke link. Please try again."
+    },
+    "PUBLIC_QUOTE_TEMPLATE_CREATED": {
+      "title": "Template Created",
+      "message": "Public quote template created successfully."
+    },
+    "PUBLIC_QUOTE_TEMPLATE_UPDATED": {
+      "title": "Template Updated",
+      "message": "Public quote template updated successfully."
+    },
+    "PUBLIC_QUOTE_TEMPLATE_DELETED": {
+      "title": "Template Deleted",
+      "message": "Public quote template deleted successfully."
+    },
+    "CLINICAL_REPORT_CREATED": {
+      "title": "Report Created",
+      "message": "Clinical report created successfully."
+    },
+    "CLINICAL_REPORT_UPDATED": {
+      "title": "Report Updated",
+      "message": "Clinical report updated successfully."
+    },
+    "CLINICAL_REPORT_DELETED": {
+      "title": "Report Deleted",
+      "message": "Clinical report deleted successfully."
+    },
+    "AI_AGENT_CONFIGURATION_UPDATED": {
+      "title": "Configuration Updated",
+      "message": "AI Agent configuration updated successfully."
+    },
+    "AI_AGENT_CONFIGURATION_RESET": {
+      "title": "Configuration Reset",
+      "message": "AI Agent configuration reset to default."
+    }
+  }
 }

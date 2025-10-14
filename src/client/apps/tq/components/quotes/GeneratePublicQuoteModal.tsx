@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -37,6 +38,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   onSuccess,
   onShowToast
 }) => {
+  const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
   const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
@@ -158,15 +160,15 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
 
   const expirationDate = expiresAt
     ? formatShortDate(expiresAt)
-    : 'Never'
+    : t('common:never') || 'Never'
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Generate Public Quote Link</DialogTitle>
+          <DialogTitle>{t('modals.generate_public_quote.title')}</DialogTitle>
           <p className="text-sm text-gray-600 mt-1">
-            Create a shareable link for quote <strong>{quoteNumber}</strong>
+            {t('modals.generate_public_quote.creating_link_for')} <strong>{quoteNumber}</strong>
           </p>
         </DialogHeader>
 
@@ -174,10 +176,10 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
           <div className="space-y-6 py-4 px-6">
             {/* Template Selection - Read Only */}
             <div className="space-y-2">
-              <Label htmlFor="template">Template</Label>
+              <Label htmlFor="template">{t('modals.generate_public_quote.select_template')}</Label>
               <Input
                 id="template"
-                value={templates.find((t) => t.id === selectedTemplateId)?.name || 'Loading...'}
+                value={templates.find((t) => t.id === selectedTemplateId)?.name || t('common:loading')}
                 readOnly
                 disabled
                 className="bg-gray-50"
@@ -188,11 +190,11 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
             <div className="space-y-2">
               <DateInput
                 id="expiresAt"
-                label="Link Expiration (Optional)"
+                label={t('modals.generate_public_quote.expiration_label')}
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
                 min={new Date().toISOString().split('T')[0]}
-                helperText="Leave blank for a link that never expires"
+                helperText={t('modals.generate_public_quote.expiration_helper')}
               />
               <div className="flex gap-2">
                 <Button
@@ -201,7 +203,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                   size="sm"
                   onClick={() => handleQuickDate(7)}
                 >
-                  7 days
+                  {t('modals.generate_public_quote.days', { count: 7 })}
                 </Button>
                 <Button
                   type="button"
@@ -209,7 +211,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                   size="sm"
                   onClick={() => handleQuickDate(30)}
                 >
-                  30 days
+                  {t('modals.generate_public_quote.days', { count: 30 })}
                 </Button>
                 <Button
                   type="button"
@@ -217,7 +219,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                   size="sm"
                   onClick={() => handleQuickDate(90)}
                 >
-                  90 days
+                  {t('modals.generate_public_quote.days', { count: 90 })}
                 </Button>
                 <Button
                   type="button"
@@ -225,30 +227,30 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                   size="sm"
                   onClick={() => setExpiresAt('')}
                 >
-                  Never
+                  {t('common:never')}
                 </Button>
               </div>
             </div>
 
             {/* Summary */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-              <h4 className="font-semibold text-gray-900">📋 Summary</h4>
+              <h4 className="font-semibold text-gray-900">📋 {t('modals.generate_public_quote.summary')}</h4>
 
               {/* Patient Info */}
               <div className="space-y-1 text-sm border-b border-gray-200 pb-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Patient:</span>
+                  <span className="text-gray-600">{t('common:patient')}:</span>
                   <span className="font-medium">{patientName || '-'}</span>
                 </div>
                 {patientEmail && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Email:</span>
+                    <span className="text-gray-600">{t('patients.email')}:</span>
                     <span className="font-medium">{patientEmail}</span>
                   </div>
                 )}
                 {patientPhone && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Phone:</span>
+                    <span className="text-gray-600">{t('patients.phone')}:</span>
                     <span className="font-medium">{patientPhone}</span>
                   </div>
                 )}
@@ -257,13 +259,13 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
               {/* Link Info */}
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Template:</span>
+                  <span className="text-gray-600">{t('modals.generate_public_quote.template')}:</span>
                   <span className="font-medium">
                     {templates.find((t) => t.id === selectedTemplateId)?.name || '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Expiration:</span>
+                  <span className="text-gray-600">{t('modals.generate_public_quote.expiration')}:</span>
                   <span className="font-medium">{expirationDate}</span>
                 </div>
               </div>
@@ -272,7 +274,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="secondary" onClick={handleClose} disabled={isGenerating}>
-                Cancel
+                {t('common:cancel')}
               </Button>
               <Button
                 variant="default"
@@ -280,7 +282,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                 disabled={!selectedTemplateId || isGenerating}
                 isLoading={isGenerating}
               >
-                {isGenerating ? 'Generating...' : 'Generate Link'}
+                {isGenerating ? t('modals.generate_public_quote.generating') : t('modals.generate_public_quote.generate_link')}
               </Button>
             </div>
           </div>
@@ -290,16 +292,16 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
               <CheckCircle2 className="text-green-600 mt-0.5" size={20} />
               <div className="flex-1">
-                <h4 className="font-semibold text-green-900">Public Quote Link Created!</h4>
+                <h4 className="font-semibold text-green-900">{t('modals.generate_public_quote.link_created')}</h4>
                 <p className="text-sm text-green-700 mt-1">
-                  Share this link with your patient to view the quote
+                  {t('modals.generate_public_quote.share_instruction')}
                 </p>
               </div>
             </div>
 
             {/* Public Link */}
             <div className="space-y-2">
-              <Label>Public Link</Label>
+              <Label>{t('modals.generate_public_quote.public_link')}</Label>
               <div className="flex gap-2">
                 <Input
                   value={publicLink}
@@ -316,7 +318,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
                   ) : (
                     <Copy size={16} />
                   )}
-                  {copiedField === 'link' ? 'Copied!' : 'Copy'}
+                  {copiedField === 'link' ? t('modals.generate_public_quote.copied') : t('modals.generate_public_quote.copy_link')}
                 </Button>
               </div>
             </div>
@@ -324,32 +326,31 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
             {/* Password Info */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <p className="text-sm text-yellow-800">
-                <strong>⚠️ Important:</strong> The access password was shown in the notification above. 
-                Make sure you copied it - it won't be shown again!
+                {t('modals.generate_public_quote.password_warning')}
               </p>
             </div>
 
             {/* Link Details */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <h4 className="font-semibold text-gray-900">📋 Link Details</h4>
+              <h4 className="font-semibold text-gray-900">📋 {t('modals.generate_public_quote.link_details')}</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Template:</span>
+                  <span className="text-gray-600">{t('modals.generate_public_quote.template')}:</span>
                   <span className="font-medium">
                     {templates.find((t) => t.id === generatedQuote.templateId)?.name || '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Expiration:</span>
+                  <span className="text-gray-600">{t('modals.generate_public_quote.expiration')}:</span>
                   <span className="font-medium">
                     {generatedQuote.expiresAt
                       ? formatShortDate(generatedQuote.expiresAt)
-                      : 'Never'}
+                      : t('common:never')}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="font-medium text-green-600">Active</span>
+                  <span className="text-gray-600">{t('common:status')}:</span>
+                  <span className="font-medium text-green-600">{t('common:active')}</span>
                 </div>
               </div>
             </div>
@@ -357,17 +358,17 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
             {/* Future: Email Button */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-700">
-                💡 <strong>Coming soon:</strong> Send this link directly to your patient's email
+                {t('modals.generate_public_quote.coming_soon')}
               </p>
             </div>
 
             {/* Actions */}
             <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="secondary" onClick={() => window.open(publicLink, '_blank')}>
-                Open Link
+                {t('modals.generate_public_quote.open_link')}
               </Button>
               <Button variant="default" onClick={handleClose}>
-                Done
+                {t('modals.generate_public_quote.done')}
               </Button>
             </div>
           </div>

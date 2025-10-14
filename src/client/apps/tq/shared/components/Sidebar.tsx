@@ -2,49 +2,51 @@ import React from 'react'
 import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList, Settings } from 'lucide-react'
 import { useUIStore, useAuthStore } from '../store'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
+import { useTranslation } from 'react-i18next'
 
 export const Sidebar: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { user } = useAuthStore()
 
   const navigation: NavigationItem[] = [
     {
-      name: 'Home',
+      name: t('sidebar.home'),
       href: '/',
       icon: Home
     },
     {
-      name: 'New Session',
+      name: t('sidebar.new_session'),
       href: '/new-session',
       icon: Plus
     },
     {
-      name: 'Patients',
+      name: t('sidebar.patients'),
       href: '/patients',
       icon: Users
     },
     {
-      name: 'Sessions',
+      name: t('sidebar.sessions'),
       href: '/sessions',
       icon: FileText
     },
     {
-      name: 'Quotes',
+      name: t('sidebar.quotes'),
       href: '/quotes',
       icon: Receipt
     },
     {
-      name: 'Clinical Reports',
+      name: t('sidebar.clinical_reports'),
       href: '/clinical-reports',
       icon: ClipboardList
     },
     {
-      name: 'Templates',
+      name: t('sidebar.templates'),
       href: '/templates',
       icon: FileType
     },
     {
-      name: 'Public Quotes',
+      name: t('sidebar.public_quotes'),
       href: '/public-quotes',
       icon: Share2
     }
@@ -53,7 +55,7 @@ export const Sidebar: React.FC = () => {
   // Add Configurations for admin users only
   if (user?.role === 'admin') {
     navigation.push({
-      name: 'Configurations',
+      name: t('sidebar.configurations'),
       href: '/configurations',
       icon: Settings
     })

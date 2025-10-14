@@ -18,16 +18,16 @@ import { QuoteItemsManager } from './QuoteItemsManager'
 import { GeneratePublicQuoteModal } from '../../components/quotes/GeneratePublicQuoteModal'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
-const QUOTE_STATUS_OPTIONS = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'sent', label: 'Sent' },
-  { value: 'approved', label: 'Approved' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'expired', label: 'Expired' }
-]
-
 export const EditQuote: React.FC = () => {
   const { t } = useTranslation('tq')
+
+  const QUOTE_STATUS_OPTIONS = [
+    { value: 'draft', label: t('quotes.status.draft') },
+    { value: 'sent', label: t('quotes.status.sent') },
+    { value: 'approved', label: t('quotes.status.approved') },
+    { value: 'rejected', label: t('quotes.status.rejected') },
+    { value: 'expired', label: t('quotes.status.expired') }
+  ]
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
@@ -299,7 +299,7 @@ export const EditQuote: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('quotes.edit')}</h1>
           <p className="text-gray-600 mt-1">{t('quotes.loading_quote')}</p>
         </div>
 
@@ -324,11 +324,11 @@ export const EditQuote: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('quotes.edit')}</h1>
           <p className="text-red-600 mt-1">{loadError || t('quotes.quote_not_found')}</p>
         </div>
         <Button variant="secondary" onClick={() => navigate('/quotes')}>
-          Back to Quotes
+          {t('quotes.back_to_quotes')}
         </Button>
       </div>
     )
@@ -344,16 +344,16 @@ export const EditQuote: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Quote</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('quotes.edit')}</h1>
           <p className="text-gray-600 mt-1">
-            Quote {quote.number} • {quote.patient_first_name || quote.patient_last_name ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim() : ''}
+            {t('quotes.quote')} {quote.number} • {quote.patient_first_name || quote.patient_last_name ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim() : ''}
           </p>
         </div>
         <Button
           variant="primary"
           onClick={handleViewPublicLink}
         >
-          View Public Link
+          {t('quotes.view_public_link')}
         </Button>
       </div>
 
@@ -364,20 +364,20 @@ export const EditQuote: React.FC = () => {
             {/* Quote Metadata */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Quote Information</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('quotes.quote_information')}</h2>
               </CardHeader>
 
               <CardContent className="space-y-4 px-6 pb-6">
                 <div className="grid grid-cols-2 gap-4">
                   <Input
-                    label="Quote Number"
+                    label={t('quotes.quote_number')}
                     value={quote.number}
                     disabled
                     readOnly
                   />
 
                   <Select
-                    label="Status"
+                    label={t('common.status')}
                     value={status}
                     onChange={handleStatusChange}
                     options={QUOTE_STATUS_OPTIONS}
@@ -406,7 +406,7 @@ export const EditQuote: React.FC = () => {
             {/* Quote Content */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Quote Content</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('quotes.quote_content')}</h2>
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
@@ -428,7 +428,7 @@ export const EditQuote: React.FC = () => {
                 isLoading={isSaving}
                 disabled={isSaving}
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? t('common.saving') : t('common.save_changes')}
               </Button>
 
               <Button
@@ -437,7 +437,7 @@ export const EditQuote: React.FC = () => {
                 disabled={isSaving}
                 style={{ height: '32px', minHeight: '32px' }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </div>
@@ -449,19 +449,19 @@ export const EditQuote: React.FC = () => {
             {/* Patient and Session Information */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Patient and Session Information</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('quotes.patient_session_info')}</h2>
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
                 <div className="grid grid-cols-2 gap-4 divide-x divide-gray-200">
                   {/* Patient Info - Left */}
                   <div className="space-y-2 pr-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-2">Patient</h3>
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2">{t('common.patient')}</h3>
                     {patientId ? (
                       <div className="space-y-2">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            First Name
+                            {t('patients.first_name')}
                           </label>
                           <input
                             type="text"
@@ -474,7 +474,7 @@ export const EditQuote: React.FC = () => {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Last Name
+                            {t('patients.last_name')}
                           </label>
                           <input
                             type="text"
@@ -487,7 +487,7 @@ export const EditQuote: React.FC = () => {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Email
+                            {t('patients.email')}
                           </label>
                           <input
                             type="email"
@@ -500,7 +500,7 @@ export const EditQuote: React.FC = () => {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Phone
+                            {t('patients.phone')}
                           </label>
                           <input
                             type="text"
@@ -512,18 +512,18 @@ export const EditQuote: React.FC = () => {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">No patient data</p>
+                      <p className="text-sm text-gray-500">{t('quotes.no_patient_data')}</p>
                     )}
                   </div>
 
                   {/* Session Info - Right */}
                   <div className="space-y-2 pl-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-2">Session</h3>
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2">{t('sessions.session')}</h3>
                     {quote.session_number ? (
                       <>
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Session Number
+                            {t('sessions.number')}
                           </label>
                           <p className="text-sm text-gray-900">{quote.session_number}</p>
                         </div>
@@ -531,14 +531,14 @@ export const EditQuote: React.FC = () => {
                         {quote.session_status && (
                           <div>
                             <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                              Status
+                              {t('common.status')}
                             </label>
                             <p className="text-sm text-gray-900 capitalize">{quote.session_status}</p>
                           </div>
                         )}
                       </>
                     ) : (
-                      <p className="text-sm text-gray-500">No session data</p>
+                      <p className="text-sm text-gray-500">{t('quotes.no_session_data')}</p>
                     )}
                   </div>
                 </div>
@@ -555,20 +555,20 @@ export const EditQuote: React.FC = () => {
             {/* Public Quote Template Selection */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Public Quote</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('quotes.public_quote')}</h2>
               </CardHeader>
 
               <CardContent className="space-y-4 px-6 pb-6">
                 <Select
-                  label="Template"
+                  label={t('quotes.template')}
                   value={selectedTemplateId}
                   onChange={(e) => setSelectedTemplateId(e.target.value)}
                   options={[
-                    { value: '', label: 'Select a template...' },
+                    { value: '', label: t('quotes.select_template') },
                     ...templates.map(t => ({ value: t.id, label: t.name }))
                   ]}
                   disabled={isLoadingTemplates}
-                  helperText="Select a template to preview and generate a public quote link"
+                  helperText={t('quotes.select_template_helper')}
                 />
 
                 {selectedTemplateId && (
@@ -579,7 +579,7 @@ export const EditQuote: React.FC = () => {
                       onClick={() => window.open(`/quotes/${id}/preview-public-quote/${selectedTemplateId}`, '_blank')}
                       disabled={!selectedTemplateId}
                     >
-                      Preview Template
+                      {t('quotes.preview_template')}
                     </Button>
 
                     <Button
@@ -587,7 +587,7 @@ export const EditQuote: React.FC = () => {
                       variant="primary"
                       onClick={() => setShowGenerateModal(true)}
                     >
-                      Generate Public Quote
+                      {t('quotes.generate_public_quote')}
                     </Button>
                   </div>
                 )}

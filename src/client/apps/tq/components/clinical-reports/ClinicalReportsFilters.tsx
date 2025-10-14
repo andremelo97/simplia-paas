@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, CardTitle, Input } from '@client/common/ui'
 
 interface ClinicalReportsFiltersProps {
@@ -10,18 +11,20 @@ export const ClinicalReportsFilters: React.FC<ClinicalReportsFiltersProps> = ({
   searchQuery,
   onSearchChange
 }) => {
+  const { t } = useTranslation('tq')
+
   return (
     <Card>
       <CardHeader className="py-4 px-6">
         <CardTitle className="text-base">
-          Search and filters
+          {t('clinical_reports.filters.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <Input
-          label="Find your clinical report quickly"
+          label={t('clinical_reports.filters.find_quickly')}
           type="text"
-          placeholder="Search by report number or patient name"
+          placeholder={t('clinical_reports.filters.search_placeholder')}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full"

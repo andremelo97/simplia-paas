@@ -63,11 +63,11 @@ export const EditPatient: React.FC = () => {
         console.error('❌ [EditPatient] Failed to load patient:', error)
 
         if (error.status === 404) {
-          setLoadError('Patient not found')
+          setLoadError(t('patients.error_not_found'))
         } else if (error.status >= 500) {
-          setLoadError('Server error. Please try again later.')
+          setLoadError(t('patients.error_server'))
         } else {
-          setLoadError('Failed to load patient data. Please try again.')
+          setLoadError(t('patients.error_load_failed'))
         }
       } finally {
         setIsLoading(false)
@@ -95,30 +95,30 @@ export const EditPatient: React.FC = () => {
 
     // Validate patient basic info
     if (!formData.first_name.trim()) {
-      errors.first_name = 'First name is required'
+      errors.first_name = t('patients.validation.first_name_required')
     } else if (formData.first_name.length < 2) {
-      errors.first_name = 'First name must be at least 2 characters'
+      errors.first_name = t('patients.validation.first_name_min')
     } else if (formData.first_name.length > 50) {
-      errors.first_name = 'First name must be less than 50 characters'
+      errors.first_name = t('patients.validation.first_name_max')
     }
 
     if (formData.last_name && formData.last_name.length > 50) {
-      errors.last_name = 'Last name must be less than 50 characters'
+      errors.last_name = t('patients.validation.last_name_max')
     }
 
     // Email validation (optional field)
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Invalid email format'
+      errors.email = t('patients.validation.email_invalid')
     }
 
     // Phone validation (optional field)
     if (formData.phone && formData.phone.length > 20) {
-      errors.phone = 'Phone number must be less than 20 characters'
+      errors.phone = t('patients.validation.phone_max')
     }
 
     // Notes validation (optional field)
     if (formData.notes && formData.notes.length > 500) {
-      errors.notes = 'Notes must be less than 500 characters'
+      errors.notes = t('patients.validation.notes_max')
     }
 
     setValidationErrors(errors)
@@ -209,7 +209,7 @@ export const EditPatient: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Patient</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('patients.edit')}</h1>
           <p className="text-gray-600 mt-1">{t('patients.loading_patient')}</p>
         </div>
         <div className="flex items-center justify-center h-64">
@@ -224,7 +224,7 @@ export const EditPatient: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Patient</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('patients.edit')}</h1>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-6" role="alert" aria-live="assertive">
           <div className="flex items-center">
@@ -235,10 +235,10 @@ export const EditPatient: React.FC = () => {
           </div>
           <div className="mt-4 flex space-x-3">
             <Button variant="secondary" onClick={handleBackToList}>
-              Back to List
+              {t('patients.back_to_list')}
             </Button>
             <Button variant="default" onClick={handleRetry}>
-              Retry
+              {t('common.try_again')}
             </Button>
           </div>
         </div>
@@ -250,9 +250,9 @@ export const EditPatient: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Patient</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('patients.edit')}</h1>
           <p className="text-gray-600 mt-1">
-            Update patient information
+            {t('patients.edit_subtitle')}
           </p>
         </div>
         <Button
@@ -261,7 +261,7 @@ export const EditPatient: React.FC = () => {
           className="flex items-center gap-2"
         >
           <History className="w-4 h-4" />
-          View History
+          {t('patients.view_history')}
         </Button>
       </div>
 
@@ -270,65 +270,65 @@ export const EditPatient: React.FC = () => {
           {/* Patient Information */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Patient Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('patients.patient_information')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="First Name"
+                  label={t('patients.first_name')}
                   value={formData.first_name}
                   onChange={handleInputChange('first_name')}
                   error={validationErrors.first_name}
                   placeholder={t('patients.placeholders.first_name')}
-                  helperText="Patient's first name (required)"
+                  helperText={t('patients.helper.first_name')}
                   required
                   disabled={isSubmitting}
                 />
 
                 <Input
-                  label="Last Name"
+                  label={t('patients.last_name')}
                   value={formData.last_name}
                   onChange={handleInputChange('last_name')}
                   error={validationErrors.last_name}
                   placeholder={t('patients.placeholders.last_name')}
-                  helperText="Patient's last name (optional)"
+                  helperText={t('patients.helper.last_name')}
                   disabled={isSubmitting}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="Email"
+                  label={t('patients.email')}
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange('email')}
                   error={validationErrors.email}
                   placeholder={t('patients.placeholders.email')}
-                  helperText="Patient's email address (optional)"
+                  helperText={t('patients.helper.email')}
                   disabled={isSubmitting}
                 />
 
                 <Input
-                  label="Phone"
+                  label={t('patients.phone')}
                   type="tel"
                   value={formData.phone}
                   onChange={handleInputChange('phone')}
                   error={validationErrors.phone}
                   placeholder={t('patients.placeholders.phone')}
-                  helperText="Patient's phone number (optional)"
+                  helperText={t('patients.helper.phone')}
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
                 <Textarea
-                  label="Notes"
+                  label={t('common.notes')}
                   value={formData.notes}
                   onChange={handleInputChange('notes')}
                   error={validationErrors.notes}
-                  placeholder="Additional notes about the patient (optional)"
-                  helperText="Any additional information about the patient (optional)"
+                  placeholder={t('patients.placeholders.notes')}
+                  helperText={t('patients.helper.notes')}
                   rows={4}
                   disabled={isSubmitting}
                 />
@@ -340,7 +340,7 @@ export const EditPatient: React.FC = () => {
           {patientData && (
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Record Information</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('patients.record_information')}</h2>
               </CardHeader>
 
               <CardContent className="space-y-6 px-6 pb-6">
@@ -349,14 +349,14 @@ export const EditPatient: React.FC = () => {
                     label={t('common.created_at')}
                     value={formatDate(patientData.created_at)}
                     disabled
-                    helperText="When this patient record was created"
+                    helperText={t('patients.helper.created_at')}
                   />
 
                   <Input
                     label={t('common.updated_at')}
                     value={formatDate(patientData.updated_at)}
                     disabled
-                    helperText="When this patient record was last updated"
+                    helperText={t('patients.helper.updated_at')}
                   />
                 </div>
               </CardContent>
@@ -371,7 +371,7 @@ export const EditPatient: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+            {isSubmitting ? t('common.saving') : t('common.save_changes')}
           </Button>
 
           <Button
@@ -381,7 +381,7 @@ export const EditPatient: React.FC = () => {
             disabled={isSubmitting}
             style={{ height: '32px', minHeight: '32px' }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </form>

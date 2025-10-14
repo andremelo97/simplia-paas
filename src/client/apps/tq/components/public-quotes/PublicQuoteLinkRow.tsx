@@ -1,5 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button, StatusBadge } from '@client/common/ui'
 import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key } from 'lucide-react'
 import { PublicQuote } from '../../services/publicQuotes'
@@ -19,6 +20,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
   const navigate = useNavigate()
   const [copied, setCopied] = React.useState(false)
   const { formatShortDate, formatDateTime } = useDateFormatter()
+  const { t } = useTranslation('tq')
 
   const handleCopy = () => {
     if (publicQuote.publicUrl) {
@@ -42,7 +44,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
 
   const getExpirationStatus = () => {
     if (!publicQuote.expiresAt) {
-      return { text: 'Never', className: 'text-gray-600' }
+      return { text: t('common.never'), className: 'text-gray-600' }
     }
 
     const expiryDate = new Date(publicQuote.expiresAt)
@@ -66,6 +68,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
 
   const expirationStatus = getExpirationStatus()
   const isExpired = publicQuote.expiresAt ? new Date(publicQuote.expiresAt) < new Date() : false
+  const quoteNumber = publicQuote.quote?.number || t('public_quotes.links.card.not_available')
 
   return (
     <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
@@ -74,7 +77,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold text-gray-900">
-              Quote #{publicQuote.quote?.number || 'N/A'}
+              {t('public_quotes.links.card.quote_title', { number: quoteNumber })}
             </span>
             <StatusBadge status={publicQuote.active ? 'active' : 'revoked'} />
             {isExpired && (
@@ -82,7 +85,9 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
             )}
           </div>
           <div className="text-sm text-gray-600">
-            Template: {publicQuote.template?.name || 'Default'}
+            {t('public_quotes.links.card.template', {
+              name: publicQuote.template?.name || t('public_quotes.links.card.template_default')
+            })}
           </div>
         </div>
       </div>
@@ -90,17 +95,17 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
       {/* Info Grid */}
       <div className="grid grid-cols-3 gap-4 mb-4 text-sm">
         <div>
-          <div className="text-gray-500 mb-1">Expiration</div>
+          <div className="text-gray-500 mb-1">{t('public_quotes.links.card.expiration')}</div>
           <div className={expirationStatus.className}>{expirationStatus.text}</div>
         </div>
         <div>
-          <div className="text-gray-500 mb-1">Views</div>
+          <div className="text-gray-500 mb-1">{t('public_quotes.links.card.views')}</div>
           <div className="text-gray-900">
             {publicQuote.viewsCount}
           </div>
         </div>
         <div>
-          <div className="text-gray-500 mb-1">Created</div>
+          <div className="text-gray-500 mb-1">{t('public_quotes.links.card.created')}</div>
           <div className="text-gray-900">{formatDateTime(publicQuote.createdAt)}</div>
         </div>
       </div>
@@ -117,12 +122,12 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
           {copied ? (
             <>
               <CheckCircle2 size={14} className="text-green-600" />
-              Copied!
+              {t('public_quotes.links.card.copied')}
             </>
           ) : (
             <>
               <Copy size={14} />
-              Copy Link
+              {t('public_quotes.links.card.copy_link')}
             </>
           )}
         </Button>
@@ -135,7 +140,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
           disabled={!publicQuote.publicUrl}
         >
           <ExternalLink size={14} />
-          Open
+          {t('public_quotes.links.card.open')}
         </Button>
 
         <Button
@@ -146,7 +151,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
           disabled={!publicQuote.quoteId}
         >
           <FileText size={14} />
-          Open Quote
+          {t('public_quotes.links.card.open_quote')}
         </Button>
 
         <Button
@@ -157,7 +162,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
           className="flex items-center gap-1.5"
         >
           <Key size={14} />
-          New Password
+          {t('public_quotes.links.card.new_password')}
         </Button>
 
         <Button
@@ -168,7 +173,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
           className="flex items-center gap-1.5 text-red-600 hover:bg-red-50 ml-auto"
         >
           <Trash2 size={14} />
-          Revoke
+          {t('public_quotes.links.card.revoke')}
         </Button>
       </div>
     </div>

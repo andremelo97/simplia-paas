@@ -150,7 +150,7 @@ export const EditClinicalReport: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Clinical Report</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('clinical_reports.edit')}</h1>
           <p className="text-gray-600 mt-1">{t('clinical_reports.loading_report')}</p>
         </div>
 
@@ -175,11 +175,11 @@ export const EditClinicalReport: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Clinical Report</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('clinical_reports.edit')}</h1>
           <p className="text-red-600 mt-1">{loadError || t('clinical_reports.report_not_found')}</p>
         </div>
         <Button variant="secondary" onClick={() => navigate('/clinical-reports')}>
-          Back to Clinical Reports
+          {t('clinical_reports.back_to_reports')}
         </Button>
       </div>
     )
@@ -189,9 +189,9 @@ export const EditClinicalReport: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Clinical Report</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('clinical_reports.edit')}</h1>
           <p className="text-gray-600 mt-1">
-            Report {report.number} • {report.patient_first_name || report.patient_last_name ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim() : ''}
+            {t('clinical_reports.report')} {report.number} • {report.patient_first_name || report.patient_last_name ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim() : ''}
           </p>
         </div>
         <Button
@@ -200,7 +200,7 @@ export const EditClinicalReport: React.FC = () => {
           className="flex items-center gap-2"
         >
           <Eye className="w-4 h-4" />
-          View
+          {t('clinical_reports.view')}
         </Button>
       </div>
 
@@ -211,7 +211,7 @@ export const EditClinicalReport: React.FC = () => {
             {/* Report Metadata */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Clinical Report Information</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('clinical_reports.information')}</h2>
               </CardHeader>
 
               <CardContent className="space-y-4 px-6 pb-6">
@@ -245,7 +245,7 @@ export const EditClinicalReport: React.FC = () => {
             {/* Report Content */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Clinical Report Content</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('clinical_reports.content_section')}</h2>
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
@@ -266,7 +266,7 @@ export const EditClinicalReport: React.FC = () => {
                 isLoading={isSaving}
                 disabled={isSaving}
               >
-                {isSaving ? 'Saving...' : 'Save Changes'}
+                {isSaving ? t('common.saving') : t('common.save_changes')}
               </Button>
 
               <Button
@@ -275,7 +275,7 @@ export const EditClinicalReport: React.FC = () => {
                 disabled={isSaving}
                 style={{ height: '32px', minHeight: '32px' }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </div>
@@ -287,19 +287,19 @@ export const EditClinicalReport: React.FC = () => {
             {/* Patient and Session Information */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Patient and Session Information</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('clinical_reports.patient_session_info')}</h2>
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
                 <div className="grid grid-cols-2 gap-4 divide-x divide-gray-200">
                   {/* Patient Info - Left */}
                   <div className="space-y-2 pr-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-2">Patient</h3>
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2">{t('common.patient')}</h3>
                     {patientId ? (
                       <div className="space-y-2">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            First Name
+                            {t('patients.first_name')}
                           </label>
                           <input
                             type="text"
@@ -312,7 +312,7 @@ export const EditClinicalReport: React.FC = () => {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Last Name
+                            {t('patients.last_name')}
                           </label>
                           <input
                             type="text"
@@ -325,7 +325,7 @@ export const EditClinicalReport: React.FC = () => {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Email
+                            {t('patients.email')}
                           </label>
                           <input
                             type="email"
@@ -338,7 +338,7 @@ export const EditClinicalReport: React.FC = () => {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Phone
+                            {t('patients.phone')}
                           </label>
                           <input
                             type="text"
@@ -350,18 +350,18 @@ export const EditClinicalReport: React.FC = () => {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500">No patient data</p>
+                      <p className="text-sm text-gray-500">{t('clinical_reports.no_patient_data')}</p>
                     )}
                   </div>
 
                   {/* Session Info - Right */}
                   <div className="space-y-2 pl-4">
-                    <h3 className="text-xs font-semibold text-gray-900 mb-2">Session</h3>
+                    <h3 className="text-xs font-semibold text-gray-900 mb-2">{t('clinical_reports.session')}</h3>
                     {report.session_number ? (
                       <>
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            Session Number
+                            {t('sessions.number')}
                           </label>
                           <p className="text-sm text-gray-900">{report.session_number}</p>
                         </div>
@@ -369,14 +369,14 @@ export const EditClinicalReport: React.FC = () => {
                         {report.session_status && (
                           <div>
                             <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                              Status
+                              {t('common.status')}
                             </label>
                             <p className="text-sm text-gray-900 capitalize">{report.session_status}</p>
                           </div>
                         )}
                       </>
                     ) : (
-                      <p className="text-sm text-gray-500">No session data</p>
+                      <p className="text-sm text-gray-500">{t('clinical_reports.no_session_data')}</p>
                     )}
                   </div>
                 </div>

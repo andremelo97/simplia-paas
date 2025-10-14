@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, CardTitle, Input, Select } from '@client/common/ui'
 import { QUOTE_STATUS_OPTIONS, QuoteStatus } from '../../types/quoteStatus'
 
@@ -15,8 +16,10 @@ export const QuoteFilters: React.FC<QuoteFiltersProps> = ({
   statusFilter,
   onStatusFilterChange
 }) => {
+  const { t } = useTranslation('tq')
+
   const statusOptions = [
-    { value: 'all', label: 'All' },
+    { value: 'all', label: t('quotes.filters.all') },
     ...QUOTE_STATUS_OPTIONS
   ]
 
@@ -24,16 +27,16 @@ export const QuoteFilters: React.FC<QuoteFiltersProps> = ({
     <Card>
       <CardHeader className="py-4 px-6">
         <CardTitle className="text-base">
-        Search and filters
+          {t('quotes.filters.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="grid grid-cols-4 gap-4">
           <div className="col-span-3">
             <Input
-              label="Find your quote quickly"
+              label={t('quotes.filters.find_quickly')}
               type="text"
-              placeholder="Search by quote number or patient name"
+              placeholder={t('quotes.filters.search_placeholder')}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="w-full"
@@ -42,7 +45,7 @@ export const QuoteFilters: React.FC<QuoteFiltersProps> = ({
 
           <div className="col-span-1">
             <Select
-              label="Status"
+              label={t('common.status')}
               value={statusFilter}
               onChange={(e) => onStatusFilterChange(e.target.value as QuoteStatus | 'all')}
               options={statusOptions}

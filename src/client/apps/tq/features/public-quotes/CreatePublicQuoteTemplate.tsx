@@ -43,11 +43,11 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
     const errors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      errors.name = 'Template name is required'
+      errors.name = t('public_quotes.validation.name_required')
     } else if (formData.name.length < 2) {
-      errors.name = 'Template name must be at least 2 characters'
+      errors.name = t('public_quotes.validation.name_min')
     } else if (formData.name.length > 255) {
-      errors.name = 'Template name must be less than 255 characters'
+      errors.name = t('public_quotes.validation.name_max')
     }
 
     setValidationErrors(errors)
@@ -74,18 +74,18 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
     } catch (error: any) {
       console.error('❌ [CreateTemplate] Failed to create template:', error)
 
-      let errorMessage = 'Failed to create template. Please try again.'
+      let errorMessage = t('public_quotes.errors.create_failed')
 
       if (error.message?.includes('Maximum of 3 templates')) {
-        errorMessage = 'Maximum of 3 templates allowed per tenant.'
+        errorMessage = t('public_quotes.errors.max_templates')
       } else if (error.message?.includes('Validation Error')) {
-        errorMessage = 'Please check your input and try again.'
+        errorMessage = t('public_quotes.errors.check_input')
       } else if (error.status === 403) {
-        errorMessage = 'You do not have permission to create templates.'
+        errorMessage = t('public_quotes.errors.no_permission')
       } else if (error.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
+        errorMessage = t('public_quotes.errors.session_expired')
       } else if (error.status >= 500) {
-        errorMessage = 'Server error occurred. Please try again later.'
+        errorMessage = t('public_quotes.errors.server_error')
       }
 
       console.error('❌ [CreateTemplate] Error:', errorMessage)
@@ -101,9 +101,9 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Create Template</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('public_quotes.pages.create_template')}</h1>
         <p className="text-gray-600 mt-1">
-          Create a new template for public quote layouts
+          {t('public_quotes.create_subtitle')}
         </p>
       </div>
 
@@ -112,18 +112,18 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
           {/* Template Information */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Template Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('public_quotes.template_information')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               <div>
                 <Input
-                  label="Template Name"
+                  label={t('public_quotes.template_name')}
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
                   placeholder={t('public_quotes.placeholders.template_name')}
-                  helperText="Template name (required)"
+                  helperText={t('public_quotes.helper.template_name')}
                   required
                   disabled={isSubmitting}
                 />
@@ -131,12 +131,12 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
 
               <div>
                 <Textarea
-                  label="Description"
+                  label={t('public_quotes.description')}
                   value={formData.description}
                   onChange={handleInputChange('description')}
                   error={validationErrors.description}
                   placeholder={t('public_quotes.placeholders.template_description')}
-                  helperText="Additional details about the template (optional)"
+                  helperText={t('public_quotes.helper.description')}
                   rows={3}
                   disabled={isSubmitting}
                 />
@@ -144,16 +144,16 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
 
               <div className="space-y-4">
                 <Checkbox
-                  label="Set as Default"
-                  description="Use this template by default when creating public quotes"
+                  label={t('public_quotes.set_as_default')}
+                  description={t('public_quotes.set_as_default_description')}
                   checked={formData.isDefault}
                   onChange={handleCheckboxChange('isDefault')}
                   disabled={isSubmitting}
                 />
 
                 <Checkbox
-                  label="Active"
-                  description="When checked, this template will be available for use"
+                  label={t('common.active')}
+                  description={t('public_quotes.active_description')}
                   checked={formData.active}
                   onChange={handleCheckboxChange('active')}
                   disabled={isSubmitting}
@@ -170,7 +170,7 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating Template...' : 'Create Template'}
+            {isSubmitting ? t('public_quotes.creating_template') : t('public_quotes.pages.create_template')}
           </Button>
 
           <Button
@@ -180,7 +180,7 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
             disabled={isSubmitting}
             style={{ height: '32px', minHeight: '32px' }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </form>

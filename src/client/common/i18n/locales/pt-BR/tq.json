@@ -14,14 +14,22 @@
     },
     "audio_upload": {
       "title": "Enviar Arquivo de Áudio",
+      "drop_here": "Solte o arquivo de áudio aqui",
       "upload_instruction": "Arraste e solte um arquivo de áudio aqui ou clique para selecionar",
-      "supported_formats": "Formatos suportados: MP3, WAV, M4A, WEBM",
-      "max_size": "Tamanho máximo: 500MB",
-      "select_file": "Selecionar Arquivo",
+      "supported_formats": "Formatos suportados",
+      "max_size": "Tamanho máximo",
+      "select_file": "Escolher Arquivo",
       "uploading": "Enviando...",
       "transcribing": "Transcrevendo...",
-      "upload_complete": "Upload Completo",
-      "transcription_complete": "Transcrição Completa"
+      "please_wait": "Por favor, aguarde enquanto enviamos seu arquivo de áudio",
+      "upload_complete": "Upload Completo!",
+      "transcription_complete": "Transcrição de áudio concluída com sucesso",
+      "success_message": "Arquivo de áudio enviado com sucesso. Você pode iniciar a transcrição agora.",
+      "errors": {
+        "invalid_type": "Tipo de arquivo inválido. Formatos suportados: {{formats}}",
+        "file_too_large": "Arquivo muito grande. Tamanho máximo é {{maxSize}}MB",
+        "not_audio": "O arquivo selecionado não é um arquivo de áudio"
+      }
     },
     "template_quote": {
       "title": "Criar Cotação com Template",
@@ -32,11 +40,28 @@
     },
     "generate_public_quote": {
       "title": "Gerar Link Público da Cotação",
-      "select_template": "Selecionar Template",
+      "creating_link_for": "Criar link compartilhável para cotação",
+      "select_template": "Template",
       "password_optional": "Senha (Opcional)",
       "password_helper": "Deixe em branco para links sem senha",
       "generate_link": "Gerar Link",
-      "copy_link": "Copiar Link"
+      "generating": "Gerando...",
+      "copy_link": "Copiar Link",
+      "copied": "Copiado!",
+      "expiration_label": "Expiração do Link (Opcional)",
+      "expiration_helper": "Deixe em branco para um link que nunca expira",
+      "days": "{{count}} dias",
+      "summary": "Resumo",
+      "template": "Template",
+      "expiration": "Expiração",
+      "link_created": "Link Público da Cotação Criado!",
+      "share_instruction": "Compartilhe este link com seu paciente para visualizar a cotação",
+      "public_link": "Link Público",
+      "password_warning": "⚠️ Importante: A senha de acesso foi mostrada na notificação acima. Certifique-se de copiá-la - ela não será mostrada novamente!",
+      "link_details": "Detalhes do Link",
+      "coming_soon": "💡 Em breve: Envie este link diretamente para o e-mail do seu paciente",
+      "open_link": "Abrir Link",
+      "done": "Concluído"
     }
   },
   "common": {
@@ -75,7 +100,8 @@
     "view_all": "Ver Todos",
     "no_results": "Nenhum resultado encontrado",
     "active": "Ativo",
-    "inactive": "Inativo"
+    "inactive": "Inativo",
+    "never": "Nunca"
   },
   "home": {
     "welcome_back": "Bem-vindo de volta",
@@ -92,25 +118,56 @@
     "no_reports_yet": "Nenhum relatório ainda",
     "no_sessions_yet": "Nenhuma sessão ainda",
     "no_patients_yet": "Nenhum paciente ainda",
-    "no_activity_yet": "Nenhuma atividade ainda"
+    "no_activity_yet": "Nenhuma atividade ainda",
+    "search": {
+      "no_contact": "Sem contato",
+      "no_description": "Sem descrição",
+      "badge_patient": "paciente",
+      "badge_session": "sessão",
+      "badge_quote": "cotação",
+      "badge_report": "relatório",
+      "badge_template": "template",
+      "badge_pq_template": "template pq"
+    },
+    "activities": {
+      "patient_added": "Paciente {{firstName}} {{lastName}} foi adicionado",
+      "unknown_patient": "Paciente Desconhecido",
+      "session_created": "Sessão {{number}} criada para {{patientName}}",
+      "quote_created": "Cotação {{number}} criada para {{patientName}}",
+      "report_created": "Relatório clínico {{number}} criado para {{patientName}}",
+      "public_quote_created": "Link de cotação pública criado para Cotação {{quoteNumber}}",
+      "public_quote_template_created": "Template de cotação pública \"{{name}}\" foi criado",
+      "template_created": "Template \"{{title}}\" foi criado"
+    }
   },
   "patients": {
     "title": "Pacientes",
     "create": "Criar Paciente",
+    "creating_patient": "Criando Paciente...",
+    "create_subtitle": "Adicionar um novo paciente ao sistema",
     "edit": "Editar Paciente",
+    "edit_subtitle": "Atualizar informações do paciente",
     "view_history": "Ver Histórico",
+    "back_to_list": "Voltar para Lista",
     "first_name": "Primeiro Nome",
     "last_name": "Sobrenome",
     "email": "E-mail",
     "phone": "Telefone",
     "date_of_birth": "Data de Nascimento",
+    "patient_information": "Informações do Paciente",
+    "record_information": "Informações do Registro",
     "no_patients": "Nenhum paciente ainda. Adicione seu primeiro paciente para começar.",
     "no_patients_home": "Nenhum paciente ainda. Adicione seu primeiro paciente para começar.",
     "recently_added": "Pacientes Adicionados Recentemente",
     "patient_registered": "Paciente Registrado",
+    "unnamed_patient": "Paciente Sem Nome",
+    "no_contact_info": "Sem informações de contato",
     "patient_history": "Histórico do Paciente",
     "loading_patient": "Carregando dados do paciente...",
     "error_loading": "Erro ao Carregar Paciente",
+    "error_not_found": "Paciente não encontrado",
+    "error_server": "Erro no servidor. Por favor, tente novamente mais tarde.",
+    "error_load_failed": "Falha ao carregar dados do paciente. Por favor, tente novamente.",
     "pages": {
       "management_title": "Gerenciamento de Pacientes",
       "management_subtitle": "Gerencie registros e informações de pacientes",
@@ -123,14 +180,51 @@
       "email": "ex: joao.silva@exemplo.com",
       "phone": "ex: +55 11 99999-9999",
       "notes": "Observações adicionais sobre o paciente (opcional)"
+    },
+    "helper": {
+      "first_name": "Primeiro nome do paciente (obrigatório)",
+      "last_name": "Sobrenome do paciente (opcional)",
+      "email": "Endereço de e-mail do paciente (opcional)",
+      "phone": "Número de telefone do paciente (opcional)",
+      "notes": "Qualquer informação adicional sobre o paciente (opcional)",
+      "created_at": "Quando este registro de paciente foi criado",
+      "updated_at": "Quando este registro de paciente foi atualizado pela última vez"
+    },
+    "validation": {
+      "first_name_required": "Primeiro nome é obrigatório",
+      "first_name_min": "Primeiro nome deve ter pelo menos 2 caracteres",
+      "first_name_max": "Primeiro nome deve ter menos de 50 caracteres",
+      "last_name_max": "Sobrenome deve ter menos de 50 caracteres",
+      "email_invalid": "Formato de e-mail inválido",
+      "phone_max": "Número de telefone deve ter menos de 20 caracteres",
+      "notes_max": "Observações devem ter menos de 500 caracteres"
+    },
+    "history": {
+      "registered_preview": "{{name}} foi registrado no sistema",
+      "session_title": "Sessão {{number}}",
+      "quote_title": "Cotação {{number}}",
+      "quote_preview_total": "Total: ${{total}}",
+      "report_title": "Relatório {{number}}"
+    },
+    "empty": {
+      "no_patients": "Nenhum paciente ainda",
+      "not_found": "Nenhum paciente encontrado",
+      "no_match": "Nenhum paciente corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Comece adicionando seu primeiro paciente para gerenciar sessões de transcrição."
+    },
+    "filters": {
+      "search_placeholder": "Buscar pacientes por nome ou e-mail"
     }
   },
   "sessions": {
     "title": "Sessões",
     "create": "Nova Sessão",
     "edit": "Editar Sessão",
+    "session": "Sessão",
     "number": "Número da Sessão",
     "transcription": "Transcrição",
+    "transcription_content": "Conteúdo da Transcrição",
+    "session_details": "Detalhes da Sessão",
     "start_transcribing": "Iniciar Transcrição",
     "upload_audio": "Enviar Áudio",
     "no_sessions": "Nenhuma sessão ainda. Inicie uma nova sessão para começar.",
@@ -139,6 +233,19 @@
     "session_created": "Sessão criada para",
     "loading_session": "Carregando dados da sessão...",
     "error_loading": "Erro ao Carregar Sessão",
+    "session_not_found": "Sessão não encontrada",
+    "back_to_list": "Voltar para Lista",
+    "last_updated": "Última Atualização",
+    "unknown_patient": "Paciente Desconhecido",
+    "status": {
+      "draft": "Rascunho",
+      "pending": "Pendente",
+      "completed": "Concluída",
+      "in_progress": "Em Andamento",
+      "cancelled": "Cancelada"
+    },
+    "create_documents": "Criar Documentos",
+    "saving_changes": "Salvando Alterações...",
     "select_microphone": "Selecionar microfone",
     "resume": "Continuar",
     "pause": "Pausar",
@@ -160,17 +267,49 @@
       "search_patient": "Buscar paciente por nome…",
       "enter_patient_name": "Digite o nome do paciente…"
     },
+    "helper": {
+      "session_number": "Identificador único da sessão",
+      "current_status": "Status atual da sessão",
+      "created_at": "Quando esta sessão foi criada",
+      "updated_at": "Quando esta sessão foi atualizada pela última vez",
+      "associated_patient": "Paciente associado a esta sessão"
+    },
     "helper_text": {
       "edit_transcription": "Edite o conteúdo da transcrição"
+    },
+    "empty": {
+      "no_sessions": "Nenhuma sessão ainda",
+      "not_found": "Nenhuma sessão encontrada",
+      "no_match": "Nenhuma sessão corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Inicie uma nova sessão de transcrição para vê-la aparecer aqui."
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "find_quickly": "Encontre sua sessão rapidamente",
+      "search_placeholder": "Buscar por número de sessão ou nome do paciente",
+      "all": "Todas"
     }
   },
   "quotes": {
     "title": "Cotações",
     "create": "Criar Cotação",
     "edit": "Editar Cotação",
+    "quote": "Cotação",
+    "quote_number": "Número da Cotação",
     "number": "Número",
     "content": "Conteúdo",
     "items": "Itens",
+    "quote_items": "Itens da Cotação",
+    "add_item": "Adicionar Item",
+    "no_items_yet": "Nenhum item ainda. Clique em \"Adicionar Item\" para começar.",
+    "search_item": "Buscar Item",
+    "item_name": "Item",
+    "base_price": "Preço Base",
+    "quantity": "Qtd",
+    "discount": "Desconto",
+    "remove_item": "Remover item",
+    "remove": "Remover",
+    "quote_total": "Total da Cotação",
     "no_quotes": "Nenhuma cotação ainda. Inicie uma nova sessão para criar sua primeira cotação.",
     "no_quotes_home": "Nenhuma cotação ainda. Inicie uma nova sessão para criar sua primeira cotação.",
     "latest": "Últimas Cotações",
@@ -183,6 +322,20 @@
     "preview_template": "Visualizar Template",
     "loading_quote": "Carregando cotação...",
     "quote_not_found": "Cotação não encontrada",
+    "back_to_quotes": "Voltar para Cotações",
+    "patient_session_info": "Informações do Paciente e Sessão",
+    "no_patient_data": "Sem dados do paciente",
+    "no_session_data": "Sem dados da sessão",
+    "template": "Template",
+    "select_template": "Selecione um template...",
+    "select_template_helper": "Selecione um template para visualizar e gerar um link público de cotação",
+    "status": {
+      "draft": "Rascunho",
+      "sent": "Enviada",
+      "approved": "Aprovada",
+      "rejected": "Rejeitada",
+      "expired": "Expirada"
+    },
     "pages": {
       "management_title": "Gerenciamento de Cotações",
       "management_subtitle": "Gerencie suas cotações de consulta e itens de catálogo",
@@ -194,10 +347,30 @@
     "placeholders": {
       "content": "Conteúdo da cotação...",
       "search_items": "Digite para buscar itens..."
+    },
+    "empty": {
+      "no_quotes": "Nenhuma cotação ainda",
+      "not_found": "Nenhuma cotação encontrada",
+      "no_match": "Nenhuma cotação corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Crie sua primeira cotação a partir de uma sessão para vê-la aparecer aqui."
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "find_quickly": "Encontre sua cotação rapidamente",
+      "search_placeholder": "Buscar por número de cotação ou nome do paciente",
+      "all": "Todas"
     }
   },
   "quote_items": {
     "loading_item": "Carregando detalhes do item...",
+    "edit": "Editar Item",
+    "edit_subtitle": "Atualizar os detalhes para \"{{name}}\"",
+    "not_found": "Item não encontrado",
+    "update": "Atualizar Item",
+    "updating_item": "Atualizando Item...",
+    "item_information": "Informações do Item",
+    "record_information": "Informações do Registro",
+    "active_checkbox": "Quando marcado, este item estará disponível para uso em cotações",
     "name": "Nome",
     "description": "Descrição",
     "base_price": "Preço Base",
@@ -209,6 +382,41 @@
     "placeholders": {
       "name": "ex: Sessão de Consulta",
       "description": "Descreva o que este serviço ou produto inclui (opcional)"
+    },
+    "helper": {
+      "name": "Nome do serviço ou produto (obrigatório)",
+      "base_price": "Preço padrão antes de descontos (obrigatório)",
+      "description": "Detalhes adicionais sobre o item (opcional)",
+      "created_at": "Quando este registro de item foi criado",
+      "updated_at": "Quando este registro de item foi atualizado pela última vez"
+    },
+    "validation": {
+      "name_required": "Nome do item é obrigatório",
+      "name_min": "Nome do item deve ter pelo menos 2 caracteres",
+      "name_max": "Nome do item deve ter menos de 100 caracteres",
+      "price_greater_than_zero": "Preço base deve ser maior que 0"
+    },
+    "errors": {
+      "update_failed": "Falha ao atualizar item. Por favor, tente novamente.",
+      "check_input": "Por favor, verifique sua entrada e tente novamente.",
+      "already_exists": "Item já existe. Por favor, verifique as informações.",
+      "no_permission": "Você não tem permissão para atualizar itens.",
+      "session_expired": "Sua sessão expirou. Por favor, faça login novamente.",
+      "server_error": "Erro no servidor ocorreu. Por favor, tente novamente mais tarde."
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "find_quickly": "Encontre itens rapidamente",
+      "search_placeholder": "Buscar por nome ou descrição do item",
+      "include_inactive": "Incluir itens inativos"
+    }
+  },
+  "items": {
+    "empty": {
+      "no_items": "Nenhum item ainda",
+      "not_found": "Nenhum item encontrado",
+      "no_match": "Nenhum item corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Crie seu primeiro item para começar a construir cotações."
     }
   },
   "clinical_reports": {
@@ -216,6 +424,7 @@
     "create": "Criar Relatório",
     "edit": "Editar Relatório",
     "view": "Visualizar Relatório",
+    "report": "Relatório",
     "number": "Número",
     "content": "Conteúdo",
     "no_reports": "Nenhum relatório clínico ainda. Crie seu primeiro relatório para começar.",
@@ -225,13 +434,14 @@
     "print_pdf": "Imprimir/PDF",
     "loading_report": "Carregando relatório clínico...",
     "report_not_found": "Relatório clínico não encontrado",
+    "back_to_reports": "Voltar para Relatórios Clínicos",
     "information": "Informações do Relatório Clínico",
-    "content_section": "Conteúdo do Relatório Clínico",
     "patient_session_info": "Informações do Paciente e Sessão",
-    "patient": "Paciente",
-    "session": "Sessão",
     "no_patient_data": "Sem dados do paciente",
     "no_session_data": "Sem dados da sessão",
+    "session": "Sessão",
+    "content_section": "Conteúdo do Relatório Clínico",
+    "patient": "Paciente",
     "pages": {
       "list_title": "Lista de Relatórios",
       "reports": "relatórios",
@@ -246,17 +456,36 @@
     },
     "placeholders": {
       "content": "Conteúdo do relatório clínico..."
+    },
+    "empty": {
+      "no_reports": "Nenhum relatório clínico ainda",
+      "not_found": "Nenhum relatório clínico encontrado",
+      "no_match": "Nenhum relatório clínico corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Crie um relatório clínico a partir de uma sessão para vê-lo aparecer aqui."
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "find_quickly": "Encontre seu relatório clínico rapidamente",
+      "search_placeholder": "Buscar por número de relatório ou nome do paciente"
     }
   },
   "templates": {
     "title": "Templates",
     "create": "Criar Template",
     "edit": "Editar Template",
+    "editing": "Editando",
+    "update": "Atualizar Template",
+    "updating_template": "Atualizando Template...",
     "template_title": "Título",
     "description": "Descrição",
     "no_templates": "Nenhum template ainda. Crie seu primeiro template para começar.",
     "template_created": "Template criado",
     "content": "Conteúdo",
+    "create_subtitle": "Criar um novo template de documentação clínica",
+    "template_information": "Informações do Template",
+    "template_content": "Conteúdo do Template",
+    "creating_template": "Criando Template...",
+    "active_checkbox": "Template está ativo e disponível para uso",
     "pages": {
       "management_title": "Gerenciamento de Templates",
       "management_subtitle": "Gerencie templates de documentação clínica e padronize suas anotações",
@@ -264,21 +493,74 @@
       "templates": "templates",
       "add_template": "Adicionar Template"
     },
+    "validation": {
+      "title_required": "Título é obrigatório",
+      "title_min": "Título deve ter pelo menos 3 caracteres"
+    },
     "validation_errors": {
       "content": "O conteúdo não pode estar vazio"
     },
     "placeholders": {
       "title": "ex: Resumo de Consulta Odontológica",
-      "description": "Descrição opcional para ajudar a identificar este template"
+      "description": "Descrição opcional para ajudar a identificar este template",
+      "content": "Crie seu template usando [placeholders], $variables$, e (instruções)..."
+    },
+    "helper": {
+      "title": "Nome descritivo para este template (obrigatório)",
+      "description": "Breve descrição do propósito do template (opcional)"
+    },
+    "guide": {
+      "title": "Guia de Criação de Templates",
+      "subtitle": "Como criar templates dinâmicos para documentação clínica",
+      "placeholders_title": "Placeholders:",
+      "placeholders_description": "Entre colchetes. Estes serão preenchidos com informações do diálogo da sessão, notas clínicas ou notas contextuais.",
+      "instructions_title": "Instruções:",
+      "instructions_description": "Entre parênteses. Estas orientam a IA sobre como se comportar quando informações estão faltando. Instruções não aparecerão no resultado final.",
+      "variables_title": "Variáveis do Sistema:",
+      "variables_description": "Entre cifrões duplos. Estas são preenchidas com valores do banco de dados quando a cotação/relatório é criado.",
+      "click_to_see_variables": "Clique aqui para ver as variáveis disponíveis",
+      "example_title": "Exemplo:",
+      "example_content": "Prezado(a) $patient.fullName$, sua consulta em $session.created_at$ foi [resumir achados].\n\nDr(a). $me.fullName$ de $me.clinic$ recomenda [plano de tratamento]. (Incluir apenas se mencionado na transcrição)\n\nPróxima consulta: [detalhes da próxima consulta]"
+    },
+    "empty": {
+      "no_templates": "Nenhum template ainda",
+      "not_found": "Nenhum template encontrado",
+      "no_match": "Nenhum template corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Comece criando seu primeiro template de documentação clínica."
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "find_quickly": "Encontre seu template rapidamente",
+      "search_placeholder": "Buscar templates por título ou descrição",
+      "include_inactive": "Incluir templates inativos"
     }
   },
   "public_quotes": {
+    "edit_template": "Editar Template",
+    "edit_template_subtitle": "Atualizar informações do template e layout de design",
+    "create_subtitle": "Criar um novo template para layouts de cotações públicas",
+    "creating_template": "Criando Template...",
+    "template_information": "Informações do Template",
+    "template_name": "Nome do Template",
+    "description": "Descrição",
+    "design_layout": "Design do Layout",
+    "duplicate": "Duplicar",
+    "duplicating": "Duplicando...",
+    "set_as_default": "Definir como Padrão",
+    "set_as_default_description": "Usar este template por padrão ao criar cotações públicas",
+    "active_description": "Quando marcado, este template estará disponível para uso",
     "delete_template": "Excluir Template?",
+    "delete_template_description": "Tem certeza que deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
     "delete_template_confirm": "Excluir Template",
     "loading_template": "Carregando template...",
     "loading_preview": "Carregando visualização...",
     "failed_to_load": "Falha ao carregar visualização",
     "loading_quote": "Carregando cotação...",
+    "save_layout": "Salvar Layout",
+    "saving_layout": "Salvando...",
+    "preview": "Visualizar",
+    "fullscreen": "Tela Cheia",
+    "exit_fullscreen": "Sair da Tela Cheia",
     "pages": {
       "public_quotes_title": "Cotações Públicas",
       "public_quotes_subtitle": "Compartilhe cotações externamente com templates customizáveis",
@@ -299,6 +581,56 @@
       "template_name": "ex: Layout Padrão de Cotação",
       "template_description": "Descreva este layout de template (opcional)",
       "password": "Digite a senha"
+    },
+    "helper": {
+      "template_name": "Nome do template (obrigatório)",
+      "description": "Detalhes adicionais sobre o template (opcional)"
+    },
+    "templates_empty": {
+      "no_templates": "Nenhum template ainda",
+      "get_started": "Crie seu primeiro template para personalizar layouts de cotações públicas"
+    },
+    "links_empty": {
+      "no_links": "Nenhum link público ainda",
+      "get_started": "Crie links de cotações públicas na página de Cotações para compartilhar com clientes"
+    },
+    "links": {
+      "card": {
+        "quote_title": "Cotação #{{number}}",
+        "not_available": "N/D",
+        "template": "Template: {{name}}",
+        "template_default": "Padrão",
+        "expiration": "Expiração",
+        "views": "Visualizações",
+        "created": "Criado em",
+        "copied": "Copiado!",
+        "copy_link": "Copiar link",
+        "open": "Abrir",
+        "open_quote": "Abrir cotação",
+        "new_password": "Nova senha",
+        "revoke": "Revogar"
+      }
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "clear_filters": "Limpar Filtros",
+      "filter_by_quote": "Filtrar por Cotação",
+      "quote_number_placeholder": "Número da cotação",
+      "created_from": "Criado De",
+      "created_to": "Criado Até"
+    },
+    "validation": {
+      "name_required": "Nome do template é obrigatório",
+      "name_min": "Nome do template deve ter pelo menos 2 caracteres",
+      "name_max": "Nome do template deve ter menos de 255 caracteres"
+    },
+    "errors": {
+      "create_failed": "Falha ao criar template. Por favor, tente novamente.",
+      "max_templates": "Máximo de 3 templates permitidos por tenant.",
+      "check_input": "Por favor, verifique sua entrada e tente novamente.",
+      "no_permission": "Você não tem permissão para criar templates.",
+      "session_expired": "Sua sessão expirou. Por favor, faça login novamente.",
+      "server_error": "Erro no servidor ocorreu. Por favor, tente novamente mais tarde."
     }
   },
   "auth": {
@@ -309,13 +641,6 @@
       "email": "seu.email@empresa.com",
       "password": "Digite sua senha"
     }
-  },
-  "home": {
-    "quick_actions": "Ações Rápidas",
-    "start_new_session": "Iniciar Nova Sessão",
-    "add_patient": "Adicionar Paciente",
-    "view_sessions": "Ver Sessões",
-    "recent_activity": "Atividade Recente"
   },
   "metrics": {
     "total_sessions": "Total de Sessões",
@@ -328,6 +653,31 @@
     "quotes": "Cotações",
     "clinical": "Clínico",
     "timeline": "Linha do Tempo"
+  },
+  "sidebar": {
+    "home": "Início",
+    "new_session": "Nova Sessão",
+    "patients": "Pacientes",
+    "sessions": "Sessões",
+    "quotes": "Cotações",
+    "clinical_reports": "Relatórios Clínicos",
+    "templates": "Templates",
+    "public_quotes": "Cotações Públicas",
+    "configurations": "Configurações"
+  },
+  "breadcrumbs": {
+    "home": "Início",
+    "patients": "Pacientes",
+    "sessions": "Sessões",
+    "quotes": "Cotações",
+    "clinical_reports": "Relatórios Clínicos",
+    "templates": "Templates",
+    "configurations": "Configurações",
+    "public_quotes": "Cotações Públicas",
+    "new_session": "Nova Sessão",
+    "create": "Criar",
+    "edit": "Editar",
+    "design": "Design"
   },
   "configurations": {
     "ai_agent": {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Patient } from '../../services/patients'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
@@ -13,6 +14,7 @@ export const RecentPatientRow: React.FC<RecentPatientRowProps> = ({
   onDoubleClick,
   isLast = false
 }) => {
+  const { t } = useTranslation('tq')
   const [isFlashing, setIsFlashing] = useState(false)
   const { formatMonthYear } = useDateFormatter()
 
@@ -24,9 +26,9 @@ export const RecentPatientRow: React.FC<RecentPatientRowProps> = ({
 
   const patientName = patient.first_name || patient.last_name
     ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim()
-    : 'Unnamed Patient'
+    : t('patients.unnamed_patient')
 
-  const secondaryInfo = patient.email || patient.phone || 'No contact info'
+  const secondaryInfo = patient.email || patient.phone || t('patients.no_contact_info')
 
   // Get initials for avatar
   const initials = (

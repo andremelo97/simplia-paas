@@ -206,9 +206,9 @@ export const EditPublicQuoteTemplate: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('public_quotes.edit_template')}</h1>
           <p className="text-gray-600 mt-1">
-            Update template information and design layout
+            {t('public_quotes.edit_template_subtitle')}
           </p>
         </div>
         <div className="flex items-center space-x-4">
@@ -218,7 +218,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             onClick={handleDesignLayout}
             disabled={isSubmitting || isDuplicating || isDeleting}
           >
-            Design Layout
+            {t('public_quotes.design_layout')}
           </Button>
           <Button
             type="button"
@@ -227,7 +227,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             isLoading={isDuplicating}
             disabled={isSubmitting || isDuplicating || isDeleting}
           >
-            {isDuplicating ? 'Duplicating...' : 'Duplicate'}
+            {isDuplicating ? t('public_quotes.duplicating') : t('public_quotes.duplicate')}
           </Button>
           <Button
             type="button"
@@ -235,7 +235,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             onClick={() => setShowDeleteDialog(true)}
             disabled={isSubmitting || isDuplicating || isDeleting}
           >
-            Delete
+            {t('common.delete')}
           </Button>
         </div>
       </div>
@@ -245,18 +245,18 @@ export const EditPublicQuoteTemplate: React.FC = () => {
           {/* Template Information */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Template Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('public_quotes.template_information')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               <div>
                 <Input
-                  label="Template Name"
+                  label={t('public_quotes.template_name')}
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
                   placeholder={t('public_quotes.placeholders.template_name')}
-                  helperText="Template name (required)"
+                  helperText={t('public_quotes.helper.template_name')}
                   required
                   disabled={isSubmitting}
                 />
@@ -264,12 +264,12 @@ export const EditPublicQuoteTemplate: React.FC = () => {
 
               <div>
                 <Textarea
-                  label="Description"
+                  label={t('public_quotes.description')}
                   value={formData.description}
                   onChange={handleInputChange('description')}
                   error={validationErrors.description}
-                  placeholder="Describe this template layout (optional)"
-                  helperText="Additional details about the template (optional)"
+                  placeholder={t('public_quotes.placeholders.template_description')}
+                  helperText={t('public_quotes.helper.description')}
                   rows={3}
                   disabled={isSubmitting}
                 />
@@ -277,16 +277,16 @@ export const EditPublicQuoteTemplate: React.FC = () => {
 
               <div className="space-y-4">
                 <Checkbox
-                  label="Set as Default"
-                  description="Use this template by default when creating public quotes"
+                  label={t('public_quotes.set_as_default')}
+                  description={t('public_quotes.set_as_default_description')}
                   checked={formData.isDefault}
                   onChange={handleCheckboxChange('isDefault')}
                   disabled={isSubmitting}
                 />
 
                 <Checkbox
-                  label="Active"
-                  description="When checked, this template will be available for use"
+                  label={t('common.active')}
+                  description={t('public_quotes.active_description')}
                   checked={formData.active}
                   onChange={handleCheckboxChange('active')}
                   disabled={isSubmitting}
@@ -303,7 +303,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting || isDuplicating}
           >
-            {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+            {isSubmitting ? t('common.saving') : t('common.save_changes')}
           </Button>
 
           <Button
@@ -313,7 +313,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             disabled={isSubmitting || isDuplicating}
             style={{ height: '32px', minHeight: '32px' }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </form>
@@ -324,7 +324,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDelete}
         title={t('public_quotes.delete_template')}
-        description={`Are you sure you want to delete "${formData.name}"? This action cannot be undone.`}
+        description={t('public_quotes.delete_template_description', { name: formData.name })}
         confirmText={t('public_quotes.delete_template_confirm')}
         variant="delete"
         isLoading={isDeleting}

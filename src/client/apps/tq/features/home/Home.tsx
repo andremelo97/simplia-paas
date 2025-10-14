@@ -55,7 +55,10 @@ export const Home: React.FC = () => {
       allActivities.push({
         id: `patient-${patient.id}`,
         type: 'patient_added',
-        message: `Patient ${patient.first_name} ${patient.last_name} was added`,
+        message: t('home.activities.patient_added', {
+          firstName: patient.first_name,
+          lastName: patient.last_name
+        }),
         timestamp: formatDateTime(patient.created_at),
         icon: 'patient',
         date: new Date(patient.created_at),
@@ -67,11 +70,14 @@ export const Home: React.FC = () => {
     sessions.forEach((session) => {
       const patientName = session.patient_first_name || session.patient_last_name
         ? `${session.patient_first_name || ''} ${session.patient_last_name || ''}`.trim()
-        : 'Unknown Patient'
+        : t('home.activities.unknown_patient')
       allActivities.push({
         id: `session-${session.id}`,
         type: 'session_created',
-        message: `Session ${session.number} created for ${patientName}`,
+        message: t('home.activities.session_created', {
+          number: session.number,
+          patientName
+        }),
         timestamp: formatDateTime(session.created_at),
         icon: 'session',
         date: new Date(session.created_at),
@@ -83,11 +89,14 @@ export const Home: React.FC = () => {
     quotes.forEach((quote) => {
       const patientName = quote.patient_first_name || quote.patient_last_name
         ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim()
-        : 'Unknown Patient'
+        : t('home.activities.unknown_patient')
       allActivities.push({
         id: `quote-${quote.id}`,
         type: 'quote_created',
-        message: `Quote ${quote.number} created for ${patientName}`,
+        message: t('home.activities.quote_created', {
+          number: quote.number,
+          patientName
+        }),
         timestamp: formatDateTime(quote.created_at),
         icon: 'quote',
         date: new Date(quote.created_at),
@@ -99,11 +108,14 @@ export const Home: React.FC = () => {
     reports.forEach((report) => {
       const patientName = report.patient_first_name || report.patient_last_name
         ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim()
-        : 'Unknown Patient'
+        : t('home.activities.unknown_patient')
       allActivities.push({
         id: `report-${report.id}`,
         type: 'report_created',
-        message: `Clinical report ${report.number} created for ${patientName}`,
+        message: t('home.activities.report_created', {
+          number: report.number,
+          patientName
+        }),
         timestamp: formatDateTime(report.created_at),
         icon: 'report',
         date: new Date(report.created_at),
@@ -117,7 +129,7 @@ export const Home: React.FC = () => {
       allActivities.push({
         id: `public-quote-${pq.id}`,
         type: 'public_quote_created',
-        message: `Public quote link created for Quote ${quoteNumber}`,
+        message: t('home.activities.public_quote_created', { quoteNumber }),
         timestamp: formatDateTime(pq.createdAt),
         icon: 'public_quote',
         date: new Date(pq.createdAt),
@@ -131,7 +143,7 @@ export const Home: React.FC = () => {
       allActivities.push({
         id: `public-quote-template-${pqt.id}`,
         type: 'public_quote_template_created',
-        message: `Public quote template "${pqt.name}" was created`,
+        message: t('home.activities.public_quote_template_created', { name: pqt.name }),
         timestamp: formatDateTime(pqt.createdAt),
         icon: 'public_quote_template',
         date: new Date(pqt.createdAt),
@@ -144,7 +156,7 @@ export const Home: React.FC = () => {
       allActivities.push({
         id: `template-${template.id}`,
         type: 'template_created',
-        message: `Template "${template.title}" was created`,
+        message: t('home.activities.template_created', { title: template.title }),
         timestamp: formatDateTime(template.createdAt),
         icon: 'template',
         date: new Date(template.createdAt),
@@ -244,7 +256,15 @@ export const Home: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          {t('home.welcome_back')}{user?.firstName ? `, ${user.firstName}` : ''}!
+          {user?.firstName ? (
+            <>
+              {t('home.welcome_back')}, {user.firstName}!
+            </>
+          ) : (
+            <>
+              {t('home.welcome_back')}!
+            </>
+          )}
         </h1>
         <p className="text-gray-600 mt-1">{t('app_name')}</p>
       </div>

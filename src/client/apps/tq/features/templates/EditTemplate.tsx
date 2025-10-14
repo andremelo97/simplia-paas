@@ -127,13 +127,13 @@ export const EditTemplate: React.FC = () => {
     const errors: Record<string, string> = {}
 
     if (!formData.title.trim()) {
-      errors.title = 'Title is required'
+      errors.title = t('templates.validation.title_required')
     } else if (formData.title.trim().length < 3) {
-      errors.title = 'Title must be at least 3 characters long'
+      errors.title = t('templates.validation.title_min')
     }
 
     if (!formData.content.trim() || formData.content.trim() === '<p></p>') {
-      errors.content = 'Template content is required'
+      errors.content = t('templates.validation_errors.content')
     }
 
     setValidationErrors(errors)
@@ -211,9 +211,9 @@ export const EditTemplate: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('templates.edit')}</h1>
           <p className="text-gray-600 mt-1">
-            Loading template...
+            {t('common.loading')}
           </p>
         </div>
 
@@ -240,7 +240,7 @@ export const EditTemplate: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('templates.edit')}</h1>
           <p className="text-gray-600 mt-1">
             {loadError}
           </p>
@@ -252,9 +252,9 @@ export const EditTemplate: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Template</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('templates.edit')}</h1>
         <p className="text-gray-600 mt-1">
-          Editing: {formData.title || 'Template'}
+          {t('templates.editing')}: {formData.title || t('templates.title')}
         </p>
       </div>
 
@@ -266,40 +266,40 @@ export const EditTemplate: React.FC = () => {
               {/* Template Information */}
               <Card>
                 <CardHeader className="p-6 pb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Template Information</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">{t('templates.template_information')}</h2>
                 </CardHeader>
 
                 <CardContent className="space-y-6 px-6 pb-6">
                   <div className="space-y-6">
                     <Input
-                      label="Title"
+                      label={t('templates.title')}
                       value={formData.title}
                       onChange={handleInputChange('title')}
                       error={validationErrors.title}
                       placeholder={t('templates.placeholders.title')}
-                      helperText="Descriptive name for this template (required)"
+                      helperText={t('templates.helper.title')}
                       required
                       disabled={isSubmitting}
                     />
 
                     <Input
-                      label="Description"
+                      label={t('templates.description')}
                       value={formData.description}
                       onChange={handleInputChange('description')}
                       placeholder={t('templates.placeholders.description')}
-                      helperText="Brief description of template purpose (optional)"
+                      helperText={t('templates.helper.description')}
                       disabled={isSubmitting}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Template Content *
+                      {t('templates.template_content')} *
                     </label>
                     <TemplateEditor
                       content={formData.content}
                       onChange={handleContentChange}
-                      placeholder="Create your template using [placeholders], $variables$, and (instructions)..."
+                      placeholder={t('templates.placeholders.content')}
                       readonly={isSubmitting}
                     />
                     {validationErrors.content && (
@@ -309,7 +309,7 @@ export const EditTemplate: React.FC = () => {
 
                   <div>
                     <Checkbox
-                      label="Template is active and available for use"
+                      label={t('templates.active_checkbox')}
                       checked={formData.active}
                       onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
                       disabled={isSubmitting}
@@ -326,7 +326,7 @@ export const EditTemplate: React.FC = () => {
                 isLoading={isSubmitting}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Updating Template...' : 'Update Template'}
+                {isSubmitting ? t('templates.updating_template') : t('templates.update')}
               </Button>
 
               <Button
@@ -336,7 +336,7 @@ export const EditTemplate: React.FC = () => {
                 disabled={isSubmitting}
                 style={{ height: '32px', minHeight: '32px' }}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </form>
@@ -346,43 +346,43 @@ export const EditTemplate: React.FC = () => {
         <div className="lg:col-span-2">
           <Card className="sticky top-6">
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Template Creation Guide</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('templates.guide.title')}</h2>
               <p className="text-sm text-gray-600 mt-1">
-                How to create dynamic templates for clinical documentation
+                {t('templates.guide.subtitle')}
               </p>
             </CardHeader>
 
             <CardContent className="px-6 pb-6 space-y-6">
               {/* Placeholders */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Placeholders:</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('templates.guide.placeholders_title')}</h3>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
                   <code className="text-sm text-blue-800 font-mono">[placeholder]</code>
                 </div>
                 <p className="text-xs text-gray-600">
-                  Wrapped in square brackets. These will be filled with information from the session dialogue, clinical notes, or contextual notes.
+                  {t('templates.guide.placeholders_description')}
                 </p>
               </div>
 
               {/* Instructions */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Instructions:</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('templates.guide.instructions_title')}</h3>
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-2">
                   <code className="text-sm text-amber-800 font-mono">(instruction)</code>
                 </div>
                 <p className="text-xs text-gray-600">
-                  Wrapped in round brackets. These guide the AI on how to behave when information is missing. Instructions will not appear in the final output.
+                  {t('templates.guide.instructions_description')}
                 </p>
               </div>
 
               {/* System Variables */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">System Variables:</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('templates.guide.variables_title')}</h3>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
                   <code className="text-sm text-green-800 font-mono">$variable$</code>
                 </div>
                 <p className="text-xs text-gray-600 mb-3">
-                  Wrapped in double dollar signs. These are filled with database values when the quote/report is created.
+                  {t('templates.guide.variables_description')}
                 </p>
 
                 <button
@@ -391,7 +391,7 @@ export const EditTemplate: React.FC = () => {
                   className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700"
                 >
                   {showVariables ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  Click here to see the available variables
+                  {t('templates.guide.click_to_see_variables')}
                 </button>
 
                 {showVariables && (
@@ -413,14 +413,10 @@ export const EditTemplate: React.FC = () => {
 
               {/* Example */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Example:</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('templates.guide.example_title')}</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
                   <code className="text-xs text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
-{`Dear $patient.fullName$, your appointment on $session.created_at$ was [summarize findings].
-
-Dr. $me.fullName$ from $me.clinic$ recommends [treatment plan]. (Only include if mentioned in transcript)
-
-Next appointment: [next appointment details]`}
+{t('templates.guide.example_content')}
                   </code>
                 </div>
               </div>

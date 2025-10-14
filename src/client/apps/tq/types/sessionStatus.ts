@@ -1,16 +1,11 @@
+import i18next from 'i18next'
+
 export enum SessionStatus {
   DRAFT = 'draft',
   PENDING = 'pending',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled'
 }
-
-export const SESSION_STATUS_LABELS = {
-  [SessionStatus.DRAFT]: 'Draft',
-  [SessionStatus.PENDING]: 'Pending',
-  [SessionStatus.COMPLETED]: 'Completed',
-  [SessionStatus.CANCELLED]: 'Cancelled'
-} as const
 
 export const SESSION_STATUS_COLORS = {
   [SessionStatus.DRAFT]: 'bg-gray-100 text-gray-800',
@@ -19,16 +14,26 @@ export const SESSION_STATUS_COLORS = {
   [SessionStatus.CANCELLED]: 'bg-red-100 text-red-800'
 } as const
 
-export const SESSION_STATUS_OPTIONS = [
-  { value: SessionStatus.DRAFT, label: SESSION_STATUS_LABELS[SessionStatus.DRAFT] },
-  { value: SessionStatus.PENDING, label: SESSION_STATUS_LABELS[SessionStatus.PENDING] },
-  { value: SessionStatus.COMPLETED, label: SESSION_STATUS_LABELS[SessionStatus.COMPLETED] },
-  { value: SessionStatus.CANCELLED, label: SESSION_STATUS_LABELS[SessionStatus.CANCELLED] }
-] as const
-
 export function getSessionStatusLabel(status: string): string {
-  return SESSION_STATUS_LABELS[status as SessionStatus] || status
+  // Try to get translated label from i18next
+  const key = `tq:sessions.status.${status}`
+  if (i18next.exists(key)) {
+    return i18next.t(key)
+  }
+  // Fallback to status value
+  return status
 }
+
+export function getSessionStatusOptions() {
+  return [
+    { value: SessionStatus.DRAFT, label: getSessionStatusLabel(SessionStatus.DRAFT) },
+    { value: SessionStatus.PENDING, label: getSessionStatusLabel(SessionStatus.PENDING) },
+    { value: SessionStatus.COMPLETED, label: getSessionStatusLabel(SessionStatus.COMPLETED) },
+    { value: SessionStatus.CANCELLED, label: getSessionStatusLabel(SessionStatus.CANCELLED) }
+  ]
+}
+
+export const SESSION_STATUS_OPTIONS = getSessionStatusOptions()
 
 export function getSessionStatusColor(status: string): string {
   return SESSION_STATUS_COLORS[status as SessionStatus] || 'bg-gray-100 text-gray-800'

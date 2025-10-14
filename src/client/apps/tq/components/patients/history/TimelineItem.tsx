@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@client/common/ui'
 
 interface TimelineItemProps {
@@ -26,6 +27,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   isFirst = false,
   isLast = false
 }) => {
+  const { t } = useTranslation('tq')
   return (
     <div className="relative flex gap-4 pb-4 last:pb-0">
       {/* Spine Column */}
@@ -106,7 +108,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                 onClick={onView}
                 className="text-sm flex-shrink-0"
               >
-                View
+                {t('common.view')}
               </Button>
             )}
           </div>

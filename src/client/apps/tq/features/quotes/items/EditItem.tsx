@@ -82,15 +82,15 @@ export const EditItem: React.FC = () => {
     const errors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      errors.name = 'Item name is required'
+      errors.name = t('quote_items.validation.name_required')
     } else if (formData.name.length < 2) {
-      errors.name = 'Item name must be at least 2 characters'
+      errors.name = t('quote_items.validation.name_min')
     } else if (formData.name.length > 100) {
-      errors.name = 'Item name must be less than 100 characters'
+      errors.name = t('quote_items.validation.name_max')
     }
 
     if (formData.basePrice <= 0) {
-      errors.basePrice = 'Base price must be greater than 0'
+      errors.basePrice = t('quote_items.validation.price_greater_than_zero')
     }
 
     setValidationErrors(errors)
@@ -121,19 +121,19 @@ export const EditItem: React.FC = () => {
       console.error('❌ [EditItem] Failed to update item:', error)
 
       // Map backend errors to user-friendly messages
-      let errorMessage = 'Failed to update item. Please try again.'
+      let errorMessage = t('quote_items.errors.update_failed')
 
       // Handle specific error cases based on backend responses
       if (error.message?.includes('Validation Error')) {
-        errorMessage = 'Please check your input and try again.'
+        errorMessage = t('quote_items.errors.check_input')
       } else if (error.status === 409) {
-        errorMessage = 'Item already exists. Please check the information.'
+        errorMessage = t('quote_items.errors.already_exists')
       } else if (error.status === 403) {
-        errorMessage = 'You do not have permission to update items.'
+        errorMessage = t('quote_items.errors.no_permission')
       } else if (error.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
+        errorMessage = t('quote_items.errors.session_expired')
       } else if (error.status >= 500) {
-        errorMessage = 'Server error occurred. Please try again later.'
+        errorMessage = t('quote_items.errors.server_error')
       }
 
       console.error('❌ [EditItem] Update error:', errorMessage)
@@ -150,7 +150,7 @@ export const EditItem: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Item</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('quote_items.edit')}</h1>
           <p className="text-gray-600 mt-1">{t('quote_items.loading_item')}</p>
         </div>
         <div className="space-y-4">
@@ -166,8 +166,8 @@ export const EditItem: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Item</h1>
-          <p className="text-red-600 mt-1">Item not found</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t('quote_items.edit')}</h1>
+          <p className="text-red-600 mt-1">{t('quote_items.not_found')}</p>
         </div>
       </div>
     )
@@ -176,9 +176,9 @@ export const EditItem: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Edit Item</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('quote_items.edit')}</h1>
         <p className="text-gray-600 mt-1">
-          Update the details for "{originalItem.name}"
+          {t('quote_items.edit_subtitle', { name: originalItem.name })}
         </p>
       </div>
 
@@ -187,40 +187,40 @@ export const EditItem: React.FC = () => {
           {/* Item Information */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Item Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('quote_items.item_information')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="Item Name"
+                  label={t('quote_items.name')}
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
                   placeholder={t('quote_items.placeholders.name')}
-                  helperText="Service or product name (required)"
+                  helperText={t('quote_items.helper.name')}
                   required
                   disabled={isSubmitting}
                 />
 
                 <PriceInput
-                  label="Base Price"
+                  label={t('quote_items.base_price')}
                   value={formData.basePrice}
                   onChange={handlePriceChange}
                   error={validationErrors.basePrice}
-                  helperText="Standard price before discounts (required)"
+                  helperText={t('quote_items.helper.base_price')}
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
                 <Textarea
-                  label="Description"
+                  label={t('quote_items.description')}
                   value={formData.description}
                   onChange={handleInputChange('description')}
                   error={validationErrors.description}
                   placeholder={t('quote_items.placeholders.description')}
-                  helperText="Additional details about the item (optional)"
+                  helperText={t('quote_items.helper.description')}
                   rows={4}
                   disabled={isSubmitting}
                 />
@@ -228,8 +228,8 @@ export const EditItem: React.FC = () => {
 
               <div>
                 <Checkbox
-                  label="Active"
-                  description="When checked, this item will be available for use in quotes"
+                  label={t('common.active')}
+                  description={t('quote_items.active_checkbox')}
                   checked={formData.active}
                   onChange={(e) => handleActiveChange(e.target.checked)}
                   disabled={isSubmitting}
@@ -242,7 +242,7 @@ export const EditItem: React.FC = () => {
           {originalItem && (
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Record Information</h2>
+                <h2 className="text-lg font-semibold text-gray-900">{t('quote_items.record_information')}</h2>
               </CardHeader>
 
               <CardContent className="space-y-6 px-6 pb-6">
@@ -251,14 +251,14 @@ export const EditItem: React.FC = () => {
                     label={t('common.created_at')}
                     value={formatDate(originalItem.createdAt)}
                     disabled
-                    helperText="When this item record was created"
+                    helperText={t('quote_items.helper.created_at')}
                   />
 
                   <Input
                     label={t('common.updated_at')}
                     value={formatDate(originalItem.updatedAt)}
                     disabled
-                    helperText="When this item record was last updated"
+                    helperText={t('quote_items.helper.updated_at')}
                   />
                 </div>
               </CardContent>
@@ -273,7 +273,7 @@ export const EditItem: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Updating Item...' : 'Update Item'}
+            {isSubmitting ? t('quote_items.updating_item') : t('quote_items.update')}
           </Button>
 
           <Button
@@ -283,7 +283,7 @@ export const EditItem: React.FC = () => {
             disabled={isSubmitting}
             style={{ height: '32px', minHeight: '32px' }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </form>

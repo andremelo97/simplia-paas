@@ -1,3 +1,5 @@
+import i18next from 'i18next'
+
 export enum QuoteStatus {
   DRAFT = 'draft',
   SENT = 'sent',
@@ -5,14 +7,6 @@ export enum QuoteStatus {
   REJECTED = 'rejected',
   EXPIRED = 'expired'
 }
-
-export const QUOTE_STATUS_OPTIONS = [
-  { value: QuoteStatus.DRAFT, label: 'Draft' },
-  { value: QuoteStatus.SENT, label: 'Sent' },
-  { value: QuoteStatus.APPROVED, label: 'Approved' },
-  { value: QuoteStatus.REJECTED, label: 'Rejected' },
-  { value: QuoteStatus.EXPIRED, label: 'Expired' }
-]
 
 export const QUOTE_STATUS_COLORS = {
   [QuoteStatus.DRAFT]: 'bg-gray-100 text-gray-800',
@@ -23,9 +17,26 @@ export const QUOTE_STATUS_COLORS = {
 }
 
 export const getQuoteStatusLabel = (status: string): string => {
-  const option = QUOTE_STATUS_OPTIONS.find(opt => opt.value === status)
-  return option ? option.label : status
+  // Try to get translated label from i18next
+  const key = `tq:quotes.status.${status}`
+  if (i18next.exists(key)) {
+    return i18next.t(key)
+  }
+  // Fallback to status value
+  return status
 }
+
+export function getQuoteStatusOptions() {
+  return [
+    { value: QuoteStatus.DRAFT, label: getQuoteStatusLabel(QuoteStatus.DRAFT) },
+    { value: QuoteStatus.SENT, label: getQuoteStatusLabel(QuoteStatus.SENT) },
+    { value: QuoteStatus.APPROVED, label: getQuoteStatusLabel(QuoteStatus.APPROVED) },
+    { value: QuoteStatus.REJECTED, label: getQuoteStatusLabel(QuoteStatus.REJECTED) },
+    { value: QuoteStatus.EXPIRED, label: getQuoteStatusLabel(QuoteStatus.EXPIRED) }
+  ]
+}
+
+export const QUOTE_STATUS_OPTIONS = getQuoteStatusOptions()
 
 export const getQuoteStatusColor = (status: string): string => {
   return QUOTE_STATUS_COLORS[status as QuoteStatus] || 'bg-gray-100 text-gray-800'

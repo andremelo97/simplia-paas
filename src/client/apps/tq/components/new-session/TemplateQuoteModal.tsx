@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FileText, Receipt, Loader2 } from 'lucide-react'
 import { Modal, Button, Select, Alert, AlertDescription } from '@client/common/ui'
 import { templatesService, Template } from '../../services/templates'
@@ -38,6 +39,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   onQuoteCreated,
   className = ''
 }) => {
+  const { t } = useTranslation('tq')
   const [templates, setTemplates] = useState<Template[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
@@ -192,7 +194,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
     <Modal
       open={open}
       onClose={handleClose}
-      title="Create from Template"
+      title={t('modals.template_quote.title')}
       size="md"
       className={className}
     >
@@ -207,7 +209,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
           {/* Template Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Template *
+              {t('modals.template_quote.select_template')} *
             </label>
 
             {isLoading ? (
@@ -217,16 +219,13 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
             ) : templates.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <FileText className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm">No active templates available</p>
-                <p className="text-xs text-gray-400 mt-1">
-                  Create templates first to use this feature
-                </p>
+                <p className="text-sm">{t('modals.template_quote.no_templates')}</p>
               </div>
             ) : (
               <Select
                 value={selectedTemplateId}
                 onChange={(e) => setSelectedTemplateId(e.target.value)}
-                placeholder="Choose a template..."
+                placeholder={t('modals.template_quote.select_template')}
                 options={templates.map((template) => ({
                   value: template.id,
                   label: template.title
@@ -247,7 +246,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
                 </p>
               )}
               <p className="text-xs text-gray-500">
-                Used {selectedTemplate.usageCount} times
+                {t('common.usage')}: {selectedTemplate.usageCount}
               </p>
             </div>
           )}
@@ -265,7 +264,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
               ) : (
                 <Receipt className="w-4 h-4" />
               )}
-              {isCreatingQuote ? 'Creating Quote...' : 'Create Quote'}
+              {isCreatingQuote ? t('common.loading') : t('modals.ai_agent.create_quote')}
             </Button>
 
             <Button
@@ -279,13 +278,8 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
               ) : (
                 <FileText className="w-4 h-4" />
               )}
-              {isCreatingClinicalReport ? 'Creating Clinical Report...' : 'Create Clinical Report'}
+              {isCreatingClinicalReport ? t('common.loading') : t('modals.ai_agent.create_clinical_report')}
             </Button>
-          </div>
-
-          {/* Help Text */}
-          <div className="text-xs text-gray-500 text-center">
-            Select a template to create a quote or clinical report with pre-filled content
           </div>
         </div>
     </Modal>

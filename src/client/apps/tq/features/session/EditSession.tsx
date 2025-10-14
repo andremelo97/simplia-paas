@@ -184,7 +184,7 @@ export const EditSession: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Session</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.edit')}</h1>
           <p className="text-gray-600 mt-1">{t('sessions.loading_session')}</p>
         </div>
         <div className="flex items-center justify-center h-64">
@@ -199,7 +199,7 @@ export const EditSession: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Session</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.edit')}</h1>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-6" role="alert" aria-live="assertive">
           <div className="flex items-center">
@@ -210,10 +210,10 @@ export const EditSession: React.FC = () => {
           </div>
           <div className="mt-4 flex space-x-3">
             <Button variant="secondary" onClick={handleBackToList}>
-              Back to List
+              {t('sessions.back_to_list')}
             </Button>
             <Button variant="default" onClick={handleRetry}>
-              Retry
+              {t('common.retry')}
             </Button>
           </div>
         </div>
@@ -225,11 +225,11 @@ export const EditSession: React.FC = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Session</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.edit')}</h1>
         </div>
         <Alert>
           <AlertDescription>
-            Session not found
+            {t('sessions.session_not_found')}
           </AlertDescription>
         </Alert>
       </div>
@@ -238,7 +238,7 @@ export const EditSession: React.FC = () => {
 
   const patientName = session.patient_first_name || session.patient_last_name
     ? `${session.patient_first_name || ''} ${session.patient_last_name || ''}`.trim()
-    : 'Unknown Patient'
+    : t('sessions.unknown_patient')
 
   const hasTranscription = Boolean(transcription && transcription.trim().length > 0)
 
@@ -246,9 +246,9 @@ export const EditSession: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Edit Session</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.edit')}</h1>
           <p className="text-gray-600 mt-1">
-            Session {session.number} • {patientName}
+            {t('sessions.session')} {session.number} • {patientName}
           </p>
         </div>
 
@@ -259,7 +259,7 @@ export const EditSession: React.FC = () => {
             disabled={isSubmitting}
           >
             <FileText className="w-4 h-4 mr-2" />
-            Create Documents
+            {t('sessions.create_documents')}
           </Button>
         )}
       </div>
@@ -269,26 +269,26 @@ export const EditSession: React.FC = () => {
           {/* Session Details */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Session Details</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('sessions.session_details')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="Session Number"
+                  label={t('sessions.number')}
                   value={session.number}
                   disabled
-                  helperText="Unique session identifier"
+                  helperText={t('sessions.helper.session_number')}
                 />
 
                 <div>
                   <Select
-                    label="Status"
+                    label={t('common.status')}
                     value={status}
                     onChange={(e) => handleStatusChange(e.target.value as SessionStatus)}
                     options={SESSION_STATUS_OPTIONS}
                     disabled={isSubmitting}
-                    helperText="Current session status"
+                    helperText={t('sessions.helper.current_status')}
                   />
                 </div>
               </div>
@@ -298,22 +298,22 @@ export const EditSession: React.FC = () => {
                   label={t('common.created_at')}
                   value={new Date(session.created_at).toLocaleString()}
                   disabled
-                  helperText="When this session was created"
+                  helperText={t('sessions.helper.created_at')}
                 />
 
                 <Input
-                  label="Last Updated"
+                  label={t('sessions.last_updated')}
                   value={new Date(session.updated_at).toLocaleString()}
                   disabled
-                  helperText="When this session was last updated"
+                  helperText={t('sessions.helper.updated_at')}
                 />
               </div>
 
               <Input
-                label="Patient"
+                label={t('common.patient')}
                 value={patientName}
                 disabled
-                helperText="Patient associated with this session"
+                helperText={t('sessions.helper.associated_patient')}
               />
             </CardContent>
           </Card>
@@ -321,12 +321,12 @@ export const EditSession: React.FC = () => {
           {/* Transcription */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Transcription</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('sessions.transcription')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               <Textarea
-                label="Transcription Content"
+                label={t('sessions.transcription_content')}
                 placeholder={t('sessions.placeholders.transcription_edit')}
                 value={transcription}
                 onChange={(e) => setTranscription(e.target.value)}
@@ -345,7 +345,7 @@ export const EditSession: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
+            {isSubmitting ? t('sessions.saving_changes') : t('common.save_changes')}
           </Button>
 
           <Button
@@ -355,7 +355,7 @@ export const EditSession: React.FC = () => {
             disabled={isSubmitting}
             style={{ height: '32px', minHeight: '32px' }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </form>

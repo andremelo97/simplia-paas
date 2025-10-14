@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@client/common/ui'
 
 interface HistoryRowProps {
@@ -22,6 +23,7 @@ export const HistoryRow: React.FC<HistoryRowProps> = ({
   icon,
   viewPath
 }) => {
+  const { t } = useTranslation('tq')
   const handleViewClick = (e: React.MouseEvent) => {
     if (!viewPath) return
 
@@ -83,7 +85,7 @@ export const HistoryRow: React.FC<HistoryRowProps> = ({
             onClick={handleViewClick}
             className="text-sm"
           >
-            View
+            {t('common.view')}
           </Button>
         </div>
       )}

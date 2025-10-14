@@ -6,6 +6,7 @@
  */
 
 import React, { useCallback, useRef, useState, DragEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Upload, FileAudio, X, CheckCircle, AlertCircle, Loader } from 'lucide-react'
 import { Modal, Button, Progress, Alert, AlertDescription } from '@client/common/ui'
 import { useTranscription } from '../../hooks/useTranscription'
@@ -27,6 +28,7 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
   onTranscriptionComplete,
   className = ''
 }) => {
+  const { t } = useTranslation('tq')
   const { state, transcriptionId, actions } = useTranscription()
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -61,22 +63,22 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
     )
 
     if (!hasValidExtension) {
-      return `Invalid file type. Supported formats: ${ACCEPTED_FORMATS.join(', ')}`
+      return t('modals.audio_upload.errors.invalid_type', { formats: ACCEPTED_FORMATS.join(', ') })
     }
 
     // Check file size
     const fileSizeMB = file.size / (1024 * 1024)
     if (fileSizeMB > MAX_SIZE_MB) {
-      return `File too large. Maximum size is ${MAX_SIZE_MB}MB`
+      return t('modals.audio_upload.errors.file_too_large', { maxSize: MAX_SIZE_MB })
     }
 
     // Check if it's actually an audio file (basic MIME type check)
     if (!file.type.startsWith('audio/') && !file.type.startsWith('video/')) {
-      return 'Selected file is not an audio file'
+      return t('modals.audio_upload.errors.not_audio')
     }
 
     return null
-  }, [])
+  }, [t])
 
   // Handle file processing
   const processFile = useCallback(async (file: File) => {
@@ -143,8 +145,8 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
     <Modal
       open={open}
       onClose={onClose}
-      title="Upload Audio File"
-      description="Select an audio file to upload and transcribe"
+      title={t('modals.audio_upload.title')}
+      description={t('modals.audio_upload.upload_instruction')}
       size="md"
       showCloseButton={!state.isProcessing}
     >
@@ -176,17 +178,17 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
           >
             <FileAudio className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {isDragOver ? 'Drop audio file here' : 'Upload audio file'}
+              {isDragOver ? t('modals.audio_upload.drop_here') : t('modals.audio_upload.title')}
             </h3>
             <p className="text-gray-600 mb-4">
-              Drag and drop an audio file, or click to browse
+              {t('modals.audio_upload.upload_instruction')}
             </p>
             <Button variant="primary" className="mb-2">
               <Upload className="w-4 h-4 mr-2" />
-              Choose File
+              {t('modals.audio_upload.select_file')}
             </Button>
             <p className="text-xs text-gray-500">
-              Supports: {ACCEPTED_FORMATS.join(', ')} • Max size: {MAX_SIZE_MB}MB
+              {t('modals.audio_upload.supported_formats')}: {ACCEPTED_FORMATS.join(', ')} • {t('modals.audio_upload.max_size')}: {MAX_SIZE_MB}MB
             </p>
           </div>
         )}
@@ -198,13 +200,13 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
               <Loader className="h-5 w-5 animate-spin text-blue-500" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
-                  Processing audio file...
+                  {state.progress.transcribing ? t('modals.audio_upload.transcribing') : t('modals.audio_upload.uploading')}
                 </p>
                 <Progress value={state.progress.uploaded ? (state.progress.transcribing ? 75 : 50) : 25} className="h-2 mt-1" />
               </div>
             </div>
             <p className="text-xs text-gray-500">
-              Please wait while we upload your audio file
+              {t('modals.audio_upload.please_wait')}
             </p>
           </div>
         )}
@@ -214,15 +216,15 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
           <div className="text-center space-y-4">
             <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
             <div>
-              <h3 className="text-lg font-medium text-gray-900">Upload Complete!</h3>
+              <h3 className="text-lg font-medium text-gray-900">{t('modals.audio_upload.upload_complete')}</h3>
               <p className="text-gray-600 mt-1">
-                Audio transcription completed successfully
+                {t('modals.audio_upload.transcription_complete')}
               </p>
             </div>
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                Audio file uploaded successfully. You can now start transcription.
+                {t('modals.audio_upload.success_message')}
               </AlertDescription>
             </Alert>
           </div>
@@ -240,10 +242,10 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
 
             <div className="flex justify-center space-x-3">
               <Button variant="outline" onClick={handleRetry}>
-                Try Again
+                {t('common.try_again')}
               </Button>
               <Button variant="ghost" onClick={onClose}>
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </div>
@@ -253,7 +255,7 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
         {state.status === 'created' && !state.isProcessing && (
           <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
             <Button variant="ghost" onClick={onClose}>
-              Cancel
+              {t('common.cancel')}
             </Button>
           </div>
         )}

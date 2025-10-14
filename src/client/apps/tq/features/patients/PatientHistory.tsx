@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit } from 'lucide-react'
 import {
@@ -29,6 +30,7 @@ interface TimelineEvent {
 }
 
 export const PatientHistory: React.FC = () => {
+  const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
@@ -64,8 +66,8 @@ export const PatientHistory: React.FC = () => {
       events.push({
         id: patient.id,
         type: 'patient_registered',
-        title: 'Patient Registered',
-        preview: `${patient.first_name} ${patient.last_name} was registered in the system`,
+        title: t('patients.patient_registered'),
+        preview: t('patients.history.registered_preview', { name: `${patient.first_name} ${patient.last_name}` }),
         date: formatDateTime(patient.created_at),
         timestamp: new Date(patient.created_at).getTime()
       })
@@ -76,7 +78,7 @@ export const PatientHistory: React.FC = () => {
       events.push({
         id: session.id,
         type: 'session',
-        title: `Session ${session.number}`,
+        title: t('patients.history.session_title', { number: session.number }),
         preview: session.transcription_text ? session.transcription_text.substring(0, 150) + '...' : undefined,
         status: session.status,
         date: formatDateTime(session.created_at),
@@ -89,8 +91,8 @@ export const PatientHistory: React.FC = () => {
       events.push({
         id: quote.id,
         type: 'quote',
-        title: `Quote ${quote.number}`,
-        preview: quote.content ? quote.content.substring(0, 150) + '...' : `Total: $${quote.total.toFixed(2)}`,
+        title: t('patients.history.quote_title', { number: quote.number }),
+        preview: quote.content ? quote.content.substring(0, 150) + '...' : t('patients.history.quote_preview_total', { total: quote.total.toFixed(2) }),
         status: quote.status,
         date: formatDateTime(quote.created_at),
         timestamp: new Date(quote.created_at).getTime()
@@ -191,8 +193,8 @@ export const PatientHistory: React.FC = () => {
   }
 
   const patientName = patient
-    ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || 'Unknown Patient'
-    : 'Loading...'
+    ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || t('clinical_reports.pages.unknown_patient')
+    : t('common:loading')
 
   if (isLoading) {
     return (
@@ -209,9 +211,9 @@ export const PatientHistory: React.FC = () => {
       <div className="space-y-6">
         <Button variant="secondary" onClick={handleBack}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Patients
+          {t('patients.back_to_list')}
         </Button>
-        <p>Patient not found</p>
+        <p>{t('patients.error_not_found')}</p>
       </div>
     )
   }
@@ -221,7 +223,7 @@ export const PatientHistory: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Patient History</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('patients.patient_history')}</h1>
           <p className="text-gray-600 mt-1">
             {patientName}
           </p>
@@ -232,7 +234,7 @@ export const PatientHistory: React.FC = () => {
           className="flex items-center gap-2"
         >
           <Edit className="w-4 h-4" />
-          Edit
+          {t('common:edit')}
         </Button>
       </div>
 
@@ -242,7 +244,7 @@ export const PatientHistory: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Sessions</p>
+                <p className="text-sm text-gray-600">{t('metrics.total_sessions')}</p>
                 <p className="text-2xl font-bold text-gray-900">{metrics.totalSessions}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
@@ -256,7 +258,7 @@ export const PatientHistory: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Quotes</p>
+                <p className="text-sm text-gray-600">{t('metrics.total_quotes')}</p>
                 <p className="text-2xl font-bold text-gray-900">{metrics.totalQuotes}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-pink-100 flex items-center justify-center">
@@ -270,7 +272,7 @@ export const PatientHistory: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Approved Quotes</p>
+                <p className="text-sm text-gray-600">{t('metrics.approved_quotes')}</p>
                 <p className="text-2xl font-bold text-gray-900">{metrics.approvedQuotes}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
@@ -284,7 +286,7 @@ export const PatientHistory: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Reports</p>
+                <p className="text-sm text-gray-600">{t('metrics.total_reports')}</p>
                 <p className="text-2xl font-bold text-gray-900">{metrics.totalReports}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
@@ -307,7 +309,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Sessions
+              {t('tabs.sessions')}
             </button>
             <button
               onClick={() => setActiveTab('quotes')}
@@ -317,7 +319,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Quotes
+              {t('tabs.quotes')}
             </button>
             <button
               onClick={() => setActiveTab('clinical')}
@@ -327,7 +329,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Clinical
+              {t('tabs.clinical')}
             </button>
             <button
               onClick={() => setActiveTab('timeline')}
@@ -338,7 +340,7 @@ export const PatientHistory: React.FC = () => {
               }`}
             >
               <Clock className="w-4 h-4 inline-block mr-1" />
-              Timeline
+              {t('tabs.timeline')}
             </button>
           </div>
         </CardHeader>

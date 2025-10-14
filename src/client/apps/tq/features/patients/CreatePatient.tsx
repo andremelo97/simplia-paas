@@ -44,30 +44,30 @@ export const CreatePatient: React.FC = () => {
 
     // Validate patient basic info
     if (!formData.first_name.trim()) {
-      errors.first_name = 'First name is required'
+      errors.first_name = t('patients.validation.first_name_required')
     } else if (formData.first_name.length < 2) {
-      errors.first_name = 'First name must be at least 2 characters'
+      errors.first_name = t('patients.validation.first_name_min')
     } else if (formData.first_name.length > 50) {
-      errors.first_name = 'First name must be less than 50 characters'
+      errors.first_name = t('patients.validation.first_name_max')
     }
 
     if (formData.last_name && formData.last_name.length > 50) {
-      errors.last_name = 'Last name must be less than 50 characters'
+      errors.last_name = t('patients.validation.last_name_max')
     }
 
     // Email validation (optional field)
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Invalid email format'
+      errors.email = t('patients.validation.email_invalid')
     }
 
     // Phone validation (optional field)
     if (formData.phone && formData.phone.length > 20) {
-      errors.phone = 'Phone number must be less than 20 characters'
+      errors.phone = t('patients.validation.phone_max')
     }
 
     // Notes validation (optional field)
     if (formData.notes && formData.notes.length > 500) {
-      errors.notes = 'Notes must be less than 500 characters'
+      errors.notes = t('patients.validation.notes_max')
     }
 
     setValidationErrors(errors)
@@ -144,9 +144,9 @@ export const CreatePatient: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Create Patient</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('patients.create')}</h1>
         <p className="text-gray-600 mt-1">
-          Add a new patient to the system
+          {t('patients.create_subtitle')}
         </p>
       </div>
 
@@ -155,7 +155,7 @@ export const CreatePatient: React.FC = () => {
           {/* Patient Information */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Patient Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('patients.patient_information')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
@@ -166,7 +166,7 @@ export const CreatePatient: React.FC = () => {
                   onChange={handleInputChange('first_name')}
                   error={validationErrors.first_name}
                   placeholder={t('patients.placeholders.first_name')}
-                  helperText="Patient's first name (required)"
+                  helperText={t('patients.helper.first_name')}
                   required
                   disabled={isSubmitting}
                 />
@@ -177,7 +177,7 @@ export const CreatePatient: React.FC = () => {
                   onChange={handleInputChange('last_name')}
                   error={validationErrors.last_name}
                   placeholder={t('patients.placeholders.last_name')}
-                  helperText="Patient's last name (optional)"
+                  helperText={t('patients.helper.last_name')}
                   disabled={isSubmitting}
                 />
               </div>
@@ -190,7 +190,7 @@ export const CreatePatient: React.FC = () => {
                   onChange={handleInputChange('email')}
                   error={validationErrors.email}
                   placeholder={t('patients.placeholders.email')}
-                  helperText="Patient's email address (optional)"
+                  helperText={t('patients.helper.email')}
                   disabled={isSubmitting}
                 />
 
@@ -201,7 +201,7 @@ export const CreatePatient: React.FC = () => {
                   onChange={handleInputChange('phone')}
                   error={validationErrors.phone}
                   placeholder={t('patients.placeholders.phone')}
-                  helperText="Patient's phone number (optional)"
+                  helperText={t('patients.helper.phone')}
                   disabled={isSubmitting}
                 />
               </div>
@@ -213,7 +213,7 @@ export const CreatePatient: React.FC = () => {
                   onChange={handleInputChange('notes')}
                   error={validationErrors.notes}
                   placeholder={t('patients.placeholders.notes')}
-                  helperText="Any additional information about the patient (optional)"
+                  helperText={t('patients.helper.notes')}
                   rows={4}
                   disabled={isSubmitting}
                 />
@@ -229,7 +229,7 @@ export const CreatePatient: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating Patient...' : 'Create Patient'}
+            {isSubmitting ? t('patients.creating_patient') : t('patients.create')}
           </Button>
 
           <Button
@@ -239,7 +239,7 @@ export const CreatePatient: React.FC = () => {
             disabled={isSubmitting}
             style={{ height: '32px', minHeight: '32px' }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </form>

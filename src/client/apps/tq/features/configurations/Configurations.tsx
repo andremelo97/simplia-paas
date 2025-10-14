@@ -21,6 +21,7 @@ export const Configurations: React.FC = () => {
 
   return (
     <ConfigurationLayout
+      title={t('sidebar.configurations')}
       options={configOptions}
       activeSection={activeSection}
       onSectionChange={setActiveSection}

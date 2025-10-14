@@ -1,6 +1,7 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@client/common/ui'
 import { FileText, Users, Receipt, CheckCircle, Clock, ClipboardList, Share2, Layout } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface Activity {
   id: string
@@ -18,6 +19,7 @@ interface ActivityFeedProps {
 }
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoading = false, onActivityClick }) => {
+  const { t } = useTranslation('tq')
   const [flashingId, setFlashingId] = React.useState<string | null>(null)
 
   const handleDoubleClick = (activity: Activity) => {
@@ -119,7 +121,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoadin
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-500 text-center py-4">No recent activity</p>
+          <p className="text-sm text-gray-500 text-center py-4">{t('home.no_activity_yet')}</p>
         )}
       </CardContent>
     </Card>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, CardTitle, Input, Checkbox } from '@client/common/ui'
 
 interface TemplateFiltersProps {
@@ -14,20 +15,22 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
   includeInactive,
   onIncludeInactiveChange
 }) => {
+  const { t } = useTranslation('tq')
+
   return (
     <Card>
       <CardHeader className="py-4 px-6">
         <CardTitle className="text-base">
-          Search and filters
+          {t('templates.filters.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="grid grid-cols-4 gap-4">
           <div className="col-span-3">
             <Input
-              label="Find your template quickly"
+              label={t('templates.filters.find_quickly')}
               type="text"
-              placeholder="Search templates by title or description"
+              placeholder={t('templates.filters.search_placeholder')}
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               className="w-full"
@@ -36,7 +39,7 @@ export const TemplateFilters: React.FC<TemplateFiltersProps> = ({
 
           <div className="col-span-1 flex items-center">
             <Checkbox
-              label="Include inactive templates"
+              label={t('templates.filters.include_inactive')}
               checked={includeInactive}
               onChange={(e) => onIncludeInactiveChange(e.target.checked)}
             />

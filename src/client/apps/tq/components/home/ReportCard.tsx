@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@client/common/ui'
 import { ClinicalReport } from '../../services/clinicalReports'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -9,6 +10,7 @@ interface ReportCardProps {
 }
 
 export const ReportCard: React.FC<ReportCardProps> = ({ report, onDoubleClick }) => {
+  const { t } = useTranslation('tq')
   const [isFlashing, setIsFlashing] = useState(false)
   const { formatLongDate } = useDateFormatter()
 
@@ -20,7 +22,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onDoubleClick })
 
   const patientName = report.patient_first_name || report.patient_last_name
     ? `${report.patient_first_name || ''} ${report.patient_last_name || ''}`.trim()
-    : 'Unknown Patient'
+    : t('sessions.unknown_patient')
 
   // Extract plain text preview from HTML content
   const getTextPreview = (html: string) => {
@@ -42,13 +44,13 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onDoubleClick })
         <div className="flex items-start justify-between mb-3">
           <h3 className="font-semibold text-gray-900 text-lg">{report.number}</h3>
           <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700">
-            Report
+            {t('clinical_reports.report')}
           </span>
         </div>
 
         {/* Patient name */}
         <p className="text-sm text-gray-600 mb-2">
-          <strong>Patient:</strong> {patientName}
+          <strong>{t('common.patient')}:</strong> {patientName}
         </p>
 
         {/* Content preview */}

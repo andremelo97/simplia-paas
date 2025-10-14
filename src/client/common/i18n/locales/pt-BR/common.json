@@ -34,5 +34,115 @@
   "showing_results": "Mostrando {{from}} a {{to}} de {{total}} resultados",
   "no_results": "Nenhum resultado encontrado",
   "error_loading": "Erro ao carregar dados",
-  "error_saving": "Erro ao salvar"
+  "error_saving": "Erro ao salvar",
+  "feedback": {
+    "QUOTE_CREATED": {
+      "title": "Cotação Criada",
+      "message": "Cotação criada com sucesso."
+    },
+    "QUOTE_UPDATED": {
+      "title": "Cotação Atualizada",
+      "message": "Cotação atualizada com sucesso."
+    },
+    "QUOTE_DELETED": {
+      "title": "Cotação Excluída",
+      "message": "Cotação excluída com sucesso."
+    },
+    "SESSION_CREATED": {
+      "title": "Sessão Criada",
+      "message": "Sessão criada com sucesso."
+    },
+    "SESSION_UPDATED": {
+      "title": "Sessão Atualizada",
+      "message": "Sessão atualizada com sucesso."
+    },
+    "SESSION_DELETED": {
+      "title": "Sessão Excluída",
+      "message": "Sessão excluída com sucesso."
+    },
+    "PATIENT_CREATED": {
+      "title": "Paciente Criado",
+      "message": "Paciente criado com sucesso."
+    },
+    "PATIENT_UPDATED": {
+      "title": "Paciente Atualizado",
+      "message": "Paciente atualizado com sucesso."
+    },
+    "PATIENT_DELETED": {
+      "title": "Paciente Excluído",
+      "message": "Paciente excluído com sucesso."
+    },
+    "TEMPLATE_CREATED": {
+      "title": "Template Criado",
+      "message": "Template criado com sucesso."
+    },
+    "TEMPLATE_UPDATED": {
+      "title": "Template Atualizado",
+      "message": "Template atualizado com sucesso."
+    },
+    "TEMPLATE_DELETED": {
+      "title": "Template Excluído",
+      "message": "Template excluído com sucesso."
+    },
+    "TEMPLATE_FILLED": {
+      "title": "Template Preenchido",
+      "message": "Template preenchido com sucesso pela IA."
+    },
+    "QUOTE_ITEMS_UPDATED": {
+      "title": "Itens Atualizados",
+      "message": "Itens da cotação atualizados com sucesso."
+    },
+    "PUBLIC_QUOTE_CREATED": {
+      "title": "Cotação Pública Criada",
+      "message": "Link de cotação pública criado com sucesso!"
+    },
+    "PUBLIC_QUOTE_REVOKED": {
+      "title": "Link Revogado",
+      "message": "Link de cotação pública foi revogado com sucesso."
+    },
+    "PUBLIC_QUOTE_NOT_FOUND": {
+      "title": "Não Encontrado",
+      "message": "Link de cotação pública não encontrado."
+    },
+    "LOAD_FAILED": {
+      "title": "Falha ao Carregar",
+      "message": "Falha ao carregar dados. Por favor, tente novamente."
+    },
+    "REVOKE_FAILED": {
+      "title": "Falha ao Revogar",
+      "message": "Falha ao revogar link. Por favor, tente novamente."
+    },
+    "PUBLIC_QUOTE_TEMPLATE_CREATED": {
+      "title": "Template Criado",
+      "message": "Template de cotação pública criado com sucesso."
+    },
+    "PUBLIC_QUOTE_TEMPLATE_UPDATED": {
+      "title": "Template Atualizado",
+      "message": "Template de cotação pública atualizado com sucesso."
+    },
+    "PUBLIC_QUOTE_TEMPLATE_DELETED": {
+      "title": "Template Excluído",
+      "message": "Template de cotação pública excluído com sucesso."
+    },
+    "CLINICAL_REPORT_CREATED": {
+      "title": "Relatório Criado",
+      "message": "Relatório clínico criado com sucesso."
+    },
+    "CLINICAL_REPORT_UPDATED": {
+      "title": "Relatório Atualizado",
+      "message": "Relatório clínico atualizado com sucesso."
+    },
+    "CLINICAL_REPORT_DELETED": {
+      "title": "Relatório Excluído",
+      "message": "Relatório clínico excluído com sucesso."
+    },
+    "AI_AGENT_CONFIGURATION_UPDATED": {
+      "title": "Configuração Atualizada",
+      "message": "Configuração do Agente de IA atualizada com sucesso."
+    },
+    "AI_AGENT_CONFIGURATION_RESET": {
+      "title": "Configuração Redefinida",
+      "message": "Configuração do Agente de IA redefinida para o padrão."
+    }
+  }
 }

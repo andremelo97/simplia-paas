@@ -156,21 +156,21 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
     <Card>
       <CardHeader className="p-6 pb-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Quote Items</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('quotes.quote_items')}</h2>
         </div>
         <button
           onClick={handleAddRow}
           className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors mt-3"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Item</span>
+          <span>{t('quotes.add_item')}</span>
         </button>
       </CardHeader>
 
       <CardContent className="px-6 pb-6">
         {items.length === 0 ? (
           <div className="text-center py-8 text-gray-500 text-sm">
-            No items yet. Click "Add Item" to get started.
+            {t('quotes.no_items_yet')}
           </div>
         ) : (
           <div className="space-y-4">
@@ -186,7 +186,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                   <div className="flex items-end gap-3">
                     <div className="flex-1 relative">
                       <Input
-                        label="Search Item"
+                        label={t('quotes.search_item')}
                         placeholder={t('quotes.placeholders.search_items')}
                         value={searchQuery[item.localId] || ''}
                         onChange={(e) => handleSearch(item.localId, e.target.value)}
@@ -230,7 +230,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                       {/* Item Name - 4 cols (read-only) */}
                       <div className="col-span-4">
                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Item
+                          {t('quotes.item_name')}
                         </label>
                         <div className="h-8 px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-md text-gray-900 flex items-center font-medium">
                           {item.itemName}
@@ -240,7 +240,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                       {/* Base Price - 2 cols (read-only) */}
                       <div className="col-span-2">
                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Base Price
+                          {t('quotes.base_price')}
                         </label>
                         <div className="h-8 px-2 py-1.5 text-xs bg-gray-100 border border-gray-200 rounded-md text-gray-700 flex items-center">
                           ${item.itemBasePrice?.toFixed(2) || '0.00'}
@@ -250,7 +250,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                       {/* Quantity - 2 cols */}
                       <div className="col-span-2">
                         <Input
-                          label="Qty"
+                          label={t('quotes.quantity')}
                           type="number"
                           min={1}
                           value={item.quantity || 1}
@@ -261,7 +261,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                       {/* Discount - 2 cols */}
                       <div className="col-span-2">
                         <PriceInput
-                          label="Discount"
+                          label={t('quotes.discount')}
                           value={item.discountAmount || 0}
                           onChange={(value) => handleUpdateDiscount(item.localId, value)}
                         />
@@ -270,7 +270,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                       {/* Total - 2 cols */}
                       <div className="col-span-2">
                         <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Total
+                          {t('common.total')}
                         </label>
                         <div className="h-8 px-2 py-1.5 text-xs font-semibold bg-purple-50 border border-purple-200 rounded-md text-purple-700 flex items-center justify-center">
                           ${calculateItemTotal(item).toFixed(2)}
@@ -283,10 +283,10 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                       <button
                         onClick={() => handleRemoveRow(item.localId)}
                         className="flex items-center space-x-1 px-2 py-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                        title="Remove item"
+                        title={t('quotes.remove_item')}
                       >
                         <Trash2 className="w-3 h-3" />
-                        <span>Remove</span>
+                        <span>{t('quotes.remove')}</span>
                       </button>
                     </div>
                   </>
@@ -298,7 +298,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
             {/* Grand Total */}
             <div className="flex justify-end pt-4 border-t border-gray-200">
               <div className="text-right">
-                <div className="text-sm text-gray-600 mb-1">Quote Total</div>
+                <div className="text-sm text-gray-600 mb-1">{t('quotes.quote_total')}</div>
                 <div className="text-2xl font-bold text-purple-600">
                   ${calculateGrandTotal().toFixed(2)}
                 </div>

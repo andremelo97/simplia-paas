@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Package } from 'lucide-react'
 
 interface ItemsEmptyProps {
@@ -10,6 +11,8 @@ export const ItemsEmpty: React.FC<ItemsEmptyProps> = ({
   hasQuery = false,
   query = ''
 }) => {
+  const { t } = useTranslation('tq')
+
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-6">
@@ -17,13 +20,13 @@ export const ItemsEmpty: React.FC<ItemsEmptyProps> = ({
       </div>
 
       <h3 className="text-lg font-semibold text-gray-900 mb-2">
-        {hasQuery ? 'No items found' : 'No items yet'}
+        {hasQuery ? t('items.empty.not_found') : t('items.empty.no_items')}
       </h3>
 
       <p className="text-gray-600 text-center max-w-md">
         {hasQuery
-          ? `No items match "${query}". Try adjusting your search.`
-          : 'Create your first item to start building quotes.'
+          ? t('items.empty.no_match', { query })
+          : t('items.empty.get_started')
         }
       </p>
     </div>

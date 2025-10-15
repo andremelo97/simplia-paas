@@ -1,6 +1,7 @@
 import React from 'react'
 import { Card, CardHeader, CardContent, Table, Badge } from '@client/common/ui'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useTranslation } from 'react-i18next'
 
 interface EntitlementUser {
   email: string
@@ -32,40 +33,68 @@ interface EntitlementsSummaryCardProps {
 
 export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSummaryCardProps) {
   const { formatShortDate } = useDateFormatter()
+  const { t } = useTranslation('hub')
 
-  const getStatusColor = (status: string): 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' => {
+  const getStatusColor = (
+    status: string
+  ): 'default' | 'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' => {
     switch (status) {
-      case 'active': return 'success'
-      case 'trial': return 'info'
-      case 'suspended': return 'warning'
-      case 'expired': return 'error'
-      default: return 'default'
+      case 'active':
+        return 'success'
+      case 'trial':
+        return 'info'
+      case 'suspended':
+        return 'warning'
+      case 'expired':
+        return 'error'
+      default:
+        return 'default'
     }
   }
 
   const formatDate = (date: string | null) => {
-    if (!date) return '—'
+    if (!date) return t('entitlements.summary.not_available')
     return formatShortDate(date)
   }
 
   const getTotalUsers = (license: EntitlementLicense) => {
     const used = license.seatsUsed || 0
-    const total = license.maxUsers || '∞'
-    return `${used}/${total}`
+    if (license.maxUsers === null) {
+      return `${used}/${t('entitlements.summary.unlimited')}`
+    }
+    return `${used}/${license.maxUsers}`
   }
+
+  const getStatusLabel = (status: string) =>
+    t(`entitlements.status.${status}`, { defaultValue: status })
+
+  const appsCount = summary?.apps ?? licenses.length
+  const applicationsCountLabel = t('entitlements.summary.applications_count', {
+    count: appsCount
+  })
+
+  const seatsTotalLabel =
+    summary.seatsLimit === null ? t('entitlements.summary.unlimited') : summary.seatsLimit
+  const seatsUsageLabel = t('entitlements.summary.seats_usage', {
+    used: summary.seatsUsed,
+    total: seatsTotalLabel
+  })
 
   return (
     <Card>
       <CardHeader className="p-6 pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">Applications Summary</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t('entitlements.summary.title')}
+            </h3>
             <p className="text-sm text-gray-600 mt-1">
-              Overview of all applications available for your organization
+              {t('entitlements.summary.description')}
             </p>
           </div>
-          <div className="text-sm text-gray-500">
-            {licenses.length} {licenses.length === 1 ? 'application' : 'applications'}
+          <div className="text-sm text-gray-500 text-right">
+            <div>{applicationsCountLabel}</div>
+            <div className="text-xs text-gray-400">{seatsUsageLabel}</div>
           </div>
         </div>
       </CardHeader>
@@ -74,11 +103,11 @@ export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSumma
         <Table>
           <thead>
             <tr>
-              <th className="text-left">Application</th>
-              <th className="text-center">Status</th>
-              <th className="text-center">Licenses Used/Total</th>
-              <th className="text-center">Activated</th>
-              <th className="text-center">Expires</th>
+              <th className="text-left">{t('entitlements.summary.table.application')}</th>
+              <th className="text-center">{t('entitlements.summary.table.status')}</th>
+              <th className="text-center">{t('entitlements.summary.table.licenses')}</th>
+              <th className="text-center">{t('entitlements.summary.table.activated')}</th>
+              <th className="text-center">{t('entitlements.summary.table.expires')}</th>
             </tr>
           </thead>
           <tbody>
@@ -87,29 +116,23 @@ export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSumma
                 <td>
                   <div>
                     <div className="font-medium text-gray-900">
-                      {license.name || 'Unknown Application'}
+                      {license.name || t('entitlements.summary.unknown_application')}
                     </div>
                     <div className="text-sm text-gray-500">
-                      {license.slug || 'unknown'}
+                      {license.slug || t('entitlements.summary.unknown_slug')}
                     </div>
                   </div>
                 </td>
                 <td className="text-center">
                   <Badge variant={getStatusColor(license.status)}>
-                    {license.status}
+                    {getStatusLabel(license.status)}
                   </Badge>
                 </td>
                 <td className="text-center">
-                  <span className="font-mono text-sm">
-                    {getTotalUsers(license)}
-                  </span>
+                  <span className="font-mono text-sm">{getTotalUsers(license)}</span>
                 </td>
-                <td className="text-center text-sm">
-                  {formatDate(license.activatedAt)}
-                </td>
-                <td className="text-center text-sm">
-                  —
-                </td>
+                <td className="text-center text-sm">{formatDate(license.activatedAt)}</td>
+                <td className="text-center text-sm">{t('entitlements.summary.not_available')}</td>
               </tr>
             ))}
           </tbody>

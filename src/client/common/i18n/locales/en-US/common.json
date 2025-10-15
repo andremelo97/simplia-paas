@@ -150,6 +150,10 @@
     "AI_AGENT_CONFIGURATION_RESET": {
       "title": "Configuration Reset",
       "message": "AI Agent configuration reset to default."
+    },
+    "AI_RESPONSE_GENERATED": {
+      "title": "AI Responded",
+      "message": "AI response generated successfully"
     }
   }
 }

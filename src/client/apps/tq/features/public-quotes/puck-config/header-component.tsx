@@ -2,6 +2,9 @@ import React from 'react'
 import { BrandingData } from '../../../services/branding'
 import { textColorOptions, resolveColor } from './color-options'
 
+const withFallback = (value: string | undefined, fallback: string) =>
+  (typeof value === 'string' && value.trim().length > 0) ? value : fallback
+
 export const createHeaderFooterComponents = (branding: BrandingData) => ({
   Header: {
     fields: {
@@ -309,6 +312,18 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
         type: 'text' as const,
         label: 'Copyright Text',
       },
+      socialTitle: {
+        type: 'text' as const,
+        label: 'Social Links Heading',
+      },
+      quickLinksTitle: {
+        type: 'text' as const,
+        label: 'Quick Links Heading',
+      },
+      contactTitle: {
+        type: 'text' as const,
+        label: 'Contact Heading',
+      },
       verticalPadding: {
         type: 'select' as const,
         label: 'Vertical Padding',
@@ -361,12 +376,15 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
         { type: 'email', value: 'contact@example.com' },
         { type: 'address', value: '123 Main St, City, State 12345' },
       ],
-      copyrightText: `© ${new Date().getFullYear()} All rights reserved.`,
+      socialTitle: 'Social Media',
+      quickLinksTitle: 'Quick Links',
+      contactTitle: 'Contact',
+      copyrightText: `Copyright ${new Date().getFullYear()} All rights reserved.`,
       verticalPadding: 32,
       horizontalPadding: 16,
       textColor: '#ffffff',
     },
-    render: ({ backgroundColor, showSocialLinks, socialLinks, showQuickLinks, quickLinks, showContact, contactItems, copyrightText, verticalPadding, horizontalPadding, textColor }: any) => {
+    render: ({ backgroundColor, showSocialLinks, socialLinks, showQuickLinks, quickLinks, showContact, contactItems, copyrightText, verticalPadding, horizontalPadding, textColor, socialTitle, quickLinksTitle, contactTitle }: any) => {
       const getBackgroundColor = () => {
         switch (backgroundColor) {
           case 'primary':
@@ -411,6 +429,10 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       const uniqueId = `footer-${Math.random().toString(36).substr(2, 9)}`
       const wrapperId = `footer-wrapper-${Math.random().toString(36).substr(2, 9)}`
 
+      const effectiveSocialTitle = withFallback(socialTitle, 'Social Media')
+      const effectiveQuickLinksTitle = withFallback(quickLinksTitle, 'Quick Links')
+      const effectiveContactTitle = withFallback(contactTitle, 'Contact')
+
       return (
         <>
           <footer
@@ -452,7 +474,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                         letterSpacing: '0.5px',
                       }}
                     >
-                      SOCIAL MEDIA
+                      {effectiveSocialTitle}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {socialLinks.map((link: any, index: number) => (
@@ -506,7 +528,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                         letterSpacing: '0.5px',
                       }}
                     >
-                      QUICK LINKS
+                      {effectiveQuickLinksTitle}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {quickLinks.map((link: any, index: number) => (
@@ -543,7 +565,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                         letterSpacing: '0.5px',
                       }}
                     >
-                      CONTACT
+                      {effectiveContactTitle}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {contactItems.map((item: any, index: number) => (

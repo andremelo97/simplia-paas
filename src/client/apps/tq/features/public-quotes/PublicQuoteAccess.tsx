@@ -74,6 +74,22 @@ export const PublicQuoteAccess: React.FC = () => {
 
   // Create preview config from saved content package
   // Content package has { template, resolvedData } - already resolved on backend
+  const quoteLabels = useMemo(() => ({
+    quoteNumber: t('public_quotes.labels.quote_number'),
+    total: t('public_quotes.labels.total'),
+    noItems: t('public_quotes.labels.items_empty'),
+    item: t('public_quotes.labels.item'),
+    quantity: t('public_quotes.labels.quantity'),
+    price: t('public_quotes.labels.price'),
+    discount: t('public_quotes.labels.discount')
+  }), [t])
+
+  const footerLabels = useMemo(() => ({
+    socialTitle: t('public_quotes.footer.social_title'),
+    quickLinksTitle: t('public_quotes.footer.quick_links_title'),
+    contactTitle: t('public_quotes.footer.contact_title')
+  }), [t])
+
   const previewConfig = useMemo(() => {
     if (!quoteData?.content || !quoteData?.branding) return null
 
@@ -89,8 +105,11 @@ export const PublicQuoteAccess: React.FC = () => {
     }
 
     // Use createConfigWithResolvedData directly with the saved resolvedData
-    return createConfigWithResolvedData(branding, quoteData.content.resolvedData)
-  }, [quoteData])
+    return createConfigWithResolvedData(branding, quoteData.content.resolvedData, {
+      labels: quoteLabels,
+      footerLabels
+    })
+  }, [quoteData, quoteLabels, footerLabels])
 
   // Password entry form
   if (!isAuthenticated) {

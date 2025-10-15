@@ -303,7 +303,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                   </div>
                   <Card className="flex-1">
                     <CardContent className="p-4">
-                      <div className="text-sm text-gray-500">AI is thinking...</div>
+                      <div className="text-sm text-gray-500">{t('modals.ai_agent.ai_thinking')}</div>
                     </CardContent>
                   </Card>
                 </div>

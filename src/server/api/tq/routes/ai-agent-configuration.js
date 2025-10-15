@@ -1,6 +1,7 @@
 const express = require('express');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
 const { requireAuth } = require('../../../infra/middleware/auth');
+const { getLocaleFromTimezone } = require('../../../infra/utils/localeMapping');
 const { AIAgentConfiguration, AIAgentConfigurationNotFoundError } = require('../../../infra/models/AIAgentConfiguration');
 
 const router = express.Router();
@@ -80,7 +81,8 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const config = await AIAgentConfiguration.findByTenant(schema);
+    const locale = getLocaleFromTimezone(req.tenant?.timezone);
+    const config = await AIAgentConfiguration.findByTenant(schema, locale);
 
     res.json({
       data: config.id ? config.toJSON() : config,
@@ -268,7 +270,8 @@ router.post('/reset', async (req, res) => {
       });
     }
 
-    const config = await AIAgentConfiguration.reset(schema);
+    const locale = getLocaleFromTimezone(req.tenant?.timezone);
+    const config = await AIAgentConfiguration.reset(schema, locale);
 
     res.json({
       data: config.toJSON(),

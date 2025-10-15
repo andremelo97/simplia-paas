@@ -1,5 +1,5 @@
 const database = require('../db/database');
-const { DEFAULT_SYSTEM_MESSAGE } = require('../utils/aiAgentDefaults');
+const { getDefaultSystemMessage } = require('../utils/aiAgentDefaults');
 
 class AIAgentConfigurationNotFoundError extends Error {
   constructor(message) {
@@ -19,26 +19,26 @@ class AIAgentConfiguration {
   /**
    * Get default AI Agent system message
    */
-  static getDefaultSystemMessage() {
-    return DEFAULT_SYSTEM_MESSAGE;
+  static getDefaultSystemMessage(locale = 'en-US') {
+    return getDefaultSystemMessage(locale);
   }
 
   /**
    * Get default configuration values
    */
-  static getDefaults() {
+  static getDefaults(locale = 'en-US') {
     return {
       id: null,
       createdAt: null,
       updatedAt: null,
-      systemMessage: this.getDefaultSystemMessage()
+      systemMessage: this.getDefaultSystemMessage(locale)
     };
   }
 
   /**
    * Find configuration within a tenant schema (always returns one, creates if needed)
    */
-  static async findByTenant(schema) {
+  static async findByTenant(schema, locale = 'en-US') {
     const query = `
       SELECT *
       FROM ${schema}.ai_agent_configuration
@@ -49,7 +49,7 @@ class AIAgentConfiguration {
 
     if (result.rows.length === 0) {
       // Return defaults if no configuration exists yet
-      return this.getDefaults();
+      return this.getDefaults(locale);
     }
 
     return new AIAgentConfiguration(result.rows[0]);
@@ -95,7 +95,7 @@ class AIAgentConfiguration {
   /**
    * Reset configuration to defaults within a tenant schema
    */
-  static async reset(schema) {
+  static async reset(schema, locale = 'en-US') {
     const existingResult = await database.query(
       `SELECT id FROM ${schema}.ai_agent_configuration LIMIT 1`
     );
@@ -107,7 +107,7 @@ class AIAgentConfiguration {
         VALUES ($1)
         RETURNING *
       `;
-      const result = await database.query(query, [this.getDefaultSystemMessage()]);
+      const result = await database.query(query, [this.getDefaultSystemMessage(locale)]);
       return new AIAgentConfiguration(result.rows[0]);
     } else {
       // Reset to defaults
@@ -118,7 +118,7 @@ class AIAgentConfiguration {
         RETURNING *
       `;
       const result = await database.query(query, [
-        this.getDefaultSystemMessage(),
+        this.getDefaultSystemMessage(locale),
         existingResult.rows[0].id
       ]);
       return new AIAgentConfiguration(result.rows[0]);

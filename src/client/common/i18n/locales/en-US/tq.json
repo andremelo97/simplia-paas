@@ -10,7 +10,8 @@
       "placeholder": "Ask the AI to modify the summary, add sections, or make changes...",
       "no_transcription": "No transcription available to analyze",
       "failed_to_generate": "Failed to generate summary",
-      "failed_to_send": "Failed to send message"
+      "failed_to_send": "Failed to send message",
+      "ai_thinking": "AI is thinking..."
     },
     "audio_upload": {
       "title": "Upload Audio File",
@@ -102,6 +103,34 @@
     "active": "Active",
     "inactive": "Inactive",
     "never": "Never"
+  },
+  "link_toast": {
+    "created_successfully": "{{type}} created successfully!",
+    "navigate_message": "{{itemNumber}} - Click to {{action}}",
+    "password_notice": "Save the password now - it won't be shown again!",
+    "seconds": "{{count}}s",
+    "fields": {
+      "url": "URL:",
+      "password": "Password:"
+    },
+    "copy": {
+      "url": "Copy URL",
+      "password": "Copy Password"
+    },
+    "types": {
+      "session": "Session",
+      "quote": "Quote",
+      "clinical_report": "Clinical Report",
+      "public_quote": "Public Quote Link",
+      "item": "Item"
+    },
+    "actions": {
+      "session": "Edit Session",
+      "quote": "Edit Quote",
+      "clinical_report": "Edit Clinical Report",
+      "copy_link_password": "Copy Link & Password",
+      "item": "View Item"
+    }
   },
   "home": {
     "welcome_back": "Welcome back",
@@ -237,6 +266,8 @@
     "back_to_list": "Back to List",
     "last_updated": "Last Updated",
     "unknown_patient": "Unknown Patient",
+    "patient_created_successfully": "Patient created successfully",
+    "patient_selected": "Patient selected",
     "status": {
       "draft": "Draft",
       "pending": "Pending",
@@ -377,7 +408,9 @@
     "pages": {
       "list_title": "Items",
       "items": "items",
-      "create_item": "Create Item"
+      "create_item": "Create Item",
+      "create_title": "Create Item",
+      "create_subtitle": "Add a new service or product to your catalog"
     },
     "placeholders": {
       "name": "e.g., Consultation Session",
@@ -397,12 +430,19 @@
       "price_greater_than_zero": "Base price must be greater than 0"
     },
     "errors": {
+      "create_failed": "Failed to create item. Please try again.",
       "update_failed": "Failed to update item. Please try again.",
       "check_input": "Please check your input and try again.",
       "already_exists": "Item already exists. Please check the information.",
       "no_permission": "You do not have permission to update items.",
       "session_expired": "Your session has expired. Please log in again.",
       "server_error": "Server error occurred. Please try again later."
+    },
+    "creating_item": "Creating Item...",
+    "no_description": "No description",
+    "actions": {
+      "edit": "Edit {{name}}",
+      "delete": "Delete {{name}}"
     },
     "filters": {
       "title": "Search and Filters",
@@ -441,11 +481,7 @@
     "no_session_data": "No session data",
     "session": "Session",
     "content_section": "Clinical Report Content",
-    "patient_session_info": "Patient and Session Information",
     "patient": "Patient",
-    "session": "Session",
-    "no_patient_data": "No patient data",
-    "no_session_data": "No session data",
     "pages": {
       "list_title": "Reports List",
       "reports": "reports",
@@ -581,6 +617,10 @@
       "no_content": "No Content",
       "no_content_description": "This template doesn't have any content yet."
     },
+    "defaults": {
+      "template_name": "Public Quote Template",
+      "template_description": "Template layout for public quotes"
+    },
     "placeholders": {
       "template_name": "e.g., Default Quote Layout",
       "template_description": "Describe this template layout (optional)",
@@ -635,6 +675,21 @@
       "no_permission": "You do not have permission to create templates.",
       "session_expired": "Your session has expired. Please log in again.",
       "server_error": "Server error occurred. Please try again later."
+    },
+    "duplicate_name": "{{name}} (Copy)",
+    "labels": {
+      "quote_number": "Quote #",
+      "total": "Total",
+      "items_empty": "No items in this quote",
+      "item": "Item",
+      "quantity": "Qty",
+      "price": "Price",
+      "discount": "Discount"
+    },
+    "footer": {
+      "social_title": "Social Media",
+      "quick_links_title": "Quick Links",
+      "contact_title": "Contact"
     }
   },
   "auth": {

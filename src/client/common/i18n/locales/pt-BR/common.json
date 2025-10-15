@@ -150,6 +150,26 @@
     "AI_AGENT_CONFIGURATION_RESET": {
       "title": "Configuração Redefinida",
       "message": "Configuração do Agente de IA redefinida para o padrão."
+    },
+    "LOAD_APPS_ERROR": {
+      "title": "Erro",
+      "message": "Falha ao atualizar seus aplicativos"
+    },
+    "SSO_TOKEN_MISSING": {
+      "title": "Erro",
+      "message": "Não foi possível abrir o TQ - token de autenticação ausente."
+    },
+    "LOAD_ENTITLEMENTS_ERROR": {
+      "title": "Erro",
+      "message": "Falha ao carregar licenças"
+    },
+    "APP_URL_NOT_CONFIGURED": {
+      "title": "Informação",
+      "message": "URL do aplicativo ainda não configurada."
+    },
+    "AI_RESPONSE_GENERATED": {
+      "title": "IA Respondeu",
+      "message": "Resposta da IA gerada com sucesso"
     }
   }
 }

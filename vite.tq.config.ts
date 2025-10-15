@@ -18,7 +18,9 @@ export default defineConfig({
       '/api/tq': {
         target: 'http://localhost:3004',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        timeout: 120000, // 120 seconds for AI operations
+        proxyTimeout: 120000
       },
       '/health': {
         target: 'http://localhost:3001',

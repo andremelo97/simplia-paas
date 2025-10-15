@@ -157,7 +157,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
       const template = await publicQuotesService.getTemplate(id)
 
       const duplicateData = {
-        name: `${template.name} (Copy)`,
+        name: t('public_quotes.duplicate_name', { name: template.name }),
         description: template.description,
         content: template.content,
         isDefault: false, // Duplicate is never default

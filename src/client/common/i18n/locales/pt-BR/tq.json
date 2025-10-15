@@ -10,7 +10,8 @@
       "placeholder": "Peça à IA para modificar o resumo, adicionar seções ou fazer alterações...",
       "no_transcription": "Nenhuma transcrição disponível para análise",
       "failed_to_generate": "Falha ao gerar resumo",
-      "failed_to_send": "Falha ao enviar mensagem"
+      "failed_to_send": "Falha ao enviar mensagem",
+      "ai_thinking": "IA está processando..."
     },
     "audio_upload": {
       "title": "Enviar Arquivo de Áudio",
@@ -237,6 +238,8 @@
     "back_to_list": "Voltar para Lista",
     "last_updated": "Última Atualização",
     "unknown_patient": "Paciente Desconhecido",
+    "patient_created_successfully": "Paciente criado com sucesso",
+    "patient_selected": "Paciente selecionado",
     "status": {
       "draft": "Rascunho",
       "pending": "Pendente",
@@ -364,20 +367,22 @@
   "quote_items": {
     "loading_item": "Carregando detalhes do item...",
     "edit": "Editar Item",
-    "edit_subtitle": "Atualizar os detalhes para \"{{name}}\"",
+    "edit_subtitle": "Atualize os detalhes de \"{{name}}\"",
     "not_found": "Item não encontrado",
     "update": "Atualizar Item",
-    "updating_item": "Atualizando Item...",
+    "updating_item": "Atualizando item...",
     "item_information": "Informações do Item",
     "record_information": "Informações do Registro",
-    "active_checkbox": "Quando marcado, este item estará disponível para uso em cotações",
+    "active_checkbox": "Quando marcado, este item ficará disponível para uso em cotações",
     "name": "Nome",
     "description": "Descrição",
     "base_price": "Preço Base",
     "pages": {
       "list_title": "Itens",
       "items": "itens",
-      "create_item": "Criar Item"
+      "create_item": "Criar Item",
+      "create_title": "Criar Item",
+      "create_subtitle": "Adicione um novo serviço ou produto ao seu catálogo"
     },
     "placeholders": {
       "name": "ex: Sessão de Consulta",
@@ -387,8 +392,8 @@
       "name": "Nome do serviço ou produto (obrigatório)",
       "base_price": "Preço padrão antes de descontos (obrigatório)",
       "description": "Detalhes adicionais sobre o item (opcional)",
-      "created_at": "Quando este registro de item foi criado",
-      "updated_at": "Quando este registro de item foi atualizado pela última vez"
+      "created_at": "Quando este item foi criado",
+      "updated_at": "Quando este item foi atualizado pela última vez"
     },
     "validation": {
       "name_required": "Nome do item é obrigatório",
@@ -397,17 +402,24 @@
       "price_greater_than_zero": "Preço base deve ser maior que 0"
     },
     "errors": {
+      "create_failed": "Falha ao criar item. Por favor, tente novamente.",
       "update_failed": "Falha ao atualizar item. Por favor, tente novamente.",
-      "check_input": "Por favor, verifique sua entrada e tente novamente.",
+      "check_input": "Por favor, verifique os dados e tente novamente.",
       "already_exists": "Item já existe. Por favor, verifique as informações.",
       "no_permission": "Você não tem permissão para atualizar itens.",
       "session_expired": "Sua sessão expirou. Por favor, faça login novamente.",
-      "server_error": "Erro no servidor ocorreu. Por favor, tente novamente mais tarde."
+      "server_error": "Erro no servidor. Por favor, tente novamente mais tarde."
+    },
+    "creating_item": "Criando item...",
+    "no_description": "Sem descrição",
+    "actions": {
+      "edit": "Editar {{name}}",
+      "delete": "Excluir {{name}}"
     },
     "filters": {
       "title": "Busca e filtros",
       "find_quickly": "Encontre itens rapidamente",
-      "search_placeholder": "Buscar por nome ou descrição do item",
+      "search_placeholder": "Busque por nome ou descrição do item",
       "include_inactive": "Incluir itens inativos"
     }
   },
@@ -631,6 +643,25 @@
       "no_permission": "Você não tem permissão para criar templates.",
       "session_expired": "Sua sessão expirou. Por favor, faça login novamente.",
       "server_error": "Erro no servidor ocorreu. Por favor, tente novamente mais tarde."
+    },
+    "defaults": {
+      "template_name": "Template de cotação pública",
+      "template_description": "Layout de template para cotações públicas"
+    },
+    "duplicate_name": "{{name}} (Cópia)",
+    "labels": {
+      "quote_number": "Cotacao #",
+      "total": "Total",
+      "items_empty": "Nenhum item nesta cotacao",
+      "item": "Item",
+      "quantity": "Qtd",
+      "price": "Preco",
+      "discount": "Desconto"
+    },
+    "footer": {
+      "social_title": "Redes sociais",
+      "quick_links_title": "Links rapidos",
+      "contact_title": "Contato"
     }
   },
   "auth": {
@@ -698,6 +729,34 @@
       "failed_to_reset": "Falha ao redefinir configuração. Por favor, tente novamente.",
       "reset_confirm": "Tem certeza que deseja redefinir a configuração do Agente de IA para o padrão?",
       "last_updated": "Última atualização:"
+    }
+  },
+  "link_toast": {
+    "created_successfully": "{{type}} criado com sucesso!",
+    "navigate_message": "{{itemNumber}} - Clique para {{action}}",
+    "password_notice": "Guarde a senha agora - ela não será exibida novamente!",
+    "seconds": "{{count}}s",
+    "fields": {
+      "url": "URL:",
+      "password": "Senha:"
+    },
+    "copy": {
+      "url": "Copiar URL",
+      "password": "Copiar senha"
+    },
+    "types": {
+      "session": "Sessão",
+      "quote": "Cotação",
+      "clinical_report": "Relatório Clínico",
+      "public_quote": "Link de cotação pública",
+      "item": "Item"
+    },
+    "actions": {
+      "session": "Editar sessão",
+      "quote": "Editar cotação",
+      "clinical_report": "Editar relatório clínico",
+      "copy_link_password": "Copiar link e senha",
+      "item": "Ver item"
     }
   }
 }

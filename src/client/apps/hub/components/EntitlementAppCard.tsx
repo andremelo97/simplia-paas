@@ -3,6 +3,7 @@ import { Card, CardHeader, CardContent, StatusBadge, Badge, Table, EmptyState, B
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { getRoleBadgeVariant } from '@client/common/utils/badgeUtils'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useTranslation } from 'react-i18next'
 
 interface EntitlementUser {
   email: string
@@ -30,6 +31,7 @@ interface EntitlementAppCardProps {
 export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
   const [showUsers, setShowUsers] = useState(false)
   const { formatShortDate } = useDateFormatter()
+   const { t } = useTranslation('hub')
 
   const formatDate = (dateString: string) => {
     return formatShortDate(dateString)
@@ -41,6 +43,9 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
     const fullName = `${firstName} ${lastName}`.trim()
     return fullName || user.email.split('@')[0]
   }
+
+  const getRoleLabel = (role: EntitlementUser['role']) =>
+    t(`entitlements.roles.${role}`, { defaultValue: role })
 
   return (
     <Card id={`app-${license.slug}`} className="scroll-mt-4">
@@ -61,7 +66,7 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
             onClick={() => setShowUsers(!showUsers)}
             className="flex items-center gap-2"
           >
-            {showUsers ? 'Hide Team' : 'Show Team'}
+            {showUsers ? t('entitlements.hide_team') : t('entitlements.show_team')}
             {showUsers ? (
               <ChevronUp className="h-4 w-4" />
             ) : (
@@ -75,17 +80,17 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
         {/* Team Members */}
         {showUsers && (
           <div className="mb-6">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Team Members</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">{t('entitlements.team_members')}</h4>
             {license.users && license.users.length > 0 ? (
               <div className="overflow-x-auto">
                 <Table>
                   <thead>
                     <tr>
-                      <th className="text-left">Name</th>
-                      <th className="text-left">Email</th>
-                      <th className="text-left">Role in app</th>
-                      <th className="text-left">Access</th>
-                      <th className="text-left">Granted</th>
+                      <th className="text-left">{t('entitlements.table.name')}</th>
+                      <th className="text-left">{t('entitlements.table.email')}</th>
+                      <th className="text-left">{t('entitlements.table.role_in_app')}</th>
+                      <th className="text-left">{t('entitlements.table.access')}</th>
+                      <th className="text-left">{t('entitlements.table.granted')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -99,12 +104,12 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
                         </td>
                         <td>
                           <Badge variant={getRoleBadgeVariant(user.role)} className="capitalize">
-                            {user.role}
+                            {getRoleLabel(user.role)}
                           </Badge>
                         </td>
                         <td>
                           <Badge variant="success">
-                            Granted
+                            {t('entitlements.granted')}
                           </Badge>
                         </td>
                         <td className="text-gray-500 text-sm">
@@ -117,8 +122,8 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
               </div>
             ) : (
               <EmptyState
-                title="No team members"
-                description="No team members have access to this application yet."
+                title={t('entitlements.no_team_members_title')}
+                description={t('entitlements.no_team_members_description')}
               />
             )}
           </div>
@@ -128,12 +133,12 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
         <div className="pt-6 border-t border-gray-200">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-500">Activated:</span>
+              <span className="text-gray-500">{t('entitlements.table.activated')}</span>
               <div className="font-medium">{formatDate(license.activatedAt)}</div>
             </div>
             <div>
-              <span className="text-gray-500">Expires:</span>
-              <div className="font-medium">Never</div>
+              <span className="text-gray-500">{t('entitlements.table.expires')}</span>
+              <div className="font-medium">{t('entitlements.never')}</div>
             </div>
           </div>
         </div>

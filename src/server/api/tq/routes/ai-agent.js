@@ -7,6 +7,8 @@ const { Template, TemplateNotFoundError } = require('../../../infra/models/Templ
 const { Patient, PatientNotFoundError } = require('../../../infra/models/Patient');
 const { Session, SessionNotFoundError } = require('../../../infra/models/Session');
 const { AIAgentConfiguration } = require('../../../infra/models/AIAgentConfiguration');
+const { getTemplateFillerPrompt } = require('../../../infra/utils/aiAgentDefaults');
+const { getLocaleFromTimezone } = require('../../../infra/utils/localeMapping');
 
 const router = express.Router();
 
@@ -99,6 +101,7 @@ router.post('/chat', async (req, res) => {
       });
     }
 
+    const locale = getLocaleFromTimezone(req.tenant?.timezone);
     const { messages, sessionId, patientId } = req.body;
 
     // Allow empty messages array if sessionId is provided (initial conversation)
@@ -142,8 +145,8 @@ router.post('/chat', async (req, res) => {
     }
 
     // Get AI Agent configuration
-    const aiConfig = await AIAgentConfiguration.findByTenant(schema);
-    let systemMessage = aiConfig.systemMessage || AIAgentConfiguration.getDefaultSystemMessage();
+    const aiConfig = await AIAgentConfiguration.findByTenant(schema, locale);
+    let systemMessage = aiConfig.systemMessage || AIAgentConfiguration.getDefaultSystemMessage(locale);
 
     // Load session and patient data if provided (for variable resolution)
     let session = null;
@@ -388,6 +391,15 @@ router.post('/fill-template', async (req, res) => {
     const { templateId, sessionId, patientId } = req.body;
     const userId = req.user?.id;
 
+    if (!schema) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing tenant context'
+      });
+    }
+
+    const locale = getLocaleFromTimezone(req.tenant?.timezone);
+
     // Validation
     if (!templateId || !sessionId) {
       return res.status(400).json({
@@ -454,62 +466,33 @@ router.post('/fill-template', async (req, res) => {
     const templateForAI = templateWithVariables; // Use HTML directly
 
     // Step 2: Prepare AI prompt for template filling with HTML preservation
-    const systemMessage = `You are a clinical documentation assistant. Fill the provided HTML template using ONLY information from the dialogue/transcription. You may note receive the transcription formatted as a perfect dialogue, so try to guess it: there are at least 2 personas.
+    const {
+      systemMessage: templateFillerSystemMessage,
+      transcriptionLabel,
+      templateLabel,
+      note: fillerNote,
+      instruction: fillerInstruction
+    } = getTemplateFillerPrompt(locale);
 
-CRITICAL HTML PRESERVATION RULES:
-1. Return the COMPLETE HTML exactly as provided, with ALL tags preserved (<p>, <strong>, <br>, etc.)
-2. DO NOT modify, add, or remove ANY HTML tags
-3. DO NOT escape HTML (no &lt; or &gt;)
-4. DO NOT add markdown formatting (**, ##, -, etc.)
-5. Keep ALL empty paragraphs <p></p> for spacing
-6. Keep ALL <strong> tags and other formatting tags
+    const sessionTranscriptionText = session?.transcription?.text || 'No transcription available';
 
-CRITICAL CONTENT RULES - WHAT YOU CAN AND CANNOT CHANGE:
+    const systemMessage = templateFillerSystemMessage;
 
-✅ YOU CAN ONLY CHANGE:
-- Content inside [square brackets] - these are placeholders to fill with transcription data
-- Content inside (round brackets) - these are instructions, follow them and remove the brackets
-
-❌ YOU MUST NEVER CHANGE:
-- Any text OUTSIDE of [brackets] or (parentheses)
-- Patient names, doctor names, dates, or any other data already filled in the template
-- These are REAL DATA from the system database, NOT from the transcription
-- Even if the transcription mentions different names, DO NOT change what's already in the template
-
-Example:
-Template: "<strong>Patient Name:</strong> John Smith <strong>Doctor:</strong> Dr. Jane Doe [Chief Complaint]"
-Transcription: "Hi, I'm Bob. Dr. Sarah told me to come in. I have tooth pain."
-Correct Output: "<strong>Patient Name:</strong> John Smith <strong>Doctor:</strong> Dr. Jane Doe tooth pain"
-WRONG Output: "<strong>Patient Name:</strong> Bob <strong>Doctor:</strong> Dr. Sarah tooth pain"
-
-Template Syntax:
-- Placeholders are wrapped in **square brackets [ ]**. Replace ONLY the content inside brackets with real information from the dialogue.
-- Instructions are wrapped in **round brackets ( )**. Follow the instruction, then REMOVE the parentheses and instruction text from output.
-- System variables like $variable$ are already replaced, leave any remaining as-is.
-
-Rules:
-- Never invent or assume medical information
-- Only include content explicitly found in the dialogue or contextual notes
-- If a placeholder cannot be filled, leave it as-is or remove just that placeholder (keep surrounding HTML)
-- Do not say "this was not mentioned" or "no data available"
-- Use structured, complete sentences when replacing placeholders
-- Maintain ALL HTML structure exactly as given
-
-CRITICAL: Return ONLY the filled HTML template. No explanations, no code blocks, no wrapping.`;
-
-    const userPrompt = `Session Transcription:
-"""
-${session.transcription?.text || 'No transcription available'}
-"""
-
-HTML Template to fill:
-"""
-${templateForAI}
-"""
-
-Note: You may receive dialogue and template in languages other than English, so do not assume all input will be in English. Always process the content exactly as written in the original input.
-
-Please fill this HTML template using only the information from the transcription above. Return the complete filled HTML.`;
+    const userPrompt = [
+      transcriptionLabel,
+      '"""',
+      sessionTranscriptionText,
+      '"""',
+      '',
+      templateLabel,
+      '"""',
+      templateForAI,
+      '"""',
+      '',
+      fillerNote,
+      '',
+      fillerInstruction
+    ].join('\n');
 
     // Step 3: Call OpenAI API to fill template
     // Check if OpenAI is configured
@@ -523,89 +506,136 @@ Please fill this HTML template using only the information from the transcription
     // Consolidate prompt for Responses API
     const consolidatedInput = `${systemMessage}\n\n${userPrompt}`;
 
-    // Call OpenAI Responses API
-    const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-        input: consolidatedInput // Prompt consolidado com regras + transcrição + template
-      })
-    });
+    console.log('🤖 [AI Agent] Sending request to OpenAI...');
+    console.log('🤖 [AI Agent] Input length:', consolidatedInput.length);
 
-    if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.json().catch(() => null);
-      console.error('OpenAI API Error:', {
-        status: openaiResponse.status,
-        statusText: openaiResponse.statusText,
-        error: errorData
+    // Call OpenAI Responses API with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 180000); // 180 second timeout (3 minutes)
+    let filledTemplateHtml = ''; // Declare outside try block
+
+    try {
+      const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
+          input: consolidatedInput // Prompt consolidado com regras + transcrição + template
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
-      return res.status(500).json({
-        error: 'OpenAI API Error',
-        message: `Failed to get response from OpenAI: ${openaiResponse.status} ${openaiResponse.statusText}`
-      });
-    }
+      if (!openaiResponse.ok) {
+        const errorData = await openaiResponse.json().catch(() => null);
+        console.error('OpenAI API Error:', {
+          status: openaiResponse.status,
+          statusText: openaiResponse.statusText,
+          error: errorData
+        });
 
-    const openaiData = await openaiResponse.json();
+        return res.status(500).json({
+          error: 'OpenAI API Error',
+          message: `Failed to get response from OpenAI: ${openaiResponse.status} ${openaiResponse.statusText}`
+        });
+      }
 
-    // Extract text from Responses API format
-    let filledTemplate = '';
+      console.log('✅ [AI Agent] Received response from OpenAI, parsing...');
+      const openaiData = await openaiResponse.json();
+      console.log('✅ [AI Agent] Response parsed, status:', openaiData.status);
 
-    // Check if response is complete
-    if (openaiData.status !== 'completed') {
-      console.error('OpenAI Response incomplete:', openaiData);
-      return res.status(500).json({
-        error: 'OpenAI Response Error',
-        message: `OpenAI response is ${openaiData.status}. Reason: ${openaiData.incomplete_details?.reason || 'unknown'}`
-      });
-    }
+      // Extract text from Responses API format
+      let filledTemplate = '';
 
-    // Try to extract text from various possible locations
-    if (openaiData.output && openaiData.output.length > 0) {
-      // Look for message type in output array
-      for (const output of openaiData.output) {
-        // Check for message type with content array
-        if (output.type === 'message' && output.content && Array.isArray(output.content)) {
-          for (const content of output.content) {
-            if ((content.type === 'text' || content.type === 'output_text') && content.text) {
-              filledTemplate = content.text;
-              break;
+      // Check if response is complete
+      if (openaiData.status !== 'completed') {
+        console.error('OpenAI Response incomplete:', openaiData);
+        return res.status(500).json({
+          error: 'OpenAI Response Error',
+          message: `OpenAI response is ${openaiData.status}. Reason: ${openaiData.incomplete_details?.reason || 'unknown'}`
+        });
+      }
+
+      // Try to extract text from various possible locations
+      if (openaiData.output && openaiData.output.length > 0) {
+        // Look for message type in output array
+        for (const output of openaiData.output) {
+          // Check for message type with content array
+          if (output.type === 'message' && output.content && Array.isArray(output.content)) {
+            for (const content of output.content) {
+              if ((content.type === 'text' || content.type === 'output_text') && content.text) {
+                filledTemplate = content.text;
+                break;
+              }
             }
+            if (filledTemplate) break;
           }
-          if (filledTemplate) break;
-        }
-        // Check for direct text type
-        if (output.type === 'text' && output.content) {
-          filledTemplate = typeof output.content === 'string' ? output.content : output.content.text || '';
-          break;
+          // Check for direct text type
+          if (output.type === 'text' && output.content) {
+            filledTemplate = typeof output.content === 'string' ? output.content : output.content.text || '';
+            break;
+          }
         }
       }
+
+      // Fallback to direct text property
+      if (!filledTemplate && openaiData.text) {
+        filledTemplate = openaiData.text;
+      }
+
+      if (!filledTemplate || typeof filledTemplate !== 'string') {
+        console.error('Invalid OpenAI Response:', openaiData);
+        return res.status(500).json({
+          error: 'OpenAI Response Error',
+          message: 'Could not extract text content from OpenAI response'
+        });
+      }
+
+      // Step 4: Clean up AI response (remove markdown code blocks if present)
+      // Sometimes AI wraps HTML in ```html ... ``` markdown blocks
+      let cleanedTemplate = filledTemplate.trim();
+      
+      // Remove markdown code block wrapper if present
+      if (cleanedTemplate.startsWith('```html')) {
+        cleanedTemplate = cleanedTemplate.replace(/^```html\s*/i, '').replace(/\s*```$/, '');
+      } else if (cleanedTemplate.startsWith('```')) {
+        cleanedTemplate = cleanedTemplate.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+      
+      filledTemplateHtml = cleanedTemplate.trim();
+
+      // Increment template usage count
+      await Template.incrementUsage(templateId, schema);
+      
+      console.log('✅ [AI Agent] Template filled successfully, length:', filledTemplateHtml.length);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      
+      // Handle AbortError (timeout)
+      if (fetchError.name === 'AbortError') {
+        console.error('OpenAI API request timed out after 180 seconds');
+        return res.status(500).json({
+          error: 'Request Timeout',
+          message: 'Request to OpenAI API timed out after 3 minutes. The template may be too large or complex.'
+        });
+      }
+
+      // Handle connection errors
+      if (fetchError.code === 'ECONNRESET' || fetchError.code === 'ECONNREFUSED' || fetchError.code === 'ENOTFOUND') {
+        console.error('OpenAI API connection error:', fetchError);
+        return res.status(500).json({
+          error: 'Connection Error',
+          message: 'Unable to connect to OpenAI API. Please check your internet connection and try again.'
+        });
+      }
+
+      // Re-throw other errors to be caught by outer catch
+      throw fetchError;
     }
-
-    // Fallback to direct text property
-    if (!filledTemplate && openaiData.text) {
-      filledTemplate = openaiData.text;
-    }
-
-    if (!filledTemplate || typeof filledTemplate !== 'string') {
-      console.error('Invalid OpenAI Response:', openaiData);
-      return res.status(500).json({
-        error: 'OpenAI Response Error',
-        message: 'Could not extract text content from OpenAI response'
-      });
-    }
-
-    // Step 4: Use AI response directly (already HTML)
-    // COMMENTED OUT: Old approach that converted plain text to HTML
-    // const filledTemplateHtml = textToHtml(filledTemplate);
-    const filledTemplateHtml = filledTemplate; // Already HTML from AI
-
-    // Increment template usage count
-    await Template.incrementUsage(templateId, schema);
 
     const response = {
       data: {
@@ -644,7 +674,9 @@ Please fill this HTML template using only the information from the transcription
       }
     };
 
+    console.log('📤 [AI Agent] Sending response to client...');
     res.json(response);
+    console.log('✅ [AI Agent] Response sent successfully');
 
   } catch (error) {
     if (error instanceof TemplateNotFoundError) {

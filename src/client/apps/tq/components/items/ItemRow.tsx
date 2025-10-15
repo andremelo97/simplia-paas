@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Edit, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button, Badge } from '@client/common/ui'
 import { Item } from '../../services/items'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -16,6 +17,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
   onEdit,
   onDelete
 }) => {
+  const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
   const { formatCurrency } = useCurrencyFormatter()
@@ -52,7 +54,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         {/* Description */}
         <div className="min-w-0 flex-1">
           <span className={`text-sm truncate ${item.active ? 'text-gray-600' : 'text-gray-400'}`}>
-            {item.description || '—'}
+            {item.description || t('quote_items.no_description')}
           </span>
         </div>
 
@@ -66,32 +68,33 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         {/* Status */}
         <div className="min-w-0 flex-1">
           <Badge variant={item.active ? 'success' : 'default'}>
-            {item.active ? 'Active' : 'Inactive'}
+            {item.active ? t('common.active') : t('common.inactive')}
           </Badge>
         </div>
       </div>
 
       {/* Actions - visible on hover */}
-      <div className={`flex items-center gap-1 w-24 justify-end transition-opacity duration-200 ${
-        isHovered ? 'opacity-100' : 'opacity-0'
-      }`}>
+      <div
+        className={`flex items-center gap-1 w-24 justify-end transition-opacity duration-200 ${
+          isHovered ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
         <Button
           variant="ghost"
           size="sm"
           onClick={handleEdit}
           className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Edit ${item.name}`}
+          aria-label={t('quote_items.actions.edit', { name: item.name })}
         >
           <Edit className="w-4 h-4 text-gray-600" />
         </Button>
-
 
         <Button
           variant="ghost"
           size="sm"
           onClick={handleDelete}
           className="h-8 w-8 p-0 hover:bg-red-100"
-          aria-label={`Delete ${item.name}`}
+          aria-label={t('quote_items.actions.delete', { name: item.name })}
         >
           <Trash2 className="w-4 h-4 text-red-600" />
         </Button>

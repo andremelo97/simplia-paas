@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea, Checkbox } from '@client/common/ui'
@@ -6,17 +6,43 @@ import { publicQuotesService, CreateTemplateRequest } from '../../services/publi
 
 export const CreatePublicQuoteTemplate: React.FC = () => {
   const { t } = useTranslation('tq')
-  const [formData, setFormData] = useState<CreateTemplateRequest>({
-    name: 'Public Quote Template',
-    description: 'Template layout for public quotes',
+  const defaultValues = useMemo(() => ({
+    name: t('public_quotes.defaults.template_name'),
+    description: t('public_quotes.defaults.template_description'),
     content: {},
     isDefault: false,
     active: true
-  })
+  }), [t])
+
+  const defaultRef = useRef(defaultValues)
+
+  const [formData, setFormData] = useState<CreateTemplateRequest>(defaultValues)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const navigate = useNavigate()
+
+  useEffect(() => {
+    setFormData(prev => {
+      const prevDefaults = defaultRef.current
+      const shouldSyncName = prev.name === prevDefaults.name
+      const shouldSyncDescription = prev.description === prevDefaults.description
+
+      if (!shouldSyncName && !shouldSyncDescription) {
+        defaultRef.current = defaultValues
+        return prev
+      }
+
+      const updated = {
+        ...prev,
+        name: shouldSyncName ? defaultValues.name : prev.name,
+        description: shouldSyncDescription ? defaultValues.description : prev.description
+      }
+
+      defaultRef.current = defaultValues
+      return updated
+    })
+  }, [defaultValues])
 
   const handleInputChange = (field: keyof CreateTemplateRequest) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

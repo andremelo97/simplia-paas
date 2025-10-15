@@ -241,6 +241,11 @@ Manage AI Agent system message configuration (admin-only).
 #### GET /configurations/ai-agent
 Retrieve current AI Agent configuration for the tenant.
 
+> **Locale-aware defaults**  
+> When no custom configuration exists, the backend derives the default system message from the tenant locale.  
+> - Tenants in Brazilian timezones receive the prompt in Portuguese (pt-BR).  
+> - All other tenants receive the English (en-US) version.
+
 **Response:**
 ```json
 {
@@ -286,7 +291,7 @@ Reset AI Agent configuration to default system message.
 {
   "data": {
     "id": "uuid-string",
-    "systemMessage": "You are a medical assistant creating patient-friendly treatment summaries...",
+    "systemMessage": "Você é um assistente clínico que cria resumos claros e completos diretamente para o paciente...",
     "updatedAt": "2025-10-08T11:30:00Z"
   },
   "meta": {
@@ -306,6 +311,8 @@ Reset AI Agent configuration to default system message.
 - `$me.first_name$` - Provider's first name (from JWT)
 - `$me.last_name$` - Provider's last name (from JWT)
 - `$me.fullName$` - Provider's full name
+
+> ℹ️ Variables are resolved automatically **before** the prompt is sent to OpenAI.
 
 ### Quotes
 
@@ -1318,6 +1325,35 @@ All TQ API mutation endpoints (POST, PUT, PATCH, DELETE) return standardized res
 | `CLINICAL_REPORT_DELETED` | Clinical Report Deleted | Clinical report deleted successfully. |
 | `AI_AGENT_CONFIGURATION_UPDATED` | Configuration Updated | AI Agent configuration updated successfully. |
 | `AI_AGENT_CONFIGURATION_RESET` | Configuration Reset | AI Agent configuration reset to default. |
+
+## Implementation Notes
+
+### Locale-aware defaults
+
+- Tenant locale is derived from the timezone during authentication.  
+- The provisioner seeds AI prompts, quote templates, and clinical report templates in the correct language (`pt-BR` or `en-US`).  
+- When resetting the AI Agent configuration or provisioning a new tenant, the backend automatically selects the locale-specific default prompt.
+
+### Template filling prompt
+
+The `/tq/ai-agent/fill-template` endpoint now chooses a localized system prompt for the template filler:
+
+- Ensures HTML tags are preserved.  
+- Adapts helper labels (e.g. “Session Transcription” vs “Transcrição da sessão”).  
+- Uses Portuguese instructions for Brazilian tenants and English otherwise.
+
+### Exposure to the frontend
+
+- No breaking API changes — responses keep the same shape.  
+  - Frontend can display whichever prompt the backend returns (already localized).  
+  - Template content rendered via Puck receives localized defaults during provisioning; clients can still override labels via component props.
+
+### Public quote rendering
+
+- Locale-specific currency/dated formatting is shared between backend and frontend via `puckTemplateResolver` and `resolveTemplateVariables`.
+- Stored content packages include the fully resolved data, so the `/pq/:token` endpoint renders the exact same view a tenant sees in the authenticated preview.
+- Puck quote components expose label props (item, qty, price, total, etc.). The preview and public pages inject localized strings without altering the base template catalogue.
+- Empty-state messaging lives only in the preview/public renderer to avoid polluting the template editor experience.
 
 ### How It Works
 

@@ -53,15 +53,15 @@ export const CreateItem: React.FC = () => {
     const errors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      errors.name = 'Item name is required'
+      errors.name = t('quote_items.validation.name_required')
     } else if (formData.name.length < 2) {
-      errors.name = 'Item name must be at least 2 characters'
+      errors.name = t('quote_items.validation.name_min')
     } else if (formData.name.length > 100) {
-      errors.name = 'Item name must be less than 100 characters'
+      errors.name = t('quote_items.validation.name_max')
     }
 
     if (formData.basePrice <= 0) {
-      errors.basePrice = 'Base price must be greater than 0'
+      errors.basePrice = t('quote_items.validation.price_greater_than_zero')
     }
 
     setValidationErrors(errors)
@@ -92,19 +92,19 @@ export const CreateItem: React.FC = () => {
       console.error('❌ [CreateItem] Failed to create item:', error)
 
       // Map backend errors to user-friendly messages
-      let errorMessage = 'Failed to create item. Please try again.'
+      let errorMessage = t('quote_items.errors.create_failed')
 
       // Handle specific error cases based on backend responses
       if (error.message?.includes('Validation Error')) {
-        errorMessage = 'Please check your input and try again.'
+        errorMessage = t('quote_items.errors.check_input')
       } else if (error.status === 409) {
-        errorMessage = 'Item already exists. Please check the information.'
+        errorMessage = t('quote_items.errors.already_exists')
       } else if (error.status === 403) {
-        errorMessage = 'You do not have permission to create items.'
+        errorMessage = t('quote_items.errors.no_permission')
       } else if (error.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
+        errorMessage = t('quote_items.errors.session_expired')
       } else if (error.status >= 500) {
-        errorMessage = 'Server error occurred. Please try again later.'
+        errorMessage = t('quote_items.errors.server_error')
       }
 
       console.error('❌ [CreateItem] Create error:', errorMessage)
@@ -120,9 +120,9 @@ export const CreateItem: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Create Item</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('quote_items.pages.create_title')}</h1>
         <p className="text-gray-600 mt-1">
-          Add a new service or product to your catalog
+          {t('quote_items.pages.create_subtitle')}
         </p>
       </div>
 
@@ -131,40 +131,40 @@ export const CreateItem: React.FC = () => {
           {/* Item Information */}
           <Card>
             <CardHeader className="p-6 pb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Item Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900">{t('quote_items.item_information')}</h2>
             </CardHeader>
 
             <CardContent className="space-y-6 px-6 pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Input
-                  label="Item Name"
+                  label={t('quote_items.name')}
                   value={formData.name}
                   onChange={handleInputChange('name')}
                   error={validationErrors.name}
                   placeholder={t('quote_items.placeholders.name')}
-                  helperText="Service or product name (required)"
+                  helperText={t('quote_items.helper.name')}
                   required
                   disabled={isSubmitting}
                 />
 
                 <PriceInput
-                  label="Base Price"
+                  label={t('quote_items.base_price')}
                   value={formData.basePrice}
                   onChange={handlePriceChange}
                   error={validationErrors.basePrice}
-                  helperText="Standard price before discounts (required)"
+                  helperText={t('quote_items.helper.base_price')}
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
                 <Textarea
-                  label="Description"
+                  label={t('quote_items.description')}
                   value={formData.description}
                   onChange={handleInputChange('description')}
                   error={validationErrors.description}
                   placeholder={t('quote_items.placeholders.description')}
-                  helperText="Additional details about the item (optional)"
+                  helperText={t('quote_items.helper.description')}
                   rows={4}
                   disabled={isSubmitting}
                 />
@@ -172,8 +172,8 @@ export const CreateItem: React.FC = () => {
 
               <div>
                 <Checkbox
-                  label="Active"
-                  description="When checked, this item will be available for use in quotes"
+                  label={t('common.active')}
+                  description={t('quote_items.active_checkbox')}
                   checked={formData.active}
                   onChange={(e) => handleActiveChange(e.target.checked)}
                   disabled={isSubmitting}
@@ -190,7 +190,7 @@ export const CreateItem: React.FC = () => {
             isLoading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating Item...' : 'Create Item'}
+            {isSubmitting ? t('quote_items.creating_item') : t('quote_items.pages.create_item')}
           </Button>
 
           <Button
@@ -200,7 +200,7 @@ export const CreateItem: React.FC = () => {
             disabled={isSubmitting}
             style={{ height: '32px', minHeight: '32px' }}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
         </div>
       </form>

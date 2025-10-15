@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, X, ExternalLink, Copy, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 interface LinkToastProps {
   show: boolean
@@ -27,6 +28,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
   darkBackground = false
 }) => {
   const navigate = useNavigate()
+  const { t } = useTranslation('tq')
   const [timeLeft, setTimeLeft] = useState(duration / 1000)
   const [copied, setCopied] = useState<'url' | 'password' | null>(null)
 
@@ -92,19 +94,19 @@ export const LinkToast: React.FC<LinkToastProps> = ({
   }
 
   const getTypeText = () => {
-    if (type === 'session') return 'Session'
-    if (type === 'quote') return 'Quote'
-    if (type === 'clinical-report') return 'Clinical Report'
-    if (type === 'public-quote') return 'Public Quote Link'
-    return 'Item'
+    if (type === 'session') return t('link_toast.types.session')
+    if (type === 'quote') return t('link_toast.types.quote')
+    if (type === 'clinical-report') return t('link_toast.types.clinical_report')
+    if (type === 'public-quote') return t('link_toast.types.public_quote')
+    return t('link_toast.types.item')
   }
 
   const getActionText = () => {
-    if (type === 'session') return 'Edit Session'
-    if (type === 'quote') return 'Edit Quote'
-    if (type === 'clinical-report') return 'Edit Clinical Report'
-    if (type === 'public-quote') return 'Copy Link & Password'
-    return 'View Item'
+    if (type === 'session') return t('link_toast.actions.session')
+    if (type === 'quote') return t('link_toast.actions.quote')
+    if (type === 'clinical-report') return t('link_toast.actions.clinical_report')
+    if (type === 'public-quote') return t('link_toast.actions.copy_link_password')
+    return t('link_toast.actions.item')
   }
 
   return (
@@ -141,7 +143,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <span className={`font-medium ${darkBackground ? 'text-white' : 'text-gray-900'}`}>
-                        {getTypeText()} created successfully!
+                        {t('link_toast.created_successfully', { type: getTypeText() })}
                       </span>
                     </div>
                     
@@ -150,12 +152,14 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                       <div className="space-y-2">
                         {publicUrl && (
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm w-20 flex-shrink-0 ${darkBackground ? 'text-white' : 'text-gray-600'}`}>URL:</span>
+                            <span className={`text-sm w-20 flex-shrink-0 ${darkBackground ? 'text-white' : 'text-gray-600'}`}>
+                              {t('link_toast.fields.url')}
+                            </span>
                             <code className={`text-xs px-2 py-1 rounded flex-1 truncate ${darkBackground ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-900'}`}>{publicUrl}</code>
                             <button
                               onClick={() => handleCopy(publicUrl, 'url')}
                               className={`p-1.5 rounded transition-colors flex-shrink-0 ${darkBackground ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
-                              title="Copy URL"
+                              title={t('link_toast.copy.url')}
                             >
                               {copied === 'url' ? (
                                 <Check className={`w-4 h-4 ${darkBackground ? 'text-white' : 'text-green-600'}`} />
@@ -167,12 +171,14 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                         )}
                         {password && (
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm w-20 flex-shrink-0 ${darkBackground ? 'text-white' : 'text-gray-600'}`}>Password:</span>
+                            <span className={`text-sm w-20 flex-shrink-0 ${darkBackground ? 'text-white' : 'text-gray-600'}`}>
+                              {t('link_toast.fields.password')}
+                            </span>
                             <code className={`text-xs px-2 py-1 rounded font-mono font-semibold ${darkBackground ? 'bg-white text-gray-900' : 'bg-yellow-50 text-gray-900'}`}>{password}</code>
                             <button
                               onClick={() => handleCopy(password, 'password')}
                               className={`p-1.5 rounded transition-colors flex-shrink-0 ${darkBackground ? 'hover:bg-white/20' : 'hover:bg-gray-200'}`}
-                              title="Copy Password"
+                              title={t('link_toast.copy.password')}
                             >
                               {copied === 'password' ? (
                                 <Check className={`w-4 h-4 ${darkBackground ? 'text-white' : 'text-green-600'}`} />
@@ -183,14 +189,14 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                           </div>
                         )}
                         <p className={`text-xs mt-2 ${darkBackground ? 'text-white/90' : 'text-gray-500'}`}>
-                          Save the password now - it won't be shown again!
+                          {t('link_toast.password_notice')}
                         </p>
                       </div>
                     ) : (
                       /* Regular types: Show click to navigate */
                       <div className="flex items-center gap-2">
                         <span className="text-gray-600">
-                          {itemNumber} - Click to {getActionText().toLowerCase()}
+                          {t('link_toast.navigate_message', { itemNumber, action: getActionText() })}
                         </span>
                         <ExternalLink className="w-4 h-4 text-gray-400" />
                       </div>
@@ -201,7 +207,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                 {/* Right side: Countdown + close */}
                 <div className="flex items-center gap-3 flex-shrink-0">
                   <span className={`text-sm ${darkBackground ? 'text-white/80' : 'text-gray-500'}`}>
-                    {timeLeft}s
+                    {t('link_toast.seconds', { count: timeLeft })}
                   </span>
                   <button
                     onClick={(e) => {

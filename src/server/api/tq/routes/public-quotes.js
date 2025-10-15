@@ -5,6 +5,7 @@ const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth
 const { PublicQuote, PublicQuoteNotFoundError } = require('../../../infra/models/PublicQuote');
 const { Quote, QuoteNotFoundError } = require('../../../infra/models/Quote');
 const { createContentPackage } = require('../../../services/puckTemplateResolver');
+const { getLocaleFromTimezone } = require('../../../infra/utils/localeMapping');
 
 const router = express.Router();
 
@@ -277,6 +278,8 @@ router.post('/', async (req, res) => {
 
     // Create content package with resolved data
     // This uses EXACT same logic as frontend to ensure consistency
+    const locale = getLocaleFromTimezone(req.tenant?.timezone);
+
     const contentPackage = createContentPackage(
       templateContent,
       {
@@ -292,7 +295,8 @@ router.post('/', async (req, res) => {
         email: quoteData.patient_email,
         phone: quoteData.patient_phone
       },
-      itemsResult.rows
+      itemsResult.rows,
+      { locale }
     );
 
     // Auto-generate secure password (always enabled for public quotes)

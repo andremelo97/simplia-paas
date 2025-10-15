@@ -4,6 +4,7 @@ import { Card, CardHeader, CardContent, Button, Input, PriceInput } from '@clien
 import { itemsService, Item } from '../../services/items'
 import { QuoteItemInput } from '../../services/quotes'
 import { Trash2, Plus } from 'lucide-react'
+import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
 
 interface LocalQuoteItem extends QuoteItemInput {
   localId: string // Temporary ID for local management
@@ -24,6 +25,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
   onItemsChange
 }) => {
   const { t } = useTranslation('tq')
+  const { formatCurrency } = useCurrencyFormatter()
   const [items, setItems] = useState<LocalQuoteItem[]>([])
   const [searchQuery, setSearchQuery] = useState<{ [key: string]: string }>({})
   const [searchResults, setSearchResults] = useState<{ [key: string]: Item[] }>({})
@@ -207,7 +209,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                             >
                               <div className="font-medium text-gray-900">{resultItem.name}</div>
                               <div className="text-xs text-gray-500 mt-0.5">
-                                ${typeof resultItem.basePrice === 'string' ? resultItem.basePrice : resultItem.basePrice.toFixed(2)}
+                                {formatCurrency(resultItem.basePrice)}
                               </div>
                             </button>
                           ))}
@@ -243,7 +245,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                           {t('quotes.base_price')}
                         </label>
                         <div className="h-8 px-2 py-1.5 text-xs bg-gray-100 border border-gray-200 rounded-md text-gray-700 flex items-center">
-                          ${item.itemBasePrice?.toFixed(2) || '0.00'}
+                          {formatCurrency(item.itemBasePrice || 0)}
                         </div>
                       </div>
 
@@ -273,7 +275,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                           {t('common.total')}
                         </label>
                         <div className="h-8 px-2 py-1.5 text-xs font-semibold bg-purple-50 border border-purple-200 rounded-md text-purple-700 flex items-center justify-center">
-                          ${calculateItemTotal(item).toFixed(2)}
+                          {formatCurrency(calculateItemTotal(item))}
                         </div>
                       </div>
                     </div>
@@ -300,7 +302,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
               <div className="text-right">
                 <div className="text-sm text-gray-600 mb-1">{t('quotes.quote_total')}</div>
                 <div className="text-2xl font-bold text-purple-600">
-                  ${calculateGrandTotal().toFixed(2)}
+                  {formatCurrency(calculateGrandTotal())}
                 </div>
               </div>
             </div>

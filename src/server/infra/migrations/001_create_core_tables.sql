@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS tenants (
   timezone VARCHAR(100) NOT NULL, -- IANA timezone (e.g., 'America/Sao_Paulo', 'Australia/Brisbane')
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   active BOOLEAN NOT NULL DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC')
 );
 
 COMMENT ON TABLE tenants IS 'Multi-tenant support - each tenant has isolated schema and data';
@@ -33,8 +33,8 @@ CREATE TABLE IF NOT EXISTS user_types (
     description TEXT,
     hierarchy_level INTEGER DEFAULT 0, -- 0=operations, 1=manager, 2=admin
     active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
+    updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC')
 );
 
 COMMENT ON TABLE user_types IS 'User type hierarchy for pricing and permissions';
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS applications (
     status VARCHAR(20) DEFAULT 'active', -- active, inactive, deprecated
     version VARCHAR(20) DEFAULT '1.0.0',
     active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
+    updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC')
 );
 
 COMMENT ON TABLE applications IS 'Product catalog - applications available for licensing';
@@ -70,10 +70,10 @@ CREATE TABLE IF NOT EXISTS users (
     status VARCHAR(20) DEFAULT 'active', -- active, inactive, suspended
     user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id),
     platform_role VARCHAR(50) NULL, -- internal_admin for Simplia team
-    last_login TIMESTAMP,
+    last_login TIMESTAMPTZ,
     active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
+    updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC')
 );
 
 COMMENT ON TABLE users IS 'Users table with 1:1 tenant relationship - each user belongs to exactly one tenant';
@@ -92,8 +92,8 @@ CREATE TABLE IF NOT EXISTS tenant_applications (
     tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Numeric FK to tenants
     application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
     status VARCHAR(20) DEFAULT 'active', -- active, suspended, expired
-    activated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP, -- NULL for perpetual licenses
+    activated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
+    expires_at TIMESTAMPTZ, -- NULL for perpetual licenses
     expiry_date DATE, -- Date-only expiry for business logic
     max_users INTEGER, -- NULL for unlimited
     user_limit INTEGER DEFAULT 999999, -- Seat limit per application
@@ -116,9 +116,9 @@ CREATE TABLE IF NOT EXISTS user_application_access (
     application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
     tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Numeric FK to tenants
     role_in_app VARCHAR(50) DEFAULT 'user', -- user, admin, viewer
-    granted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    granted_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
     granted_by_fk INTEGER REFERENCES users(id),
-    expires_at TIMESTAMP, -- NULL for permanent access
+    expires_at TIMESTAMPTZ, -- NULL for permanent access
     active BOOLEAN NOT NULL DEFAULT true,
     -- Pricing snapshots (captured at grant time for billing consistency)
     price_snapshot NUMERIC(10,2),
@@ -318,8 +318,8 @@ CREATE TABLE IF NOT EXISTS tenant_branding (
   company_name VARCHAR(255),
 
   -- Metadata
-  created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
 
   -- One branding config per tenant
   UNIQUE(tenant_id_fk)

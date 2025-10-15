@@ -24,6 +24,7 @@ export const HistoryRow: React.FC<HistoryRowProps> = ({
   viewPath
 }) => {
   const { t } = useTranslation('tq')
+
   const handleViewClick = (e: React.MouseEvent) => {
     if (!viewPath) return
 
@@ -34,6 +35,16 @@ export const HistoryRow: React.FC<HistoryRowProps> = ({
       // Senão, abre na mesma aba
       window.location.href = viewPath
     }
+  }
+
+  const getTranslatedStatus = (status: string, type: string) => {
+    // Determine the correct translation namespace based on type
+    if (type === 'session') {
+      return t(`sessions.status.${status}`)
+    } else if (type === 'quote') {
+      return t(`quotes.status.${status}`)
+    }
+    return status
   }
 
   return (
@@ -57,7 +68,7 @@ export const HistoryRow: React.FC<HistoryRowProps> = ({
                 ? 'bg-yellow-100 text-yellow-700'
                 : 'bg-blue-100 text-blue-700'
             }`}>
-              {status}
+              {getTranslatedStatus(status, type)}
             </span>
           )}
         </div>

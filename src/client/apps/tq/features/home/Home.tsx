@@ -256,15 +256,10 @@ export const Home: React.FC = () => {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          {user?.firstName ? (
-            <>
-              {t('home.welcome_back')}, {user.firstName}!
-            </>
-          ) : (
-            <>
-              {t('home.welcome_back')}!
-            </>
-          )}
+          {user?.firstName
+            ? `${t('home.welcome_back')}, ${user.firstName}!`
+            : `${t('home.welcome_back')}!`
+          }
         </h1>
         <p className="text-gray-600 mt-1">{t('app_name')}</p>
       </div>

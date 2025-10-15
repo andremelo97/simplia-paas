@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, CardTitle, Input, Select } from '@client/common/ui'
-import { SESSION_STATUS_OPTIONS, SessionStatus } from '../../types/sessionStatus'
+import { getSessionStatusOptions, SessionStatus } from '../../types/sessionStatus'
 
 interface SessionFiltersProps {
   searchQuery: string
@@ -20,7 +20,7 @@ export const SessionFilters: React.FC<SessionFiltersProps> = ({
 
   const statusOptions = [
     { value: 'all', label: t('sessions.filters.all') },
-    ...SESSION_STATUS_OPTIONS
+    ...getSessionStatusOptions()
   ]
 
   return (

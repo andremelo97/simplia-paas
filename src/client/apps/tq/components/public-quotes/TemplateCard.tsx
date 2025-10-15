@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, StatusBadge } from '@client/common/ui'
 import { FileText } from 'lucide-react'
 import { PublicQuoteTemplate } from '../../services/publicQuotes'
@@ -12,6 +13,7 @@ interface TemplateCardProps {
 }
 
 export const TemplateCard: React.FC<TemplateCardProps> = ({ template, branding, onClick }) => {
+  const { t } = useTranslation('tq')
   const [isFlashing, setIsFlashing] = useState(false)
 
   const handleClick = () => {
@@ -39,7 +41,7 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ template, branding, 
             <h3 className="font-semibold text-gray-900 truncate">{template.name}</h3>
             {template.isDefault && (
               <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded flex-shrink-0 ml-2">
-                Default
+                {t('public_quotes.links.card.template_default')}
               </span>
             )}
           </div>

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, CardTitle, Input, Select } from '@client/common/ui'
-import { QUOTE_STATUS_OPTIONS, QuoteStatus } from '../../types/quoteStatus'
+import { getQuoteStatusOptions, QuoteStatus } from '../../types/quoteStatus'
 
 interface QuoteFiltersProps {
   searchQuery: string
@@ -20,7 +20,7 @@ export const QuoteFilters: React.FC<QuoteFiltersProps> = ({
 
   const statusOptions = [
     { value: 'all', label: t('quotes.filters.all') },
-    ...QUOTE_STATUS_OPTIONS
+    ...getQuoteStatusOptions()
   ]
 
   return (

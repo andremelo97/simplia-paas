@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../store/auth'
 import { Button, Input, Card, CardHeader, CardContent, CardTitle, CardDescription, Alert, AlertDescription } from '@client/common/ui'
 import { cn } from '@client/common/utils/cn'
@@ -10,6 +11,7 @@ import { shouldShowAsBanner, shouldShowFieldErrors } from '@client/common/feedba
 import { publishFeedback, resolveFeedbackMessage } from '@client/common/feedback'
 
 export const Login: React.FC = () => {
+  const { t } = useTranslation('hub')
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
@@ -27,17 +29,17 @@ export const Login: React.FC = () => {
 
   const validateForm = () => {
     const errors: Record<string, string> = {}
-    
+
     if (!credentials.email.trim()) {
-      errors.email = 'Email is required'
+      errors.email = t('login.email_required')
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email)) {
-      errors.email = 'Please enter a valid email address'
+      errors.email = t('login.email_invalid')
     }
-    
+
     if (!credentials.password.trim()) {
-      errors.password = 'Password is required'
+      errors.password = t('login.password_required')
     }
-    
+
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -120,10 +122,10 @@ export const Login: React.FC = () => {
             </div>
             
             <CardTitle className="text-2xl font-semibold text-stone-900">
-              Sign in to continue
+              {t('login.title')}
             </CardTitle>
             <CardDescription className="text-sm text-stone-700">
-              Access your applications portal
+              {t('login.subtitle')}
             </CardDescription>
           </CardHeader>
           
@@ -131,12 +133,12 @@ export const Login: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column' }}>
                 <Input
-                  label="Email"
+                  label={t('login.email')}
                   type="email"
                   value={credentials.email}
                   onChange={handleInputChange('email')}
                   error={allFieldErrors.email}
-                  placeholder="your.email@company.com"
+                  placeholder={t('login.email_placeholder')}
                   autoComplete="email"
                   disabled={isLoading}
                   className="w-full"
@@ -144,12 +146,12 @@ export const Login: React.FC = () => {
 
                 <div className="relative">
                   <Input
-                    label="Password"
+                    label={t('login.password')}
                     type={showPassword ? 'text' : 'password'}
                     value={credentials.password}
                     onChange={handleInputChange('password')}
                     error={allFieldErrors.password}
-                    placeholder="Enter your password"
+                    placeholder={t('login.password_placeholder')}
                     autoComplete="current-password"
                     disabled={isLoading}
                     className="w-full pr-8"
@@ -168,7 +170,7 @@ export const Login: React.FC = () => {
                     }}
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? t('login.hide_password') : t('login.show_password')}
                   >
                     {showPassword ? (
                       <EyeOff className="w-3.5 h-3.5" />
@@ -185,7 +187,7 @@ export const Login: React.FC = () => {
                   isLoading={isLoading}
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Signing in…' : 'Sign in'}
+                  {isLoading ? t('login.signing_in') : t('login.sign_in')}
                 </Button>
               </div>
             </form>

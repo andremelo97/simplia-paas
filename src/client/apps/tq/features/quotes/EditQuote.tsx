@@ -17,17 +17,10 @@ import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQ
 import { QuoteItemsManager } from './QuoteItemsManager'
 import { GeneratePublicQuoteModal } from '../../components/quotes/GeneratePublicQuoteModal'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { getQuoteStatusOptions } from '../../types/quoteStatus'
 
 export const EditQuote: React.FC = () => {
   const { t } = useTranslation('tq')
-
-  const QUOTE_STATUS_OPTIONS = [
-    { value: 'draft', label: t('quotes.status.draft') },
-    { value: 'sent', label: t('quotes.status.sent') },
-    { value: 'approved', label: t('quotes.status.approved') },
-    { value: 'rejected', label: t('quotes.status.rejected') },
-    { value: 'expired', label: t('quotes.status.expired') }
-  ]
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
@@ -380,7 +373,7 @@ export const EditQuote: React.FC = () => {
                     label={t('common.status')}
                     value={status}
                     onChange={handleStatusChange}
-                    options={QUOTE_STATUS_OPTIONS}
+                    options={getQuoteStatusOptions()}
                     disabled={isSaving}
                   />
                 </div>

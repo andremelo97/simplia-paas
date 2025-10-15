@@ -5,6 +5,7 @@ import { Quote } from '../../services/quotes'
 import { formatQuoteStatus } from '../../hooks/useQuotes'
 import { getQuoteStatusColor } from '../../types/quoteStatus'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
 
 interface QuoteRowProps {
   quote: Quote
@@ -21,6 +22,7 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
+  const { formatCurrency } = useCurrencyFormatter()
 
   const handleEdit = () => {
     onEdit?.(quote)
@@ -32,13 +34,6 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
 
   const handleDelete = () => {
     onDelete?.(quote)
-  }
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(amount)
   }
 
   return (

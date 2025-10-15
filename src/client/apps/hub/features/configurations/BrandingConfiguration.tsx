@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Upload, Palette, Video } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Label } from '@client/common/ui'
 import { brandingService, BrandingData } from '../../services/brandingService'
 import { ImageUploadModal } from '../../components/configurations/ImageUploadModal'
 import { VideoUploadModal } from '../../components/configurations/VideoUploadModal'
 
 export const BrandingConfiguration: React.FC = () => {
+  const { t } = useTranslation('hub')
   // Initialize with empty values so form always renders
   const [branding, setBranding] = useState<BrandingData>({
     tenantId: 0,
@@ -52,7 +54,7 @@ export const BrandingConfiguration: React.FC = () => {
   }
 
   const handleReset = async () => {
-    if (!confirm('Are you sure you want to reset branding to defaults?')) return
+    if (!confirm(t('branding.reset_confirm'))) return
 
     try {
       await brandingService.resetBranding()
@@ -85,26 +87,26 @@ export const BrandingConfiguration: React.FC = () => {
     <div className="p-8 space-y-6">
       {loading && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700">
-          Loading branding configuration...
+          {t('branding.loading')}
         </div>
       )}
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">
           <Palette className="h-6 w-6 text-[#B725B7]" />
-          <h1 className="text-2xl font-bold text-gray-900">Branding Configuration</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t('branding.title')}</h1>
         </div>
         <p className="text-gray-600">
-          Customize your organization's visual identity and branding
+          {t('branding.subtitle')}
         </p>
       </div>
 
       {/* Colors */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Brand Colors</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('branding.brand_colors')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <Label htmlFor="primaryColor">Primary Color</Label>
+            <Label htmlFor="primaryColor">{t('branding.primary_color')}</Label>
             <div className="flex gap-2 mt-2">
               <input
                 type="color"
@@ -123,7 +125,7 @@ export const BrandingConfiguration: React.FC = () => {
           </div>
 
           <div>
-            <Label htmlFor="secondaryColor">Secondary Color</Label>
+            <Label htmlFor="secondaryColor">{t('branding.secondary_color')}</Label>
             <div className="flex gap-2 mt-2">
               <input
                 type="color"
@@ -142,7 +144,7 @@ export const BrandingConfiguration: React.FC = () => {
           </div>
 
           <div>
-            <Label htmlFor="tertiaryColor">Tertiary Color</Label>
+            <Label htmlFor="tertiaryColor">{t('branding.tertiary_color')}</Label>
             <div className="flex gap-2 mt-2">
               <input
                 type="color"
@@ -164,14 +166,14 @@ export const BrandingConfiguration: React.FC = () => {
 
       {/* Company Info */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Company Information</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('branding.company_info')}</h2>
         <div>
-          <Label htmlFor="companyName">Company Name</Label>
+          <Label htmlFor="companyName">{t('branding.company_name')}</Label>
           <Input
             id="companyName"
             value={branding.companyName || ''}
             onChange={(e) => setBranding({ ...branding, companyName: e.target.value })}
-            placeholder="Your Company Name"
+            placeholder={t('branding.company_name_placeholder')}
             className="mt-2"
           />
         </div>
@@ -179,11 +181,11 @@ export const BrandingConfiguration: React.FC = () => {
 
       {/* Logo & Favicon */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Brand Assets</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('branding.brand_assets')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Logo */}
           <div>
-            <Label>Company Logo</Label>
+            <Label>{t('branding.company_logo')}</Label>
             <div className="mt-2 space-y-3">
               {branding.logoUrl && (
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-center h-32">
@@ -200,15 +202,15 @@ export const BrandingConfiguration: React.FC = () => {
                 onClick={() => handleOpenUploadModal('logo')}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Upload Logo
+                {t('branding.upload_logo')}
               </Button>
-              <p className="text-xs text-gray-500">PNG, JPEG, SVG, or ICO (max 5MB)</p>
+              <p className="text-xs text-gray-500">{t('branding.image_formats')}</p>
             </div>
           </div>
 
           {/* Favicon */}
           <div>
-            <Label>Favicon</Label>
+            <Label>{t('branding.favicon')}</Label>
             <div className="mt-2 space-y-3">
               {branding.faviconUrl && (
                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-center h-32">
@@ -225,9 +227,9 @@ export const BrandingConfiguration: React.FC = () => {
                 onClick={() => handleOpenUploadModal('favicon')}
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Upload Favicon
+                {t('branding.upload_favicon')}
               </Button>
-              <p className="text-xs text-gray-500">PNG, JPEG, SVG, or ICO (max 5MB)</p>
+              <p className="text-xs text-gray-500">{t('branding.image_formats')}</p>
             </div>
           </div>
         </div>
@@ -237,10 +239,10 @@ export const BrandingConfiguration: React.FC = () => {
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
           <Video className="h-5 w-5 text-[#B725B7]" />
-          <h2 className="text-lg font-semibold text-gray-900">Background Video (Optional)</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('branding.background_video')}</h2>
         </div>
         <p className="text-sm text-gray-600 mb-4">
-          Upload a video to use as background in Hero sections. The video will auto-play on loop with adjustable opacity.
+          {t('branding.background_video_description')}
         </p>
         <div className="space-y-3">
           {branding.backgroundVideoUrl && (
@@ -259,18 +261,18 @@ export const BrandingConfiguration: React.FC = () => {
             onClick={() => setVideoUploadModalOpen(true)}
           >
             <Upload className="h-4 w-4 mr-2" />
-            {branding.backgroundVideoUrl ? 'Replace Video' : 'Upload Video'}
+            {branding.backgroundVideoUrl ? t('branding.replace_video') : t('branding.upload_video')}
           </Button>
           <p className="text-xs text-gray-500">
-            MP4 format only • Max size: 20MB • Recommended: landscape format, optimized for web
+            {t('branding.video_formats')}
           </p>
         </div>
       </Card>
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button variant="primary" onClick={handleSave}>Save Changes</Button>
-        <Button variant="secondary" onClick={handleReset}>Reset to Defaults</Button>
+        <Button variant="primary" onClick={handleSave}>{t('branding.save_changes')}</Button>
+        <Button variant="secondary" onClick={handleReset}>{t('branding.reset_to_defaults')}</Button>
       </div>
 
       {/* Upload Modals */}

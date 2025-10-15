@@ -11,6 +11,9 @@ class Database {
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
+      // CRITICAL: Force UTC timezone at connection string level
+      // This ensures ALL connections (migrations, queries, provisioners) use UTC
+      options: '-c timezone=UTC',
     };
 
     this.pool = new Pool(this.config);
@@ -37,8 +40,11 @@ class Database {
   async query(text, params = []) {
     const start = Date.now();
     const client = await this.getClient();
-    
+
     try {
+      // ALWAYS force UTC timezone for every query (industry standard)
+      await client.query("SET TIME ZONE 'UTC'");
+
       const result = await client.query(text, params);
       const duration = Date.now() - start;
       console.log('Query executed', { text, duration, rows: result.rowCount });
@@ -50,12 +56,15 @@ class Database {
 
   async withTenant(tenantContext, callback) {
     const client = await this.getClient();
-    
+
     try {
+      // ALWAYS force UTC timezone (industry standard)
+      await client.query("SET TIME ZONE 'UTC'");
+
       // Set search path to tenant schema, falling back to public
       await client.query(`SET search_path TO ${tenantContext.schema}, public`);
       console.log(`Switched to tenant schema: ${tenantContext.schema}`);
-      
+
       return await callback(client);
     } finally {
       // Reset search path to default

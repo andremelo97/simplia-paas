@@ -249,14 +249,11 @@ class TenantMiddleware {
         const searchPathQuery = `SET LOCAL search_path TO ${schemaName}, public`;
         await database.query(searchPathQuery);
 
-        // Set timezone for the session if tenant has a timezone
-        if (tenantTimezone) {
-          const timezoneQuery = `SET LOCAL TIME ZONE '${tenantTimezone}'`;
-          await database.query(timezoneQuery);
-          console.log(`Applied timezone: ${tenantTimezone} and search_path: ${schemaName}, public`);
-        } else {
-          console.log(`Applied search_path: ${schemaName}, public (no timezone specified)`);
-        }
+        // ALWAYS use UTC for database timestamps (industry standard)
+        // Frontend will convert UTC to tenant timezone for display
+        const timezoneQuery = `SET LOCAL TIME ZONE 'UTC'`;
+        await database.query(timezoneQuery);
+        console.log(`Applied UTC timezone and search_path: ${schemaName}, public`);
 
         await database.query('COMMIT');
       } catch (error) {

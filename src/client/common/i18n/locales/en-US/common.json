@@ -35,6 +35,13 @@
   "no_results": "No results found",
   "error_loading": "Error loading data",
   "error_saving": "Error saving",
+  "status": {
+    "active": "Active",
+    "inactive": "Inactive",
+    "suspended": "Suspended",
+    "revoked": "Revoked",
+    "expired": "Expired"
+  },
   "feedback": {
     "QUOTE_CREATED": {
       "title": "Quote Created",

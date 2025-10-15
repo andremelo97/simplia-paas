@@ -4,7 +4,7 @@
  * Provides timezone-aware date formatting functions that automatically use
  * the tenant timezone and locale from Auth Store.
  *
- * Works across TQ and Hub applications by detecting the correct auth store.
+ * Works in TQ application by subscribing to the auth store.
  *
  * Usage in any component:
  *   import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -28,37 +28,17 @@ import {
   getNowInTimezone as getNowInTimezoneUtil
 } from '@client/common/utils/dateTime'
 
+// Static import - subscribe to TQ auth store reactively
+import { useAuthStore as useTQAuthStore } from '@client/apps/tq/shared/store/auth'
+
 /**
- * Date formatter hook for TQ and Hub applications
+ * Date formatter hook for TQ application
  * Uses tenant timezone and locale from Auth Store
  */
 export function useDateFormatter() {
-  let timezone: string | undefined
-  let locale: string | undefined
-
-  // Try to import from TQ auth store
-  try {
-    const { useAuthStore: useTQAuthStore } = require('@client/apps/tq/shared/store/auth')
-    timezone = useTQAuthStore(state => state.tenantTimezone)
-    locale = useTQAuthStore(state => state.tenantLocale)
-  } catch (e) {
-    // TQ store not available
-  }
-
-  // Try to import from Hub auth store if TQ didn't work
-  if (!timezone || !locale) {
-    try {
-      const { useAuthStore: useHubAuthStore } = require('@client/apps/hub/store/auth')
-      timezone = useHubAuthStore(state => state.tenantTimezone)
-      locale = useHubAuthStore(state => state.tenantLocale)
-    } catch (e) {
-      // Hub store not available
-    }
-  }
-
-  // Fallback to defaults
-  if (!timezone) timezone = 'America/Sao_Paulo'
-  if (!locale) locale = 'pt-BR'
+  // Subscribe to TQ auth store (reactively) - updates when timezone/locale change
+  const timezone = useTQAuthStore(state => state.tenantTimezone) || 'America/Sao_Paulo'
+  const locale = useTQAuthStore(state => state.tenantLocale) || 'pt-BR'
 
   return {
     /**

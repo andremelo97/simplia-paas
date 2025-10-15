@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { ExternalLink, Grid3x3 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Card, Button, StatusBadge, Badge } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
 import { publishFeedback } from '@client/common/feedback'
@@ -18,6 +19,7 @@ interface UserApp {
 }
 
 export const Home: React.FC = () => {
+  const { t } = useTranslation('hub')
   const { user, tenantName, isLoading, loadUserProfile } = useAuthStore()
 
   // Get apps directly from user state
@@ -89,7 +91,7 @@ export const Home: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <div className="text-lg text-gray-600">{t('home.loading')}</div>
       </div>
     )
   }
@@ -98,10 +100,13 @@ export const Home: React.FC = () => {
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back{user?.firstName ? `, ${user.firstName}` : ''}!
+          {user?.firstName
+            ? `${t('home.welcome_back')}, ${user.firstName}!`
+            : `${t('home.welcome_back')}!`
+          }
         </h1>
         <p className="text-gray-600 mt-1">
-          {tenantName ? `Your applications at ${tenantName}` : 'Your available applications'}
+          {tenantName ? `${t('home.your_apps_at')} ${tenantName}` : t('home.your_apps')}
         </p>
       </div>
 
@@ -109,13 +114,13 @@ export const Home: React.FC = () => {
         <Card className="p-12 text-center">
           <Grid3x3 className="w-16 h-16 mx-auto text-gray-400 mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No applications
+            {t('home.no_applications')}
           </h3>
           <p className="text-gray-600 mb-6">
-            Contact your administrator to get access to applications.
+            {t('home.contact_admin')}
           </p>
           <Button onClick={refreshApps}>
-            Refresh
+            {t('home.refresh')}
           </Button>
         </Card>
       ) : (

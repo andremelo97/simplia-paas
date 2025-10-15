@@ -646,13 +646,6 @@
       "password": "Enter your password"
     }
   },
-  "home": {
-    "quick_actions": "Quick Actions",
-    "start_new_session": "Start New Session",
-    "add_patient": "Add Patient",
-    "view_sessions": "View Sessions",
-    "recent_activity": "Recent Activity"
-  },
   "metrics": {
     "total_sessions": "Total Sessions",
     "total_quotes": "Total Quotes",

@@ -30,9 +30,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
   try {
     await client.query('BEGIN');
 
-    // Note: Timezone is now set at pool level (database.js) to UTC for all connections
-    // This ensures all timestamps are stored in UTC regardless of server timezone
-    // The timeZone parameter is kept for backward compatibility but not used
+    // ALWAYS force UTC timezone for tenant provisioning (industry standard)
+    await client.query("SET LOCAL TIME ZONE 'UTC'");
 
     // Switch to the tenant schema for table creation
     await client.query(`SET LOCAL search_path TO ${schema}, public`);

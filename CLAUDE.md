@@ -696,6 +696,70 @@ const SessionRow = ({ session }) => {
 - ❌ Pass timezone/locale as props to every component (use hook instead)
 - ❌ Modify tenant timezone after creation (immutable field)
 
+### Critical: Different Locale Detection Approaches
+
+**IMPORTANT:** The system uses **three different approaches** to read tenant locale, and this is **intentional**:
+
+1. **useDateFormatter** → Zustand Store (static import)
+   - ✅ TQ-specific, fully reactive, type-safe
+   - ⚠️ Only works in TQ app
+   - 📍 Use for: TQ-specific date formatting
+
+2. **useCurrencyFormatter** → localStorage (useSyncExternalStore)
+   - ✅ Multi-app compatible (TQ + Hub), reactive
+   - ⚠️ More verbose, less type-safe
+   - 📍 Use for: Common components used in multiple apps
+
+3. **i18n languageDetector** → localStorage (direct read)
+   - ✅ Pre-React initialization, no hooks needed
+   - ⚠️ Not reactive (manual `i18n.changeLanguage()` required)
+   - 📍 Use for: i18n initialization before React mounts
+
+**Why Different Approaches?**
+
+| Constraint | Why Can't Use Zustand Everywhere? |
+|---|---|
+| **Multi-App** | Hub can't import `@client/apps/tq/shared/store/auth` |
+| **Common Components** | `PriceInput` used in TQ + Hub - can't have TQ-specific imports |
+| **Pre-React** | i18n initializes before React - can't use hooks |
+
+**Anti-Pattern Examples:**
+
+```typescript
+// ❌ WRONG - Don't use dynamic require() in hooks
+export function useDateFormatter() {
+  const { useAuthStore } = require('@client/apps/tq/shared/store/auth') // ❌ Returns null in Vite
+}
+
+// ❌ WRONG - Don't import TQ store in common code
+// src/client/common/ui/PriceInput.tsx
+import { useAuthStore } from '@client/apps/tq/shared/store/auth' // ❌ Breaks Hub!
+
+// ❌ WRONG - Don't use hooks in i18n config
+i18n.init({
+  lng: useAuthStore(state => state.tenantLocale) // ❌ Not a React component!
+})
+```
+
+**✅ Correct Patterns:**
+
+```typescript
+// ✅ App-specific hook (TQ only) - Use Zustand
+import { useAuthStore } from '@client/apps/tq/shared/store/auth'
+const locale = useAuthStore(state => state.tenantLocale)
+
+// ✅ Common component (TQ + Hub) - Use localStorage
+const locale = useSyncExternalStore(
+  (cb) => { window.addEventListener('storage', cb); return () => window.removeEventListener('storage', cb) },
+  () => JSON.parse(localStorage.getItem('auth-storage'))?.state?.tenantLocale
+)
+
+// ✅ Pre-React (i18n) - Direct localStorage
+const locale = JSON.parse(localStorage.getItem('auth-storage'))?.state?.tenantLocale || 'en-US'
+```
+
+**See `docs/timezone-internationalization.md` section "Why Different Approaches for Locale Detection?" for detailed explanation.**
+
 ### Testing Timezone System
 
 **Manual Testing**:

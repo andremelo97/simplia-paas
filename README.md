@@ -165,12 +165,48 @@ OPENAI_MODEL=gpt-4o-mini
 DEEPGRAM_API_KEY=your-deepgram-api-key
 ```
 
+## 🌍 Timezone & Internacionalização
+
+### Suporte Multi-Região
+- **Brasil**: `America/Sao_Paulo` (UTC-3) + Português (pt-BR)
+- **Austrália**: `Australia/Brisbane` (UTC+10) + Inglês (en-US)
+- **Outros**: Automático via detecção de timezone
+
+### Arquitetura
+- **Database**: Todos os timestamps em UTC (TIMESTAMPTZ)
+- **Backend**: JWT inclui `timezone` e `locale` derivados do tenant
+- **Frontend**: Conversão automática UTC → timezone local via `Intl.DateTimeFormat`
+- **i18n**: react-i18next com 160+ traduções (pt-BR + en-US)
+
+### Implementação
+```typescript
+// Datas timezone-aware
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+const { formatShortDate } = useDateFormatter()
+<span>{formatShortDate(patient.createdAt)}</span>
+
+// Traduções automáticas
+import { useTranslation } from 'react-i18next'
+const { t } = useTranslation('tq')
+<h1>{t('patients.title')}</h1>
+
+// Moeda por locale
+import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
+const { formatCurrency } = useCurrencyFormatter()
+<span>{formatCurrency(quote.total)}</span> // R$ 1.000,00 ou $1,000.00
+```
+
+**Ver documentação completa:** [docs/timezone-internationalization.md](./docs/timezone-internationalization.md)
+
+---
+
 ## 📖 Documentação Detalhada
 
 - **[INTERNAL-API.md](./docs/INTERNAL-API.md)** - API administrativa completa
 - **[tq-api.md](./docs/tq-api.md)** - API do produto TQ
 - **[tq-public-quotes-puck.md](./docs/tq-public-quotes-puck.md)** - Sistema de public quotes com Puck
 - **[tq-templates.md](./docs/tq-templates.md)** - Sistema de templates clínicos
+- **[timezone-internationalization.md](./docs/timezone-internationalization.md)** - Sistema completo de timezone/i18n ⭐
 - **[CLAUDE.md](./CLAUDE.md)** - Guia para Claude Code
 - **[CLAUDE2.md](./CLAUDE2.md)** - Documentação técnica completa
 

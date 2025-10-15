@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 export type Status = 'active' | 'inactive' | 'suspended' | 'revoked' | 'expired'
 
@@ -9,12 +10,14 @@ export interface StatusBadgeProps {
   ariaLabel?: string
 }
 
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ 
-  status, 
+export const StatusBadge: React.FC<StatusBadgeProps> = ({
+  status,
   size = 'sm',
   className = '',
-  ariaLabel 
+  ariaLabel
 }) => {
+  const { t } = useTranslation('common')
+
   const getStatusStyles = (status: Status) => {
     switch (status) {
       case 'active':
@@ -33,20 +36,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   }
 
   const getStatusLabel = (status: Status) => {
-    switch (status) {
-      case 'active':
-        return 'Active'
-      case 'inactive':
-        return 'Inactive'
-      case 'suspended':
-        return 'Suspended'
-      case 'revoked':
-        return 'Revoked'
-      case 'expired':
-        return 'Expired'
-      default:
-        return status
-    }
+    return t(`status.${status}`)
   }
 
   const sizeClasses = size === 'md' ? 'px-3 py-1.5 text-sm' : 'px-2 py-1 text-xs'

@@ -3,6 +3,7 @@ import { Edit, Trash2 } from 'lucide-react'
 import { Button, Badge } from '@client/common/ui'
 import { Item } from '../../services/items'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
 
 interface ItemRowProps {
   item: Item
@@ -17,6 +18,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
+  const { formatCurrency } = useCurrencyFormatter()
 
   const handleEdit = () => {
     onEdit?.(item)
@@ -24,15 +26,6 @@ export const ItemRow: React.FC<ItemRowProps> = ({
 
   const handleDelete = () => {
     onDelete?.(item)
-  }
-
-
-  const formatCurrency = (amount: number | string): string => {
-    const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(numAmount)
   }
 
   return (

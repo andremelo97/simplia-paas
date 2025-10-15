@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton, EmptyState } from '@client/common/ui'
 import { publishFeedback } from '@client/common/feedback'
 import { hubService } from '../services/hub'
@@ -35,6 +36,7 @@ interface TenantEntitlementsSectionProps {
 }
 
 export function TenantEntitlementsSection({ userRole }: TenantEntitlementsSectionProps) {
+  const { t } = useTranslation('hub')
   const [licenses, setLicenses] = useState<EntitlementLicense[]>([])
   const [summary, setSummary] = useState<EntitlementsSummary | null>(null)
   const [loading, setLoading] = useState(true)
@@ -94,17 +96,17 @@ export function TenantEntitlementsSection({ userRole }: TenantEntitlementsSectio
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Your Applications</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t('home.your_applications')}</h2>
             <p className="text-sm text-gray-600 mt-1">
-              View your applications and team members access
+              {t('home.view_apps_team_access')}
             </p>
           </div>
         </div>
 
         {licenses.length === 0 ? (
           <EmptyState
-            title="No applications available"
-            description="No applications are currently available for your organization."
+            title={t('home.no_apps_available')}
+            description={t('home.no_apps_description')}
           />
         ) : (
           <div className="space-y-6">

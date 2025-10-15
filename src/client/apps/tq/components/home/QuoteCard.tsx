@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@client/common/ui'
 import { Quote } from '../../services/quotes'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
 
 interface QuoteCardProps {
   quote: Quote
@@ -13,6 +14,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onDoubleClick }) =>
   const { t } = useTranslation('tq')
   const [isFlashing, setIsFlashing] = useState(false)
   const { formatLongDate } = useDateFormatter()
+  const { formatCurrency } = useCurrencyFormatter()
 
   const handleDoubleClick = () => {
     setIsFlashing(true)
@@ -63,7 +65,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({ quote, onDoubleClick }) =>
 
         {/* Total value */}
         <p className="text-lg font-bold text-gray-900 mb-2">
-          ${quote.total?.toFixed(2) || '0.00'}
+          {formatCurrency(quote.total || 0)}
         </p>
 
         {/* Date */}

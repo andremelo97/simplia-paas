@@ -17,7 +17,7 @@ import {
 } from '@client/common/ui'
 import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
-import { getSessionStatusColor, getSessionStatusLabel, SESSION_STATUS_OPTIONS, SessionStatus } from '../../types/sessionStatus'
+import { getSessionStatusColor, getSessionStatusLabel, getSessionStatusOptions, SessionStatus } from '../../types/sessionStatus'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentService'
 import { clinicalReportsService, CreateClinicalReportRequest } from '../../services/clinicalReports'
@@ -286,7 +286,7 @@ export const EditSession: React.FC = () => {
                     label={t('common.status')}
                     value={status}
                     onChange={(e) => handleStatusChange(e.target.value as SessionStatus)}
-                    options={SESSION_STATUS_OPTIONS}
+                    options={getSessionStatusOptions()}
                     disabled={isSubmitting}
                     helperText={t('sessions.helper.current_status')}
                   />

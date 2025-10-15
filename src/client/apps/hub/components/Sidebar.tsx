@@ -1,16 +1,18 @@
 import React from 'react'
 import { Home, Settings } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useUIStore } from '../store/ui'
 import { useAuthStore } from '../store/auth'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
 
 export const Sidebar: React.FC = () => {
+  const { t } = useTranslation('hub')
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { user } = useAuthStore()
 
   const navigation: NavigationItem[] = [
     {
-      name: 'Home',
+      name: t('sidebar.home'),
       href: '/',
       icon: Home
     }
@@ -19,7 +21,7 @@ export const Sidebar: React.FC = () => {
   // Add Configurations for admin users only
   if (user?.role === 'admin') {
     navigation.push({
-      name: 'Configurations',
+      name: t('sidebar.configurations'),
       href: '/configurations',
       icon: Settings
     })
@@ -31,7 +33,7 @@ export const Sidebar: React.FC = () => {
       isOpen={sidebarOpen}
       onToggle={toggleSidebar}
       title="Hub"
-      subtitle="Application Portal"
+      subtitle={t('sidebar.application_portal')}
     />
   )
 }

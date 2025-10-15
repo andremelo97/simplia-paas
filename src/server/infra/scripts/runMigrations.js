@@ -6,13 +6,17 @@ const database = require('../db/database');
 async function runMigrations() {
   try {
     console.log('Starting database migrations...');
-    
+
+    // Force UTC timezone for ALL migrations (industry standard)
+    await database.query("SET TIME ZONE 'UTC'");
+    console.log('✓ Database timezone set to UTC');
+
     // Create migrations tracking table if it doesn't exist
     await database.query(`
       CREATE TABLE IF NOT EXISTS migrations (
         id SERIAL PRIMARY KEY,
         filename VARCHAR(255) UNIQUE NOT NULL,
-        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        executed_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC')
       )
     `);
     

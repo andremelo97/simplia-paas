@@ -35,6 +35,13 @@
   "no_results": "Nenhum resultado encontrado",
   "error_loading": "Erro ao carregar dados",
   "error_saving": "Erro ao salvar",
+  "status": {
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "suspended": "Suspenso",
+    "revoked": "Revogado",
+    "expired": "Expirado"
+  },
   "feedback": {
     "QUOTE_CREATED": {
       "title": "Cotação Criada",

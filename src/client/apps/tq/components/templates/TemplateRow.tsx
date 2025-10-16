@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Edit } from 'lucide-react'
-import { Button } from '@client/common/ui'
+import { Button, Tooltip } from '@client/common/ui'
 import { Template } from '../../services/templates'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
@@ -15,6 +16,7 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
   onEdit,
   onDelete
 }) => {
+  const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
 
@@ -68,15 +70,17 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
       <div className={`w-24 flex items-center gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleEdit}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Edit ${template.title}`}
-        >
-          <Edit className="w-4 h-4 text-gray-600" />
-        </Button>
+        <Tooltip content={t('common:edit')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            aria-label={t('common:edit')}
+          >
+            <Edit className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )

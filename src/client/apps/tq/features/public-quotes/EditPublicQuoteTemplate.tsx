@@ -89,11 +89,11 @@ export const EditPublicQuoteTemplate: React.FC = () => {
     const errors: Record<string, string> = {}
 
     if (!formData.name?.trim()) {
-      errors.name = 'Template name is required'
+      errors.name = t('public_quotes.validation.name_required')
     } else if (formData.name.length < 2) {
-      errors.name = 'Template name must be at least 2 characters'
+      errors.name = t('public_quotes.validation.name_min')
     } else if (formData.name.length > 255) {
-      errors.name = 'Template name must be less than 255 characters'
+      errors.name = t('public_quotes.validation.name_max')
     }
 
     setValidationErrors(errors)

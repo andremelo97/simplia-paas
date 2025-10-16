@@ -38,10 +38,11 @@ interface BreadcrumbItem {
 export interface HeaderProps {
   user?: User | null
   tenant?: Tenant | null
-  onLogout: () => void
+  onLogout?: () => void
   getBreadcrumbs?: (pathname: string) => BreadcrumbItem[]
   showSearch?: boolean
   showNotifications?: boolean
+  showLogout?: boolean
   className?: string
   getDisplayRole?: (user: User) => string
   searchComponent?: React.ReactNode
@@ -109,6 +110,7 @@ export const Header: React.FC<HeaderProps> = ({
   getBreadcrumbs = defaultGetBreadcrumbs,
   showSearch = true,
   showNotifications = true,
+  showLogout = true,
   className,
   getDisplayRole = defaultGetDisplayRole,
   searchComponent
@@ -247,14 +249,16 @@ export const Header: React.FC<HeaderProps> = ({
             </Avatar>
             
             {/* Logout */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onLogout}
-              className="text-gray-500 hover:text-red-600 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
+            {showLogout && onLogout && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onLogout}
+                className="text-gray-500 hover:text-red-600 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -119,6 +119,16 @@ button[data-variant="secondary"] {
   border-radius: 0 !important;
 }
 
+.template-editor-constrained.template-editor--invalid .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  border-color: #fca5a5 !important;
+  box-shadow: 0 0 0 1px #f87171 !important;
+}
+
+.dark .template-editor-constrained.template-editor--invalid .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  border-color: #f87171 !important;
+  box-shadow: 0 0 0 1px #ef4444 !important;
+}
+
 /* Dark mode support for editor content */
 .dark .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor {
   background-color: #0E0E11 !important;

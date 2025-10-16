@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Edit, FileText, Trash2 } from 'lucide-react'
-import { Button } from '@client/common/ui'
+import { Button, Tooltip } from '@client/common/ui'
 import { ClinicalReport } from '../../services/clinicalReports'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
@@ -17,6 +18,7 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
   onView,
   onDelete
 }) => {
+  const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
 
@@ -31,6 +33,10 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
   const handleDelete = () => {
     onDelete?.(report)
   }
+
+  const viewLabel = t('common:view')
+  const editLabel = t('common:edit')
+  const deleteLabel = t('common:delete')
 
   return (
     <div
@@ -75,35 +81,41 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
       <div className={`flex items-center gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleView}
-          className="h-8 w-8 p-0 hover:bg-purple-100"
-          aria-label={`View ${report.number}`}
-        >
-          <FileText className="w-4 h-4 text-purple-600" />
-        </Button>
+        <Tooltip content={viewLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleView}
+            className="h-8 w-8 p-0 hover:bg-purple-100"
+            aria-label={viewLabel}
+          >
+            <FileText className="w-4 h-4 text-purple-600" />
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleEdit}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Edit ${report.number}`}
-        >
-          <Edit className="w-4 h-4 text-gray-600" />
-        </Button>
+        <Tooltip content={editLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            aria-label={editLabel}
+          >
+            <Edit className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDelete}
-          className="h-8 w-8 p-0 hover:bg-red-100"
-          aria-label={`Delete ${report.number}`}
-        >
-          <Trash2 className="w-4 h-4 text-red-600" />
-        </Button>
+        <Tooltip content={deleteLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            aria-label={deleteLabel}
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )

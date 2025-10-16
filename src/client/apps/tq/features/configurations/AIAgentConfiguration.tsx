@@ -11,7 +11,7 @@ export const AIAgentConfiguration: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [transcriptionError, setTranscriptionError] = useState(false);
+  const [systemMessageError, setSystemMessageError] = useState('');
 
   useEffect(() => {
     loadConfiguration();
@@ -24,7 +24,7 @@ export const AIAgentConfiguration: React.FC = () => {
       const data = await aiAgentConfigurationService.getConfiguration();
       setConfiguration(data);
       setSystemMessage(data.systemMessage);
-      setTranscriptionError(false);
+      setSystemMessageError('');
     } catch (err) {
       console.error('Failed to load AI Agent configuration:', err);
       setError(t('configurations.ai_agent.failed_to_load'));
@@ -34,17 +34,25 @@ export const AIAgentConfiguration: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!systemMessage.includes('$transcription')) {
-      setTranscriptionError(true);
+    const trimmedMessage = systemMessage.trim();
+
+    if (!trimmedMessage) {
+      setSystemMessageError(t('common:field_required'));
+      return;
+    }
+
+    if (!trimmedMessage.includes('$transcription')) {
+      setSystemMessageError(t('configurations.ai_agent.transcription_required'));
       return;
     }
 
     try {
       setSaving(true);
       setError(null);
-      const updatedConfig = await aiAgentConfigurationService.updateConfiguration(systemMessage);
+      const updatedConfig = await aiAgentConfigurationService.updateConfiguration(trimmedMessage);
       setConfiguration(updatedConfig);
-      setTranscriptionError(false);
+      setSystemMessage(updatedConfig.systemMessage);
+      setSystemMessageError('');
     } catch (err) {
       console.error('Failed to update AI Agent configuration:', err);
       setError(t('configurations.ai_agent.failed_to_save'));
@@ -62,7 +70,7 @@ export const AIAgentConfiguration: React.FC = () => {
       const resetConfig = await aiAgentConfigurationService.resetConfiguration();
       setConfiguration(resetConfig);
       setSystemMessage(resetConfig.systemMessage);
-      setTranscriptionError(false);
+      setSystemMessageError('');
     } catch (err) {
       console.error('Failed to reset AI Agent configuration:', err);
       setError(t('configurations.ai_agent.failed_to_reset'));
@@ -104,29 +112,40 @@ export const AIAgentConfiguration: React.FC = () => {
 
       {/* System Message */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('configurations.ai_agent.system_message_title')}</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          {t('configurations.ai_agent.system_message_title')}
+          <span className="ml-1 text-red-500" aria-hidden="true">*</span>
+        </h2>
         <p className="text-sm text-gray-600 mb-4">
           {t('configurations.ai_agent.system_message_description')}
         </p>
-        {transcriptionError && (
-          <p className="text-sm font-medium text-red-600 mb-2">
-            {t('configurations.ai_agent.transcription_required')}
-          </p>
-        )}
         <Textarea
           value={systemMessage}
           onChange={(e) => {
             const value = e.target.value;
             setSystemMessage(value);
-            if (transcriptionError && value.includes('$transcription')) {
-              setTranscriptionError(false);
+            const trimmedValue = value.trim();
+
+            if (!trimmedValue) {
+              if (systemMessageError) {
+                setSystemMessageError(t('common:field_required'));
+              }
+            } else if (!trimmedValue.includes('$transcription')) {
+              if (systemMessageError) {
+                setSystemMessageError(t('configurations.ai_agent.transcription_required'));
+              }
+            } else if (systemMessageError) {
+              setSystemMessageError('');
             }
           }}
           placeholder="Enter the system message for the AI Agent..."
           rows={20}
           disabled={saving}
-          className={`font-mono text-sm ${transcriptionError ? 'border-red-500 focus-visible:border-red-500 focus-visible:ring-0' : ''}`}
+          className="font-mono text-sm"
           helperText={t('configurations.ai_agent.available_variables') + ' $patient.first_name$, $patient.last_name$, $patient.fullName$, $date.now$, $session.created_at$, $transcription$, $me.first_name$, $me.last_name$, $me.fullName$'}
+          required
+          error={systemMessageError}
+          requiredMessage={t('configurations.ai_agent.transcription_required')}
         />
       </Card>
 
@@ -157,4 +176,3 @@ export const AIAgentConfiguration: React.FC = () => {
     </div>
   );
 };
-

@@ -9,7 +9,8 @@ import {
   Input,
   Select,
   TemplateEditor,
-  LinkToast
+  LinkToast,
+  isEditorContentFilled
 } from '@client/common/ui'
 import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
 import { patientsService } from '../../services/patients'
@@ -50,6 +51,10 @@ export const EditQuote: React.FC = () => {
   const [toastData, setToastData] = useState<{publicQuoteId: string, publicUrl: string, password: string} | null>(null)
   const [isGeneratingPublicQuote, setIsGeneratingPublicQuote] = useState(false)
   const [showGenerateModal, setShowGenerateModal] = useState(false)
+  const [patientErrors, setPatientErrors] = useState({ firstName: '', lastName: '', email: '' })
+  const [contentError, setContentError] = useState('')
+
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   // Load templates
   useEffect(() => {
@@ -88,6 +93,7 @@ export const EditQuote: React.FC = () => {
         if (!isCancelled) {
           setQuote(quoteData)
           setContent(quoteData.content || '')
+          setContentError('')
           setStatus(quoteData.status || 'draft')
 
           // Load patient data
@@ -96,6 +102,7 @@ export const EditQuote: React.FC = () => {
           setPatientEmail(quoteData.patient_email || '')
           setPatientPhone(quoteData.patient_phone || '')
           setPatientId(quoteData.patient_id || null)
+          setPatientErrors({ firstName: '', lastName: '', email: '' })
 
           // Load quote items with localId for frontend management
           const items = quoteData.items || []
@@ -131,6 +138,9 @@ export const EditQuote: React.FC = () => {
 
   const handleContentChange = (newContent: string) => {
     setContent(newContent)
+    if (contentError && isEditorContentFilled(newContent)) {
+      setContentError('')
+    }
   }
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -140,6 +150,43 @@ export const EditQuote: React.FC = () => {
   const handleSave = async () => {
     if (!id || !quote) return
 
+    const hasPatient = Boolean(patientId)
+    const trimmedFirstName = patientFirstName.trim()
+    const trimmedLastName = patientLastName.trim()
+    const trimmedEmail = patientEmail.trim()
+
+    const newPatientErrors = {
+      firstName: '',
+      lastName: '',
+      email: ''
+    }
+
+    if (hasPatient) {
+      if (!trimmedFirstName) {
+        newPatientErrors.firstName = t('common:field_required')
+      }
+
+      if (!trimmedLastName) {
+        newPatientErrors.lastName = t('common:field_required')
+      }
+
+      if (!trimmedEmail) {
+        newPatientErrors.email = t('common:field_required')
+      } else if (!emailPattern.test(trimmedEmail)) {
+        newPatientErrors.email = t('patients.validation.email_invalid')
+      }
+    }
+
+    setPatientErrors(newPatientErrors)
+
+    const contentIsEmpty = !isEditorContentFilled(content)
+    const newContentError = contentIsEmpty ? t('common:field_required') : ''
+    setContentError(newContentError)
+
+    if ((hasPatient && Object.values(newPatientErrors).some(Boolean)) || newContentError) {
+      return
+    }
+
     setIsSaving(true)
 
     try {
@@ -148,16 +195,16 @@ export const EditQuote: React.FC = () => {
       // 1. Update patient data if changed
       if (patientId) {
         const patientChanged =
-          patientFirstName !== (quote.patient_first_name || '') ||
-          patientLastName !== (quote.patient_last_name || '') ||
-          patientEmail !== (quote.patient_email || '') ||
+          trimmedFirstName !== (quote.patient_first_name || '') ||
+          trimmedLastName !== (quote.patient_last_name || '') ||
+          trimmedEmail !== (quote.patient_email || '') ||
           patientPhone !== (quote.patient_phone || '')
 
         if (patientChanged) {
           await patientsService.updatePatient(patientId, {
-            first_name: patientFirstName,
-            last_name: patientLastName,
-            email: patientEmail || undefined,
+            first_name: trimmedFirstName,
+            last_name: trimmedLastName,
+            email: trimmedEmail || undefined,
             phone: patientPhone || undefined
           })
         }
@@ -399,7 +446,10 @@ export const EditQuote: React.FC = () => {
             {/* Quote Content */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">{t('quotes.quote_content')}</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {t('quotes.quote_content')}
+                  <span className="ml-1 text-red-500" aria-hidden="true">*</span>
+                </h2>
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
@@ -409,6 +459,9 @@ export const EditQuote: React.FC = () => {
                   placeholder={t('quotes.placeholders.content')}
                   readonly={isSaving}
                   minHeight="500px"
+                  required
+                  error={contentError}
+                  requiredMessage={t('common:field_required')}
                 />
               </CardContent>
             </Card>
@@ -451,58 +504,63 @@ export const EditQuote: React.FC = () => {
                   <div className="space-y-2 pr-4">
                     <h3 className="text-xs font-semibold text-gray-900 mb-2">{t('common.patient')}</h3>
                     {patientId ? (
-                      <div className="space-y-2">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            {t('patients.first_name')}
-                          </label>
-                          <input
-                            type="text"
-                            value={patientFirstName}
-                            onChange={(e) => setPatientFirstName(e.target.value)}
-                            disabled={isSaving}
-                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
-                          />
-                        </div>
+                      <div className="space-y-3">
+                        <Input
+                          label={t('patients.first_name')}
+                          value={patientFirstName}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            setPatientFirstName(value)
+                            if (patientErrors.firstName && value.trim()) {
+                              setPatientErrors(prev => ({ ...prev, firstName: '' }))
+                            }
+                          }}
+                          disabled={isSaving}
+                          required
+                          error={patientErrors.firstName}
+                        />
 
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            {t('patients.last_name')}
-                          </label>
-                          <input
-                            type="text"
-                            value={patientLastName}
-                            onChange={(e) => setPatientLastName(e.target.value)}
-                            disabled={isSaving}
-                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
-                          />
-                        </div>
+                        <Input
+                          label={t('patients.last_name')}
+                          value={patientLastName}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            setPatientLastName(value)
+                            if (patientErrors.lastName && value.trim()) {
+                              setPatientErrors(prev => ({ ...prev, lastName: '' }))
+                            }
+                          }}
+                          disabled={isSaving}
+                          required
+                          error={patientErrors.lastName}
+                        />
 
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            {t('patients.email')}
-                          </label>
-                          <input
-                            type="email"
-                            value={patientEmail}
-                            onChange={(e) => setPatientEmail(e.target.value)}
-                            disabled={isSaving}
-                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
-                          />
-                        </div>
+                        <Input
+                          label={t('patients.email')}
+                          type="email"
+                          value={patientEmail}
+                          onChange={(e) => {
+                            const value = e.target.value
+                            setPatientEmail(value)
+                            if (patientErrors.email) {
+                              if (value.trim() && emailPattern.test(value.trim())) {
+                                setPatientErrors(prev => ({ ...prev, email: '' }))
+                              } else if (!value.trim()) {
+                                setPatientErrors(prev => ({ ...prev, email: '' }))
+                              }
+                            }
+                          }}
+                          disabled={isSaving}
+                          required
+                          error={patientErrors.email}
+                        />
 
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            {t('patients.phone')}
-                          </label>
-                          <input
-                            type="text"
-                            value={patientPhone}
-                            onChange={(e) => setPatientPhone(e.target.value)}
-                            disabled={isSaving}
-                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
-                          />
-                        </div>
+                        <Input
+                          label={t('patients.phone')}
+                          value={patientPhone}
+                          onChange={(e) => setPatientPhone(e.target.value)}
+                          disabled={isSaving}
+                        />
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500">{t('quotes.no_patient_data')}</p>

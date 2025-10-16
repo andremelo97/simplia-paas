@@ -54,11 +54,6 @@ export const Sessions: React.FC = () => {
     navigate(`/sessions/${session.id}/edit`)
   }
 
-  const handleDuplicateSession = (session: Session) => {
-    // Placeholder: Will be implemented later
-    console.log('Duplicate session:', session)
-  }
-
   const handleDeleteSession = (session: Session) => {
     // Placeholder: Will be implemented later
     console.log('Delete session:', session)
@@ -146,7 +141,6 @@ export const Sessions: React.FC = () => {
                     key={session.id}
                     session={session}
                     onEdit={handleEditSession}
-                    onDuplicate={handleDuplicateSession}
                     onDelete={handleDeleteSession}
                   />
                 ))}

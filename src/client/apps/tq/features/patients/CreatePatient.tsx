@@ -44,7 +44,7 @@ export const CreatePatient: React.FC = () => {
 
     // Validate patient basic info
     if (!formData.first_name.trim()) {
-      errors.first_name = t('patients.validation.first_name_required')
+      errors.first_name = t('common:field_required')
     } else if (formData.first_name.length < 2) {
       errors.first_name = t('patients.validation.first_name_min')
     } else if (formData.first_name.length > 50) {

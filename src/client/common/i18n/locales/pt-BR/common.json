@@ -33,6 +33,7 @@
   "total": "Total",
   "showing_results": "Mostrando {{from}} a {{to}} de {{total}} resultados",
   "no_results": "Nenhum resultado encontrado",
+  "field_required": "Este campo e obrigatorio",
   "error_loading": "Erro ao carregar dados",
   "error_saving": "Erro ao salvar",
   "status": {

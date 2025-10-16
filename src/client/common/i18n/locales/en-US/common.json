@@ -33,6 +33,7 @@
   "total": "Total",
   "showing_results": "Showing {{from}} to {{to}} of {{total}} results",
   "no_results": "No results found",
+  "field_required": "This field is mandatory",
   "error_loading": "Error loading data",
   "error_saving": "Error saving",
   "status": {

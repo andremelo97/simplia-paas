@@ -1,172 +1,74 @@
-import React, { useState, useEffect } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 import { useAuthStore } from '../../shared/store'
-import { Button, Input, Card, CardHeader, CardContent, CardTitle, CardDescription, Alert, AlertDescription } from '@client/common/ui'
-import { cn } from '@client/common/utils/cn'
-import { AppError } from '@client/common/feedback'
-import { shouldShowAsBanner, shouldShowFieldErrors } from '@client/common/feedback'
-import { publishFeedback, resolveFeedbackMessage } from '@client/common/feedback'
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+  Alert,
+  AlertDescription
+} from '@client/common/ui'
 import { consumeSso, hasSsoParams } from '../../lib/consumeSso'
+
+const HUB_LOGIN_URL = import.meta.env.VITE_HUB_LOGIN_URL || 'http://localhost:3003/login'
 
 export const Login: React.FC = () => {
   const { t } = useTranslation('tq')
-  const [credentials, setCredentials] = useState({
-    email: '',
-    password: ''
-  })
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-  const [showPassword, setShowPassword] = useState(false)
   const [isSsoLoading, setIsSsoLoading] = useState(false)
-
-  const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore()
-  const location = useLocation()
-
-  // Always redirect to TQ app root after login
-  const from = '/'
+  const { isAuthenticated, isLoading, error, clearError } = useAuthStore()
 
   useEffect(() => {
     clearError()
 
-    // Check for SSO parameters and attempt SSO login
     const attemptSso = async () => {
-      console.log('🔄 [TQ Login] Checking for SSO params...')
       const hasParams = hasSsoParams()
-      console.log('🔍 [TQ Login] SSO params check result:', hasParams)
 
-      if (hasParams) {
-        console.log('🔄 [TQ Login] Starting SSO login process...')
-        setIsSsoLoading(true)
-        try {
-          const ssoAttempted = await consumeSso()
-          console.log('✅ [TQ Login] SSO attempt result:', ssoAttempted)
-          if (ssoAttempted) {
-            // SSO login successful, will redirect via isAuthenticated check
-            return
-          }
-        } catch (error) {
-          console.error('❌ [TQ Login] SSO login failed:', error)
-          // Error is handled by the auth store
-        } finally {
-          setIsSsoLoading(false)
+      if (!hasParams) {
+        return
+      }
+
+      setIsSsoLoading(true)
+      try {
+        const ssoAttempted = await consumeSso()
+        if (ssoAttempted) {
+          return
         }
-      } else {
-        console.log('ℹ️ [TQ Login] No SSO params found, showing manual login form')
+      } catch (err) {
+        console.error('SSO login failed:', err)
+      } finally {
+        setIsSsoLoading(false)
       }
     }
 
     attemptSso()
   }, [clearError])
 
-  const validateForm = () => {
-    const errors: Record<string, string> = {}
-
-    if (!credentials.email.trim()) {
-      errors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email)) {
-      errors.email = 'Please enter a valid email address'
-    }
-
-    if (!credentials.password.trim()) {
-      errors.password = 'Password is required'
-    }
-
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  // Get field-level errors from AppError
-  const getFieldErrors = (appError: AppError | null): Record<string, string> => {
-    if (!appError || !shouldShowFieldErrors(appError.kind)) {
-      return {}
-    }
-    return appError.details || {}
-  }
-
-  // Check if we should show banner error
-  const shouldShowBannerError = (appError: AppError | null): boolean => {
-    return appError !== null && shouldShowAsBanner(appError.kind)
-  }
-
-  // Get combined validation + server field errors
-  const allFieldErrors = {
-    ...validationErrors,
-    ...getFieldErrors(error)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    clearError()
-
-    if (!validateForm()) {
-      return
-    }
-
-    try {
-      await login(credentials)
-    } catch (error) {
-      console.error('Login failed:', error)
-    }
-  }
-
-  const handleInputChange = (field: 'email' | 'password') => (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setCredentials(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }))
-
-    // Clear client-side validation errors
-    if (validationErrors[field]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }))
-    }
-
-    // Clear server errors on input change to allow retry
-    if (error) {
-      clearError()
-    }
-  }
-
   if (isAuthenticated) {
-    return <Navigate to={from} replace />
+    return <Navigate to="/" replace />
   }
 
-  // Show loading during SSO attempt
-  if (isSsoLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#B725B7] via-purple-500 to-[#E91E63]">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="bg-white rounded-lg p-8 shadow-xl"
-        >
-          <div className="flex items-center justify-center space-x-3">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-            <span className="text-lg font-medium text-gray-700">Connecting to TQ...</span>
-          </div>
-        </motion.div>
-      </div>
-    )
+  const handleGoToHub = () => {
+    window.location.href = HUB_LOGIN_URL
   }
+
+  const showLoadingState = isSsoLoading || isLoading
 
   return (
-    <div className="min-h-screen grid place-items-center bg-gradient-to-br from-[#B725B7] via-purple-500 to-[#E91E63] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-stone-50 px-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.3 }}
         className="mx-auto w-full max-w-[380px]"
       >
-        <Card className="min-h-[540px]">
+        <Card className="min-h-[360px] flex flex-col justify-between">
           <CardHeader className="text-center space-y-3 p-8 pb-4">
-            {/* Logo */}
             <div className="flex justify-center mb-2">
               <div className="p-3 bg-stone-50 rounded-xl">
                 <Building2 className="w-8 h-8 text-stone-600" />
@@ -174,115 +76,37 @@ export const Login: React.FC = () => {
             </div>
 
             <CardTitle className="text-2xl font-semibold text-stone-900">
-              Sign in to TQ
+              {t('app_name')}
             </CardTitle>
             <CardDescription className="text-sm text-stone-700">
-              Access Transcription & Quote application
+              Go to the Hub login page to restart your session.
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6 px-8">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-4" style={{ display: 'flex', flexDirection: 'column' }}>
-                <Input
-                  label="Email"
-                  type="email"
-                  value={credentials.email}
-                  onChange={handleInputChange('email')}
-                  error={allFieldErrors.email}
-                  placeholder={t('auth.placeholders.email')}
-                  autoComplete="email"
-                  disabled={isLoading}
-                  className="w-full"
-                />
+          <CardContent className="space-y-6 px-8 pb-10">
+            {/* Legacy manual login form is intentionally disabled to keep authentication centralized in the Hub */}
 
-                <div className="relative">
-                  <Input
-                    label="Password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={credentials.password}
-                    onChange={handleInputChange('password')}
-                    error={allFieldErrors.password}
-                    placeholder={t('auth.placeholders.password')}
-                    autoComplete="current-password"
-                    disabled={isLoading}
-                    className="w-full pr-8"
-                  />
-                  <button
-                    type="button"
-                    className={cn(
-                      "absolute right-2 top-1/2 -translate-y-1/2 transition-colors",
-                      "text-gray-300 hover:text-gray-500",
-                      "focus:outline-none",
-                      "flex items-center justify-center w-4 h-4 opacity-60"
-                    )}
-                    style={{
-                      top: 'calc(50% + 12px)',
-                      right: '8px'
-                    }}
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-3.5 h-3.5" />
-                    ) : (
-                      <Eye className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                </div>
+            <div className="space-y-3 text-center">
+              <p className="text-sm text-stone-600">
+                Access to TQ is now handled exclusively through the Hub. Use the button below to renew your session.
+              </p>
 
-                <Button
-                  type="submit"
-                  variant="primary"
-                  style={{ width: '100%' }}
-                  isLoading={isLoading}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Signing in…' : 'Sign in'}
-                </Button>
-              </div>
-            </form>
-
-            {shouldShowBannerError(error) && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+              <Button
+                type="button"
+                variant="primary"
+                style={{ width: '100%' }}
+                isLoading={showLoadingState}
+                disabled={showLoadingState}
+                onClick={handleGoToHub}
               >
-                <Alert
-                  variant="destructive"
-                  role="alert"
-                  aria-live="polite"
-                  className="flex items-center gap-3 alert-destructive"
-                >
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  <AlertDescription className="flex-1">
-                    {error?.message}
-                  </AlertDescription>
-                </Alert>
-              </motion.div>
-            )}
+                {showLoadingState ? 'Opening Hub…' : 'Go to Hub Login'}
+              </Button>
+            </div>
 
-            {/* Show validation summary if there are field errors from server */}
-            {error && shouldShowFieldErrors(error.kind) && Object.keys(getFieldErrors(error)).length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Alert
-                  variant="destructive"
-                  role="alert"
-                  aria-live="polite"
-                  className="flex items-center gap-3 alert-destructive"
-                >
-                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
-                  <AlertDescription className="flex-1">
-                    {error.message}
-                  </AlertDescription>
-                </Alert>
-              </motion.div>
+            {error && (
+              <Alert variant="destructive" role="alert" aria-live="polite">
+                <AlertDescription>{error.message}</AlertDescription>
+              </Alert>
             )}
           </CardContent>
         </Card>

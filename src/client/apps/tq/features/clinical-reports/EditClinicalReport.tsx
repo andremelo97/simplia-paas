@@ -8,7 +8,8 @@ import {
   CardContent,
   Button,
   Input,
-  TemplateEditor
+  TemplateEditor,
+  isEditorContentFilled
 } from '@client/common/ui'
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
 import { patientsService } from '../../services/patients'
@@ -32,6 +33,7 @@ export const EditClinicalReport: React.FC = () => {
   const [patientEmail, setPatientEmail] = useState('')
   const [patientPhone, setPatientPhone] = useState('')
   const [patientId, setPatientId] = useState<string | null>(null)
+  const [contentError, setContentError] = useState('')
 
   // Load clinical report data
   useEffect(() => {
@@ -47,6 +49,7 @@ export const EditClinicalReport: React.FC = () => {
         if (!isCancelled) {
           setReport(reportData)
           setContent(reportData.content || '')
+          setContentError('')
 
           // Load patient data
           setPatientFirstName(reportData.patient_first_name || '')
@@ -77,11 +80,20 @@ export const EditClinicalReport: React.FC = () => {
 
   const handleContentChange = (newContent: string) => {
     setContent(newContent)
+    if (contentError && isEditorContentFilled(newContent)) {
+      setContentError('')
+    }
   }
 
   const handleSave = async () => {
     if (!id || !report) return
 
+    if (!isEditorContentFilled(content)) {
+      setContentError(t('common:field_required'))
+      return
+    }
+
+    setContentError('')
     setIsSaving(true)
 
     try {
@@ -118,6 +130,7 @@ export const EditClinicalReport: React.FC = () => {
       // Update local state with fresh data
       setReport(freshReport)
       setContent(freshReport.content || '')
+      setContentError('')
 
       // Update patient state with fresh data
       setPatientFirstName(freshReport.patient_first_name || '')
@@ -245,7 +258,10 @@ export const EditClinicalReport: React.FC = () => {
             {/* Report Content */}
             <Card>
               <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">{t('clinical_reports.content_section')}</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {t('clinical_reports.content_section')}
+                  <span className="ml-1 text-red-500" aria-hidden="true">*</span>
+                </h2>
               </CardHeader>
 
               <CardContent className="px-6 pb-6">
@@ -254,6 +270,10 @@ export const EditClinicalReport: React.FC = () => {
                   onChange={handleContentChange}
                   placeholder={t('clinical_reports.placeholders.content')}
                   readonly={isSaving}
+                  minHeight="500px"
+                  required
+                  error={contentError}
+                  requiredMessage={t('common:field_required')}
                 />
               </CardContent>
             </Card>

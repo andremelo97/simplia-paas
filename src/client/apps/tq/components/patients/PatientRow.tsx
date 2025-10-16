@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edit, History, Trash2 } from 'lucide-react'
-import { Button } from '@client/common/ui'
+import { Button, Tooltip } from '@client/common/ui'
 import { Patient } from '../../services/patients'
 import { formatPatientName } from '../../hooks/usePatients'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -22,6 +22,10 @@ export const PatientRow: React.FC<PatientRowProps> = ({
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
+
+  const historyLabel = t('patients.view_history')
+  const editLabel = t('common:edit')
+  const deleteLabel = t('common:delete')
 
   const handleEdit = () => {
     onEdit?.(patient)
@@ -75,36 +79,43 @@ export const PatientRow: React.FC<PatientRowProps> = ({
       <div className={`flex items-center gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleHistory}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`${t('patients.view_history')} ${formatPatientName(patient)}`}
-        >
-          <History className="w-4 h-4 text-gray-600" />
-        </Button>
+        <Tooltip content={historyLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleHistory}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            aria-label={historyLabel}
+          >
+            <History className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleEdit}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`${t('patients.edit')} ${formatPatientName(patient)}`}
-        >
-          <Edit className="w-4 h-4 text-gray-600" />
-        </Button>
+        <Tooltip content={editLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            aria-label={editLabel}
+          >
+            <Edit className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDelete}
-          className="h-8 w-8 p-0 hover:bg-red-100"
-          aria-label={`${t('common:delete')} ${formatPatientName(patient)}`}
-        >
-          <Trash2 className="w-4 h-4 text-red-600" />
-        </Button>
+        <Tooltip content={deleteLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            aria-label={deleteLabel}
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )
 }
+

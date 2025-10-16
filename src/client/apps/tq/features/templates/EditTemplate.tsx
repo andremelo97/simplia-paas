@@ -293,18 +293,17 @@ export const EditTemplate: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('templates.template_content')} *
-                    </label>
                     <TemplateEditor
+                      label={t('templates.template_content')}
                       content={formData.content}
                       onChange={handleContentChange}
                       placeholder={t('templates.placeholders.content')}
                       readonly={isSubmitting}
+                      minHeight="500px"
+                      required
+                      error={validationErrors.content}
+                      requiredMessage={t('templates.validation_errors.content')}
                     />
-                    {validationErrors.content && (
-                      <p className="text-sm text-red-600 mt-1">{t('templates.validation_errors.content')}</p>
-                    )}
                   </div>
 
                   <div>

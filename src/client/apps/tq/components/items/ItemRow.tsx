@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Edit, Trash2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button, Badge } from '@client/common/ui'
+import { Button, Badge, Tooltip } from '@client/common/ui'
 import { Item } from '../../services/items'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
@@ -79,25 +79,29 @@ export const ItemRow: React.FC<ItemRowProps> = ({
           isHovered ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleEdit}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={t('quote_items.actions.edit', { name: item.name })}
-        >
-          <Edit className="w-4 h-4 text-gray-600" />
-        </Button>
+        <Tooltip content={t('common:edit')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            aria-label={t('common:edit')}
+          >
+            <Edit className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDelete}
-          className="h-8 w-8 p-0 hover:bg-red-100"
-          aria-label={t('quote_items.actions.delete', { name: item.name })}
-        >
-          <Trash2 className="w-4 h-4 text-red-600" />
-        </Button>
+        <Tooltip content={t('common:delete')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            aria-label={t('common:delete')}
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )

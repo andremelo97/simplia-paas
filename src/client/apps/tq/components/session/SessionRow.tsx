@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Edit, Copy, Trash2 } from 'lucide-react'
-import { Button, Badge } from '@client/common/ui'
+import { useTranslation } from 'react-i18next'
+import { Edit, Trash2 } from 'lucide-react'
+import { Button, Badge, Tooltip } from '@client/common/ui'
 import { Session } from '../../services/sessions'
 import { formatSessionStatus } from '../../hooks/useSessions'
 import { getSessionStatusColor } from '../../types/sessionStatus'
@@ -9,16 +10,15 @@ import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 interface SessionRowProps {
   session: Session
   onEdit?: (session: Session) => void
-  onDuplicate?: (session: Session) => void
   onDelete?: (session: Session) => void
 }
 
 export const SessionRow: React.FC<SessionRowProps> = ({
   session,
   onEdit,
-  onDuplicate,
   onDelete
 }) => {
+  const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
 
@@ -26,13 +26,12 @@ export const SessionRow: React.FC<SessionRowProps> = ({
     onEdit?.(session)
   }
 
-  const handleDuplicate = () => {
-    onDuplicate?.(session)
-  }
-
   const handleDelete = () => {
     onDelete?.(session)
   }
+
+  const editLabel = t('common:edit')
+  const deleteLabel = t('common:delete')
 
   return (
     <div
@@ -77,35 +76,29 @@ export const SessionRow: React.FC<SessionRowProps> = ({
       <div className={`flex items-center gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleEdit}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Edit ${session.number}`}
-        >
-          <Edit className="w-4 h-4 text-gray-600" />
-        </Button>
+        <Tooltip content={editLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            aria-label={editLabel}
+          >
+            <Edit className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDuplicate}
-          className="h-8 w-8 p-0 hover:bg-gray-100"
-          aria-label={`Duplicate ${session.number}`}
-        >
-          <Copy className="w-4 h-4 text-gray-600" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDelete}
-          className="h-8 w-8 p-0 hover:bg-red-100"
-          aria-label={`Delete ${session.number}`}
-        >
-          <Trash2 className="w-4 h-4 text-red-600" />
-        </Button>
+        <Tooltip content={deleteLabel}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            aria-label={deleteLabel}
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )

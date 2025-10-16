@@ -7,6 +7,7 @@ import {
   LucideIcon
 } from 'lucide-react'
 import { cn } from '@client/common/utils/cn'
+import { Tooltip } from '@client/common/ui'
 
 export interface NavigationItem {
   name: string
@@ -113,17 +114,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
             >
               {({ isActive }) => (
                 <>
-                  <Icon 
-                    className="w-5 h-5"
-                    style={{ 
-                      color: 'inherit',
-                      width: '20px !important',
-                      height: '20px !important',
-                      minWidth: '20px',
-                      minHeight: '20px',
-                      flexShrink: 0
-                    }}
-                  />
+                  <Tooltip content={item.name} disabled={isOpen} side="right">
+                    <span className="flex items-center justify-center">
+                      <Icon 
+                        className="w-5 h-5"
+                        style={{ 
+                          color: 'inherit',
+                          width: '20px !important',
+                          height: '20px !important',
+                          minWidth: '20px',
+                          minHeight: '20px',
+                          flexShrink: 0
+                        }}
+                      />
+                    </span>
+                  </Tooltip>
                   
                   {isOpen && (
                     <motion.div

@@ -53,11 +53,6 @@ export const QuotesTab: React.FC = () => {
     navigate(`/quotes/${quote.id}/edit`)
   }
 
-  const handleDuplicateQuote = (quote: Quote) => {
-    // Placeholder: Will be implemented later
-    console.log('Duplicate quote:', quote)
-  }
-
   const handleDeleteQuote = (quote: Quote) => {
     // Placeholder: Will be implemented later
     console.log('Delete quote:', quote)
@@ -137,7 +132,6 @@ export const QuotesTab: React.FC = () => {
                     key={quote.id}
                     quote={quote}
                     onEdit={handleEditQuote}
-                    onDuplicate={handleDuplicateQuote}
                     onDelete={handleDeleteQuote}
                   />
                 ))}

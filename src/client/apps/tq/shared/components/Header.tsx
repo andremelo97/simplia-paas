@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/auth'
-import { authService } from '../../services/auth'
 import { Header as CommonHeader } from '@client/common/components'
 import { QuickSearchBar } from '../../components/home/QuickSearchBar'
 import { patientsService, Patient } from '../../services/patients'
@@ -9,7 +8,6 @@ import { quotesService, Quote } from '../../services/quotes'
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
 import { templatesService, Template } from '../../services/templates'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
-import { Search } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
@@ -144,19 +142,15 @@ export const Header: React.FC = () => {
     loadSearchData()
   }, [])
 
-  const handleLogout = () => {
-    authService.logout()
-  }
-
   return (
     <CommonHeader
       user={user}
       tenant={null}
-      onLogout={handleLogout}
       getBreadcrumbs={(pathname) => getBreadcrumbs(pathname, t)}
       getDisplayRole={getDisplayRole}
       showSearch={true}
       showNotifications={false}
+      showLogout={false}
       searchComponent={
         <QuickSearchBar
           patients={patients}

@@ -30,6 +30,7 @@ export const EditSession: React.FC = () => {
   const [session, setSession] = useState<Session | null>(null)
   const [patient, setPatient] = useState<Patient | null>(null)
   const [transcription, setTranscription] = useState('')
+  const [transcriptionError, setTranscriptionError] = useState('')
   const [status, setStatus] = useState<SessionStatus>(SessionStatus.DRAFT)
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -89,6 +90,13 @@ export const EditSession: React.FC = () => {
     e.preventDefault()
 
     if (!session || !id) return
+
+    if (!transcription.trim()) {
+      setTranscriptionError(t('common:field_required'))
+      return
+    }
+
+    setTranscriptionError('')
 
     setIsSubmitting(true)
 
@@ -329,10 +337,18 @@ export const EditSession: React.FC = () => {
                 label={t('sessions.transcription_content')}
                 placeholder={t('sessions.placeholders.transcription_edit')}
                 value={transcription}
-                onChange={(e) => setTranscription(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  setTranscription(value)
+                  if (transcriptionError && value.trim()) {
+                    setTranscriptionError('')
+                  }
+                }}
                 className="min-h-96 resize-none font-mono"
                 helperText={t('sessions.helper_text.edit_transcription')}
                 disabled={isSubmitting}
+                required
+                error={transcriptionError}
               />
             </CardContent>
           </Card>

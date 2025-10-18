@@ -235,15 +235,14 @@ export const PublicQuoteAccess: React.FC = () => {
   // Use the saved template from content package
   return (
     <div className="min-h-screen bg-white">
-      <div className="px-4 py-4">
-        <div className="w-40">
-          <Select
-            label={t('public_quotes.access.language_label')}
-            value={language}
-            onChange={handleLanguageChange}
-            options={languageOptions}
-          />
-        </div>
+      {/* Fixed language selector in top-right corner */}
+      <div className="fixed top-4 right-4 z-[100] w-40">
+        <Select
+          label={t('public_quotes.access.language_label')}
+          value={language}
+          onChange={handleLanguageChange}
+          options={languageOptions}
+        />
       </div>
       <Render config={previewConfig} data={quoteData.content.template} />
     </div>

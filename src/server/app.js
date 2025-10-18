@@ -294,15 +294,26 @@ const pathModule = require('path');
 if (isProduction) {
   console.log('🚀 Production mode: Serving static frontend builds');
 
+  // Debug: Check if build directories exist
+  const fs = require('fs');
+  const adminPath = pathModule.join(__dirname, '../../dist/client');
+  const hubPath = pathModule.join(__dirname, '../../dist/hub');
+  const tqPath = pathModule.join(__dirname, '../../dist/tq');
+
+  console.log('📂 Checking build directories:');
+  console.log('  /admin:', fs.existsSync(adminPath) ? '✓ EXISTS' : '✗ NOT FOUND');
+  console.log('  /hub:', fs.existsSync(hubPath) ? '✓ EXISTS' : '✗ NOT FOUND');
+  console.log('  /tq:', fs.existsSync(tqPath) ? '✓ EXISTS' : '✗ NOT FOUND');
+
   // Redirect root to admin panel
   app.get('/', (req, res) => {
     res.redirect('/admin');
   });
 
   // Serve static files for each frontend
-  app.use('/admin', express.static(pathModule.join(__dirname, '../../dist/client')));
-  app.use('/hub', express.static(pathModule.join(__dirname, '../../dist/hub')));
-  app.use('/tq', express.static(pathModule.join(__dirname, '../../dist/tq')));
+  app.use('/admin', express.static(adminPath));
+  app.use('/hub', express.static(hubPath));
+  app.use('/tq', express.static(tqPath));
 
   // SPA fallback: todas as rotas não-API retornam o index.html
   app.get('/admin/*', (req, res) => {

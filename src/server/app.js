@@ -80,6 +80,8 @@ const internalCorsOptions = {
     }
 
     // Block other origins
+    console.error(`❌ [CORS] Blocked origin: ${origin}`);
+    console.error(`   Allowed origins: ADMIN_PANEL=${ADMIN_PANEL_ORIGIN}, HUB=${HUB_ORIGIN}, TQ=${TQ_ORIGIN}`);
     const error = new Error('Not allowed by CORS policy');
     error.status = 403;
     return callback(error);

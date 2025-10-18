@@ -5,10 +5,9 @@ import { shouldInjectTenantHeader, getCurrentTenantId } from '../common/auth/int
 
 // HTTP client configuration
 // For apps with Vite proxy (TQ, Hub), use relative paths
-// For apps without proxy (internal-admin), use full URL
-// TEMPORARY FIX: Force Hub to use direct URL until proxy issue is resolved
+// For apps without proxy (internal-admin), use full URL from environment variable
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL ||
-                     (window.location.port === '3005' ? '' : 'http://localhost:3001')
+                     (window.location.port === '3005' ? '' : '')
 
 class HttpClient {
   private baseURL: string

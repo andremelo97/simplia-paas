@@ -5,7 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   root: 'src/client/apps/hub',
-  base: process.env.NODE_ENV === 'production' ? '/hub/' : '/',
+  base: '/', // Always root - hostname-based routing handles subdomain
   server: {
     port: 3003,
     host: true,

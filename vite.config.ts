@@ -5,7 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   root: 'src/client',
-  base: process.env.NODE_ENV === 'production' ? '/admin/' : '/',
+  base: '/', // Always root - hostname-based routing handles subdomain
   build: {
     outDir: '../../dist/client'
   },

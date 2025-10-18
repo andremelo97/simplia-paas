@@ -45,7 +45,7 @@ export const Home: React.FC = () => {
 
       if (token && tenantId) {
         // Open TQ with SSO parameters - redirect directly to home after SSO
-        const baseUrl = import.meta.env.VITE_TQ_URL || window.location.origin + '/tq'
+        const baseUrl = import.meta.env.VITE_TQ_URL || 'https://tq.simplialabs.co'
         const tqUrl = `${baseUrl}/?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
         window.open(tqUrl, '_blank', 'noopener,noreferrer')
       } else {

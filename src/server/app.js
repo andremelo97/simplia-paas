@@ -284,7 +284,47 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// ============================================================================
+// STATIC FILE SERVING FOR PRODUCTION (Frontends buildados)
+// ============================================================================
+
+const isProduction = process.env.NODE_ENV === 'production';
+const pathModule = require('path');
+
+if (isProduction) {
+  console.log('🚀 Production mode: Serving static frontend builds');
+
+  // Serve static files for each frontend
+  app.use('/admin', express.static(pathModule.join(__dirname, '../../dist/client')));
+  app.use('/hub', express.static(pathModule.join(__dirname, '../../dist/hub')));
+  app.use('/tq', express.static(pathModule.join(__dirname, '../../dist/tq')));
+
+  // SPA fallback: todas as rotas não-API retornam o index.html
+  app.get('/admin/*', (req, res) => {
+    res.sendFile(pathModule.join(__dirname, '../../dist/client/index.html'));
+  });
+
+  app.get('/hub/*', (req, res) => {
+    res.sendFile(pathModule.join(__dirname, '../../dist/hub/index.html'));
+  });
+
+  app.get('/tq/*', (req, res) => {
+    res.sendFile(pathModule.join(__dirname, '../../dist/tq/index.html'));
+  });
+
+  // Redirect root to admin panel
+  app.get('/', (req, res) => {
+    res.redirect('/admin');
+  });
+} else {
+  console.log('💻 Development mode: Use separate Vite servers for frontends');
+}
+
+// ============================================================================
+// ERROR HANDLERS
+// ============================================================================
+
+// 404 handler (only for API routes and non-matched paths)
 app.use('*', (req, res) => {
   res.status(404).json({
     error: {

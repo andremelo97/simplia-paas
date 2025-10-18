@@ -5,6 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   root: 'src/client',
+  base: process.env.NODE_ENV === 'production' ? '/admin/' : '/',
   build: {
     outDir: '../../dist/client'
   },

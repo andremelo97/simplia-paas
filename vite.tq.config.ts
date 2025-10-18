@@ -5,6 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   root: 'src/client/apps/tq',
+  base: process.env.NODE_ENV === 'production' ? '/tq/' : '/',
   server: {
     port: 3005,
     host: true,

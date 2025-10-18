@@ -12,10 +12,21 @@ function requireAppAccess(applicationSlug, options = {}) {
   
   return async (req, res, next) => {
     let application = null;
-    
+
     try {
+      console.log(`\n🔐 [Auth Middleware] Checking access for ${applicationSlug}`);
+
       // LAYER 1: Authentication Check
+      console.log('📋 [Layer 1] Authentication check:', {
+        hasUser: !!req.user,
+        hasTenant: !!req.tenant,
+        userId: req.user?.userId,
+        tenantId: req.user?.tenantId,
+        allowedApps: req.user?.allowedApps
+      });
+
       if (!req.user) {
+        console.log('❌ [Layer 1] FAILED: No user in request');
         return res.status(401).json({
           error: 'Unauthorized',
           message: 'Authentication required'
@@ -23,14 +34,17 @@ function requireAppAccess(applicationSlug, options = {}) {
       }
 
       if (!req.tenant) {
+        console.log('❌ [Layer 1] FAILED: No tenant in request');
         return res.status(400).json({
-          error: 'Bad Request', 
+          error: 'Bad Request',
           message: 'Tenant context required'
         });
       }
 
       const { userId, tenantId } = req.user;
       const tenantIdFk = req.tenant.id;
+
+      console.log('✅ [Layer 1] PASSED:', { userId, tenantId, tenantIdFk });
 
       // Get application info for logging
       try {
@@ -46,8 +60,12 @@ function requireAppAccess(applicationSlug, options = {}) {
       }
 
       // LAYER 2: Tenant License Check
+      console.log('📋 [Layer 2] Checking tenant license:', { tenantIdFk, applicationSlug });
       const license = await TenantApplication.checkLicense(tenantIdFk, applicationSlug);
+      console.log('📋 [Layer 2] License result:', license);
+
       if (!license) {
+        console.log('❌ [Layer 2] FAILED: No tenant license found');
         if (logAccess) {
           await AccessLog.logDenied(userId, tenantIdFk, application.id, 'no_tenant_license', req);
         }
@@ -57,25 +75,40 @@ function requireAppAccess(applicationSlug, options = {}) {
         });
       }
 
+      console.log('✅ [Layer 2] PASSED: Tenant has license');
+
       // LAYER 3: Get Seat Information (for logging only - not for blocking access)
       // Seat limits are enforced at grant time via Internal Admin, not at API usage time
       const seats = await TenantApplication.checkSeatAvailability(tenantIdFk, application.id);
 
       // LAYER 4: User Access Check (JWT first, DB fallback)
+      console.log('📋 [Layer 3] Checking user access:', {
+        userId,
+        tenantId,
+        applicationSlug,
+        jwtAllowedApps: req.user.allowedApps
+      });
+
       let userAccess = null;
-      
+
       // Fast JWT check
       if (req.user.allowedApps && req.user.allowedApps.includes(applicationSlug)) {
+        console.log('✅ [Layer 3] User access found in JWT token');
         userAccess = { hasAccess: true, source: 'jwt' };
       } else {
+        console.log('⚠️  [Layer 3] App not in JWT, checking database fallback...');
         // Database fallback
         const dbAccess = await UserApplicationAccess.hasAccess(userId, tenantId, applicationSlug);
+        console.log('📋 [Layer 3] Database access result:', dbAccess);
+
         if (dbAccess) {
+          console.log('✅ [Layer 3] User access found in database');
           userAccess = { hasAccess: true, source: 'database', ...dbAccess };
         }
       }
 
       if (!userAccess) {
+        console.log('❌ [Layer 3] FAILED: No user access found in JWT or database');
         if (logAccess) {
           await AccessLog.logDenied(userId, tenantIdFk, application.id, 'no_user_access', req);
         }
@@ -85,16 +118,23 @@ function requireAppAccess(applicationSlug, options = {}) {
         });
       }
 
+      console.log('✅ [Layer 3] PASSED:', userAccess);
+
       // LAYER 5: Role Check (if required)
       if (roleInApp) {
+        console.log('📋 [Layer 4] Checking role requirement:', {
+          requiredRole: roleInApp,
+          currentRole: userAccess.role_in_app || req.user.role
+        });
+
         // Get user role from JWT token or database access record
         const currentUserRole = userAccess.role_in_app || req.user.role;
-        
+
         // Role validation logic:
         // - admin: only admin role can access
         // - manager/operations: both manager and operations can access (same level)
         let hasRequiredRole = false;
-        
+
         if (roleInApp === 'admin') {
           hasRequiredRole = currentUserRole === 'admin';
         } else if (roleInApp === 'manager' || roleInApp === 'operations') {
@@ -104,8 +144,9 @@ function requireAppAccess(applicationSlug, options = {}) {
           // For any other specific role requirement
           hasRequiredRole = currentUserRole === roleInApp;
         }
-        
+
         if (!hasRequiredRole) {
+          console.log('❌ [Layer 4] FAILED: Insufficient role');
           if (logAccess) {
             await AccessLog.logDenied(userId, tenantIdFk, application.id, `role_insufficient_${roleInApp}`, req);
           }
@@ -114,9 +155,13 @@ function requireAppAccess(applicationSlug, options = {}) {
             message: `Role '${roleInApp}' required for ${applicationSlug}`
           });
         }
+
+        console.log('✅ [Layer 4] PASSED: Role check successful');
       }
 
       // SUCCESS: All checks passed - attach context and log
+      console.log('🎉 [Auth Middleware] SUCCESS: All checks passed\n');
+
       req.appAccess = {
         applicationSlug,
         applicationId: application.id,

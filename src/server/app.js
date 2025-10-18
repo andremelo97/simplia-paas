@@ -294,6 +294,11 @@ const pathModule = require('path');
 if (isProduction) {
   console.log('🚀 Production mode: Serving static frontend builds');
 
+  // Redirect root to admin panel
+  app.get('/', (req, res) => {
+    res.redirect('/admin');
+  });
+
   // Serve static files for each frontend
   app.use('/admin', express.static(pathModule.join(__dirname, '../../dist/client')));
   app.use('/hub', express.static(pathModule.join(__dirname, '../../dist/hub')));
@@ -310,11 +315,6 @@ if (isProduction) {
 
   app.get('/tq/*', (req, res) => {
     res.sendFile(pathModule.join(__dirname, '../../dist/tq/index.html'));
-  });
-
-  // Redirect root to admin panel
-  app.get('/', (req, res) => {
-    res.redirect('/admin');
   });
 } else {
   console.log('💻 Development mode: Use separate Vite servers for frontends');

@@ -31,7 +31,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: '../../../dist/tq',
+    outDir: '../../../../dist/tq',
     emptyOutDir: true
   },
   resolve: {

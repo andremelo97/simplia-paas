@@ -35,7 +35,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: '../../../dist/hub',
+    outDir: '../../../../dist/hub',
     emptyOutDir: true
   },
   resolve: {

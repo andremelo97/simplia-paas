@@ -291,3 +291,17 @@ export const useAuthStore = create<AuthState>()(persist(
     }
   }
 ))
+
+// Cross-tab logout synchronization: Listen for logout events from TQ or other tabs
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'auth-storage' && e.newValue === null) {
+      // Another tab logged out - clear Hub store and redirect to login
+      const currentState = useAuthStore.getState()
+      if (currentState.isAuthenticated) {
+        currentState.logout()
+        window.location.href = '/login'
+      }
+    }
+  })
+}

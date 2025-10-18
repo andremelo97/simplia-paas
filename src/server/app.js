@@ -38,6 +38,7 @@ const app = express();
 const INTERNAL_PREFIX = process.env.INTERNAL_API_PREFIX || '/internal/api/v1';
 const DOCS_PATH = process.env.INTERNAL_DOCS_PATH || '/docs/internal';
 const ENABLE_DOCS = process.env.ENABLE_INTERNAL_DOCS === 'true';
+const DISABLE_DOCS_AUTH = process.env.DISABLE_DOCS_AUTH === 'true'; // Allow public access to docs
 const ENABLE_HELMET = process.env.ENABLE_HELMET === 'true';
 const ADMIN_PANEL_ORIGIN = process.env.ADMIN_PANEL_ORIGIN;
 const HUB_ORIGIN = process.env.HUB_ORIGIN || 'http://localhost:3003';
@@ -233,38 +234,107 @@ if (ENABLE_DOCS) {
     ], // JSDoc comments in route files
   });
 
-  // Development: Skip auth for local testing
-  if (process.env.NODE_ENV !== 'development') {
+  // Swagger UI setup with optional authentication
+  const swaggerSetup = swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Simplia Internal API Docs',
+    swaggerOptions: {
+      docExpansion: 'list',
+      filter: true,
+      showRequestDuration: true,
+    },
+  });
+
+  if (DISABLE_DOCS_AUTH || process.env.NODE_ENV === 'development') {
+    // No authentication required
+    app.use(DOCS_PATH, swaggerUi.serve, swaggerSetup);
+  } else {
     // Production: Require authentication and platform role
     app.use(
       DOCS_PATH,
       requireAuth,
       requirePlatformRole('internal_admin'), // Only internal admins can access documentation
       swaggerUi.serve,
-      swaggerUi.setup(swaggerSpec, {
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Simplia Internal API Docs',
-        swaggerOptions: {
-          docExpansion: 'list',
-          filter: true,
-          showRequestDuration: true,
-        },
-      })
+      swaggerSetup
     );
-  } else {
-    // Development: No auth required for local testing
-    app.use(
-      DOCS_PATH,
-      swaggerUi.serve,
-      swaggerUi.setup(swaggerSpec, {
-        customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Simplia Internal API Docs',
-        swaggerOptions: {
-          docExpansion: 'list',
-          filter: true,
-          showRequestDuration: true,
+  }
+}
+
+// ============================================================================
+// TQ API SWAGGER DOCUMENTATION
+// ============================================================================
+
+if (ENABLE_DOCS) {
+  const tqSwaggerSpec = swaggerJsdoc({
+    definition: {
+      openapi: '3.0.3',
+      info: {
+        title: 'Transcription & Quote (TQ) API',
+        version: '1.0.0',
+        description: 'REST API for the Transcription & Quote application within Simplia PaaS',
+        contact: {
+          name: 'Simplia Team',
+          email: 'dev@simplia.com'
+        }
+      },
+      servers: [
+        {
+          url: '/api/tq/v1',
+          description: 'TQ API'
+        }
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT'
+          }
         },
-      })
+        parameters: {
+          tenantId: {
+            name: 'x-tenant-id',
+            in: 'header',
+            required: true,
+            schema: {
+              type: 'string',
+              pattern: '^[1-9][0-9]*$'
+            },
+            description: 'Numeric tenant identifier',
+            example: '1'
+          }
+        }
+      },
+      security: [
+        {
+          bearerAuth: []
+        }
+      ]
+    },
+    apis: ['./src/server/api/tq/routes/*.js']
+  });
+
+  const tqSwaggerSetup = swaggerUi.setup(tqSwaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'TQ API Documentation',
+    swaggerOptions: {
+      docExpansion: 'list',
+      filter: true,
+      showRequestDuration: true,
+    },
+  });
+
+  if (DISABLE_DOCS_AUTH || process.env.NODE_ENV === 'development') {
+    // No authentication required
+    app.use('/docs/tq', swaggerUi.serve, tqSwaggerSetup);
+  } else {
+    // Production: Require authentication and platform role
+    app.use(
+      '/docs/tq',
+      requireAuth,
+      requirePlatformRole('internal_admin'),
+      swaggerUi.serve,
+      tqSwaggerSetup
     );
   }
 }
@@ -308,6 +378,15 @@ if (isProduction) {
   // Redirect root to admin panel
   app.get('/', (req, res) => {
     res.redirect('/admin');
+  });
+
+  // Exact path routes - serve index.html for base paths (BEFORE static middleware)
+  app.get('/hub', (req, res) => {
+    res.sendFile(pathModule.join(__dirname, '../../dist/hub/index.html'));
+  });
+
+  app.get('/tq', (req, res) => {
+    res.sendFile(pathModule.join(__dirname, '../../dist/tq/index.html'));
   });
 
   // Serve static files for each frontend

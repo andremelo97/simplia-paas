@@ -43,6 +43,13 @@ class TenantBranding {
   }
 
   /**
+   * Backwards compatibility helper (some services expect findByTenantId)
+   */
+  static async findByTenantId(tenantId) {
+    return this.findByTenant(tenantId);
+  }
+
+  /**
    * Get default branding configuration
    */
   static getDefaults(tenantId, companyName = null) {

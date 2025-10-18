@@ -662,6 +662,26 @@
       "social_title": "Redes sociais",
       "quick_links_title": "Links rapidos",
       "contact_title": "Contato"
+    },
+    "access": {
+      "language_label": "Idioma",
+      "heading": "Cota\u00E7\u00E3o Protegida",
+      "description": "Esta cota\u00E7\u00E3o \u00E9 protegida por senha. Informe a senha para visualizar.",
+      "password_label": "Senha",
+      "password_placeholder": "Digite a senha",
+      "button_access": "Acessar Cota\u00E7\u00E3o",
+      "button_verifying": "Verificando...",
+      "footer_hint": "Se voc\u00EA n\u00E3o tem a senha, entre em contato com quem enviou este link.",
+      "loading": "Carregando cota\u00E7\u00E3o...",
+      "no_content_title": "Sem Conte\u00FAdo",
+      "no_content_description": "Este modelo de cota\u00E7\u00E3o ainda n\u00E3o possui conte\u00FAdo.",
+      "errors": {
+        "empty": "Informe a senha.",
+        "incorrect": "Senha incorreta. Tente novamente.",
+        "not_found": "Este link n\u00E3o \u00E9 v\u00E1lido ou expirou.",
+        "forbidden": "Acesso negado a esta cota\u00E7\u00E3o.",
+        "default": "N\u00E3o foi poss\u00EDvel acessar a cota\u00E7\u00E3o. Tente novamente mais tarde."
+      }
     }
   },
   "auth": {
@@ -714,7 +734,7 @@
     "ai_agent": {
       "menu_title": "Agentes de IA",
       "menu_description": "Configure o comportamento e prompts do sistema do Agente de IA",
-      "page_title": "Configuração do Agente de IA",
+      "page_title": "Agentes de IA",
       "page_description": "Configure o comportamento e mensagem inicial do Agente de IA",
       "system_message_title": "Mensagem do Sistema",
       "system_message_description": "Esta mensagem define como o Agente de IA deve se comportar e responder. É a primeira mensagem enviada em cada conversa para estabelecer contexto e diretrizes.",
@@ -729,6 +749,30 @@
       "failed_to_reset": "Falha ao redefinir configuração. Por favor, tente novamente.",
       "reset_confirm": "Tem certeza que deseja redefinir a configuração do Agente de IA para o padrão?",
       "last_updated": "Última atualização:"
+    },
+    "email_template": {
+      "menu_title": "Template de E-mail",
+      "menu_description": "Personalize o template de e-mail enviado aos pacientes com links de cotação",
+      "title": "Template de E-mail",
+      "description": "Personalize o e-mail que será enviado aos pacientes com o link da cotação pública",
+      "subject": "Assunto",
+      "subject_placeholder": "Ex: Cotação $quoteNumber$ - $clinicName$",
+      "body": "Corpo do E-mail",
+      "body_placeholder": "Digite o conteúdo do e-mail...",
+      "available_variables": "Variáveis disponíveis:",
+      "var_quote_number": "Número da cotação",
+      "var_patient_name": "Nome completo do paciente",
+      "var_clinic_name": "Nome da clínica/empresa",
+      "var_public_link": "Link público da cotação (obrigatório)",
+      "var_password_block": "Bloco de senha",
+      "required_variable": "Obrigatório",
+      "public_link_required": "O template deve conter a variável $PUBLIC_LINK$",
+      "password_block_required": "O template deve conter a variável $PASSWORD_BLOCK$",
+      "reset_to_default": "Redefinir para Padrão",
+      "reset_confirm": "Tem certeza que deseja redefinir o template de e-mail para o padrão?",
+      "failed_to_load": "Falha ao carregar template de e-mail. Por favor, tente novamente.",
+      "failed_to_save": "Falha ao salvar template de e-mail. Por favor, tente novamente.",
+      "failed_to_reset": "Falha ao redefinir template de e-mail. Por favor, tente novamente."
     }
   },
   "link_toast": {

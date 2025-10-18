@@ -690,6 +690,26 @@
       "social_title": "Social Media",
       "quick_links_title": "Quick Links",
       "contact_title": "Contact"
+    },
+    "access": {
+      "language_label": "Language",
+      "heading": "Protected Quote",
+      "description": "This quote is password protected. Please enter the password to view it.",
+      "password_label": "Password",
+      "password_placeholder": "Enter the password",
+      "button_access": "Access Quote",
+      "button_verifying": "Verifying...",
+      "footer_hint": "If you don't have the password, please contact the person who shared this link with you.",
+      "loading": "Loading quote...",
+      "no_content_title": "No Content",
+      "no_content_description": "This quote template doesn't have any content yet.",
+      "errors": {
+        "empty": "Please enter the password.",
+        "incorrect": "Incorrect password. Please try again.",
+        "not_found": "This link is not valid or has expired.",
+        "forbidden": "Access denied to this quote.",
+        "default": "Failed to access quote. Please try again later."
+      }
     }
   },
   "auth": {
@@ -742,7 +762,7 @@
     "ai_agent": {
       "menu_title": "AI Agents",
       "menu_description": "Configure AI Agent behavior and system prompts",
-      "page_title": "AI Agent Configuration",
+      "page_title": "AI Agents",
       "page_description": "Configure the AI Agent's behavior and initial system message",
       "system_message_title": "System Message",
       "system_message_description": "This message defines how the AI Agent should behave and respond. It's the first message sent in every conversation to establish context and guidelines.",
@@ -757,6 +777,30 @@
       "failed_to_reset": "Failed to reset configuration. Please try again.",
       "reset_confirm": "Are you sure you want to reset the AI Agent configuration to default?",
       "last_updated": "Last updated:"
+    },
+    "email_template": {
+      "menu_title": "Email Template",
+      "menu_description": "Customize the email template sent to patients with quote links",
+      "title": "Email Template",
+      "description": "Customize the email sent to patients with the public quote link",
+      "subject": "Subject",
+      "subject_placeholder": "Ex: Quote $quoteNumber$ - $clinicName$",
+      "body": "Email Body",
+      "body_placeholder": "Enter email content...",
+      "available_variables": "Available variables:",
+      "var_quote_number": "Quote number",
+      "var_patient_name": "Patient full name",
+      "var_clinic_name": "Clinic/company name",
+      "var_public_link": "Public quote link (required)",
+      "var_password_block": "Password block",
+      "required_variable": "Required",
+      "public_link_required": "Template must contain the $PUBLIC_LINK$ variable",
+      "password_block_required": "Template must contain the $PASSWORD_BLOCK$ variable",
+      "reset_to_default": "Reset to Default",
+      "reset_confirm": "Are you sure you want to reset the email template to default?",
+      "failed_to_load": "Failed to load email template. Please try again.",
+      "failed_to_save": "Failed to save email template. Please try again.",
+      "failed_to_reset": "Failed to reset email template. Please try again."
     }
   }
 }

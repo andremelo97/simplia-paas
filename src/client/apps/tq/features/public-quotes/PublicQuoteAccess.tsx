@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Render } from '@measured/puck'
 import '@measured/puck/puck.css'
-import { Button, Input, Label, Card, CardContent } from '@client/common/ui'
+import { Button, Input, Label, Card, CardContent, Select } from '@client/common/ui'
 import { Lock, AlertCircle } from 'lucide-react'
 import { createConfigWithResolvedData } from './puck-config-preview'
 import { api } from '@client/config/http'
@@ -23,25 +23,49 @@ interface PublicQuoteData {
 }
 
 export const PublicQuoteAccess: React.FC = () => {
-  const { t } = useTranslation('tq')
+  const { t, i18n } = useTranslation('tq')
   const { accessToken } = useParams<{ accessToken: string }>()
 
+  type ErrorKey = 'empty' | 'incorrect' | 'not_found' | 'forbidden' | 'default'
+
+  const [language, setLanguage] = useState<'en-US' | 'pt-BR'>('en-US')
   const [password, setPassword] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [errorKey, setErrorKey] = useState<ErrorKey | null>(null)
   const [quoteData, setQuoteData] = useState<PublicQuoteData | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language)
+    }
+  }, [language, i18n])
+
+  const languageOptions = useMemo(
+    () => [
+      { value: 'en-US', label: 'English' },
+      { value: 'pt-BR', label: 'Portugu\u00EAs (Brasil)' }
+    ],
+    []
+  )
+
+  const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = event.target.value as 'en-US' | 'pt-BR'
+    setLanguage(selected)
+  }
+
+  const errorMessage = errorKey ? t(`public_quotes.access.errors.${errorKey}`) : null
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!password.trim()) {
-      setError('Please enter the password')
+      setErrorKey('empty')
       return
     }
 
     setIsVerifying(true)
-    setError(null)
+    setErrorKey(null)
 
     try {
       const response = await api.post(
@@ -49,23 +73,20 @@ export const PublicQuoteAccess: React.FC = () => {
         { password }
       )
 
-      console.log('[PublicQuoteAccess] Response:', response)
-      
       // The response.data IS the data object from the backend
       setQuoteData(response.data)
       setIsAuthenticated(true)
     } catch (err: any) {
       console.error('[PublicQuoteAccess] Password verification failed:', err)
       
-      // Handle different error scenarios
-      if (err.httpStatus === 401 || err.message?.toLowerCase().includes('password')) {
-        setError('Incorrect password. Please try again.')
-      } else if (err.httpStatus === 404 || err.message?.toLowerCase().includes('not found')) {
-        setError('This link is not valid or has expired.')
-      } else if (err.httpStatus === 403) {
-        setError('Access denied to this quote.')
+      if (err?.httpStatus === 401 || err?.message?.toLowerCase().includes('password')) {
+        setErrorKey('incorrect')
+      } else if (err?.httpStatus === 404 || err?.message?.toLowerCase().includes('not found')) {
+        setErrorKey('not_found')
+      } else if (err?.httpStatus === 403) {
+        setErrorKey('forbidden')
       } else {
-        setError('Failed to access quote. Please try again later.')
+        setErrorKey('default')
       }
     } finally {
       setIsVerifying(false)
@@ -115,63 +136,76 @@ export const PublicQuoteAccess: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-8">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <Lock className="w-8 h-8 text-blue-600" />
-              </div>
-            </div>
+        <div className="w-full max-w-md space-y-4">
+          <div className="w-40">
+            <Select
+              label={t('public_quotes.access.language_label')}
+              value={language}
+              onChange={handleLanguageChange}
+              options={languageOptions}
+            />
+          </div>
 
-            <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">
-              Protected Quote
-            </h1>
-            <p className="text-center text-gray-600 mb-6">
-              This quote is password protected. Please enter the password to view.
-            </p>
-
-            <form onSubmit={handlePasswordSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                    setError(null) // Clear error when typing
-                  }}
-                  placeholder={t('public_quotes.placeholders.password')}
-                  autoFocus
-                  disabled={isVerifying}
-                />
-              </div>
-
-              {error && (
-                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-800">{error}</p>
+          <Card>
+            <CardContent className="p-8">
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-blue-600" />
                 </div>
-              )}
+              </div>
 
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                disabled={isVerifying || !password.trim()}
-                isLoading={isVerifying}
-              >
-                {isVerifying ? 'Verifying...' : 'Access Quote'}
-              </Button>
-            </form>
-
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-xs text-center text-gray-500">
-                If you don't have the password, please contact the person who shared this link with you.
+              <h1 className="text-2xl font-bold text-center text-gray-900 mb-2">
+                {t('public_quotes.access.heading')}
+              </h1>
+              <p className="text-center text-gray-600 mb-6">
+                {t('public_quotes.access.description')}
               </p>
-            </div>
-          </CardContent>
-        </Card>
+
+              <form onSubmit={handlePasswordSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t('public_quotes.access.password_label')}</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setErrorKey(null)
+                    }}
+                    placeholder={t('public_quotes.access.password_placeholder')}
+                    autoFocus
+                    disabled={isVerifying}
+                  />
+                </div>
+
+                {errorMessage && (
+                  <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-800">{errorMessage}</p>
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full"
+                  disabled={isVerifying || !password.trim()}
+                  isLoading={isVerifying}
+                >
+                  {isVerifying
+                    ? t('public_quotes.access.button_verifying')
+                    : t('public_quotes.access.button_access')}
+                </Button>
+              </form>
+
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-xs text-center text-gray-500">
+                  {t('public_quotes.access.footer_hint')}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -180,7 +214,7 @@ export const PublicQuoteAccess: React.FC = () => {
   if (!previewConfig || !quoteData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">{t('public_quotes.loading_quote')}</div>
+        <div className="text-gray-500">{t('public_quotes.access.loading')}</div>
       </div>
     )
   }
@@ -190,8 +224,8 @@ export const PublicQuoteAccess: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Content</h1>
-          <p className="text-gray-600">This quote template doesn't have any content yet.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('public_quotes.access.no_content_title')}</h1>
+          <p className="text-gray-600">{t('public_quotes.access.no_content_description')}</p>
         </div>
       </div>
     )
@@ -201,8 +235,22 @@ export const PublicQuoteAccess: React.FC = () => {
   // Use the saved template from content package
   return (
     <div className="min-h-screen bg-white">
+      <div className="px-4 py-4">
+        <div className="w-40">
+          <Select
+            label={t('public_quotes.access.language_label')}
+            value={language}
+            onChange={handleLanguageChange}
+            options={languageOptions}
+          />
+        </div>
+      </div>
       <Render config={previewConfig} data={quoteData.content.template} />
     </div>
   )
 }
+
+
+
+
 

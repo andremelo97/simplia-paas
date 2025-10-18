@@ -18,6 +18,7 @@ const auditRoutes = require('./api/internal/routes/audit');
 const metricsRoutes = require('./api/internal/routes/metrics');
 const entitlementsRoutes = require('./api/internal/routes/entitlements');
 const brandingRoutes = require('./api/internal/routes/branding');
+const communicationRoutes = require('./api/internal/routes/communication');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
@@ -116,6 +117,9 @@ internalRouter.use('/metrics', metricsRoutes);
 
 // Configurations routes (platform-scoped, uses authenticated user's tenant)
 internalRouter.use('/configurations/branding', brandingRoutes);
+internalRouter.use('/configurations/communication', communicationRoutes);
+// Legacy path kept for backward compatibility
+internalRouter.use('/configurations/smtp', communicationRoutes);
 
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();

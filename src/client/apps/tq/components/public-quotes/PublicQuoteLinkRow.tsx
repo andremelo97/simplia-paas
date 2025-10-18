@@ -10,12 +10,14 @@ interface PublicQuoteLinkRowProps {
   publicQuote: PublicQuote
   onRevoke: () => void
   onNewPassword: () => void
+  isNewPasswordLoading?: boolean
 }
 
 export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
   publicQuote,
   onRevoke,
-  onNewPassword
+  onNewPassword,
+  isNewPasswordLoading = false
 }) => {
   const navigate = useNavigate()
   const [copied, setCopied] = React.useState(false)
@@ -159,6 +161,7 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
           size="sm"
           onClick={onNewPassword}
           disabled={!publicQuote.active}
+          isLoading={isNewPasswordLoading}
           className="flex items-center gap-1.5"
         >
           <Key size={14} />

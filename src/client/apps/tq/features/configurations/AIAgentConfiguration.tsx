@@ -141,12 +141,32 @@ export const AIAgentConfiguration: React.FC = () => {
           placeholder="Enter the system message for the AI Agent..."
           rows={20}
           disabled={saving}
-          className="font-mono text-sm"
-          helperText={t('configurations.ai_agent.available_variables') + ' $patient.first_name$, $patient.last_name$, $patient.fullName$, $date.now$, $session.created_at$, $transcription$, $me.first_name$, $me.last_name$, $me.fullName$'}
-          required
-          error={systemMessageError}
-          requiredMessage={t('configurations.ai_agent.transcription_required')}
+          className={`font-mono text-sm ${systemMessageError ? 'border-red-500' : ''}`}
         />
+        {systemMessageError && (
+          <p className="text-sm text-red-600">{systemMessageError}</p>
+        )}
+
+        {/* Available variables help */}
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mt-4">
+          <h3 className="text-sm font-medium text-blue-900 mb-2">
+            {t('configurations.ai_agent.available_variables')}
+          </h3>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$patient.first_name$</code> - Nome do paciente</li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$patient.last_name$</code> - Sobrenome do paciente</li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$patient.fullName$</code> - Nome completo do paciente</li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$date.now$</code> - Data atual</li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$session.created_at$</code> - Data da sessão</li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$transcription$</code> - Transcrição completa <span className="text-red-600 font-semibold">*</span></li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$me.first_name$</code> - Seu nome</li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$me.last_name$</code> - Seu sobrenome</li>
+            <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$me.fullName$</code> - Seu nome completo</li>
+          </ul>
+          <p className="text-xs text-blue-700 mt-2">
+            <span className="text-red-600 font-semibold">*</span> {t('configurations.ai_agent.transcription_required')}
+          </p>
+        </div>
       </Card>
 
       {/* Actions */}

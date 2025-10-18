@@ -10,28 +10,39 @@ The TQ API provides comprehensive audio transcription capabilities for medical c
 
 ## Architecture
 
+### Storage Architecture (Per-Tenant Buckets)
+Each tenant has a dedicated Supabase Storage bucket created automatically during tenant provisioning:
+- **Bucket naming**: `tenant-{subdomain}` (e.g., `tenant-acme-clinic`)
+- **Folder structure**:
+  - `audio-files/` - Audio transcription files
+  - `branding/` - Logo, favicon, background video
+- **Creation**: Automatic during `Tenant.create()` (not during TQ app provisioning)
+- **Isolation**: Complete data separation between tenants
+
 ```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   TQ Client │    │  TQ API     │    │  Supabase   │    │  Deepgram   │
-│ (Port 3005) │    │ (Port 3004) │    │   Storage   │    │     AI      │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-       │                   │                   │                   │
-       │ 1. Upload Audio   │                   │                   │
-       ├──────────────────►│                   │                   │
-       │                   │ 2. Store File     │                   │
-       │                   ├──────────────────►│                   │
-       │                   │ 3. Signed URL     │                   │
-       │                   │◄──────────────────┤                   │
-       │                   │ 4. Start Transcription                │
-       │                   ├───────────────────────────────────────►│
-       │                   │ 5. Request ID     │                   │
-       │                   │◄───────────────────────────────────────┤
-       │ 6. Processing...  │                   │                   │
-       │◄──────────────────┤                   │                   │
-       │                   │        7. Webhook Callback            │
-       │                   │◄───────────────────────────────────────┤
-       │ 8. Complete       │                   │                   │
-       │◄──────────────────┤                   │                   │
+┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐    ┌─────────────┐
+│   TQ Client │    │  TQ API     │    │  Supabase Storage   │    │  Deepgram   │
+│ (Port 3005) │    │ (Port 3004) │    │ (Per-Tenant Buckets)│    │     AI      │
+└─────────────┘    └─────────────┘    └─────────────────────┘    └─────────────┘
+       │                   │                   │                           │
+       │ 1. Upload Audio   │                   │                           │
+       ├──────────────────►│                   │                           │
+       │                   │ 2. Store File     │                           │
+       │                   │  (tenant-slug/    │                           │
+       │                   │   audio-files/)   │                           │
+       │                   ├──────────────────►│                           │
+       │                   │ 3. Public URL     │                           │
+       │                   │◄──────────────────┤                           │
+       │                   │ 4. Start Transcription                        │
+       │                   ├───────────────────────────────────────────────►│
+       │                   │ 5. Request ID     │                           │
+       │                   │◄───────────────────────────────────────────────┤
+       │ 6. Processing...  │                   │                           │
+       │◄──────────────────┤                   │                           │
+       │                   │        7. Webhook Callback                    │
+       │                   │◄───────────────────────────────────────────────┤
+       │ 8. Complete       │                   │                           │
+       │◄──────────────────┤                   │                           │
 ```
 
 ## Core Resources
@@ -61,9 +72,10 @@ Content-Type: audio/mpeg
 {
   "success": true,
   "transcriptionId": "uuid-string",
-  "audioUrl": "https://supabase.storage.url/tenant_2/uuid.mp3",
+  "audioUrl": "https://supabase.storage.url/tenant-acme-clinic/audio-files/uuid.mp3",
   "fileName": "recording.mp3",
   "fileSize": 15728640,
+  "storagePath": "audio-files/uuid.mp3",
   "status": "uploaded"
 }
 ```
@@ -314,6 +326,79 @@ Reset AI Agent configuration to default system message.
 
 > ℹ️ Variables are resolved automatically **before** the prompt is sent to OpenAI.
 
+### Email Template Configuration
+
+Customize the email sent to patients whenever a public quote link is generated.
+
+**Base**: `/configurations/email-template`
+
+#### GET /configurations/email-template
+Return the current template for the tenant. If no template exists yet, the endpoint responds with **404** and `meta.code = EMAIL_TEMPLATE_NOT_FOUND`.
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "subject": "Quote $quoteNumber$ - $clinicName$",
+    "body": "<p>Hello $patientName$...</p>",
+    "createdAt": "2025-10-08T10:00:00Z",
+    "updatedAt": "2025-10-08T10:00:00Z"
+  },
+  "meta": {
+    "code": "EMAIL_TEMPLATE_RETRIEVED"
+  }
+}
+```
+
+#### POST /configurations/email-template
+Create or update the template. Both `subject` and `body` are required.
+
+**Request:**
+```json
+{
+  "subject": "Quote $quoteNumber$ ready for review",
+  "body": "<p>Use $PUBLIC_LINK$ to access the quote.</p><p>$PASSWORD_BLOCK$</p>"
+}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "subject": "Quote $quoteNumber$ ready for review",
+    "body": "<p>Use $PUBLIC_LINK$ ...</p>",
+    "updatedAt": "2025-10-08T11:00:00Z"
+  },
+  "meta": {
+    "code": "EMAIL_TEMPLATE_UPDATED",
+    "message": "Email template updated successfully."
+  }
+}
+```
+
+> **Validation rules**
+> - `subject` and `body` must be non-empty strings.
+> - The body must include both `$PUBLIC_LINK$` and `$PASSWORD_BLOCK$`. Missing placeholders return HTTP 400 with `meta.code = VALIDATION_ERROR`.
+
+#### POST /configurations/email-template/reset
+Reset the template to the locale-aware default (pt-BR or en-US).
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "subject": "Quote $quoteNumber$ - $clinicName$",
+    "body": "<p>Ol� $patientName$...</p>",
+    "updatedAt": "2025-10-08T11:30:00Z"
+  },
+  "meta": {
+    "code": "EMAIL_TEMPLATE_RESET"
+  }
+}
+```
 ### Quotes
 
 Manage consultation quotes and pricing for services.
@@ -1032,9 +1117,19 @@ Create a shareable public quote link.
     "hasPassword": true,
     "isExpired": false,
     "isAccessible": true
+  },
+  "meta": {
+    "code": "PUBLIC_QUOTE_CREATED",
+    "message": "Public quote link created successfully!",
+    "password": "temporary-password-if-generated",
+    "publicUrl": "https://tenant-domain/pq/<token>"
   }
 }
 ```
+
+> **Email delivery**  
+> When a patient email exists, the API also sends the public link and password using the configured SMTP settings.  
+> Email failures return HTTP 500 with `meta.code = PUBLIC_QUOTE_EMAIL_FAILED` and the link is rolled back automatically.
 
 **Access URL Format:**
 ```
@@ -1046,6 +1141,38 @@ Get all public quote links for a specific quote.
 
 #### DELETE /public-quotes/{publicQuoteId}
 Revoke a public quote link (sets active to false).
+
+#### POST /public-quotes/{publicQuoteId}/new-password
+Generate a fresh password for an existing public quote link. The previous password is invalidated only after the new password email is sent successfully.
+
+**Request:**
+```json
+{}
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "id": "uuid-string",
+    "quoteId": "uuid-string",
+    "templateId": "uuid-string",
+    "accessToken": "secure-random-token",
+    "hasPassword": true,
+    "isAccessible": true,
+    "updatedAt": "2025-10-17T23:36:30.189Z"
+  },
+  "meta": {
+    "code": "NEW_PASSWORD_GENERATED",
+    "message": "New password generated successfully",
+    "password": "new-password-value"
+  }
+}
+```
+
+> **Important**  
+> - The endpoint attempts to email the new password using tenant SMTP configuration.  
+> - On email failure the password change is rolled back and the API responds with HTTP 500 + `meta.code = PUBLIC_QUOTE_EMAIL_FAILED`.
 
 ## Complete Workflow Example
 
@@ -1445,3 +1572,5 @@ Interactive API documentation available at:
 ---
 
 **Note**: This documentation reflects the current development setup. For production deployment, webhook URLs must be publicly accessible and all environment variables properly configured.
+
+

@@ -66,13 +66,17 @@ CRITICAL CONTENT RULES - WHAT YOU CAN AND CANNOT CHANGE:
 
 ✔️ YOU CAN ONLY CHANGE:
 - Content inside [square brackets] - these are placeholders to fill with transcription data
-- Content inside (round brackets) - these are instructions, follow them and remove the brackets
+- Content inside (round brackets) - these are instructions, follow them and **COMPLETELY REMOVE** the brackets AND the instruction text
 
 🚫 YOU MUST NEVER CHANGE:
 - Any text OUTSIDE of [brackets] or (parentheses)
 - Patient names, doctor names, dates, or any other data already filled in the template
 - These are REAL DATA from the system database, NOT from the transcription
 - Even if the transcription mentions different names, DO NOT change what's already in the template
+
+🔥 CRITICAL: Remove ALL (parentheses) and their instruction content from the final output
+- Example: "Test results (only include if mentioned)" → "Test results" or complete removal if no data
+- NEVER leave (instruction text) in the final output
 
 Example:
 Template: "<strong>Patient Name:</strong> John Smith <strong>Doctor:</strong> Dr. Jane Doe [Chief Complaint]"
@@ -119,13 +123,17 @@ REGRAS CRÍTICAS DE CONTEÚDO - O QUE PODE E O QUE NÃO PODE SER ALTERADO:
 
 ✔️ VOCÊ SÓ PODE ALTERAR:
 - Conteúdo dentro de [colchetes] - são placeholders que devem ser preenchidos com dados da transcrição.
-- Conteúdo dentro de (parênteses) - são instruções, siga-as e remova os parênteses ao entregar o texto.
+- Conteúdo dentro de (parênteses) - são instruções, siga-as e **REMOVA COMPLETAMENTE** os parênteses E o texto da instrução.
 
 🚫 VOCÊ NUNCA PODE ALTERAR:
 - Qualquer texto FORA de [colchetes] ou (parênteses).
 - Nomes de pacientes, profissionais, datas ou qualquer dado já preenchido no template.
 - Esses dados vêm do banco do sistema, NÃO da transcrição.
 - Mesmo que a transcrição mencione nomes diferentes, NÃO altere o que já está no template.
+
+🔥 CRÍTICO: Remova TODOS os (parênteses) e seu conteúdo de instrução da saída final
+- Exemplo: "Resultados de testes (incluir apenas se mencionado)" → "Resultados de testes" ou remoção completa se sem dados
+- NUNCA deixe (texto de instrução) na saída final
 
 Exemplo:
 Template: "<strong>Nome do Paciente:</strong> John Smith <strong>Profissional:</strong> Dra. Jane Doe [Queixa Principal]"

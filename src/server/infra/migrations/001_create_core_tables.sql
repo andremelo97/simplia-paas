@@ -347,6 +347,77 @@ COMMENT ON COLUMN tenant_branding.company_name IS 'Company display name for publ
 -- For now, applications should manually update the updated_at field when modifying records
 
 -- =============================================
+-- TENANT COMMUNICATION SETTINGS
+-- =============================================
+
+-- Communication configuration per tenant for sending emails (public quotes, reports, etc.)
+CREATE TABLE IF NOT EXISTS tenant_communication_settings (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+
+  -- SMTP server configuration
+  smtp_host VARCHAR(255) NOT NULL,
+  smtp_port INTEGER NOT NULL DEFAULT 587,
+  smtp_secure BOOLEAN DEFAULT true,
+
+  -- Authentication
+  smtp_username VARCHAR(255) NOT NULL,
+  smtp_password TEXT NOT NULL,
+
+  -- Sender information
+  smtp_from_email VARCHAR(255) NOT NULL,
+
+  -- Metadata
+  created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+
+  -- One config per tenant
+  UNIQUE(tenant_id_fk)
+);
+
+CREATE INDEX IF NOT EXISTS idx_tenant_communication_settings_tenant ON tenant_communication_settings(tenant_id_fk);
+
+COMMENT ON TABLE tenant_communication_settings IS 'Communication configuration per tenant for sending emails (public quotes, reports, etc.)';
+COMMENT ON COLUMN tenant_communication_settings.smtp_host IS 'SMTP server hostname (e.g., smtp.gmail.com)';
+COMMENT ON COLUMN tenant_communication_settings.smtp_port IS 'SMTP server port (587 for TLS, 465 for SSL)';
+COMMENT ON COLUMN tenant_communication_settings.smtp_secure IS 'Use secure connection (TLS/SSL)';
+COMMENT ON COLUMN tenant_communication_settings.smtp_username IS 'SMTP authentication username';
+COMMENT ON COLUMN tenant_communication_settings.smtp_password IS 'SMTP authentication password (stored as plain text for now)';
+COMMENT ON COLUMN tenant_communication_settings.smtp_from_email IS 'Sender email address';
+
+-- Email sending log for audit and troubleshooting (generic, used by all apps)
+CREATE TABLE IF NOT EXISTS email_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+
+  -- Email metadata
+  app_name VARCHAR(50) NOT NULL, -- 'tq', 'crm', 'automation', etc.
+  recipient_email VARCHAR(255) NOT NULL,
+  subject TEXT NOT NULL,
+  body TEXT NOT NULL, -- HTML or plain text content (with resolved variables)
+
+  -- Delivery status
+  status VARCHAR(20) DEFAULT 'sent', -- sent, failed, bounced
+  sent_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
+  error_message TEXT,
+
+  -- Flexible metadata for app-specific data (patient_id, quote_id, etc.)
+  metadata JSONB
+);
+
+CREATE INDEX IF NOT EXISTS idx_email_log_tenant_id ON email_log(tenant_id_fk);
+CREATE INDEX IF NOT EXISTS idx_email_log_status ON email_log(status);
+CREATE INDEX IF NOT EXISTS idx_email_log_sent_at ON email_log(sent_at);
+CREATE INDEX IF NOT EXISTS idx_email_log_app_name ON email_log(app_name);
+
+COMMENT ON TABLE email_log IS 'Audit log for all emails sent across applications - generic table used by TQ, CRM, etc.';
+COMMENT ON COLUMN email_log.app_name IS 'Application that sent the email (tq, crm, automation)';
+COMMENT ON COLUMN email_log.subject IS 'Email subject with resolved variables';
+COMMENT ON COLUMN email_log.body IS 'Email body (HTML or plain text) with resolved variables';
+COMMENT ON COLUMN email_log.status IS 'Delivery status: sent (successfully sent), failed (SMTP error), bounced (recipient rejected)';
+COMMENT ON COLUMN email_log.metadata IS 'Flexible JSONB field for app-specific data (quote_id, patient_id, etc.)';
+
+-- =============================================
 -- COMMENTS FOR DOCUMENTATION
 -- =============================================
 

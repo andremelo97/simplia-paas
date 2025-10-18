@@ -22,19 +22,24 @@ const { getLocaleFromTimezone } = require('../utils/localeMapping');
  * - Minimal essential fields only
  * - Proper indexes and constraints
  * - Automatic timestamp triggers
+ * - Per-tenant Supabase Storage bucket
  *
  * @param {Object} client - PostgreSQL client connection
  * @param {string} schema - Tenant schema name (e.g., 'tenant_clinic_a')
  * @param {string} timeZone - Tenant timezone (e.g., 'America/Sao_Paulo')
+ * @param {string} tenantSlug - Tenant slug for bucket naming (e.g., 'clinic-a')
  * @throws {Error} If provisioning fails
  */
-async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
+async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug = null) {
   try {
     await client.query('BEGIN');
 
     const locale = getLocaleFromTimezone(timeZone);
     const templatesByLocale = getDefaultTemplates(locale);
     const defaultSystemMessage = getDefaultSystemMessage(locale);
+
+    // Note: Tenant bucket is now created during tenant creation (Tenant.create)
+    // No need to create it here - bucket already exists
 
     // ALWAYS force UTC timezone for tenant provisioning (industry standard)
     await client.query("SET LOCAL TIME ZONE 'UTC'");
@@ -545,6 +550,28 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
+    // Create tq_email_template table for email templates (TQ-specific, 1 per tenant)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS tq_email_template (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
+        subject TEXT NOT NULL,
+        body TEXT NOT NULL
+      )
+    `);
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_tq_email_template_updated_at ON tq_email_template
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_tq_email_template_updated_at
+        BEFORE UPDATE ON tq_email_template
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
     const { patientSummary, clinicalReport, publicQuoteTemplate } = templatesByLocale;
 
     // Seed default templates for quotes and clinical reports
@@ -586,6 +613,14 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC') {
       [defaultSystemMessage]
     );
 
+    // Seed default email template based on tenant locale
+    const TQEmailTemplate = require('../models/TQEmailTemplate');
+    const defaultEmailTemplate = TQEmailTemplate.getDefaultTemplate(locale);
+    await client.query(
+      `INSERT INTO tq_email_template (subject, body) VALUES ($1, $2)`,
+      [defaultEmailTemplate.subject, defaultEmailTemplate.body]
+    );
+
     await client.query('COMMIT');
     console.log(`TQ app schema provisioned successfully for tenant schema: ${schema}`);
 
@@ -609,10 +644,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_report', 'public_quote', 'public_quote_template', 'ai_agent_configuration')
+        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_report', 'public_quote', 'public_quote_template', 'ai_agent_configuration', 'tq_email_template')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 11;
+    return parseInt(result.rows[0].table_count) === 12;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

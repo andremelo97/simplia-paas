@@ -155,6 +155,30 @@
     "AI_RESPONSE_GENERATED": {
       "title": "AI Responded",
       "message": "AI response generated successfully"
+    },
+    "COMMUNICATION_SETTINGS_SAVED": {
+      "title": "Communication Updated",
+      "message": "Communication settings saved successfully."
+    },
+    "PUBLIC_QUOTE_EMAIL_FAILED": {
+      "title": "Email Delivery Failed",
+      "message": "We couldn't send the public quote email. Please check your communication settings and try again."
+    },
+    "PUBLIC_QUOTE_CREATION_FAILED": {
+      "title": "Link Creation Failed",
+      "message": "We couldn't create the public quote link. Please try again later."
+    },
+    "PUBLIC_QUOTE_NEW_PASSWORD_FAILED": {
+      "title": "Password Update Failed",
+      "message": "We couldn't generate a new password for this public quote. Please try again later."
+    },
+    "NEW_PASSWORD_GENERATED": {
+      "title": "Password Updated",
+      "message": "A new password was generated and sent by email."
+    },
+    "EMAIL_TEMPLATE_UPDATED": {
+      "title": "Template Updated",
+      "message": "Email template updated successfully."
     }
   }
 }

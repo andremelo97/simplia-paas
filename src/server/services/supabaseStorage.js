@@ -47,17 +47,17 @@ class SupabaseStorageService {
    * @param {Buffer} fileBuffer - File buffer
    * @param {string} fileName - Original filename
    * @param {string} fileIdentifier - Unique identifier for the file (e.g., sessionId, userId, etc.)
-   * @param {string} tenantId - Tenant ID for isolation
+   * @param {string} folder - Folder within bucket ('audio-files' or 'branding')
    * @param {string} mimeType - File MIME type
    * @returns {Promise<{url: string, path: string, size: number}>}
    */
-  async uploadFile(fileBuffer, fileName, fileIdentifier, tenantId, mimeType) {
+  async uploadFile(fileBuffer, fileName, fileIdentifier, folder, mimeType) {
     try {
       // Extract file extension from original filename
       const fileExtension = fileName.split('.').pop().toLowerCase();
 
-      // Generate storage path with tenant isolation
-      const storagePath = `tenant_${tenantId}/${fileIdentifier}.${fileExtension}`;
+      // Generate storage path: folder/identifier.ext (no tenant prefix - bucket IS the tenant)
+      const storagePath = `${folder}/${fileIdentifier}.${fileExtension}`;
 
       // Upload file to Supabase Storage
       const { data, error } = await this.supabase.storage
@@ -217,3 +217,63 @@ class SupabaseStorageService {
 }
 
 module.exports = SupabaseStorageService;
+/**
+ * Create tenant-specific bucket during TQ app provisioning
+ *
+ * @param {string} tenantSlug - Tenant slug (e.g., 'acme-clinic')
+ * @param {boolean} isPublic - Whether bucket should be public (default: true)
+ * @returns {Promise<{bucketName: string, created: boolean}>}
+ */
+async function createTenantBucket(tenantSlug, isPublic = true) {
+  if (!tenantSlug) {
+    throw new Error('tenantSlug is required to create bucket');
+  }
+
+  const bucketName = `tenant-${tenantSlug}`;
+
+  try {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Missing required Supabase configuration');
+    }
+
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
+
+    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+
+    if (listError) {
+      throw new Error(`Failed to list buckets: ${listError.message}`);
+    }
+
+    const bucketExists = buckets?.some(b => b.name === bucketName);
+
+    if (bucketExists) {
+      console.log(`ℹ️  Bucket already exists: ${bucketName}`);
+      return { bucketName, created: false };
+    }
+
+    const { data, error: createError } = await supabase.storage.createBucket(bucketName, {
+      public: isPublic
+      // Note: fileSizeLimit and allowedMimeTypes removed - causes "object exceeded maximum size" error
+      // File size limit and MIME validation are done at application level during upload
+    });
+
+    if (createError) {
+      throw new Error(`Failed to create bucket: ${createError.message}`);
+    }
+
+    console.log(`✅ Created tenant bucket: ${bucketName} (public: ${isPublic})`);
+    return { bucketName, created: true };
+
+  } catch (error) {
+    console.error(`❌ Failed to create tenant bucket for ${tenantSlug}:`, error);
+    throw error;
+  }
+}
+
+module.exports.createTenantBucket = createTenantBucket;

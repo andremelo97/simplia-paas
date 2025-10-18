@@ -41,7 +41,7 @@
     "application_portal": "Application Portal"
   },
   "branding": {
-    "title": "Branding Configuration",
+    "title": "Branding",
     "subtitle": "Customize your organization's visual identity and branding",
     "loading": "Loading branding configuration...",
     "brand_colors": "Brand Colors",
@@ -124,5 +124,27 @@
       "unlimited": "Unlimited",
       "seats_usage": "{{used}} of {{total}} seats used"
     }
+  },
+  "communication": {
+    "title": "Email & Communication",
+    "subtitle": "Configure SMTP and other communication channels",
+    "loading": "Loading communication settings...",
+    "server_config": "SMTP Server",
+    "host": "SMTP Host",
+    "host_hint": "Example: smtp.gmail.com, smtp.office365.com",
+    "port": "Port",
+    "port_hint": "587 for TLS, 465 for SSL",
+    "use_secure": "Use secure connection (TLS/SSL)",
+    "secure_hint": "Recommended for data protection",
+    "authentication": "Authentication",
+    "username": "Username",
+    "password": "Password",
+    "password_hint": "Stored securely (not encrypted for now)",
+    "show": "Show",
+    "hide": "Hide",
+    "sender_info": "Sender Information",
+    "from_email": "From Email",
+    "from_email_hint": "Email address that will appear as sender",
+    "save_changes": "Save Changes"
   }
 }

@@ -91,6 +91,30 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Contact removed."
   },
 
+  // Communication settings
+  COMMUNICATION_SETTINGS_SAVED: {
+    title: "Communication Updated",
+    message: "Communication settings saved successfully."
+  },
+
+  // Public quote operations
+  PUBLIC_QUOTE_EMAIL_FAILED: {
+    title: "Email Delivery Failed",
+    message: "Failed to send public quote email."
+  },
+  PUBLIC_QUOTE_CREATION_FAILED: {
+    title: "Link Creation Failed",
+    message: "Failed to create public quote link."
+  },
+  PUBLIC_QUOTE_NEW_PASSWORD_FAILED: {
+    title: "Password Update Failed",
+    message: "Failed to generate new public quote password."
+  },
+  NEW_PASSWORD_GENERATED: {
+    title: "Password Updated",
+    message: "New password generated successfully."
+  },
+
   // Pricing operations
   PRICING_CREATED: {
     title: "Pricing Created",
@@ -249,6 +273,30 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   FAVICON_UPLOADED: {
     title: "Favicon Uploaded",
     message: "Favicon uploaded successfully."
+  },
+
+  // SMTP operations
+  SMTP_SETTINGS_SAVED: {
+    title: "SMTP Settings Saved",
+    message: "Email configuration saved successfully."
+  },
+  SMTP_SETTINGS_RETRIEVED: {
+    title: "Settings Loaded",
+    message: "SMTP settings loaded successfully."
+  },
+
+  // Email Template operations
+  EMAIL_TEMPLATE_RETRIEVED: {
+    title: "Template Loaded",
+    message: "Email template loaded successfully."
+  },
+  EMAIL_TEMPLATE_UPDATED: {
+    title: "Template Updated",
+    message: "Email template updated successfully."
+  },
+  EMAIL_TEMPLATE_RESET: {
+    title: "Template Reset",
+    message: "Email template reset to default successfully."
   }
 }
 

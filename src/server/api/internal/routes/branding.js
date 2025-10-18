@@ -47,10 +47,19 @@ const videoUpload = multer({
   }
 });
 
-// Create storage service for branding assets
-const brandingStorage = new SupabaseStorageService(
-  process.env.SUPABASE_BRANDING_BUCKET || 'tq-branding-assets'
-);
+// Helper function to get tenant-specific storage service
+async function getTenantStorageService(tenantId) {
+  const database = require('../../../infra/db/database');
+  const result = await database.query('SELECT subdomain FROM tenants WHERE id = $1', [tenantId]);
+
+  if (result.rows.length === 0) {
+    throw new Error(`Tenant not found: ${tenantId}`);
+  }
+
+  const tenantSubdomain = result.rows[0].subdomain;
+  const bucketName = `tenant-${tenantSubdomain}`;
+  return new SupabaseStorageService(bucketName);
+}
 
 /**
  * Helper function to extract storage path from Supabase URL
@@ -406,7 +415,8 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
       });
     }
 
-    // Ensure bucket exists
+    // Get tenant-specific storage service
+    const brandingStorage = await getTenantStorageService(tenantId);
     await brandingStorage.ensureBucketExists();
 
     // Get existing branding FIRST to check for old files
@@ -414,7 +424,7 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
 
     // Extract file extension from new file
     const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
-    const newPath = `tenant_${tenantId}/${type}.${fileExtension}`;
+    const newPath = `branding/${type}.${fileExtension}`;
 
     // Delete old file ONLY if it's different from the new one
     const oldUrl = type === 'logo' ? existingBranding.logoUrl : existingBranding.faviconUrl;
@@ -434,7 +444,7 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
       req.file.buffer,
       req.file.originalname,
       type, // Just the type (logo/favicon), service will add extension from originalname
-      tenantId,
+      'branding', // Folder within tenant bucket
       req.file.mimetype
     );
 
@@ -535,15 +545,16 @@ router.post('/upload-video', videoUpload.single('video'), async (req, res) => {
       });
     }
 
-    // Ensure bucket exists
-    await brandingStorage.ensureBucketExists();
-
     // Get existing branding FIRST to check for old files
     const existingBranding = await TenantBranding.findByTenant(tenantId);
 
+    // Get tenant-specific storage service
+    const brandingStorage = await getTenantStorageService(tenantId);
+    await brandingStorage.ensureBucketExists();
+
     // Extract file extension from new file
     const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
-    const newPath = `tenant_${tenantId}/background-video.${fileExtension}`;
+    const newPath = `branding/background-video.${fileExtension}`;
 
     // Delete old video ONLY if it's different from the new one
     const oldPath = extractStoragePath(existingBranding.backgroundVideoUrl);
@@ -562,7 +573,7 @@ router.post('/upload-video', videoUpload.single('video'), async (req, res) => {
       req.file.buffer,
       req.file.originalname,
       'background-video',
-      tenantId,
+      'branding', // Folder within tenant bucket
       req.file.mimetype
     );
 

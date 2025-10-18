@@ -10,6 +10,7 @@ const clinicalReportsRoutes = require('./routes/clinical-reports');
 const publicQuotesRoutes = require('./routes/public-quotes');
 const publicQuoteTemplatesRoutes = require('./routes/public-quote-templates');
 const aiAgentConfigurationRoutes = require('./routes/ai-agent-configuration');
+const emailTemplatesRoutes = require('./routes/email-templates');
 
 const router = express.Router();
 
@@ -42,6 +43,7 @@ router.use('/ai-agent', aiAgentRoutes);
 
 // Mount configurations routes
 router.use('/configurations/ai-agent', aiAgentConfigurationRoutes);
+router.use('/configurations/email-template', emailTemplatesRoutes);
 
 /**
  * @openapi

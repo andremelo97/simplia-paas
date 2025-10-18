@@ -310,7 +310,7 @@ router.post('/', async (req, res) => {
     const baseUrl = process.env.TQ_ORIGIN || 'http://localhost:3005';
     const publicUrl = `${baseUrl}/pq/${accessToken}`;
 
-    const publicQuote = await PublicQuote.create(schema, {
+    let publicQuote = await PublicQuote.create(schema, {
       tenantId,
       quoteId,
       templateId,
@@ -320,6 +320,49 @@ router.post('/', async (req, res) => {
       password,
       expiresAt
     });
+
+    // Send email and abort if it fails
+    if (quoteData.patient_email) {
+      const EmailService = require('../../../services/emailService');
+      const Tenant = require('../../../infra/models/Tenant');
+      let branding = null;
+      try {
+        const { TenantBranding } = require('../../../infra/models/TenantBranding');
+        branding = await TenantBranding.findByTenantId(tenantId);
+      } catch (brandingError) {
+        console.error('Failed to load tenant branding for public quote email:', brandingError);
+      }
+
+      const tenant = await Tenant.findById(tenantId);
+
+      try {
+        await EmailService.sendPublicQuoteEmail({
+          tenantId,
+          tenantSchema: schema,
+          tenantTimezone: tenant?.timezone,
+          recipientEmail: quoteData.patient_email,
+          quoteNumber: quoteData.quote_number || quoteData.number,
+          patientName: `${quoteData.patient_first_name} ${quoteData.patient_last_name}`.trim(),
+          clinicName: branding?.companyName || 'Our Clinic',
+          publicLink: publicUrl,
+          password,
+          patientId: quoteData.patient_id,
+          quoteId: quoteData.id,
+          publicQuoteId: publicQuote.id
+        });
+      } catch (emailError) {
+        console.error('Public quote email send failed. Rolling back generated link.', emailError);
+
+        try {
+          await PublicQuote.deleteById(publicQuote.id, schema);
+        } catch (rollbackError) {
+          console.error('Failed to rollback public quote after email failure:', rollbackError);
+        }
+
+        emailError.code = emailError.code || 'PUBLIC_QUOTE_EMAIL_FAILED';
+        throw emailError;
+      }
+    }
 
     // Return public quote data with URL and password in meta
     res.status(201).json({
@@ -333,9 +376,13 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Create public quote error:', error);
+    const isEmailFailure = error.code === 'PUBLIC_QUOTE_EMAIL_FAILED';
     res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Failed to create public quote link'
+      error: {
+        code: isEmailFailure ? 'PUBLIC_QUOTE_EMAIL_FAILED' : 'PUBLIC_QUOTE_CREATION_FAILED',
+        message: isEmailFailure ? 'Failed to send public quote email' : 'Failed to create public quote link'
+      },
+      message: isEmailFailure ? 'Failed to send public quote email' : 'Failed to create public quote link'
     });
   }
 });
@@ -463,6 +510,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     const publicQuote = await PublicQuote.findById(id, schema);
+    const previousPasswordHash = publicQuote.passwordHash;
     await publicQuote.revoke(schema);
 
     res.json({
@@ -553,6 +601,75 @@ router.post('/:id/new-password', async (req, res) => {
 
     const updatedPublicQuote = new PublicQuote(result.rows[0]);
 
+    // Send email with new password (best effort - doesn't block response)
+    // Fetch quote and patient data for email
+    const quoteDataQuery = `
+      SELECT
+        q.id as quote_id,
+        q.number as quote_number,
+        s.patient_id,
+        p.first_name as patient_first_name,
+        p.last_name as patient_last_name,
+        p.email as patient_email
+      FROM ${schema}.quote q
+      INNER JOIN ${schema}.session s ON q.session_id = s.id
+      INNER JOIN ${schema}.patient p ON s.patient_id = p.id
+      WHERE q.id = $1
+    `;
+
+    const quoteDataResult = await database.query(quoteDataQuery, [updatedPublicQuote.quoteId]);
+
+    if (quoteDataResult.rows.length > 0 && quoteDataResult.rows[0].patient_email) {
+      const quoteInfo = quoteDataResult.rows[0];
+      const EmailService = require('../../../services/emailService');
+      const Tenant = require('../../../infra/models/Tenant');
+
+      let branding = null;
+      try {
+        const { TenantBranding } = require('../../../infra/models/TenantBranding');
+        branding = await TenantBranding.findByTenantId(updatedPublicQuote.tenantId);
+      } catch (brandingError) {
+        console.error('Failed to load tenant branding for new password email:', brandingError);
+      }
+
+      const tenant = await Tenant.findById(updatedPublicQuote.tenantId);
+
+      try {
+        await EmailService.sendPublicQuoteEmail({
+          tenantId: updatedPublicQuote.tenantId,
+          tenantSchema: schema,
+          tenantTimezone: tenant?.timezone,
+          recipientEmail: quoteInfo.patient_email,
+          quoteNumber: quoteInfo.quote_number,
+          patientName: `${quoteInfo.patient_first_name} ${quoteInfo.patient_last_name}`.trim(),
+          clinicName: branding?.companyName || 'Our Clinic',
+          publicLink: updatedPublicQuote.publicUrl,
+          password: newPassword,
+          patientId: quoteInfo.patient_id,
+          quoteId: quoteInfo.quote_id,
+          publicQuoteId: updatedPublicQuote.id
+        });
+      } catch (emailError) {
+        console.error('New password email send failed. Rolling back password change.', emailError);
+
+        try {
+          await database.query(
+            `
+              UPDATE ${schema}.public_quote
+              SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
+              WHERE id = $2
+            `,
+            [previousPasswordHash || null, id]
+          );
+        } catch (rollbackError) {
+          console.error('Failed to rollback password hash after email failure:', rollbackError);
+        }
+
+        emailError.code = emailError.code || 'PUBLIC_QUOTE_EMAIL_FAILED';
+        throw emailError;
+      }
+    }
+
     res.json({
       data: updatedPublicQuote.toJSON(),
       meta: {
@@ -571,9 +688,14 @@ router.post('/:id/new-password', async (req, res) => {
       });
     }
 
+    const isEmailFailure = error.code === 'PUBLIC_QUOTE_EMAIL_FAILED';
+
     res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Failed to generate new password'
+      error: {
+        code: isEmailFailure ? 'PUBLIC_QUOTE_EMAIL_FAILED' : 'PUBLIC_QUOTE_NEW_PASSWORD_FAILED',
+        message: isEmailFailure ? 'Failed to send public quote email' : 'Failed to generate new password'
+      },
+      message: isEmailFailure ? 'Failed to send public quote email' : 'Failed to generate new password'
     });
   }
 });

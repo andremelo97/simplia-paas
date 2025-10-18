@@ -1,4 +1,5 @@
 const database = require('../db/database');
+const { createTenantBucket } = require('../../services/supabaseStorage');
 
 class Tenant {
   constructor(data) {
@@ -36,6 +37,18 @@ class Tenant {
       RETURNING *
     `;
     const result = await database.query(query, [name, subdomain, schemaName, timezone, status]);
+
+    // Create tenant-specific Supabase Storage bucket
+    console.log(`🪣 [Tenant.create] Attempting to create bucket for subdomain: ${subdomain}`);
+    try {
+      const bucketResult = await createTenantBucket(subdomain, true); // public bucket
+      console.log(`✅ [Tenant.create] Bucket creation result:`, bucketResult);
+    } catch (bucketError) {
+      console.error(`❌ [Tenant.create] Failed to create tenant bucket for ${subdomain}:`, bucketError);
+      console.error(`❌ [Tenant.create] Error stack:`, bucketError.stack);
+      // Don't fail tenant creation if bucket creation fails - can be created manually
+    }
+
     return new Tenant(result.rows[0]);
   }
 

@@ -246,25 +246,41 @@ CREATE INDEX tenant_branding_tenant_id_idx ON public.tenant_branding(tenant_id_f
 - `POST /` - Create or update branding (upsert)
 - File uploads: `logo`, `favicon`, `backgroundVideo` (multipart/form-data)
 
-### Supabase Storage Integration
+### Supabase Storage Integration (Per-Tenant Buckets)
 
-**Bucket**: `branding-assets`
+**Architecture**: Each tenant has a dedicated bucket created automatically during tenant provisioning
+
+**Bucket Naming**: `tenant-{subdomain}` (e.g., `tenant-acme-clinic`)
+
 **Structure**:
 ```
-branding-assets/
-├── tenant_1/
-│   ├── logo.png
-│   ├── favicon.ico
-│   └── background-video.mp4
-├── tenant_2/
+tenant-acme-clinic/
+├── audio-files/
+│   ├── session-uuid-1.webm
+│   └── session-uuid-2.mp3
+└── branding/
+    ├── logo.png
+    ├── favicon.ico
+    └── background-video.mp4
+
+tenant-med-center/
+├── audio-files/
 │   └── ...
+└── branding/
+    └── ...
 ```
 
+**Key Changes from Legacy Architecture**:
+- ❌ **Old**: 2 global buckets (`tq-audio-files`, `tq-branding-assets`)
+- ✅ **New**: 1 bucket per tenant with folders (`tenant-{slug}/audio-files/`, `tenant-{slug}/branding/`)
+- **Benefits**: Complete data isolation, better LGPD/HIPAA compliance, easier backup per tenant
+
 **Upload Implementation** (`src/server/services/supabaseStorage.js`):
-- `uploadBrandingAsset()` - Upload logo/favicon/video
+- `uploadFile(fileBuffer, fileName, fileIdentifier, folder, mimeType)` - Generic upload to tenant bucket
+- `createTenantBucket(tenantSlug, isPublic)` - Creates bucket during tenant provisioning
 - **Public URLs**: Permanent, non-expiring URLs (not signed URLs)
 - **File Management**: Deletes old file before uploading new one (if different path)
-- **MIME Types**: Validates file types (images: PNG/JPG/SVG, video: MP4)
+- **MIME Types**: Validated at application level (multer middleware)
 
 **Fixed Issues**:
 - ✅ URLs no longer expire after 24 hours (using Public URLs)
@@ -832,9 +848,9 @@ users.tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id)
 - `API_BASE_URL`: Base URL for API calls (default: http://localhost:3001)
 - `OPENAI_API_KEY`: OpenAI API key for AI agent medical summaries
 - `OPENAI_MODEL`: OpenAI model to use (default: gpt-4o-mini)
-- `SUPABASE_URL`: Supabase project URL for audio file storage
+- `SUPABASE_URL`: Supabase project URL for file storage
 - `SUPABASE_SERVICE_ROLE_KEY`: Service role key for Supabase storage
-- `SUPABASE_STORAGE_BUCKET`: Storage bucket name for audio files (default: tq-audio-files)
+- **Note**: Bucket names are no longer needed - per-tenant buckets created automatically
 
 ## Important Files
 - **Migrations**: `src/server/infra/migrations/` - Database schema evolution
@@ -986,9 +1002,41 @@ CREATE TRIGGER update_template_updated_at
 
 ### Template Syntax Support
 Templates support rich syntax for dynamic content generation:
-- **Placeholders**: `[patient_name]`, `[date]`, `[symptoms]` - User input fields
-- **Variables**: `$current_date$`, `$doctor_name$`, `$clinic_name$` - System variables
-- **Instructions**: `(Ask about medication history)` - AI guidance notes
+- **Placeholders**: `[patient_name]`, `[date]`, `[symptoms]` - Fields to be filled by AI from transcription
+- **Variables**: `$current_date$`, `$doctor_name$`, `$clinic_name$` - System variables resolved before AI processing
+- **Instructions**: `(Only include if mentioned in transcript)` - AI guidance notes that are **removed** in final output
+
+### Default Clinical Templates (Multilingual)
+
+The system includes 2 comprehensive default templates per locale (pt-BR and en-US):
+
+**1. Patient Summary / Resumo do Paciente**
+- Patient-friendly summary of consultation
+- Written in 2nd person (direct to patient)
+- Sections: Clinical Examination, Findings, Treatments, Recommendations, Next Steps, Q&A
+- Use case: Patient handout after consultation
+
+**2. Clinical Report / Relatório Clínico (Consult Notes)**
+- Professional clinical documentation
+- Comprehensive medical consultation notes
+- Sections:
+  - **Previous Medical History**: Past treatments, surgeries, medications
+  - **Medical History**: Allergies, conditions, medications
+  - **Clinical Examination**: General + System-specific findings
+  - **Diagnostic Tests**: Labs, imaging, results
+  - **Clinical Tests**: Reflexes, palpation, mobility, sensitivity
+  - **Diagnoses**: Acute/chronic conditions, pathologies
+  - **Treatment Plan**: Medications, therapies, procedures, referrals
+  - **Complications/Risks**: Discussed risks and side effects
+- Use case: Professional medical record, insurance documentation
+
+**Template Location**: `src/server/infra/utils/tqTemplateDefaults.js`
+
+**AI Template Filler**: Automatically fills templates using session transcriptions via OpenAI GPT-4o-mini
+- Preserves all HTML formatting
+- Only modifies content inside `[placeholders]` and `(instructions)`
+- Removes `()` instruction text from final output
+- Never changes pre-filled patient/doctor names or dates (from database)
 
 ### Template API Endpoints
 Complete CRUD API available at `/api/tq/v1/templates`:

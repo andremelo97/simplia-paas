@@ -18,6 +18,7 @@ export const LinksTab: React.FC = () => {
   const [createdTo, setCreatedTo] = useState('')
   const [publicQuotes, setPublicQuotes] = useState<PublicQuote[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [passwordLoadingId, setPasswordLoadingId] = useState<string | null>(null)
 
   // LinkToast state for new password
   const [showLinkToast, setShowLinkToast] = useState(false)
@@ -104,6 +105,7 @@ export const LinksTab: React.FC = () => {
   }
 
   const handleNewPassword = async (publicQuote: PublicQuote) => {
+    setPasswordLoadingId(publicQuote.id)
     try {
       const result = await publicQuotesService.generateNewPassword(publicQuote.id)
       
@@ -117,6 +119,8 @@ export const LinksTab: React.FC = () => {
       setShowLinkToast(true)
     } catch (error) {
       console.error('Failed to generate new password:', error)
+    } finally {
+      setPasswordLoadingId(null)
     }
   }
 
@@ -178,6 +182,7 @@ export const LinksTab: React.FC = () => {
                   publicQuote={publicQuote}
                   onRevoke={() => handleRevokeClick(publicQuote)}
                   onNewPassword={() => handleNewPassword(publicQuote)}
+                  isNewPasswordLoading={passwordLoadingId === publicQuote.id}
                 />
               ))}
             </div>

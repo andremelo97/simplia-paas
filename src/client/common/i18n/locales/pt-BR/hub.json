@@ -41,7 +41,7 @@
     "application_portal": "Portal de aplicativos"
   },
   "branding": {
-    "title": "Configuração de marca",
+    "title": "Marca",
     "subtitle": "Personalize a identidade visual e a marca da sua organização",
     "loading": "Carregando configuração de marca...",
     "brand_colors": "Cores da marca",
@@ -124,5 +124,27 @@
       "unlimited": "Ilimitado",
       "seats_usage": "{{used}} de {{total}} licenças em uso"
     }
+  },
+  "communication": {
+    "title": "Email e Comunicação",
+    "subtitle": "Configure SMTP e outros canais de comunicação",
+    "loading": "Carregando configurações de comunicação...",
+    "server_config": "Servidor SMTP",
+    "host": "Host SMTP",
+    "host_hint": "Exemplo: smtp.gmail.com, smtp.office365.com",
+    "port": "Porta",
+    "port_hint": "587 para TLS, 465 para SSL",
+    "use_secure": "Usar conexão segura (TLS/SSL)",
+    "secure_hint": "Recomendado para proteção de dados",
+    "authentication": "Autenticação",
+    "username": "Nome de usuário",
+    "password": "Senha",
+    "password_hint": "Armazenado de forma segura",
+    "show": "Mostrar",
+    "hide": "Ocultar",
+    "sender_info": "Informações do remetente",
+    "from_email": "E-mail do remetente",
+    "from_email_hint": "E-mail que aparecerá como remetente",
+    "save_changes": "Salvar alterações"
   }
 }

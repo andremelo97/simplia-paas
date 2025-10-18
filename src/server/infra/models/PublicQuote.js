@@ -208,6 +208,20 @@ class PublicQuote {
   }
 
   /**
+   * Delete public quote by ID
+   */
+  static async deleteById(id, schema) {
+    const query = `DELETE FROM ${schema}.public_quote WHERE id = $1 RETURNING *`;
+    const result = await database.query(query, [id]);
+
+    if (result.rows.length === 0) {
+      throw new PublicQuoteNotFoundError(`id: ${id}`);
+    }
+
+    return new PublicQuote(result.rows[0]);
+  }
+
+  /**
    * Verify password for protected public quote
    * Returns true if no password set or password matches
    */

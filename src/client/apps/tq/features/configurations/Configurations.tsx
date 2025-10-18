@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Bot } from 'lucide-react';
+import { Bot, Mail } from 'lucide-react';
 import { ConfigurationLayout, ConfigurationOption } from '@client/common/ui';
 import { AIAgentConfiguration } from './AIAgentConfiguration';
+import { EmailTemplateConfiguration } from './EmailTemplateConfiguration';
 
-type ConfigurationSection = 'ai-agent';
+type ConfigurationSection = 'ai-agent' | 'email-template';
 
 export const Configurations: React.FC = () => {
   const { t } = useTranslation('tq');
@@ -16,6 +17,12 @@ export const Configurations: React.FC = () => {
       name: t('configurations.ai_agent.menu_title'),
       icon: Bot,
       description: t('configurations.ai_agent.menu_description')
+    },
+    {
+      id: 'email-template',
+      name: t('configurations.email_template.menu_title'),
+      icon: Mail,
+      description: t('configurations.email_template.menu_description')
     }
   ];
 
@@ -27,6 +34,7 @@ export const Configurations: React.FC = () => {
       onSectionChange={setActiveSection}
     >
       {activeSection === 'ai-agent' && <AIAgentConfiguration />}
+      {activeSection === 'email-template' && <EmailTemplateConfiguration />}
     </ConfigurationLayout>
   );
 };

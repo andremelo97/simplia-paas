@@ -16,9 +16,12 @@ const db = require('../../../infra/db/database');
 
 const router = express.Router();
 const deepgramService = new DeepgramService();
-const storageService = new SupabaseStorageService(
-  process.env.SUPABASE_AUDIO_BUCKET || 'tq-audio-files'
-);
+
+// Helper function to get tenant-specific storage service
+function getTenantStorageService(tenantSubdomain) {
+  const bucketName = `tenant-${tenantSubdomain}`;
+  return new SupabaseStorageService(bucketName);
+}
 
 // Configure multer for audio file uploads
 const upload = multer({
@@ -244,7 +247,13 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
 
     console.log('🔍 [DEBUG] About to upload to Supabase Storage');
 
-    // Ensure storage bucket exists
+    // Upload to tenant-specific Supabase Storage bucket
+    const tenantSubdomain = req.tenant?.slug;
+    if (!tenantSubdomain) {
+      throw new Error('Tenant subdomain not found in request context');
+    }
+
+    const storageService = getTenantStorageService(tenantSubdomain);
     await storageService.ensureBucketExists();
     console.log('🔍 [DEBUG] Storage bucket verified');
 
@@ -253,7 +262,7 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
       fileBuffer,
       fileName,
       transcriptionId, // Use transcription ID instead of session ID
-      tenantId,
+      'audio-files', // Folder within tenant bucket
       mimeType
     );
     console.log('🔍 [DEBUG] File uploaded to storage:', uploadResult);

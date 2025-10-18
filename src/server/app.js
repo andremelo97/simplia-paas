@@ -141,6 +141,13 @@ app.use(INTERNAL_PREFIX, cors(internalCorsOptions), internalRouter);
 // Mount public API routes (NO authentication required)
 app.use('/api/public', cors(internalCorsOptions), publicViewRoutes);
 
+// Mount TQ API Routes at /api/tq/v1
+const tqApiRouter = express.Router();
+tqApiRouter.use(tenantMiddleware, requireAuth, requireTranscriptionQuoteAccess());
+tqApiRouter.use(tqRoutes);
+
+app.use('/api/tq/v1', cors(internalCorsOptions), tqApiRouter);
+
 // Mount public quote access route (NO authentication, NO tenant middleware required)
 // This allows patients to access quotes via /api/tq/v1/pq/:accessToken
 app.use('/api/tq/v1', cors(internalCorsOptions), publicQuoteAccessRoutes);

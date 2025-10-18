@@ -382,12 +382,65 @@ if (isProduction) {
   console.log('  /hub:', fs.existsSync(hubPath) ? '✓ EXISTS' : '✗ NOT FOUND');
   console.log('  /tq:', fs.existsSync(tqPath) ? '✓ EXISTS' : '✗ NOT FOUND');
 
+  // Hostname-based routing middleware
+  app.use((req, res, next) => {
+    const hostname = req.hostname;
+
+    // Internal Admin subdomain
+    if (hostname === 'internal.simplialabs.co') {
+      // Serve admin at root
+      if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
+        return express.static(adminPath)(req, res, () => {
+          // SPA fallback
+          if (!req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
+            res.sendFile(pathModule.join(__dirname, '../../dist/client/index.html'));
+          } else {
+            next();
+          }
+        });
+      }
+    }
+
+    // Hub subdomain
+    if (hostname === 'hub.simplialabs.co') {
+      // Serve hub at root
+      if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
+        return express.static(hubPath)(req, res, () => {
+          // SPA fallback
+          if (!req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
+            res.sendFile(pathModule.join(__dirname, '../../dist/hub/index.html'));
+          } else {
+            next();
+          }
+        });
+      }
+    }
+
+    // TQ subdomain
+    if (hostname === 'tq.simplialabs.co') {
+      // Serve TQ at root
+      if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
+        return express.static(tqPath)(req, res, () => {
+          // SPA fallback
+          if (!req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
+            res.sendFile(pathModule.join(__dirname, '../../dist/tq/index.html'));
+          } else {
+            next();
+          }
+        });
+      }
+    }
+
+    next();
+  });
+
+  // Fallback for Railway default URL (path-based routing)
   // Redirect root to admin panel
   app.get('/', (req, res) => {
     res.redirect('/admin');
   });
 
-  // Exact path routes - serve index.html for base paths (BEFORE static middleware)
+  // Exact path routes
   app.get('/hub', (req, res) => {
     res.sendFile(pathModule.join(__dirname, '../../dist/hub/index.html'));
   });
@@ -396,12 +449,12 @@ if (isProduction) {
     res.sendFile(pathModule.join(__dirname, '../../dist/tq/index.html'));
   });
 
-  // Serve static files for each frontend
+  // Serve static files for each frontend (path-based fallback)
   app.use('/admin', express.static(adminPath));
   app.use('/hub', express.static(hubPath));
   app.use('/tq', express.static(tqPath));
 
-  // SPA fallback: todas as rotas não-API retornam o index.html
+  // SPA fallback for path-based routes
   app.get('/admin/*', (req, res) => {
     res.sendFile(pathModule.join(__dirname, '../../dist/client/index.html'));
   });

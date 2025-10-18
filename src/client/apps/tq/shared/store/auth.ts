@@ -299,14 +299,7 @@ export const useAuthStore = create<AuthState>()(persist(
       console.log('🔄 [TQ Auth] Logging out...')
       clearSession()
 
-      // Clear both storage systems to prevent conflicts
-      try {
-        localStorage.removeItem('auth-storage')
-        localStorage.removeItem('auth.session')
-      } catch (e) {
-        console.warn('Failed to clear storage:', e)
-      }
-
+      // Clear state - persist middleware will sync to localStorage
       set({
         isAuthenticated: false,
         user: null,
@@ -319,6 +312,12 @@ export const useAuthStore = create<AuthState>()(persist(
         error: null,
         isLoading: false,
       })
+
+      // Force clear localStorage after state update
+      setTimeout(() => {
+        localStorage.removeItem('auth-storage')
+        localStorage.removeItem('auth.session')
+      }, 0)
     },
 
     clearError: () => {

@@ -227,13 +227,7 @@ export const useAuthStore = create<AuthState>()(persist(
       console.log('🔄 [Hub Auth] Logging out...')
       clearSession()
 
-      // Clear shared storage system
-      try {
-        localStorage.removeItem('auth-storage')
-      } catch (e) {
-        console.warn('Failed to clear storage:', e)
-      }
-
+      // Clear state - persist middleware will sync to localStorage
       set({
         isAuthenticated: false,
         user: null,
@@ -246,6 +240,11 @@ export const useAuthStore = create<AuthState>()(persist(
         error: null,
         isLoading: false,
       })
+
+      // Force clear localStorage after state update
+      setTimeout(() => {
+        localStorage.removeItem('auth-storage')
+      }, 0)
     },
     
     clearError: () => {

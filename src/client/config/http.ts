@@ -4,10 +4,9 @@ import { publishFeedback, resolveFeedbackMessage } from '../common/feedback'
 import { shouldInjectTenantHeader, getCurrentTenantId } from '../common/auth/interceptor'
 
 // HTTP client configuration
-// For apps with Vite proxy (TQ, Hub), use relative paths
-// For apps without proxy (internal-admin), use full URL from environment variable
-const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL ||
-                     (window.location.port === '3005' ? '' : '')
+// In production with custom domains, each app calls its own domain's API
+// In development, use relative paths (Vite proxy handles routing)
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || ''
 
 class HttpClient {
   private baseURL: string

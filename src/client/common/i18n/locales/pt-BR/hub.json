@@ -170,6 +170,8 @@
     "save_limit": "Salvar limite",
     "save_changes": "Salvar Alterações",
     "saving": "Salvando...",
+    "language_settings": "Configurações de Idioma",
+    "language_settings_description": "Escolha o idioma padrão para processar suas transcrições de áudio.",
     "custom_quota_settings": "Configurações de Cota Personalizada",
     "premium_description": "Gerencie seus recursos premium de transcrição.",
     "transcription_language": "Idioma da Transcrição",

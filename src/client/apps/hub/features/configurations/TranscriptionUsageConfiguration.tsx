@@ -126,6 +126,10 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       const offset = (page - 1) * RECORDS_PER_PAGE
       const response = await transcriptionUsageService.getUsageDetails(RECORDS_PER_PAGE, offset)
 
+      console.log('[TranscriptionUsage] Details response:', response)
+      console.log('[TranscriptionUsage] Details response.data:', response.data)
+      console.log('[TranscriptionUsage] Details response.meta:', response.meta)
+
       setDetailRecords(response.data || [])
       setTotalRecords(response.meta?.total || 0)
     } catch (error) {
@@ -355,6 +359,45 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         </div>
       </Card>
 
+      {/* Language Settings (Always Visible) */}
+      <Card className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Settings className="h-5 w-5 text-[#B725B7]" />
+          <h2 className="text-lg font-semibold text-gray-900">{t('transcription_usage.language_settings')}</h2>
+        </div>
+        <p className="text-sm text-gray-600 mb-6">
+          {t('transcription_usage.language_settings_description')}
+        </p>
+
+        {/* Transcription Language */}
+        <div className="mb-6">
+          <Label htmlFor="transcriptionLanguage">{t('transcription_usage.transcription_language')}</Label>
+          <Select
+            id="transcriptionLanguage"
+            value={transcriptionLanguage}
+            onChange={(e) => setTranscriptionLanguage(e.target.value)}
+            className="mt-2"
+          >
+            <option value="pt-BR">Português (Brasil)</option>
+            <option value="en-US">English (US)</option>
+          </Select>
+          <p className="text-xs text-gray-500 mt-2">
+            {t('transcription_usage.language_description')}
+          </p>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={saving || !hasChanges}
+          >
+            {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
+          </Button>
+        </div>
+      </Card>
+
       {/* Premium Features Configuration */}
       {hasAnyPremiumFeature && (
         <Card className="p-6">
@@ -365,23 +408,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
           <p className="text-sm text-gray-600 mb-6">
             {t('transcription_usage.premium_description')}
           </p>
-
-          {/* Transcription Language (always visible) */}
-          <div className="mb-6">
-            <Label htmlFor="transcriptionLanguage">{t('transcription_usage.transcription_language')}</Label>
-            <Select
-              id="transcriptionLanguage"
-              value={transcriptionLanguage}
-              onChange={(e) => setTranscriptionLanguage(e.target.value)}
-              className="mt-2"
-            >
-              <option value="pt-BR">Português (Brasil)</option>
-              <option value="en-US">English (US)</option>
-            </Select>
-            <p className="text-xs text-gray-500 mt-2">
-              {t('transcription_usage.language_description')}
-            </p>
-          </div>
 
           {/* Custom Limit */}
           {canCustomizeLimits && (

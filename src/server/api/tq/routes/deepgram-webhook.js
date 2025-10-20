@@ -167,12 +167,10 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     // Process transcription results
     const transcriptionData = deepgramService.processWebhookPayload(webhookData);
 
-    console.log(`[Webhook] Transcription data extracted:`, {
-      transcriptLength: transcriptionData.transcript?.length || 0,
-      transcriptPreview: transcriptionData.transcript?.substring(0, 100) || '(empty)',
-      confidenceScore: transcriptionData.confidence_score,
-      processingDuration: transcriptionData.processing_duration_seconds
-    });
+    console.log(`[Webhook] 📝 Transcript length: ${transcriptionData.transcript?.length || 0}`);
+    console.log(`[Webhook] 📝 Transcript preview: ${transcriptionData.transcript?.substring(0, 150) || '(empty)'}`);
+    console.log(`[Webhook] 📊 Confidence: ${transcriptionData.confidence_score}`);
+    console.log(`[Webhook] ⏱️  Duration: ${transcriptionData.processing_duration_seconds}s`);
 
     // Update transcription with results
     const updateResult = await client.query(
@@ -194,7 +192,9 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       ]
     );
 
-    console.log(`[Webhook] ✅ Updated ${updateResult.rowCount} transcription(s)`, updateResult.rows[0]);
+    const saved = updateResult.rows[0];
+    console.log(`[Webhook] ✅ Updated ${updateResult.rowCount} transcription(s)`);
+    console.log(`[Webhook] 💾 Saved transcript length: ${saved.transcript_length || 0} characters`);
 
     await client.query('COMMIT');
 

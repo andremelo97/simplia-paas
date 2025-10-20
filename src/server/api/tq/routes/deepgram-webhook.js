@@ -62,14 +62,27 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
   const client = await db.getClient();
 
   try {
+    // Debug: Log all headers to see what Deepgram is sending
+    console.log('[Webhook] Received headers:', Object.keys(req.headers));
+    console.log('[Webhook] dg-token:', req.headers['dg-token'] ? 'present' : 'missing');
+    console.log('[Webhook] authorization:', req.headers['authorization'] ? 'present' : 'missing');
+
     // Validate dg-token header (Deepgram API Key Identifier)
     const dgToken = req.headers['dg-token'];
     const expectedToken = process.env.DEEPGRAM_API_KEY;
 
     if (!dgToken) {
       console.error('[Webhook] ❌ Missing dg-token header');
+      console.error('[Webhook] Available headers:', JSON.stringify(req.headers, null, 2));
       return res.status(401).json({ error: 'Authentication required' });
     }
+
+    // Debug: Compare token prefixes (first 10 chars for security)
+    const dgTokenPreview = dgToken ? dgToken.substring(0, 10) + '...' : 'null';
+    const expectedTokenPreview = expectedToken ? expectedToken.substring(0, 10) + '...' : 'null';
+    console.log('[Webhook] dg-token preview:', dgTokenPreview);
+    console.log('[Webhook] expected preview:', expectedTokenPreview);
+    console.log('[Webhook] tokens match:', dgToken === expectedToken);
 
     // Deepgram sends the API Key itself in dg-token header
     // We validate it matches our configured API key

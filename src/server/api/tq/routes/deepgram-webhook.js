@@ -113,12 +113,15 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       'SELECT id, schema_name FROM public.tenants WHERE active = true'
     );
 
+    console.log(`[Webhook] Searching across ${tenantsResult.rows.length} tenant(s)`);
+
     let transcription = null;
     let tenantSchema = null;
     let tenantId = null;
 
     // Search across all tenant schemas for the transcription
     for (const tenant of tenantsResult.rows) {
+      console.log(`[Webhook] Checking schema: ${tenant.schema_name}`);
       try {
         const result = await client.query(
           `SELECT id FROM ${tenant.schema_name}.transcription
@@ -126,15 +129,18 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
           [requestId]
         );
 
+        console.log(`[Webhook] Query result in ${tenant.schema_name}: ${result.rows.length} row(s)`);
+
         if (result.rows.length > 0) {
           transcription = result.rows[0];
           tenantSchema = tenant.schema_name;
           tenantId = tenant.id;
-          console.log(`[Webhook] Found transcription in ${tenantSchema}`);
+          console.log(`[Webhook] ✅ Found transcription in ${tenantSchema}: ${transcription.id}`);
           break;
         }
       } catch (err) {
         // Schema might not have transcription table, continue to next tenant
+        console.error(`[Webhook] Error checking ${tenant.schema_name}:`, err.message);
         continue;
       }
     }

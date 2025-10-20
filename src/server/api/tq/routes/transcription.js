@@ -446,14 +446,19 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
     );
 
     // Update transcription with Deepgram request ID and status
-    await client.query(
+    console.log(`[Transcription] Saving Deepgram request_id: ${transcriptionApiResult.request_id} for transcription: ${transcriptionId}`);
+
+    const updateResult = await client.query(
       `UPDATE ${tenantSchema}.transcription
        SET deepgram_request_id = $1,
            transcript_status = 'processing',
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2`,
+       WHERE id = $2
+       RETURNING id, deepgram_request_id`,
       [transcriptionApiResult.request_id, transcriptionId]
     );
+
+    console.log(`[Transcription] Updated ${updateResult.rowCount} row(s), deepgram_request_id saved:`, updateResult.rows[0]);
 
     await client.query('COMMIT');
 

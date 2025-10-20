@@ -60,6 +60,7 @@ const deepgramService = new DeepgramService();
  */
 router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), async (req, res) => {
   const client = await db.getClient();
+  let transactionStarted = false;
 
   try {
     // Validate dg-token header presence (Deepgram API Key Identifier)
@@ -105,9 +106,8 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     console.log('[Webhook] Processing request_id:', requestId);
 
-    await client.query('BEGIN');
-
     // Find the transcription by deepgram_request_id across all tenant schemas
+    // IMPORTANT: Do NOT use transaction for search - errors in one schema would abort the entire transaction
     // First, get all active tenant schemas
     const tenantsResult = await client.query(
       'SELECT id, schema_name FROM public.tenants WHERE active = true'
@@ -146,10 +146,13 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     }
 
     if (!transcription || !tenantSchema) {
-      await client.query('ROLLBACK');
       console.error(`[Webhook] ❌ Transcription not found for request_id: ${requestId}`);
       return res.status(404).json({ error: 'Transcription not found' });
     }
+
+    // Start transaction for UPDATE operation only
+    await client.query('BEGIN');
+    transactionStarted = true;
 
     const transcriptionId = transcription.id;
     console.log(`[Webhook] Using schema: ${tenantSchema}, transcriptionId: ${transcriptionId}`);
@@ -200,7 +203,10 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     res.json({ success: true, message: 'Transcription processed successfully' });
 
   } catch (error) {
-    await client.query('ROLLBACK');
+    // Only rollback if transaction was started
+    if (transactionStarted) {
+      await client.query('ROLLBACK');
+    }
     console.error('[Webhook] ❌ Processing error:', error.message);
 
     // For webhook errors, still return 200 to avoid Deepgram retries

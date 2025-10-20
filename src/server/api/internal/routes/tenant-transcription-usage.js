@@ -125,7 +125,7 @@ router.get('/transcription-usage', async (req, res) => {
           percentUsed: percentUsed
         },
         history: history.map(h => ({
-          month: h.month.substring(0, 7), // Convert YYYY-MM-DD to YYYY-MM
+          month: h.month, // Already in YYYY-MM format from model
           minutesUsed: h.minutesUsed,
           totalCost: h.totalCost || 0,
           totalTranscriptions: h.totalTranscriptions || 0,

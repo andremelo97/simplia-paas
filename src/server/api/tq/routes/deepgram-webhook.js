@@ -106,6 +106,15 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     console.log('[Webhook] Processing request_id:', requestId);
 
+    // Log webhook payload structure for debugging
+    console.log('[Webhook] 🔍 Payload keys:', Object.keys(webhookData));
+    console.log('[Webhook] 🔍 Has results:', !!webhookData.results);
+    console.log('[Webhook] 🔍 Has metadata:', !!webhookData.metadata);
+    if (webhookData.results) {
+      console.log('[Webhook] 🔍 Results keys:', Object.keys(webhookData.results));
+      console.log('[Webhook] 🔍 Channels count:', webhookData.results.channels?.length || 0);
+    }
+
     // Find the transcription by deepgram_request_id across TQ-enabled tenant schemas
     // IMPORTANT: Do NOT use transaction for search - errors in one schema would abort the entire transaction
     // Only search tenants that have TQ app provisioned and active

@@ -128,7 +128,7 @@ class TenantTranscriptionUsage {
   static async getUsageHistory(tenantId, months = 6) {
     const query = `
       SELECT
-        DATE_TRUNC('month', usage_date) as month,
+        TO_CHAR(DATE_TRUNC('month', usage_date), 'YYYY-MM') as month,
         COALESCE(SUM(audio_duration_seconds), 0) as total_seconds,
         COALESCE(SUM(cost_usd), 0) as total_cost,
         COUNT(*) as total_transcriptions
@@ -136,13 +136,13 @@ class TenantTranscriptionUsage {
       WHERE tenant_id_fk = $1
         AND usage_date >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '${months - 1} months'
       GROUP BY DATE_TRUNC('month', usage_date)
-      ORDER BY month DESC
+      ORDER BY DATE_TRUNC('month', usage_date) DESC
     `;
 
     const result = await database.query(query, [tenantId]);
 
     return result.rows.map(row => ({
-      month: row.month,
+      month: row.month, // Already in YYYY-MM format from TO_CHAR
       minutesUsed: Math.ceil(parseInt(row.total_seconds || 0) / 60),
       totalCost: parseFloat(row.total_cost || 0),
       totalTranscriptions: parseInt(row.total_transcriptions || 0)

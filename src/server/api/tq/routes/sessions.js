@@ -727,6 +727,16 @@ router.get('/:id/audio-download', async (req, res) => {
     // Fetch session with transcription data
     const session = await Session.findById(id, schema, true); // includeTranscription=true
 
+    console.log('[DEBUG] Audio Download Request:', {
+      sessionId: id,
+      schema,
+      hasSession: !!session,
+      hasTranscription: !!session?.transcription,
+      transcriptionId: session?.transcription_id,
+      audioUrl: session?.transcription?.audio_url,
+      audioDeletedAt: session?.transcription?.audio_deleted_at
+    });
+
     if (!session) {
       return res.status(404).json({
         error: { code: 'SESSION_NOT_FOUND', message: 'Session not found' }
@@ -735,6 +745,7 @@ router.get('/:id/audio-download', async (req, res) => {
 
     // Check if audio exists
     if (!session.transcription?.audio_url) {
+      console.log('[DEBUG] No audio URL found. Full transcription object:', session.transcription);
       return res.status(404).json({
         error: {
           code: 'AUDIO_NOT_AVAILABLE',

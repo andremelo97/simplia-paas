@@ -221,6 +221,58 @@ x-tenant-id: {numeric_tenant_id}
 }
 ```
 
+#### GET /sessions/{sessionId}/audio-download
+Get secure download URL for session audio file.
+
+**Audio Availability:**
+- Audio only available after transcription completes
+- Audio files automatically deleted after 24 hours
+- Returns 404 if no audio exists
+- Returns 410 Gone if audio was deleted after retention period
+
+**Request:**
+```http
+GET /api/tq/v1/sessions/{sessionId}/audio-download
+Authorization: Bearer {token}
+x-tenant-id: {numeric_tenant_id}
+```
+
+**Success Response:**
+```json
+{
+  "data": {
+    "downloadUrl": "https://supabase.storage.url/tenant-acme/audio-files/uuid.webm",
+    "filename": "session-uuid-123.webm",
+    "expiresAt": null
+  }
+}
+```
+
+**Error Response (No Audio):**
+```json
+{
+  "error": {
+    "code": "AUDIO_NOT_AVAILABLE",
+    "message": "Audio file not found or has been deleted after 24 hours"
+  }
+}
+```
+
+**Error Response (Deleted):**
+```json
+{
+  "error": {
+    "code": "AUDIO_DELETED",
+    "message": "Audio file was deleted after 24 hours retention period"
+  }
+}
+```
+
+**Security:**
+- Validates tenant ownership before allowing download
+- Uses Supabase public URLs (permanent, non-expiring)
+- Audio files stored in tenant-isolated buckets
+
 ### Patients
 
 Manage patient records for consultations.
@@ -894,13 +946,25 @@ CREATE TABLE tenant_{slug}.transcription (
   transcript TEXT NULL,
   confidence_score DECIMAL(4,3) NULL,
   audio_url TEXT NULL,
+  audio_deleted_at TIMESTAMPTZ NULL, -- Timestamp when audio was deleted (24h cleanup)
   deepgram_request_id TEXT NULL,
   processing_duration_seconds INTEGER NULL,
   word_timestamps JSONB NULL,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Partial index for efficient audio cleanup queries
+CREATE INDEX idx_transcription_audio_cleanup
+ON transcription(created_at, audio_url)
+WHERE audio_url IS NOT NULL AND audio_deleted_at IS NULL;
 ```
+
+**Audio Lifecycle:**
+- `audio_url`: Supabase public URL to audio file
+- `audio_deleted_at`: NULL while available, set to deletion timestamp after 24h
+- **Retention Policy**: Audio files automatically deleted 24 hours after creation
+- **URL Cleanup**: `audio_url` set to NULL when file is deleted (prevents invalid URLs)
 
 ### Session Table
 ```sql
@@ -1527,6 +1591,9 @@ All TQ API mutation endpoints (POST, PUT, PATCH, DELETE) return standardized res
 | `CLINICAL_REPORT_DELETED` | Clinical Report Deleted | Clinical report deleted successfully. |
 | `AI_AGENT_CONFIGURATION_UPDATED` | Configuration Updated | AI Agent configuration updated successfully. |
 | `AI_AGENT_CONFIGURATION_RESET` | Configuration Reset | AI Agent configuration reset to default. |
+| `AUDIO_NOT_AVAILABLE` | Audio Not Available | Audio file not found or has been deleted after 24 hours. |
+| `AUDIO_DELETED` | Audio Deleted | Audio file was deleted after 24 hours retention period. |
+| `AUDIO_DOWNLOAD_FAILED` | Download Failed | Failed to download audio file. Please try again. |
 
 ## Implementation Notes
 
@@ -1590,6 +1657,167 @@ The quote edit page (`/quotes/:id/edit`) follows best practices:
 - ✅ Updates local state with server response
 - ✅ Shows automatic success feedback toast
 - ✅ Allows continued editing or manual navigation via "Cancel"
+
+## Automatic Audio Cleanup System
+
+### Overview
+The TQ API includes an automated cron job that deletes audio files from Supabase Storage after 24 hours to comply with data retention policies and optimize storage costs.
+
+### How It Works
+
+**Cron Schedule:**
+- Runs every hour (`0 * * * *`)
+- Processes all active tenant schemas
+- No configuration required - works automatically on Railway and other platforms
+
+**Cleanup Process:**
+1. Query all transcriptions with audio older than 24 hours
+2. Delete audio file from Supabase Storage
+3. Update database:
+   - Set `audio_url = NULL` (clean invalid URLs)
+   - Set `audio_deleted_at = NOW()` (mark deletion timestamp)
+4. Log success/failure counts
+
+**Query Optimization:**
+```sql
+-- Partial index for efficient cleanup queries
+CREATE INDEX idx_transcription_audio_cleanup
+ON transcription(created_at, audio_url)
+WHERE audio_url IS NOT NULL AND audio_deleted_at IS NULL;
+
+-- Cleanup query (runs per tenant schema)
+SELECT id, audio_url, created_at
+FROM tenant_{slug}.transcription
+WHERE audio_url IS NOT NULL
+  AND audio_deleted_at IS NULL
+  AND created_at < NOW() - INTERVAL '24 hours';
+```
+
+### Implementation Details
+
+**File Deletion:**
+```javascript
+// Extract bucket and path from Supabase URL
+// URL format: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
+const [bucket, ...pathParts] = url.split('/storage/v1/object/public/')[1].split('/');
+const filePath = pathParts.join('/');
+
+// Delete from Supabase
+await supabase.storage.from(bucket).remove([filePath]);
+
+// Update database
+UPDATE tenant_{slug}.transcription
+SET audio_url = NULL, audio_deleted_at = NOW()
+WHERE id = $1;
+```
+
+**Logging:**
+```
+[Cron] Starting audio cleanup job...
+[Cron] Found 15 audio files to delete in tenant_acme_clinic
+[Cron] ✅ Deleted audio for transcription uuid-123 (tenant_acme_clinic)
+[Cron] ✅ Deleted audio for transcription uuid-456 (tenant_acme_clinic)
+[Cron] Audio cleanup complete: 15 deleted, 0 failed
+```
+
+### Frontend Integration
+
+**Download Button (EditSession.tsx):**
+```typescript
+// Button always visible, disabled when no audio
+const hasAudioAvailable = Boolean(
+  session.transcription_id &&
+  hasTranscription
+);
+
+<Button
+  variant="tertiary"
+  onClick={handleDownloadAudio}
+  disabled={isDownloadingAudio || !hasAudioAvailable}
+>
+  <Download className="h-4 w-4" />
+  {isDownloadingAudio ? 'Downloading...' : 'Download Audio'}
+</Button>
+
+{/* Warning message */}
+<p className="text-xs text-gray-500">
+  {hasAudioAvailable
+    ? '⚠️ Audio will be automatically deleted after 24 hours'
+    : 'Audio not available or already deleted'}
+</p>
+```
+
+### Error Handling
+
+**Error Codes:**
+| Code | HTTP Status | When |
+|------|-------------|------|
+| `AUDIO_NOT_AVAILABLE` | 404 | Audio never existed or transcription not complete |
+| `AUDIO_DELETED` | 410 Gone | Audio was deleted after 24h retention period |
+| `AUDIO_DOWNLOAD_FAILED` | 500 | Failed to retrieve download URL |
+
+**Feedback Catalog:**
+```typescript
+AUDIO_NOT_AVAILABLE: {
+  title: "Audio Not Available",
+  message: "Audio file not found or has been deleted after 24 hours."
+},
+AUDIO_DELETED: {
+  title: "Audio Deleted",
+  message: "Audio file was deleted after 24 hours retention period."
+},
+AUDIO_DOWNLOAD_FAILED: {
+  title: "Download Failed",
+  message: "Failed to download audio file. Please try again."
+}
+```
+
+### Deployment
+
+**No Additional Setup Required:**
+- Cron job initializes automatically when server starts
+- Works on Railway, Heroku, and other platforms
+- No external cron service needed (uses `node-cron` in-process)
+
+**Server Initialization:**
+```javascript
+// src/server/index.js
+const { initAudioCleanupJob } = require('./jobs/cleanupOldAudioFiles');
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+
+  // Initialize cron jobs
+  initAudioCleanupJob();
+});
+```
+
+### Monitoring
+
+**Success Metrics:**
+- Total files deleted per run
+- Failed deletions (with error logs)
+- Tenant-by-tenant processing status
+
+**Manual Testing:**
+```javascript
+// Test cleanup manually (development only)
+const { cleanupOldAudioFiles } = require('./src/server/jobs/cleanupOldAudioFiles');
+await cleanupOldAudioFiles();
+```
+
+### Data Retention Policy
+
+**Compliance:**
+- 24-hour retention period for audio files
+- Complies with LGPD, HIPAA, and data minimization principles
+- Transcription text retained indefinitely (no audio data)
+
+**Why Clean URLs:**
+- Prevents storing invalid/broken Supabase URLs in database
+- Keeps database clean and prevents 404 errors
+- `audio_url = NULL` indicates audio was deleted
+- `audio_deleted_at` provides audit trail of deletion timestamp
 
 ## Production Considerations
 

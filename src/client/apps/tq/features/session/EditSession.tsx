@@ -296,14 +296,25 @@ export const EditSession: React.FC = () => {
         </div>
 
         {hasTranscription && (
-          <Button
-            variant="primary"
-            onClick={() => setShowTemplateModal(true)}
-            disabled={isSubmitting}
-          >
-            <FileText className="w-4 h-4 mr-2" />
-            {t('sessions.create_documents')}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="tertiary"
+              onClick={handleDownloadAudio}
+              disabled={isDownloadingAudio || !hasAudioAvailable}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {isDownloadingAudio ? t('sessions.downloadingAudio') : t('sessions.downloadAudio')}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => setShowTemplateModal(true)}
+              disabled={isSubmitting}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              {t('sessions.create_documents')}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -385,28 +396,6 @@ export const EditSession: React.FC = () => {
                 required
                 error={transcriptionError}
               />
-
-              {/* Audio Download Button - Only show if transcription exists */}
-              {hasTranscription && (
-                <div className="space-y-2">
-                  <Button
-                    type="button"
-                    variant="tertiary"
-                    size="sm"
-                    onClick={handleDownloadAudio}
-                    disabled={isDownloadingAudio || !hasAudioAvailable}
-                    className="gap-2"
-                  >
-                    <Download className="h-4 w-4" />
-                    {isDownloadingAudio ? t('sessions.downloadingAudio') : t('sessions.downloadAudio')}
-                  </Button>
-                  <p className="text-xs text-gray-500">
-                    {hasAudioAvailable
-                      ? t('sessions.audioDeletedAfter24h')
-                      : t('sessions.audioNotAvailable')}
-                  </p>
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>

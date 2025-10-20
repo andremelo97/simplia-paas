@@ -44,6 +44,10 @@
     "expired": "Expired"
   },
   "feedback": {
+    "LOGIN_SUCCESS": {
+      "title": "Welcome Back",
+      "message": "Signed in successfully."
+    },
     "QUOTE_CREATED": {
       "title": "Quote Created",
       "message": "Quote created successfully."

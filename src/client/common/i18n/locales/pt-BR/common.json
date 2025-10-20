@@ -44,6 +44,10 @@
     "expired": "Expirado"
   },
   "feedback": {
+    "LOGIN_SUCCESS": {
+      "title": "Bem-vindo de Volta",
+      "message": "Login realizado com sucesso."
+    },
     "QUOTE_CREATED": {
       "title": "Cotação Criada",
       "message": "Cotação criada com sucesso."

@@ -90,55 +90,63 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       throw new Error('Unexpected request body type');
     }
 
-    // Extract transcription metadata from callback
-    // Deepgram sends callback_metadata at root level, not inside metadata
-    let transcriptionId, tenantId;
-    try {
-      const callbackMetadata = webhookData.callback_metadata || webhookData.metadata?.callback_metadata;
+    // Extract request_id from webhook to find the transcription
+    // Deepgram does not support callback_metadata, so we use request_id correlation
+    const requestId = webhookData.metadata?.request_id;
 
-      if (!callbackMetadata) {
-        console.error('[Webhook] ❌ Missing callback_metadata');
-        console.error('[Webhook] Available keys:', Object.keys(webhookData));
-        if (webhookData.metadata) {
-          console.error('[Webhook] Metadata keys:', Object.keys(webhookData.metadata));
-        }
-        return res.status(400).json({ error: 'Missing callback_metadata in webhook payload' });
+    if (!requestId) {
+      console.error('[Webhook] ❌ Missing request_id in metadata');
+      console.error('[Webhook] Available keys:', Object.keys(webhookData));
+      if (webhookData.metadata) {
+        console.error('[Webhook] Metadata keys:', Object.keys(webhookData.metadata));
       }
-
-      const metadata = typeof callbackMetadata === 'string'
-        ? JSON.parse(callbackMetadata)
-        : callbackMetadata;
-
-      transcriptionId = metadata.transcriptionId;
-      tenantId = metadata.tenantId;
-
-      console.log('[Webhook] Parsed:', { transcriptionId, tenantId });
-    } catch (e) {
-      console.error('[Webhook] ❌ Parse error:', e.message);
-      return res.status(400).json({ error: 'Invalid callback metadata' });
+      return res.status(400).json({ error: 'Missing request_id in webhook payload' });
     }
 
-    if (!transcriptionId || !tenantId) {
-      console.error('[Webhook] Missing transcriptionId or tenantId in webhook callback');
-      return res.status(400).json({ error: 'Missing transcription or tenant information' });
-    }
+    console.log('[Webhook] Processing request_id:', requestId);
 
     await client.query('BEGIN');
 
-    // Construct tenant schema from tenantId (no middleware available)
-    // Query tenants table to get subdomain for schema name
-    const tenantResult = await client.query(
-      'SELECT schema_name FROM public.tenants WHERE id = $1',
-      [tenantId]
+    // Find the transcription by deepgram_request_id across all tenant schemas
+    // First, get all active tenant schemas
+    const tenantsResult = await client.query(
+      'SELECT id, schema_name FROM public.tenants WHERE active = true'
     );
 
-    if (tenantResult.rows.length === 0) {
-      console.error(`[Webhook] ❌ Tenant ${tenantId} not found`);
-      return res.status(400).json({ error: 'Invalid tenant' });
+    let transcription = null;
+    let tenantSchema = null;
+    let tenantId = null;
+
+    // Search across all tenant schemas for the transcription
+    for (const tenant of tenantsResult.rows) {
+      try {
+        const result = await client.query(
+          `SELECT id FROM ${tenant.schema_name}.transcription
+           WHERE deepgram_request_id = $1`,
+          [requestId]
+        );
+
+        if (result.rows.length > 0) {
+          transcription = result.rows[0];
+          tenantSchema = tenant.schema_name;
+          tenantId = tenant.id;
+          console.log(`[Webhook] Found transcription in ${tenantSchema}`);
+          break;
+        }
+      } catch (err) {
+        // Schema might not have transcription table, continue to next tenant
+        continue;
+      }
     }
 
-    const tenantSchema = tenantResult.rows[0].schema_name;
-    console.log(`[Webhook] Using schema: ${tenantSchema}`);
+    if (!transcription || !tenantSchema) {
+      await client.query('ROLLBACK');
+      console.error(`[Webhook] ❌ Transcription not found for request_id: ${requestId}`);
+      return res.status(404).json({ error: 'Transcription not found' });
+    }
+
+    const transcriptionId = transcription.id;
+    console.log(`[Webhook] Using schema: ${tenantSchema}, transcriptionId: ${transcriptionId}`);
 
     // Process transcription results
     const transcriptionData = deepgramService.processWebhookPayload(webhookData);

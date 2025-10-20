@@ -439,14 +439,9 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
       webhookUrl,
       {
         model: DEFAULT_STT_MODEL, // System default: Nova-3
-        language: transcriptionLanguage, // pt-BR or en-US
-        additionalParams: {
-          // Add transcription metadata to callback
-          callback_metadata: JSON.stringify({
-            transcriptionId,
-            tenantId
-          })
-        }
+        language: transcriptionLanguage // pt-BR or en-US
+        // NOTE: callback_metadata is not supported by Deepgram
+        // We use request_id correlation instead (stored in deepgram_request_id)
       }
     );
 

@@ -276,4 +276,71 @@ async function createTenantBucket(tenantSlug, isPublic = true) {
   }
 }
 
+/**
+ * Delete a file from Supabase storage by URL
+ *
+ * Extracts bucket and file path from the public URL and deletes the file.
+ * URL format: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
+ *
+ * @param {string} fileUrl - Full public URL of the file
+ * @returns {Promise<boolean>} - True if deleted successfully, false otherwise
+ */
+async function deleteFileByUrl(fileUrl) {
+  try {
+    if (!fileUrl) {
+      console.warn('[deleteFileByUrl] No URL provided');
+      return false;
+    }
+
+    // Extract bucket and file path from URL
+    // URL format: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
+    const urlParts = fileUrl.split('/storage/v1/object/public/');
+    if (urlParts.length !== 2) {
+      console.error('[deleteFileByUrl] Invalid Supabase URL format:', fileUrl);
+      return false;
+    }
+
+    const [bucket, ...pathParts] = urlParts[1].split('/');
+    const filePath = pathParts.join('/');
+
+    if (!bucket || !filePath) {
+      console.error('[deleteFileByUrl] Could not extract bucket or path from URL:', fileUrl);
+      return false;
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('[deleteFileByUrl] Missing Supabase configuration');
+      return false;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
+    // Delete file from Supabase
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .remove([filePath]);
+
+    if (error) {
+      console.error(`[deleteFileByUrl] Failed to delete file from Supabase:`, error);
+      return false;
+    }
+
+    console.log(`✅ Deleted audio file: ${bucket}/${filePath}`);
+    return true;
+  } catch (error) {
+    console.error('[deleteFileByUrl] Error deleting file:', error);
+    return false;
+  }
+}
+
 module.exports.createTenantBucket = createTenantBucket;
+module.exports.deleteFileByUrl = deleteFileByUrl;

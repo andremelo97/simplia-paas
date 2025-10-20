@@ -656,4 +656,120 @@ router.get('/patient/:patientId', async (req, res) => {
   }
 });
 
+/**
+ * @openapi
+ * /tq/sessions/{id}/audio-download:
+ *   get:
+ *     tags: [TQ - Sessions]
+ *     summary: Get secure audio download URL
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Get secure download URL for session audio file. Audio is automatically deleted after 24 hours.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[1-9][0-9]*$'
+ *         description: Numeric tenant identifier
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Session UUID
+ *     responses:
+ *       200:
+ *         description: Audio download URL
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     downloadUrl:
+ *                       type: string
+ *                       format: uri
+ *                       description: Public download URL
+ *                     filename:
+ *                       type: string
+ *                       description: Suggested filename
+ *                     expiresAt:
+ *                       type: string
+ *                       format: date-time
+ *                       nullable: true
+ *                       description: URL expiration (null for public URLs)
+ *       404:
+ *         description: Session or audio not found
+ *       410:
+ *         description: Audio deleted after 24 hours
+ *       500:
+ *         description: Server error
+ */
+router.get('/:id/audio-download', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const schema = req.tenant?.schema;
+
+    if (!schema) {
+      return res.status(400).json({
+        error: { code: 'MISSING_TENANT', message: 'Tenant context required' }
+      });
+    }
+
+    // Fetch session with transcription data
+    const session = await Session.findById(id, schema, true); // includeTranscription=true
+
+    if (!session) {
+      return res.status(404).json({
+        error: { code: 'SESSION_NOT_FOUND', message: 'Session not found' }
+      });
+    }
+
+    // Check if audio exists
+    if (!session.transcription?.audio_url) {
+      return res.status(404).json({
+        error: {
+          code: 'AUDIO_NOT_AVAILABLE',
+          message: 'Audio file not found or has been deleted after 24 hours'
+        }
+      });
+    }
+
+    // Check if audio was deleted
+    if (session.transcription.audio_deleted_at) {
+      return res.status(410).json({ // 410 Gone
+        error: {
+          code: 'AUDIO_DELETED',
+          message: 'Audio file was deleted after 24 hours retention period'
+        }
+      });
+    }
+
+    // Return public URL
+    res.json({
+      data: {
+        downloadUrl: session.transcription.audio_url,
+        filename: `session-${session.id}.webm`,
+        expiresAt: null // Public URL doesn't expire (but file deleted after 24h)
+      }
+    });
+  } catch (error) {
+    console.error('Get audio download URL error:', error);
+    res.status(500).json({
+      error: {
+        code: 'AUDIO_DOWNLOAD_FAILED',
+        message: 'Failed to get audio download URL'
+      }
+    });
+  }
+});
+
 module.exports = router;

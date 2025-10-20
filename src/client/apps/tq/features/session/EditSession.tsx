@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Save, FileText } from 'lucide-react'
+import { Save, FileText, Download } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -38,6 +38,7 @@ export const EditSession: React.FC = () => {
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showLinkToast, setShowLinkToast] = useState(false)
   const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report'} | null>(null)
+  const [isDownloadingAudio, setIsDownloadingAudio] = useState(false)
 
   useEffect(() => {
     const loadSession = async () => {
@@ -187,6 +188,31 @@ export const EditSession: React.FC = () => {
     }
   }
 
+  const handleDownloadAudio = async () => {
+    if (!session?.id) return
+
+    setIsDownloadingAudio(true)
+    try {
+      const response = await sessionsService.getAudioDownloadUrl(session.id)
+      const { downloadUrl, filename } = response.data
+
+      // Create temporary anchor element and trigger download
+      const a = document.createElement('a')
+      a.href = downloadUrl
+      a.download = filename
+      a.target = '_blank'
+      a.rel = 'noopener noreferrer'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    } catch (error) {
+      // Error feedback handled by HTTP interceptor
+      console.error('Download audio failed:', error)
+    } finally {
+      setIsDownloadingAudio(false)
+    }
+  }
+
   // Loading state
   if (isLoading) {
     return (
@@ -249,6 +275,15 @@ export const EditSession: React.FC = () => {
     : t('sessions.unknown_patient')
 
   const hasTranscription = Boolean(transcription && transcription.trim().length > 0)
+
+  // Check if audio is available for download
+  // Audio is available if transcription exists and has audio_url (not deleted)
+  const hasAudioAvailable = Boolean(
+    session.transcription_id &&
+    // Audio URL would be loaded by backend when includeTranscription=true
+    // For now, we'll try the download and let the backend return 404/410 if not available
+    hasTranscription
+  )
 
   return (
     <div className="space-y-6">
@@ -350,6 +385,28 @@ export const EditSession: React.FC = () => {
                 required
                 error={transcriptionError}
               />
+
+              {/* Audio Download Button - Only show if transcription exists */}
+              {hasTranscription && (
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    size="sm"
+                    onClick={handleDownloadAudio}
+                    disabled={isDownloadingAudio || !hasAudioAvailable}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    {isDownloadingAudio ? t('sessions.downloadingAudio') : t('sessions.downloadAudio')}
+                  </Button>
+                  <p className="text-xs text-gray-500">
+                    {hasAudioAvailable
+                      ? t('sessions.audioDeletedAfter24h')
+                      : t('sessions.audioNotAvailable')}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

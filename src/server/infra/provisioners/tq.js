@@ -109,6 +109,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         audio_url TEXT,
+        audio_deleted_at TIMESTAMPTZ,
         transcript_status transcript_status_enum NOT NULL DEFAULT 'created',
         deepgram_request_id TEXT,
         confidence_score NUMERIC(5,4),
@@ -248,6 +249,13 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
 
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_transcription_deepgram_id ON transcription(deepgram_request_id)
+    `);
+
+    // Index for audio cleanup cron job (find audios >24h old with URL and not deleted)
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_transcription_audio_cleanup
+      ON transcription(created_at, audio_url)
+      WHERE audio_url IS NOT NULL AND audio_deleted_at IS NULL
     `);
 
     await client.query(`

@@ -229,5 +229,9 @@ export const sessionsService = {
 
   async deleteSession(id: string): Promise<void> {
     await api.delete(`/api/tq/v1/sessions/${id}`)
+  },
+
+  async getAudioDownloadUrl(id: string): Promise<{ data: { downloadUrl: string; filename: string; expiresAt: string | null } }> {
+    return await api.get(`/api/tq/v1/sessions/${id}/audio-download`)
   }
 }

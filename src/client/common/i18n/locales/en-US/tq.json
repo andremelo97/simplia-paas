@@ -293,6 +293,10 @@
     "add_patient_details": "Add Patient Details",
     "call_ai_agent": "Call AI Agent",
     "new_quote_or_clinical": "New Quote or Clinical",
+    "downloadAudio": "Download Audio",
+    "downloadingAudio": "Downloading...",
+    "audioDeletedAfter24h": "⚠️ Audio will be automatically deleted after 24 hours",
+    "audioNotAvailable": "Audio not available or already deleted",
     "pages": {
       "management_title": "Session Management",
       "management_subtitle": "View and manage your transcription sessions",

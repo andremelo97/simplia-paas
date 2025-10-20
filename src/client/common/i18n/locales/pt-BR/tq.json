@@ -265,6 +265,10 @@
     "add_patient_details": "Adicionar Detalhes do Paciente",
     "call_ai_agent": "Chamar Agente de IA",
     "new_quote_or_clinical": "Nova Cotação ou Relatório",
+    "downloadAudio": "Baixar Áudio",
+    "downloadingAudio": "Baixando...",
+    "audioDeletedAfter24h": "⚠️ O áudio será automaticamente deletado após 24 horas",
+    "audioNotAvailable": "Áudio não disponível ou já foi deletado",
     "pages": {
       "management_title": "Gerenciamento de Sessões",
       "management_subtitle": "Visualize e gerencie suas sessões de transcrição",

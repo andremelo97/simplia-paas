@@ -355,6 +355,20 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   EMAIL_TEMPLATE_RESET: {
     title: "Template Reset",
     message: "Email template reset to default successfully."
+  },
+
+  // Audio Download operations
+  AUDIO_NOT_AVAILABLE: {
+    title: "Audio Not Available",
+    message: "Audio file not found or has been deleted after 24 hours."
+  },
+  AUDIO_DELETED: {
+    title: "Audio Deleted",
+    message: "Audio file was deleted after 24 hours retention period."
+  },
+  AUDIO_DOWNLOAD_FAILED: {
+    title: "Download Failed",
+    message: "Failed to download audio file. Please try again."
   }
 }
 

@@ -196,15 +196,23 @@ export const EditSession: React.FC = () => {
       const response = await sessionsService.getAudioDownloadUrl(session.id)
       const { downloadUrl, filename } = response.data
 
+      // Fetch the file as blob to force download instead of opening in new tab
+      const audioResponse = await fetch(downloadUrl)
+      const blob = await audioResponse.blob()
+
+      // Create object URL from blob
+      const blobUrl = URL.createObjectURL(blob)
+
       // Create temporary anchor element and trigger download
       const a = document.createElement('a')
-      a.href = downloadUrl
+      a.href = blobUrl
       a.download = filename
-      a.target = '_blank'
-      a.rel = 'noopener noreferrer'
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
+
+      // Cleanup blob URL
+      URL.revokeObjectURL(blobUrl)
     } catch (error) {
       // Error feedback handled by HTTP interceptor
       console.error('Download audio failed:', error)

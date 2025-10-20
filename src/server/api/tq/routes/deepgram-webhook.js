@@ -106,6 +106,25 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     console.log('[Webhook] Processing request_id:', requestId);
 
+    // Log full webhook payload for debugging empty transcript
+    console.log('[Webhook] 🔍 Full payload structure:');
+    console.log('[Webhook] 🔍 Metadata keys:', Object.keys(webhookData.metadata || {}));
+    console.log('[Webhook] 🔍 Results keys:', Object.keys(webhookData.results || {}));
+    if (webhookData.results?.channels) {
+      console.log('[Webhook] 🔍 Channels count:', webhookData.results.channels.length);
+      if (webhookData.results.channels[0]) {
+        console.log('[Webhook] 🔍 Channel 0 keys:', Object.keys(webhookData.results.channels[0]));
+        if (webhookData.results.channels[0].alternatives) {
+          console.log('[Webhook] 🔍 Alternatives count:', webhookData.results.channels[0].alternatives.length);
+          if (webhookData.results.channels[0].alternatives[0]) {
+            const alt = webhookData.results.channels[0].alternatives[0];
+            console.log('[Webhook] 🔍 Alternative 0 transcript length:', alt.transcript?.length || 0);
+            console.log('[Webhook] 🔍 Alternative 0 transcript preview:', alt.transcript?.substring(0, 100) || '(empty)');
+          }
+        }
+      }
+    }
+
     // Extract tenant information from extra metadata
     const extraMetadata = webhookData.metadata?.extra;
 

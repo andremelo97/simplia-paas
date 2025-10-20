@@ -64,7 +64,24 @@ class DeepgramService {
         ...options.additionalParams
       });
 
+      // Add extra metadata for webhook correlation (tenantId, schema, transcriptionId)
+      if (options.extra) {
+        Object.entries(options.extra).forEach(([key, value]) => {
+          queryParams.append('extra', `${key}:${value}`);
+        });
+      }
+
       const url = `${this.baseUrl}/listen?${queryParams.toString()}`;
+
+      // Debug logging for Deepgram request
+      console.log('[Deepgram] 🚀 Starting transcription request');
+      console.log('[Deepgram] 📍 Audio URL:', audioUrl);
+      console.log('[Deepgram] 🔧 Model:', options.model || 'nova-2');
+      console.log('[Deepgram] 🌐 Language:', options.language || 'pt-BR');
+      console.log('[Deepgram] 🔗 Callback URL:', callbackUrl);
+      if (options.extra) {
+        console.log('[Deepgram] 📦 Extra metadata:', options.extra);
+      }
 
       const response = await fetch(url, {
         method: 'POST',
@@ -77,13 +94,16 @@ class DeepgramService {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('[Deepgram] ❌ API error:', response.status, response.statusText);
+        console.error('[Deepgram] ❌ Error details:', errorText);
         throw new Error(`Deepgram API error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       const result = await response.json();
 
       // Log the request for debugging
-      console.log(`Deepgram transcription started - Request ID: ${result.request_id}`);
+      console.log('[Deepgram] ✅ Transcription started successfully');
+      console.log('[Deepgram] 🆔 Request ID:', result.request_id);
 
       return {
         success: true,

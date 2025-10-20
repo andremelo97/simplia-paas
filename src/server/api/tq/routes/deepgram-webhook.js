@@ -106,65 +106,43 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     console.log('[Webhook] Processing request_id:', requestId);
 
-    // Log webhook payload structure for debugging
-    console.log('[Webhook] 🔍 Payload keys:', Object.keys(webhookData));
-    console.log('[Webhook] 🔍 Has results:', !!webhookData.results);
-    console.log('[Webhook] 🔍 Has metadata:', !!webhookData.metadata);
-    if (webhookData.results) {
-      console.log('[Webhook] 🔍 Results keys:', Object.keys(webhookData.results));
-      console.log('[Webhook] 🔍 Channels count:', webhookData.results.channels?.length || 0);
+    // Extract tenant information from extra metadata
+    const extraMetadata = webhookData.metadata?.extra;
+
+    if (!extraMetadata) {
+      console.error('[Webhook] ❌ Missing extra metadata in webhook payload');
+      console.error('[Webhook] Available metadata keys:', Object.keys(webhookData.metadata || {}));
+      return res.status(400).json({ error: 'Missing extra metadata' });
     }
 
-    // Find the transcription by deepgram_request_id across TQ-enabled tenant schemas
-    // IMPORTANT: Do NOT use transaction for search - errors in one schema would abort the entire transaction
-    // Only search tenants that have TQ app provisioned and active
-    const tenantsResult = await client.query(
-      `SELECT DISTINCT t.id, t.schema_name
-       FROM public.tenants t
-       INNER JOIN public.tenant_applications ta ON ta.tenant_id_fk = t.id
-       INNER JOIN public.applications a ON a.id = ta.application_id_fk
-       WHERE t.active = true
-         AND ta.active = true
-         AND ta.status = 'active'
-         AND a.slug = 'tq'`
+    const tenantId = extraMetadata.tenantId;
+    const tenantSchema = extraMetadata.schema;
+    const transcriptionId = extraMetadata.transcriptionId;
+
+    console.log(`[Webhook] 📦 Extra metadata:`, {
+      tenantId,
+      tenantSchema,
+      transcriptionId
+    });
+
+    if (!tenantId || !tenantSchema || !transcriptionId) {
+      console.error('[Webhook] ❌ Incomplete extra metadata');
+      console.error('[Webhook] Extra metadata received:', extraMetadata);
+      return res.status(400).json({ error: 'Incomplete extra metadata' });
+    }
+
+    // Verify transcription exists in tenant schema
+    const verifyResult = await client.query(
+      `SELECT id FROM ${tenantSchema}.transcription WHERE id = $1`,
+      [transcriptionId]
     );
 
-    console.log(`[Webhook] Searching across ${tenantsResult.rows.length} TQ-enabled tenant(s)`);
-
-    let transcription = null;
-    let tenantSchema = null;
-    let tenantId = null;
-
-    // Search across TQ-enabled tenant schemas for the transcription
-    for (const tenant of tenantsResult.rows) {
-      console.log(`[Webhook] Checking schema: ${tenant.schema_name}`);
-      try {
-        const result = await client.query(
-          `SELECT id FROM ${tenant.schema_name}.transcription
-           WHERE deepgram_request_id = $1`,
-          [requestId]
-        );
-
-        console.log(`[Webhook] Query result in ${tenant.schema_name}: ${result.rows.length} row(s)`);
-
-        if (result.rows.length > 0) {
-          transcription = result.rows[0];
-          tenantSchema = tenant.schema_name;
-          tenantId = tenant.id;
-          console.log(`[Webhook] ✅ Found transcription in ${tenantSchema}: ${transcription.id}`);
-          break;
-        }
-      } catch (err) {
-        // Schema might not have transcription table, continue to next tenant
-        console.error(`[Webhook] Error checking ${tenant.schema_name}:`, err.message);
-        continue;
-      }
-    }
-
-    if (!transcription || !tenantSchema) {
-      console.error(`[Webhook] ❌ Transcription not found for request_id: ${requestId}`);
+    if (verifyResult.rows.length === 0) {
+      console.error(`[Webhook] ❌ Transcription not found: ${transcriptionId} in ${tenantSchema}`);
       return res.status(404).json({ error: 'Transcription not found' });
     }
+
+    console.log(`[Webhook] ✅ Found transcription in ${tenantSchema}: ${transcriptionId}`);
 
     // Start transaction for UPDATE operation only
     await client.query('BEGIN');

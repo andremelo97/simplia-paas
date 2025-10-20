@@ -93,6 +93,37 @@ FROM user_types ut, tenants t
 WHERE ut.slug = 'admin' AND t.subdomain = 'default'
 ON CONFLICT (email) DO NOTHING;
 
+-- =============================================
+-- TRANSCRIPTION PLANS (Required for TQ app)
+-- =============================================
+
+-- Insert default transcription plans (Basic and VIP)
+-- System standard: Nova-3 with language targeting (Monolingual pricing: $0.0043/min)
+INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, cost_per_minute_usd, active, description)
+VALUES
+  (
+    'basic',
+    'Basic Plan',
+    2400,
+    false,
+    false,
+    'nova-3',
+    0.0043,
+    true,
+    'Standard transcription plan with 2400 minutes (40 hours) monthly quota. Uses Nova-3 model with language targeting (pt-BR or en-US). Fixed limit, no customization, no overage.'
+  ),
+  (
+    'vip',
+    'VIP Plan',
+    2400,
+    true,
+    true,
+    'nova-3',
+    0.0043,
+    true,
+    'Premium transcription plan with customizable monthly quota (minimum 2400 minutes). Uses Nova-3 model with language targeting (pt-BR or en-US). Allows custom limits and overage.'
+  )
+ON CONFLICT (slug) DO NOTHING;
 
 -- =============================================
 -- SEED DOCUMENTATION

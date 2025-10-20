@@ -324,7 +324,7 @@ router.post('/', async (req, res) => {
     // Send email and abort if it fails
     if (quoteData.patient_email) {
       const EmailService = require('../../../services/emailService');
-      const Tenant = require('../../../infra/models/Tenant');
+      const { Tenant } = require('../../../infra/models/Tenant');
       let branding = null;
       try {
         const { TenantBranding } = require('../../../infra/models/TenantBranding');
@@ -622,7 +622,7 @@ router.post('/:id/new-password', async (req, res) => {
     if (quoteDataResult.rows.length > 0 && quoteDataResult.rows[0].patient_email) {
       const quoteInfo = quoteDataResult.rows[0];
       const EmailService = require('../../../services/emailService');
-      const Tenant = require('../../../infra/models/Tenant');
+      const { Tenant } = require('../../../infra/models/Tenant');
 
       let branding = null;
       try {

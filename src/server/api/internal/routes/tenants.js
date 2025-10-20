@@ -1,7 +1,7 @@
 const express = require('express');
 const { requireAuth } = require('../../../infra/middleware/auth');
 const { requirePlatformRole } = require('../../../infra/middleware/platformRole');
-const Tenant = require('../../../infra/models/Tenant');
+const { Tenant } = require('../../../infra/models/Tenant');
 const { TenantApplication, TenantApplicationNotFoundError } = require('../../../infra/models/TenantApplication');
 const { Application, ApplicationNotFoundError } = require('../../../infra/models/Application');
 const User = require('../../../infra/models/User');

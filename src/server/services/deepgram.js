@@ -61,6 +61,7 @@ class DeepgramService {
       // Build query parameters
       const queryParams = new URLSearchParams({
         model: options.model || 'nova-2',
+        language: options.language || 'pt-BR',
         smart_format: 'true',
         punctuate: 'true',
         diarize: 'false',

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
-import { Card, CardHeader, CardContent, Button, Input, Label, Checkbox } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Label, Checkbox, Select } from '@client/common/ui'
 import { useUIStore } from '../../store'
 import { tenantsService } from '../../services/tenants'
+import { transcriptionPlansService, TranscriptionPlan } from '../../services/transcriptionPlans'
+import { tenantTranscriptionConfigService } from '../../services/tenantTranscriptionConfig'
 import { AddressesRepeater } from './AddressesRepeater'
 import { ContactsRepeater } from './ContactsRepeater'
 import { AddressFormValues, ContactFormValues } from './types'
@@ -13,10 +15,15 @@ interface TenantFormData {
   timezone?: string  // Read-only display
 }
 
+interface TranscriptionConfigData {
+  planId: number
+}
+
 interface TenantSnapshot {
   core: TenantFormData
   addresses: AddressFormValues[]
   contacts: ContactFormValues[]
+  transcriptionConfig: TranscriptionConfigData | null
 }
 
 export const EditTenantPage: React.FC = () => {
@@ -27,6 +34,9 @@ export const EditTenantPage: React.FC = () => {
   })
   const [addresses, setAddresses] = useState<AddressFormValues[]>([])
   const [contacts, setContacts] = useState<ContactFormValues[]>([])
+  const [transcriptionConfig, setTranscriptionConfig] = useState<TranscriptionConfigData | null>(null)
+  const [availablePlans, setAvailablePlans] = useState<TranscriptionPlan[]>([])
+  const [selectedPlan, setSelectedPlan] = useState<TranscriptionPlan | null>(null)
   const [snapshot, setSnapshot] = useState<TenantSnapshot | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [addressErrors, setAddressErrors] = useState<Record<string, Partial<Record<keyof AddressFormValues, string>>>>({})
@@ -55,6 +65,24 @@ export const EditTenantPage: React.FC = () => {
         const tenantResponse = await tenantsService.getTenant(parseInt(id))
         const tenant = tenantResponse.data
 
+        // Load transcription plans
+        const plansResponse = await transcriptionPlansService.getPlans({ active: true })
+        setAvailablePlans(plansResponse.plans)
+
+        // Load transcription config for this tenant
+        let transcriptionConfigData: TranscriptionConfigData | null = null
+        try {
+          const configResponse = await tenantTranscriptionConfigService.getConfig(parseInt(id))
+          transcriptionConfigData = {
+            planId: configResponse.planId
+          }
+          setTranscriptionConfig(transcriptionConfigData)
+          const plan = plansResponse.plans.find(p => p.id === configResponse.planId)
+          setSelectedPlan(plan || null)
+        } catch (err) {
+          // No config yet, that's fine
+          console.log('[EditTenant] No transcription config found for tenant')
+        }
 
         // Load addresses
         const addressesResponse = await tenantsService.listAddresses(parseInt(id), { active: true, limit: 100 })
@@ -131,7 +159,8 @@ export const EditTenantPage: React.FC = () => {
         setSnapshot({
           core: { ...coreData },
           addresses: JSON.parse(JSON.stringify(finalAddresses)),
-          contacts: JSON.parse(JSON.stringify(finalContacts))
+          contacts: JSON.parse(JSON.stringify(finalContacts)),
+          transcriptionConfig: transcriptionConfigData ? JSON.parse(JSON.stringify(transcriptionConfigData)) : null
         })
 
 
@@ -376,6 +405,11 @@ export const EditTenantPage: React.FC = () => {
         await tenantsService.deleteContact(diff.tenantId, contactId)
       }
 
+      // Update transcription configuration if changed
+      if (transcriptionConfig && JSON.stringify(transcriptionConfig) !== JSON.stringify(snapshot?.transcriptionConfig)) {
+        await tenantTranscriptionConfigService.upsertConfig(diff.tenantId, transcriptionConfig)
+      }
+
       // Success feedback is handled automatically by HTTP interceptor
       // Stay on edit page (don't navigate away)
       
@@ -523,11 +557,57 @@ export const EditTenantPage: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-          
+
+          {/* Transcription Configuration */}
+          <Card>
+            <CardHeader className="p-6 pb-4">
+              <h2 className="text-lg font-semibold text-gray-900">Transcription Configuration</h2>
+            </CardHeader>
+
+            <CardContent className="space-y-6 px-6 pb-6">
+              <div>
+                <Label htmlFor="transcription-plan">Transcription Plan</Label>
+                <Select
+                  id="transcription-plan"
+                  value={transcriptionConfig?.planId?.toString() || ''}
+                  onChange={(e) => {
+                    const planId = parseInt(e.target.value)
+                    if (!planId || isNaN(planId)) {
+                      setSelectedPlan(null)
+                      setTranscriptionConfig(null)
+                      return
+                    }
+                    const plan = availablePlans.find(p => p.id === planId)
+                    setSelectedPlan(plan || null)
+                    // Reset custom values when changing plan
+                    setTranscriptionConfig({ planId })
+                  }}
+                  options={[
+                    { value: '', label: 'No plan selected' },
+                    ...availablePlans.map(plan => {
+                      const features = []
+                      if (plan.allowsCustomLimits) features.push('Custom Limits')
+                      if (plan.allowsOverage) features.push('Overage')
+                      const featuresText = features.length > 0 ? ` (${features.join(' + ')})` : ''
+                      return {
+                        value: plan.id.toString(),
+                        label: `${plan.name}${featuresText}`
+                      }
+                    })
+                  ]}
+                  disabled={isSubmitting}
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Users can customize limits and overage in Hub if plan allows
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Addresses Section */}
           <Card>
             <CardContent className="p-6">
-              <AddressesRepeater 
+              <AddressesRepeater
                 addresses={addresses}
                 onChange={handleAddressesChange}
                 errors={addressErrors}

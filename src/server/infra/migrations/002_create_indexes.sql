@@ -156,6 +156,27 @@ COMMENT ON INDEX idx_tenant_contacts_email_lookup IS 'Case-insensitive email loo
 COMMENT ON INDEX uq_tenant_contacts_primary_per_type IS 'Ensures only one primary contact per type per tenant';
 
 -- =============================================
+-- TRANSCRIPTION QUOTA INDEXES
+-- =============================================
+
+-- Transcription plans lookup
+CREATE INDEX IF NOT EXISTS idx_transcription_plans_active ON public.transcription_plans(active);
+CREATE INDEX IF NOT EXISTS idx_transcription_plans_slug ON public.transcription_plans(slug);
+
+-- Tenant transcription config lookup
+CREATE INDEX IF NOT EXISTS idx_tenant_transcription_config_tenant ON public.tenant_transcription_config(tenant_id_fk);
+CREATE INDEX IF NOT EXISTS idx_tenant_transcription_config_plan ON public.tenant_transcription_config(plan_id_fk);
+
+-- Tenant transcription usage lookup
+CREATE INDEX IF NOT EXISTS idx_tenant_transcription_usage_tenant ON public.tenant_transcription_usage(tenant_id_fk);
+CREATE INDEX IF NOT EXISTS idx_tenant_transcription_usage_month ON public.tenant_transcription_usage(month DESC);
+CREATE INDEX IF NOT EXISTS idx_tenant_transcription_usage_tenant_month ON public.tenant_transcription_usage(tenant_id_fk, month DESC);
+
+COMMENT ON INDEX idx_transcription_plans_active IS 'Fast lookup of active transcription plans';
+COMMENT ON INDEX idx_tenant_transcription_config_tenant IS 'Fast lookup of transcription config by tenant';
+COMMENT ON INDEX idx_tenant_transcription_usage_tenant_month IS 'Optimizes monthly usage queries by tenant';
+
+-- =============================================
 -- TENANT CONSISTENCY CONSTRAINTS AND TRIGGERS
 -- =============================================
 

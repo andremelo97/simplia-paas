@@ -31,7 +31,13 @@ const getBreadcrumbs = (pathname: string) => {
       case 'audit': return 'Audit'
       case 'create': return 'Create'
       case 'edit': return 'Edit'
-      default: return segment.charAt(0).toUpperCase() + segment.slice(1)
+      case 'transcription-plans': return 'Transcription Plans'
+      default:
+        // Convert hyphens to spaces and capitalize each word
+        return segment
+          .split('-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ')
     }
   }
   

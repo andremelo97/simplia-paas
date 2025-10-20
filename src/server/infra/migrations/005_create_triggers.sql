@@ -2,6 +2,19 @@
 -- Description: Contains triggers for auto-creating related records and maintaining data integrity
 
 -- =============================================
+-- GENERIC UPDATED_AT FUNCTION
+-- =============================================
+
+-- Function to automatically update updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- =============================================
 -- TENANT BRANDING AUTO-CREATION
 -- =============================================
 
@@ -36,6 +49,28 @@ CREATE TRIGGER trigger_auto_create_tenant_branding
   AFTER INSERT ON tenants
   FOR EACH ROW
   EXECUTE FUNCTION auto_create_tenant_branding();
+
+-- =============================================
+-- UPDATED_AT TRIGGERS
+-- =============================================
+
+-- Transcription plans updated_at trigger
+CREATE TRIGGER trigger_transcription_plans_updated_at
+  BEFORE UPDATE ON public.transcription_plans
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Tenant transcription config updated_at trigger
+CREATE TRIGGER trigger_tenant_transcription_config_updated_at
+  BEFORE UPDATE ON public.tenant_transcription_config
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Tenant transcription usage updated_at trigger
+CREATE TRIGGER trigger_tenant_transcription_usage_updated_at
+  BEFORE UPDATE ON public.tenant_transcription_usage
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
 
 -- =============================================
 -- FUTURE TRIGGERS PLACEHOLDER

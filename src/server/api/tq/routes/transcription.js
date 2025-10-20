@@ -13,6 +13,12 @@ const { v4: uuidv4 } = require('uuid');
 const DeepgramService = require('../../../services/deepgram');
 const SupabaseStorageService = require('../../../services/supabaseStorage');
 const db = require('../../../infra/db/database');
+const { checkTranscriptionQuota } = require('../../../infra/middleware/transcriptionQuota');
+const {
+  DEFAULT_STT_MODEL,
+  LOCALE_TO_DEEPGRAM_LANGUAGE,
+  DEFAULT_LANGUAGE
+} = require('../../../infra/constants/transcription');
 
 const router = express.Router();
 const deepgramService = new DeepgramService();
@@ -361,7 +367,7 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
  *       500:
  *         description: Deepgram API error
  */
-router.post('/:transcriptionId/transcribe', async (req, res) => {
+router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req, res) => {
   const client = await db.getClient();
 
   try {
@@ -406,12 +412,34 @@ router.post('/:transcriptionId/transcribe', async (req, res) => {
     // Build webhook callback URL - webhook should go to TQ API server
     const webhookUrl = `${process.env.API_BASE_URL || 'http://localhost:3001'}/api/tq/v1/transcriptions/webhook/deepgram`;
 
-    // Start Deepgram transcription
+    // Determine language for transcription
+    // Priority: 1) tenant config, 2) tenant locale, 3) default (pt-BR)
+    let transcriptionLanguage = DEFAULT_LANGUAGE;
+
+    try {
+      // Try to get language from tenant transcription config
+      const configQuery = await client.query(
+        'SELECT transcription_language FROM public.tenant_transcription_config WHERE tenant_id_fk = $1',
+        [tenantId]
+      );
+
+      if (configQuery.rows.length > 0 && configQuery.rows[0].transcription_language) {
+        transcriptionLanguage = configQuery.rows[0].transcription_language;
+      } else if (req.tenant?.locale) {
+        // Fall back to tenant locale from JWT/context
+        transcriptionLanguage = LOCALE_TO_DEEPGRAM_LANGUAGE[req.tenant.locale] || DEFAULT_LANGUAGE;
+      }
+    } catch (error) {
+      console.warn('[Transcription] Failed to determine language, using default:', error.message);
+    }
+
+    // Start Deepgram transcription with language targeting
     const transcriptionApiResult = await deepgramService.transcribeByUrl(
       transcription.audio_url,
       webhookUrl,
       {
-        model: 'nova-2',
+        model: DEFAULT_STT_MODEL, // System default: Nova-3
+        language: transcriptionLanguage, // pt-BR or en-US
         additionalParams: {
           // Add transcription metadata to callback
           callback_metadata: JSON.stringify({
@@ -557,6 +585,24 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     await client.query('COMMIT');
 
     console.log(`Transcription completed for transcription ${transcriptionId} (tenant: ${tenantId})`);
+
+    // Register transcription usage for quota tracking (async, don't block response)
+    // Extract audio duration and model from webhook data
+    const audioDurationSeconds = webhookData.duration || transcriptionData.processing_duration_seconds || 0;
+    const sttModel = webhookData.model_info?.name || DEFAULT_STT_MODEL; // Default to system standard (Nova-3)
+    const sttProviderRequestId = webhookData.request_id || transcriptionData.request_id;
+
+    // Import usage model and record usage (fire and forget)
+    const { TenantTranscriptionUsage } = require('../../../infra/models/TenantTranscriptionUsage');
+    TenantTranscriptionUsage.recordUsage({
+      tenantId: parseInt(tenantId),
+      transcriptionId: transcriptionId,
+      audioDurationSeconds: Math.ceil(audioDurationSeconds),
+      sttModel: sttModel,
+      sttProviderRequestId: sttProviderRequestId
+    }).catch(error => {
+      console.error(`[Transcription Usage] Failed to record usage for transcription ${transcriptionId}:`, error);
+    });
 
     res.json({ success: true, message: 'Transcription processed successfully' });
 

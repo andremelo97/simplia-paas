@@ -1654,6 +1654,236 @@ const { t } = useTranslation('tq')
 - `src/client/apps/hub/main.tsx` (modified - i18n sync)
 - `src/client/apps/tq/components/patients/PatientRow.tsx` (example migration)
 
+## Transcription Quota Management System
+
+### Overview
+The Transcription Quota system controls access to Deepgram transcription services based on monthly limits with support for custom limits and overage allowance for premium plans.
+
+### Database Schema
+```sql
+-- Transcription Plans (global table)
+CREATE TABLE public.transcription_plans (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  slug VARCHAR(50) NOT NULL UNIQUE,
+  monthly_minutes_limit INTEGER NOT NULL,
+  allows_custom_limits BOOLEAN DEFAULT false,
+  allows_overage BOOLEAN DEFAULT false,
+  active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Default plans: Basic (2400 min), VIP (unlimited custom limits + overage)
+-- Custom: Can have only allows_overage OR only allows_custom_limits
+
+-- Tenant Transcription Config (global table)
+CREATE TABLE public.tenant_transcription_config (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL UNIQUE REFERENCES public.tenants(id),
+  plan_id_fk INTEGER NOT NULL REFERENCES public.transcription_plans(id),
+  custom_monthly_limit INTEGER,  -- VIP only: custom limit (min 2400)
+  transcription_language VARCHAR(10) DEFAULT 'pt-BR',
+  overage_allowed BOOLEAN DEFAULT false,  -- User-controlled if plan allows
+  enabled BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tenant Transcription Usage (global table for aggregation)
+CREATE TABLE public.tenant_transcription_usage (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL REFERENCES public.tenants(id),
+  transcription_id UUID,  -- Optional reference to transcription
+  month DATE NOT NULL,  -- First day of month (YYYY-MM-01)
+  audio_duration_seconds INTEGER NOT NULL,
+  minutes_rounded_up INTEGER NOT NULL,  -- Ceil(seconds / 60)
+  stt_model VARCHAR(50),  -- Deepgram model used (Nova-3, etc)
+  stt_provider_request_id VARCHAR(255),
+  recorded_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_tenant_transcription_usage_tenant_month
+  ON public.tenant_transcription_usage(tenant_id_fk, month);
+```
+
+### Plan Types
+1. **Basic Plan**: Fixed 2400 minutes/month (40 hours), no customization, no overage
+2. **VIP Plan**: Custom limits (min 2400) + overage allowed (full premium)
+3. **Custom Plans**: Can have ONLY `allows_overage` OR ONLY `allows_custom_limits`
+
+### API Endpoints
+
+**Transcription Usage** (`/internal/api/v1/configurations/transcription-usage`):
+- `GET /` - Get current month usage + 6-month history + plan details
+  - Returns: `current`, `history`, `plan`, `config`
+  - Calculates: `limit`, `remaining`, `overage`, `percentUsed`
+
+**Transcription Config** (`/internal/api/v1/configurations/transcription-config`):
+- `PUT /` - Update configuration (VIP/Premium only)
+  - Body: `{ customMonthlyLimit?, overageAllowed? }`
+  - Validates: Plan permissions before allowing changes
+  - Minimum: 2400 minutes for custom limits
+
+### Quota Enforcement
+
+**Middleware** (`src/server/infra/middleware/transcriptionQuota.js`):
+Applied to `/api/tq/v1/transcriptions/:id/transcribe` route
+
+```javascript
+async function checkTranscriptionQuota(req, res, next) {
+  // 1. Get tenant config (dynamic)
+  const config = await TenantTranscriptionConfig.findByTenantId(tenantId);
+
+  // 2. Get effective limit (respects custom limits if VIP)
+  const monthlyLimitMinutes = config.getEffectiveMonthlyLimit();
+
+  // 3. Get current month usage (dynamic)
+  const currentUsage = await TenantTranscriptionUsage.getCurrentMonthUsage(tenantId);
+
+  // 4. Check if quota exceeded
+  if (currentUsage.totalMinutes >= monthlyLimitMinutes) {
+    // If overage NOT allowed → Block with 429
+    if (!config.overageAllowed) {
+      return res.status(429).json({
+        error: {
+          code: 429,
+          message: 'Monthly transcription quota exceeded',
+          details: { used, limit, remaining: 0 }
+        }
+      });
+    }
+    // If overage allowed → Log warning and continue
+    console.warn(`Tenant exceeded quota but overage allowed`);
+  }
+
+  next();
+}
+```
+
+**Key Points:**
+- ✅ Dynamically reads limit from config (respects VIP custom limits)
+- ✅ Dynamically reads usage from current month
+- ✅ Respects `overageAllowed` flag (user-controlled in Hub)
+- ✅ Returns 429 error when blocked
+- ✅ Middleware applied BEFORE Deepgram API call
+
+### Hub Self-Service Configuration
+
+**Route**: `/configurations` (in Hub sidebar)
+
+**Component**: `TranscriptionUsageConfiguration.tsx`
+
+**Features:**
+- **Current Month Card**: Progress bar, usage metrics (used/limit/remaining)
+- **Plan Badge**: Pink (#E91E63) badge only if BOTH `allowsCustomLimits` AND `allowsOverage` are true
+- **Premium Features Card** (shows if ANY premium feature):
+  - Gradient background (purple #B725B7 → pink #E91E63)
+  - Custom limit input (if `allowsCustomLimits`)
+  - Overage checkbox (if `allowsOverage`)
+  - Saves independently via API
+- **Upgrade CTA**: Shows only if NO premium features
+- **Usage History Table**: Last 6 months with overage highlighting
+
+**UI Logic:**
+```typescript
+const canCustomizeLimits = usage.plan.allowsCustomLimits
+const canEnableOverage = usage.plan.allowsOverage
+const hasAnyPremiumFeature = canCustomizeLimits || canEnableOverage
+const isFullVIP = canCustomizeLimits && canEnableOverage
+
+// Badge: Only pink if BOTH features
+{isFullVIP ? 'bg-pink-100 text-pink-700' : 'bg-gray-100 text-gray-700'}
+
+// Card: Shows if ANY premium feature
+{hasAnyPremiumFeature && (
+  <Card className="relative overflow-hidden">
+    {/* Gradient background */}
+    <div className="absolute inset-0 bg-gradient-to-br from-[#B725B7] via-[#E91E63] to-[#B725B7] opacity-5"></div>
+
+    {/* Custom Limit - only if allowed */}
+    {canCustomizeLimits && <Input />}
+
+    {/* Overage - only if allowed */}
+    {canEnableOverage && <Checkbox />}
+  </Card>
+)}
+```
+
+### Models
+
+**TenantTranscriptionConfig.js**:
+- `findByTenantId(tenantId)` - Get config with plan details (JOIN)
+- `upsert(tenantId, configData)` - Create or update config
+- `update(updates)` - Update specific fields (validates custom limit)
+- `getEffectiveMonthlyLimit()` - Returns custom limit (VIP) or plan default
+- `canCustomizeLimits()` - Check if plan allows customization
+
+**TenantTranscriptionUsage.js**:
+- `recordUsage({ tenantId, transcriptionId, audioDurationSeconds, ... })` - Record new usage
+- `getCurrentMonthUsage(tenantId)` - Get current month aggregated usage
+- `getUsageHistory(tenantId, months)` - Get N months of historical usage
+
+### Usage Recording Flow
+1. Transcription completes via Deepgram webhook
+2. Webhook extracts `audioDurationSeconds` from Deepgram payload
+3. `TenantTranscriptionUsage.recordUsage()` called asynchronously (fire-and-forget)
+4. Minutes calculated as `Math.ceil(audioDurationSeconds / 60)`
+5. Record inserted with current month (`YYYY-MM-01` format)
+
+### Frontend Service
+
+**transcriptionUsageService.ts** (Hub):
+```typescript
+class TranscriptionUsageService {
+  async getUsage(): Promise<TranscriptionUsageResponse> {
+    const response = await api.get('/internal/api/v1/configurations/transcription-usage')
+    return response.data
+  }
+
+  async updateConfig(config: Partial<TranscriptionConfig>): Promise<void> {
+    await api.put('/internal/api/v1/configurations/transcription-config', config)
+  }
+}
+```
+
+### Translations
+
+**Keys** (`pt-BR/hub.json` and `en-US/hub.json`):
+- `transcription_usage.title` - "Uso de Transcrição" / "Transcription Usage"
+- `transcription_usage.custom_quota_settings` - Configuration card title
+- `transcription_usage.premium_description` - Premium features description
+- `transcription_usage.monthly_limit` - "Limite Mensal (minutos)"
+- `transcription_usage.allow_overage` - "Permitir ultrapassar o limite"
+- `transcription_usage.overage_description` - Overage explanation
+- `transcription_usage.validation_min_limit` - Min limit error (2400)
+- `transcription_usage.usage_history` - "Histórico de Uso (Últimos 6 Meses)"
+
+### Implementation Checklist
+- ✅ Database schema with plans, config, usage tables
+- ✅ Middleware enforces quota dynamically before transcription
+- ✅ Respects `overageAllowed` flag (blocks or allows)
+- ✅ Hub self-service UI with conditional features
+- ✅ Gradient styling for premium features card
+- ✅ Pink badge only for full VIP (both features)
+- ✅ API validates plan permissions before updates
+- ✅ Usage recorded asynchronously after transcription
+- ✅ 6-month history with overage calculations
+- ✅ Full translations (pt-BR + en-US)
+
+### Key Files
+**Backend:**
+- `src/server/api/internal/routes/tenant-transcription-usage.js` - API routes
+- `src/server/infra/middleware/transcriptionQuota.js` - Quota enforcement
+- `src/server/infra/models/TenantTranscriptionConfig.js` - Config model
+- `src/server/infra/models/TenantTranscriptionUsage.js` - Usage tracking model
+- `src/server/api/tq/routes/transcription.js` - Transcription routes (applies middleware)
+
+**Frontend:**
+- `src/client/apps/hub/features/configurations/TranscriptionUsageConfiguration.tsx` - Hub UI
+- `src/client/apps/hub/services/transcriptionUsageService.ts` - API service
+- `src/client/common/i18n/locales/*/hub.json` - Translations
+
 ## Development Best Practices
 - **Type Check**: Frontend uses TypeScript - check for errors with `npx tsc --noEmit --project src/client/`
 - **Test First**: Always run `npm test` before making significant changes

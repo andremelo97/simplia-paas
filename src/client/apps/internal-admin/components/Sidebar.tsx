@@ -1,9 +1,10 @@
 import React from 'react'
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Users, 
-  Grid3x3
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  Grid3x3,
+  Clock
 } from 'lucide-react'
 import { useUIStore } from '../store'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
@@ -28,6 +29,11 @@ const navigation: NavigationItem[] = [
     name: 'Applications',
     href: '/applications',
     icon: Grid3x3
+  },
+  {
+    name: 'Transcription Plans',
+    href: '/transcription-plans',
+    icon: Clock
   },
 ]
 

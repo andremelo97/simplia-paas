@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardContent, Skeleton, Alert } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Skeleton, Alert, Button } from '@client/common/ui'
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Minus, Users, Building, Package, Activity } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Users, Building, Package, Activity, BookOpen } from 'lucide-react'
 import { metricsService, PlatformMetrics } from '../../services/metrics'
 
 const MetricCard: React.FC<{
@@ -107,10 +107,29 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-8">
       {/* Header Section */}
       <div className="border-b border-gray-200/50 pb-6">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
-        <p className="text-gray-600 mt-2 text-lg">
-          Platform overview and key metrics for internal administration
-        </p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+            <p className="text-gray-600 mt-2 text-lg">
+              Platform overview and key metrics for internal administration
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              // In development, docs are served on backend port (3001)
+              // In production, same domain so relative path works
+              const docsUrl = import.meta.env.DEV
+                ? 'http://localhost:3001/docs'
+                : '/docs'
+              window.open(docsUrl, '_blank')
+            }}
+            className="flex items-center gap-2"
+          >
+            <BookOpen className="h-4 w-4" />
+            API Documentation
+          </Button>
+        </div>
       </div>
 
       {/* Key Metrics Section */}

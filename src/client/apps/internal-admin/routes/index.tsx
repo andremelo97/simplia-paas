@@ -12,6 +12,9 @@ import { CreateUser } from '../features/users/CreateUser'
 import { EditUser } from '../features/users/EditUser'
 import { ApplicationsList } from '../features/applications/ApplicationsList'
 import { ApplicationPricing } from '../features/applications/pricing/ApplicationPricing'
+import { TranscriptionPlansList } from '../features/transcription-plans/TranscriptionPlansList'
+import { CreateTranscriptionPlan } from '../features/transcription-plans/CreateTranscriptionPlan'
+import { EditTranscriptionPlan } from '../features/transcription-plans/EditTranscriptionPlan'
 import { TenantDetailLayout } from '../features/tenants/detail/TenantDetailLayout'
 import { TenantOverviewTab } from '../features/tenants/detail/tabs/TenantOverviewTab'
 import { TenantUsersTab } from '../features/tenants/detail/tabs/TenantUsersTab'
@@ -83,6 +86,12 @@ export const AppRoutes: React.FC = () => {
         {/* Applications routes */}
         <Route path="applications" element={<ApplicationsList />} />
         <Route path="applications/:applicationId/pricing" element={<ApplicationPricing />} />
+
+        {/* Transcription Plans routes */}
+        <Route path="transcription-plans" element={<TranscriptionPlansList />} />
+        <Route path="transcription-plans/create" element={<CreateTranscriptionPlan />} />
+        <Route path="transcription-plans/:id/edit" element={<EditTranscriptionPlan />} />
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

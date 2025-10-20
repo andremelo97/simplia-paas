@@ -418,6 +418,68 @@ COMMENT ON COLUMN email_log.status IS 'Delivery status: sent (successfully sent)
 COMMENT ON COLUMN email_log.metadata IS 'Flexible JSONB field for app-specific data (quote_id, patient_id, etc.)';
 
 -- =============================================
+-- TRANSCRIPTION QUOTA MANAGEMENT
+-- =============================================
+
+-- Transcription plans table (Basic, VIP, etc.)
+CREATE TABLE IF NOT EXISTS public.transcription_plans (
+  id SERIAL PRIMARY KEY,
+  slug VARCHAR(50) NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  monthly_minutes_limit INTEGER NOT NULL CHECK (monthly_minutes_limit >= 2400),
+  allows_custom_limits BOOLEAN NOT NULL,
+  allows_overage BOOLEAN NOT NULL,
+  stt_model VARCHAR(50) NOT NULL,
+  cost_per_minute_usd NUMERIC(10, 6) NOT NULL,
+  active BOOLEAN NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE public.transcription_plans IS 'Available transcription quota plans';
+COMMENT ON COLUMN public.transcription_plans.slug IS 'Unique identifier for the plan (basic, vip)';
+COMMENT ON COLUMN public.transcription_plans.monthly_minutes_limit IS 'Default monthly limit in minutes for this plan (minimum 2400)';
+COMMENT ON COLUMN public.transcription_plans.allows_custom_limits IS 'Whether users can customize their monthly limits in Hub';
+COMMENT ON COLUMN public.transcription_plans.allows_overage IS 'Whether users can enable overage (usage beyond limits) in Hub';
+COMMENT ON COLUMN public.transcription_plans.stt_model IS 'Deepgram STT model to use (nova-3, nova-2, etc.)';
+COMMENT ON COLUMN public.transcription_plans.cost_per_minute_usd IS 'Cost per minute in USD (calculated based on stt_model)';
+
+-- Tenant transcription configuration
+CREATE TABLE IF NOT EXISTS public.tenant_transcription_config (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  plan_id_fk INTEGER NOT NULL REFERENCES transcription_plans(id) ON DELETE RESTRICT,
+  custom_monthly_limit INTEGER NULL CHECK (custom_monthly_limit IS NULL OR custom_monthly_limit >= 2400),
+  transcription_language VARCHAR(10) NULL,
+  overage_allowed BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(tenant_id_fk)
+);
+
+COMMENT ON TABLE public.tenant_transcription_config IS 'Per-tenant transcription configuration (set by user in Hub)';
+COMMENT ON COLUMN public.tenant_transcription_config.plan_id_fk IS 'Transcription plan assigned by internal admin';
+COMMENT ON COLUMN public.tenant_transcription_config.custom_monthly_limit IS 'Custom monthly limit set by user in Hub (only if plan.allows_custom_limits = true). NULL uses plan default';
+COMMENT ON COLUMN public.tenant_transcription_config.transcription_language IS 'Language for transcription (pt-BR or en-US). NULL = use tenant locale as default';
+COMMENT ON COLUMN public.tenant_transcription_config.overage_allowed IS 'Whether tenant can exceed monthly limit (only if plan.allows_custom_limits = true)';
+
+-- Tenant transcription usage tracking
+CREATE TABLE IF NOT EXISTS public.tenant_transcription_usage (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  month DATE NOT NULL,
+  minutes_used INTEGER DEFAULT 0 CHECK (minutes_used >= 0),
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(tenant_id_fk, month)
+);
+
+COMMENT ON TABLE public.tenant_transcription_usage IS 'Monthly transcription usage tracking per tenant';
+COMMENT ON COLUMN public.tenant_transcription_usage.month IS 'Month in YYYY-MM-01 format (first day of month)';
+COMMENT ON COLUMN public.tenant_transcription_usage.minutes_used IS 'Total minutes used in this month';
+
+-- =============================================
 -- COMMENTS FOR DOCUMENTATION
 -- =============================================
 

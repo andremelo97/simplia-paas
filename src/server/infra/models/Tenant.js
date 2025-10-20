@@ -1,6 +1,13 @@
 const database = require('../db/database');
 const { createTenantBucket } = require('../../services/supabaseStorage');
 
+class TenantNotFoundError extends Error {
+  constructor(message) {
+    super(`Tenant not found: ${message}`);
+    this.name = 'TenantNotFoundError';
+  }
+}
+
 class Tenant {
   constructor(data) {
     if (data) {
@@ -224,4 +231,7 @@ class Tenant {
   }
 }
 
-module.exports = Tenant;
+module.exports = {
+  Tenant,
+  TenantNotFoundError
+};

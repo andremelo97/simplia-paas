@@ -136,7 +136,7 @@ class AuthService {
     let enrichedTenantContext = tenantContext;
     if (!tenantContext.timezone) {
       try {
-        const Tenant = require('./models/Tenant');
+        const { Tenant } = require('./models/Tenant');
         const tenant = await Tenant.findById(tenantIdFk);
         if (tenant) {
           enrichedTenantContext = {
@@ -275,7 +275,7 @@ class AuthService {
     let enrichedTenantContext = tenantContext;
     if (!tenantContext.timezone) {
       try {
-        const Tenant = require('./models/Tenant');
+        const { Tenant } = require('./models/Tenant');
         const tenant = await Tenant.findById(tenantIdFk);
         if (tenant) {
           enrichedTenantContext = {
@@ -337,7 +337,7 @@ class AuthService {
       };
 
       try {
-        const Tenant = require('./models/Tenant');
+        const { Tenant } = require('./models/Tenant');
         const tenant = await Tenant.findById(tenantIdFk);
         if (tenant) {
           tenantContext.timezone = tenant.timezone;

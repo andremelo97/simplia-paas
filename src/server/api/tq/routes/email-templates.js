@@ -240,7 +240,7 @@ router.post('/reset', async (req, res) => {
 
     // Get tenant timezone to determine locale
     const { getLocaleFromTimezone } = require('../../../infra/utils/localeMapping');
-    const Tenant = require('../../../infra/models/Tenant');
+    const { Tenant } = require('../../../infra/models/Tenant');
 
     const tenant = await Tenant.findById(req.tenant.id);
     const locale = getLocaleFromTimezone(tenant.timezone);

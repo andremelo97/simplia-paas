@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Palette, Mail } from 'lucide-react';
+import { Palette, Mail, Clock } from 'lucide-react';
 import { ConfigurationLayout, ConfigurationOption } from '@client/common/ui';
 import { BrandingConfiguration } from './BrandingConfiguration';
 import { CommunicationConfiguration } from './CommunicationConfiguration';
+import { TranscriptionUsageConfiguration } from './TranscriptionUsageConfiguration';
 import { useTranslation } from 'react-i18next';
 
-type ConfigurationSection = 'branding' | 'communication';
+type ConfigurationSection = 'branding' | 'communication' | 'transcription';
 
 export const Configurations: React.FC = () => {
   const { t } = useTranslation('hub');
@@ -23,6 +24,12 @@ export const Configurations: React.FC = () => {
       name: t('communication.title'),
       icon: Mail,
       description: t('communication.subtitle')
+    },
+    {
+      id: 'transcription',
+      name: t('configurations.transcription'),
+      icon: Clock,
+      description: t('configurations.transcription_description')
     }
   ];
 
@@ -35,6 +42,7 @@ export const Configurations: React.FC = () => {
     >
       {activeSection === 'branding' && <BrandingConfiguration />}
       {activeSection === 'communication' && <CommunicationConfiguration />}
+      {activeSection === 'transcription' && <TranscriptionUsageConfiguration />}
     </ConfigurationLayout>
   );
 };

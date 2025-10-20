@@ -137,7 +137,8 @@ class TranscriptionUsageService {
       params: { limit, offset }
     })
 
-    return response.data
+    // Return complete response with data and meta (don't unwrap)
+    return response
   }
 }
 

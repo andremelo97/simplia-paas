@@ -148,7 +148,6 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     await client.query('BEGIN');
     transactionStarted = true;
 
-    const transcriptionId = transcription.id;
     console.log(`[Webhook] Using schema: ${tenantSchema}, transcriptionId: ${transcriptionId}`);
 
     // Process transcription results

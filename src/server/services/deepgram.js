@@ -140,7 +140,7 @@ class DeepgramService {
         transcript: transcript.trim(),
         confidence_score: Math.round(confidence * 10000) / 10000, // Round to 4 decimal places
         word_timestamps: words.length > 0 ? words : null,
-        processing_duration_seconds: metadata?.duration || null,
+        processing_duration_seconds: metadata?.duration ? Math.ceil(metadata.duration) : null, // Round up to integer
         request_id: metadata?.request_id || null,
         model_used: metadata?.model_info?.name || null,
         language: metadata?.language || null

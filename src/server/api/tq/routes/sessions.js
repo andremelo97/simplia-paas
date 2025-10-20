@@ -716,7 +716,15 @@ router.get('/patient/:patientId', async (req, res) => {
 router.get('/:id/audio-download', async (req, res) => {
   try {
     const { id } = req.params;
+    const tenantId = req.headers['x-tenant-id'];
     const schema = req.tenant?.schema;
+
+    console.log('[DEBUG] Audio Download Request - Headers:', {
+      'x-tenant-id': tenantId,
+      'authorization': req.headers.authorization ? 'Bearer ***' : 'missing',
+      tenantFromMiddleware: req.tenant,
+      schemaResolved: schema
+    });
 
     if (!schema) {
       return res.status(400).json({
@@ -727,7 +735,7 @@ router.get('/:id/audio-download', async (req, res) => {
     // Fetch session with transcription data
     const session = await Session.findById(id, schema, true); // includeTranscription=true
 
-    console.log('[DEBUG] Audio Download Request:', {
+    console.log('[DEBUG] Audio Download Request - Session Data:', {
       sessionId: id,
       schema,
       hasSession: !!session,

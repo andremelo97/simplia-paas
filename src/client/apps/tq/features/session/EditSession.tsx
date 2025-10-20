@@ -302,6 +302,7 @@ export const EditSession: React.FC = () => {
               variant="tertiary"
               onClick={handleDownloadAudio}
               disabled={isDownloadingAudio || !hasAudioAvailable}
+              isLoading={isDownloadingAudio}
             >
               <Download className="w-4 h-4 mr-2" />
               {isDownloadingAudio ? t('sessions.downloadingAudio') : t('sessions.downloadAudio')}

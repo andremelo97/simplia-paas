@@ -109,6 +109,11 @@ class TenantMiddleware {
       return { identifier: this.options.defaultTenant, source: 'fallback' };
     }
 
+    console.error(`[Tenant] No tenant identifier - Path: ${req.path}, Method: ${req.method}, Headers:`, {
+      'x-tenant-id': req.headers['x-tenant-id'],
+      'host': req.headers['host'],
+      'user-agent': req.headers['user-agent']?.substring(0, 50)
+    });
     throw new InvalidTenantError('No tenant identifier found and compatibility fallback is disabled');
   }
 

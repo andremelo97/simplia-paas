@@ -26,6 +26,7 @@ const tenantTranscriptionUsageRoutes = require('./api/internal/routes/tenant-tra
 // TQ App Routes
 const tqRoutes = require('./api/tq');
 const publicQuoteAccessRoutes = require('./api/tq/routes/public-quote-access');
+const deepgramWebhookRoutes = require('./api/tq/routes/deepgram-webhook');
 
 // Public routes (no auth required)
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
@@ -157,6 +158,11 @@ app.use('/api/public', cors(internalCorsOptions), publicViewRoutes);
 // This allows patients to access quotes via /api/tq/v1/pq/:accessToken
 // IMPORTANT: Must be mounted BEFORE protected TQ routes to avoid tenant middleware
 app.use('/api/tq/v1', cors(internalCorsOptions), publicQuoteAccessRoutes);
+
+// Mount Deepgram webhook route (NO authentication, NO tenant middleware required)
+// Deepgram is external service that cannot send x-tenant-id header
+// IMPORTANT: Must be mounted BEFORE protected TQ routes to avoid tenant middleware
+app.use('/api/tq/v1', cors(internalCorsOptions), deepgramWebhookRoutes);
 
 // Mount TQ API Routes at /api/tq/v1
 const tqApiRouter = express.Router();

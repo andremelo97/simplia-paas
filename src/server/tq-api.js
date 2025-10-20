@@ -47,6 +47,7 @@ const corsOptions = {
       'http://localhost:3005', // TQ Frontend
     ];
 
+    // Allow requests with no origin (like Deepgram webhooks) or from allowed origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -55,7 +56,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'x-deepgram-signature']
 };
 
 app.use(cors(corsOptions));

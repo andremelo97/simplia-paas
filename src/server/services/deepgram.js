@@ -71,10 +71,6 @@ class DeepgramService {
 
       const url = `${this.baseUrl}/listen?${queryParams.toString()}`;
 
-      console.log('[Deepgram] Full request URL:', url);
-      console.log('[Deepgram] Query params:', Object.fromEntries(queryParams.entries()));
-      console.log('[Deepgram] callback_metadata param:', queryParams.get('callback_metadata'));
-
       const response = await fetch(url, {
         method: 'POST',
         headers: {

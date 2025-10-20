@@ -251,8 +251,6 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     const fileName = req.file.originalname;
     const mimeType = req.file.mimetype;
 
-    console.log('🔍 [DEBUG] About to upload to Supabase Storage');
-
     // Upload to tenant-specific Supabase Storage bucket
     const tenantSubdomain = req.tenant?.slug;
     if (!tenantSubdomain) {
@@ -261,7 +259,6 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
 
     const storageService = getTenantStorageService(tenantSubdomain);
     await storageService.ensureBucketExists();
-    console.log('🔍 [DEBUG] Storage bucket verified');
 
     // Upload to Supabase using transcriptionId as filename
     const uploadResult = await storageService.uploadFile(
@@ -271,7 +268,6 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
       'audio-files', // Folder within tenant bucket
       mimeType
     );
-    console.log('🔍 [DEBUG] File uploaded to storage:', uploadResult);
 
     // Update transcription with audio URL and status
     await client.query(
@@ -282,12 +278,10 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
        WHERE id = $2`,
       [uploadResult.url, transcriptionId]
     );
-    console.log('🔍 [DEBUG] Database updated with upload info');
 
     await client.query('COMMIT');
-    console.log('🔍 [DEBUG] Transaction committed');
 
-    console.log(`Audio uploaded for transcription ${transcriptionId}: ${fileName} (${uploadResult.size} bytes) to ${uploadResult.path}`);
+    console.log(`Audio uploaded: ${transcriptionId} (${uploadResult.size} bytes)`);
 
     const response = {
       success: true,
@@ -298,8 +292,6 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
       storagePath: uploadResult.path,
       status: 'uploaded'
     };
-
-    console.log('🔍 [DEBUG] Sending upload response:', response);
 
     res.json(response);
 
@@ -539,51 +531,41 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     const signature = req.headers['x-deepgram-signature'];
     const payload = req.body.toString('utf8');
 
-    console.log('[Webhook] Received Deepgram webhook');
+    console.log('[Webhook] Received webhook');
 
     // Validate webhook signature
     if (!deepgramService.validateWebhookSignature(payload, signature)) {
-      console.error('[Webhook] Invalid webhook signature');
+      console.error('[Webhook] ❌ Invalid signature');
       return res.status(401).json({ error: 'Invalid signature' });
     }
 
     const webhookData = JSON.parse(payload);
-    console.log('[Webhook] Webhook payload keys:', Object.keys(webhookData));
-    console.log('[Webhook] Full payload structure:', JSON.stringify(webhookData, null, 2).substring(0, 500) + '...');
 
     // Extract transcription metadata from callback
     // Deepgram sends callback_metadata at root level, not inside metadata
     let transcriptionId, tenantId;
     try {
-      console.log('[Webhook] Looking for callback_metadata...');
-      console.log('[Webhook] webhookData.callback_metadata =', webhookData.callback_metadata);
-      console.log('[Webhook] webhookData.metadata?.callback_metadata =', webhookData.metadata?.callback_metadata);
-
       const callbackMetadata = webhookData.callback_metadata || webhookData.metadata?.callback_metadata;
 
       if (!callbackMetadata) {
-        console.error('[Webhook] callback_metadata not found in payload');
+        console.error('[Webhook] ❌ Missing callback_metadata');
         console.error('[Webhook] Available keys:', Object.keys(webhookData));
-        console.error('[Webhook] Metadata keys:', webhookData.metadata ? Object.keys(webhookData.metadata) : 'N/A');
+        if (webhookData.metadata) {
+          console.error('[Webhook] Metadata keys:', Object.keys(webhookData.metadata));
+        }
         return res.status(400).json({ error: 'Missing callback_metadata in webhook payload' });
       }
-
-      console.log('[Webhook] Found callbackMetadata, type:', typeof callbackMetadata);
-      console.log('[Webhook] callbackMetadata value:', callbackMetadata);
 
       const metadata = typeof callbackMetadata === 'string'
         ? JSON.parse(callbackMetadata)
         : callbackMetadata;
 
-      console.log('[Webhook] Parsed metadata:', metadata);
-
       transcriptionId = metadata.transcriptionId;
       tenantId = metadata.tenantId;
 
-      console.log('[Webhook] Extracted metadata:', { transcriptionId, tenantId });
+      console.log('[Webhook] Parsed:', { transcriptionId, tenantId });
     } catch (e) {
-      console.error('[Webhook] Failed to parse callback metadata:', e);
-      console.error('[Webhook] Error stack:', e.stack);
+      console.error('[Webhook] ❌ Parse error:', e.message);
       return res.status(400).json({ error: 'Invalid callback metadata' });
     }
 
@@ -735,15 +717,12 @@ router.get('/:transcriptionId/status', async (req, res) => {
     const { transcriptionId } = req.params;
     const tenantId = req.headers['x-tenant-id'];
 
-    console.log(`[GET Status] Request for transcriptionId: ${transcriptionId}, tenantId: ${tenantId}`);
-
     if (!tenantId) {
       return res.status(400).json({ error: 'x-tenant-id header is required' });
     }
 
     // Use tenant schema from middleware
     const tenantSchema = req.tenant?.schema || `tenant_${tenantId}`;
-    console.log(`[GET Status] Using schema: ${tenantSchema}`);
 
     // Get transcription data
     const result = await client.query(
@@ -762,15 +741,11 @@ router.get('/:transcriptionId/status', async (req, res) => {
       [transcriptionId]
     );
 
-    console.log(`[GET Status] Query returned ${result.rows.length} rows`);
-
     if (result.rows.length === 0) {
-      console.log(`[GET Status] ❌ Transcription NOT FOUND`);
       return res.status(404).json({ error: 'Transcription not found' });
     }
 
     const transcription = result.rows[0];
-    console.log(`[GET Status] Found transcription with status: ${transcription.transcript_status}`);
 
     const response = {
       transcriptionId: transcription.id,
@@ -783,8 +758,6 @@ router.get('/:transcriptionId/status', async (req, res) => {
       createdAt: transcription.created_at,
       updatedAt: transcription.updated_at
     };
-
-    console.log(`[GET Status] Returning response:`, { ...response, transcript: response.transcript ? '(truncated)' : null });
 
     res.json(response);
 

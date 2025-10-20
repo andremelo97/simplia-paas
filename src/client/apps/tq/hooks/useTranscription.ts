@@ -99,8 +99,6 @@ export function useTranscription(): UseTranscriptionResult {
 
   // Upload and transcribe audio file
   const uploadAndTranscribe = useCallback(async (audioFile: File): Promise<string> => {
-    console.log('[useTranscription] Starting uploadAndTranscribe with file:', audioFile.name)
-
     // Abort any existing operation
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -116,11 +114,9 @@ export function useTranscription(): UseTranscriptionResult {
         progress: { uploaded: false, transcribing: false, completed: false }
       })
 
-      console.log('[useTranscription] Calling transcriptionService.processAudio...')
       // Process audio with progress callbacks
       const result = await transcriptionService.processAudio(audioFile, {
         onUploadComplete: (newTranscriptionId) => {
-          console.log('[useTranscription] Upload complete, transcriptionId:', newTranscriptionId)
           setTranscriptionId(newTranscriptionId)
           updateState({
             status: TranscriptStatus.UPLOADED,
@@ -130,7 +126,6 @@ export function useTranscription(): UseTranscriptionResult {
         },
 
         onTranscriptionStarted: (newTranscriptionId) => {
-          console.log('[useTranscription] Transcription started, transcriptionId:', newTranscriptionId)
           setTranscriptionId(newTranscriptionId)
           updateState({
             status: TranscriptStatus.PROCESSING,
@@ -140,24 +135,21 @@ export function useTranscription(): UseTranscriptionResult {
         },
 
         onProgress: (statusResponse) => {
-          console.log('[useTranscription] Progress update:', statusResponse)
           handleStatusResponse(statusResponse)
         }
       })
 
       // Final result - only stop processing when fully complete
-      console.log('[useTranscription] Final result received:', result)
       handleStatusResponse(result)
       updateState({
         isProcessing: false,
         progress: { uploaded: true, transcribing: true, completed: true }
       })
 
-      console.log('[useTranscription] uploadAndTranscribe completed successfully')
       return result.transcriptionId
 
     } catch (error) {
-      console.error('[useTranscription] uploadAndTranscribe failed:', error)
+      console.error('[Transcription] Upload failed:', error)
       // Extract error message from AppError or generic Error
       const errorMessage = (error as any)?.message || 'Transcription failed'
       updateState({

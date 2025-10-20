@@ -171,13 +171,10 @@ class TranscriptionService {
     } = options
 
     let attempts = 0
-    console.log(`[transcriptionService] Starting polling for transcriptionId: ${transcriptionId} (max ${maxAttempts} attempts, ${intervalMs}ms interval)`)
 
     while (attempts < maxAttempts) {
       try {
-        console.log(`[transcriptionService] Polling attempt ${attempts + 1}/${maxAttempts}...`)
         const status = await this.getStatus(transcriptionId)
-        console.log(`[transcriptionService] Status response:`, status)
 
         // Call progress callback if provided
         if (onProgress) {
@@ -186,30 +183,28 @@ class TranscriptionService {
 
         // Check if transcription is complete
         if (status.status === TranscriptStatus.COMPLETED) {
-          console.log('[transcriptionService] ✅ Transcription COMPLETED!')
+          console.log('[Transcription] Completed')
           return status
         }
 
         // Check if transcription failed
         if (status.status === TranscriptStatus.FAILED) {
-          console.error('[transcriptionService] ❌ Transcription FAILED')
+          console.error('[Transcription] Failed')
           throw new Error('Transcription failed')
         }
 
         // Continue polling if still processing
         if (status.status === TranscriptStatus.PROCESSING) {
-          console.log(`[transcriptionService] Still PROCESSING, waiting ${intervalMs}ms...`)
           await this.sleep(intervalMs)
           attempts++
           continue
         }
 
         // Unexpected status
-        console.error(`[transcriptionService] ⚠️ Unexpected status: ${status.status}`)
+        console.error(`[Transcription] Unexpected status: ${status.status}`)
         throw new Error(`Unexpected transcription status: ${status.status}`)
 
       } catch (error) {
-        console.error(`[transcriptionService] Polling error on attempt ${attempts + 1}:`, error)
         if (attempts === maxAttempts - 1) {
           throw error
         }
@@ -220,7 +215,7 @@ class TranscriptionService {
       }
     }
 
-    console.error(`[transcriptionService] ⏱️ Polling TIMED OUT after ${attempts} attempts`)
+    console.error('[Transcription] Polling timeout')
     throw new Error('Transcription polling timed out')
   }
 
@@ -235,46 +230,36 @@ class TranscriptionService {
       onProgress?: (status: StatusResponse) => void
     } = {}
   ): Promise<StatusResponse> {
-    console.log('[transcriptionService] Starting processAudio workflow for file:', audioFile.name)
     let transcriptionId: string | null = null
 
     try {
       // Step 1: Upload audio file
-      console.log('[transcriptionService] Step 1: Uploading audio file...')
       const uploadResult = await this.uploadAudio(audioFile)
       transcriptionId = uploadResult.transcriptionId
-      console.log('[transcriptionService] Upload successful, transcriptionId:', transcriptionId)
 
       if (options.onUploadComplete) {
-        console.log('[transcriptionService] Calling onUploadComplete callback')
         options.onUploadComplete(transcriptionId)
       }
 
       // Step 2: Start transcription
-      console.log('[transcriptionService] Step 2: Starting transcription...')
       await this.startTranscription(transcriptionId)
-      console.log('[transcriptionService] Transcription started successfully')
 
       if (options.onTranscriptionStarted) {
-        console.log('[transcriptionService] Calling onTranscriptionStarted callback')
         options.onTranscriptionStarted(transcriptionId)
       }
 
       // Step 3: Poll for completion
-      console.log('[transcriptionService] Step 3: Starting polling for completion...')
       const result = await this.pollForCompletion(transcriptionId, {
         onProgress: options.onProgress
       })
 
-      console.log('[transcriptionService] ProcessAudio workflow completed successfully')
       return result
 
     } catch (error) {
-      console.error('[transcriptionService] ProcessAudio workflow failed:', error)
+      console.error('[Transcription] Workflow failed:', error)
       // Mark transcription as failed on any error
       if (transcriptionId) {
         try {
-          console.log('[transcriptionService] Marking transcription as failed...')
           await this.markAsFailed(transcriptionId, error instanceof Error ? error.message : 'Unknown error')
         } catch (markFailedError) {
           console.error('Failed to mark transcription as failed:', markFailedError)

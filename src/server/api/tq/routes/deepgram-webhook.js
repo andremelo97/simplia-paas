@@ -106,20 +106,27 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     console.log('[Webhook] Processing request_id:', requestId);
 
-    // Find the transcription by deepgram_request_id across all tenant schemas
+    // Find the transcription by deepgram_request_id across TQ-enabled tenant schemas
     // IMPORTANT: Do NOT use transaction for search - errors in one schema would abort the entire transaction
-    // First, get all active tenant schemas
+    // Only search tenants that have TQ app provisioned and active
     const tenantsResult = await client.query(
-      'SELECT id, schema_name FROM public.tenants WHERE active = true'
+      `SELECT DISTINCT t.id, t.schema_name
+       FROM public.tenants t
+       INNER JOIN public.tenant_applications ta ON ta.tenant_id_fk = t.id
+       INNER JOIN public.applications a ON a.id = ta.application_id_fk
+       WHERE t.active = true
+         AND ta.active = true
+         AND ta.status = 'active'
+         AND a.slug = 'tq'`
     );
 
-    console.log(`[Webhook] Searching across ${tenantsResult.rows.length} tenant(s)`);
+    console.log(`[Webhook] Searching across ${tenantsResult.rows.length} TQ-enabled tenant(s)`);
 
     let transcription = null;
     let tenantSchema = null;
     let tenantId = null;
 
-    // Search across all tenant schemas for the transcription
+    // Search across TQ-enabled tenant schemas for the transcription
     for (const tenant of tenantsResult.rows) {
       console.log(`[Webhook] Checking schema: ${tenant.schema_name}`);
       try {

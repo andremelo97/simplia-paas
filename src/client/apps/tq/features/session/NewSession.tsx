@@ -350,8 +350,6 @@ export const NewSession: React.FC = () => {
       if (audioStreamRef.current) {
         audioStreamRef.current.getTracks().forEach(track => track.stop())
       }
-
-      console.log('🧹 [Recording] Cleanup completed on unmount')
     }
   }, [])
 
@@ -793,8 +791,6 @@ export const NewSession: React.FC = () => {
     if (!isTranscribing) {
       // Start recording
       try {
-        console.log('🎤 [Recording] Starting audio capture...')
-
         // Get user media (microphone access)
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
@@ -819,7 +815,6 @@ export const NewSession: React.FC = () => {
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             audioChunksRef.current.push(event.data)
-            console.log('📦 [Recording] Chunk received:', event.data.size, 'bytes')
           }
         }
 
@@ -829,8 +824,6 @@ export const NewSession: React.FC = () => {
         setIsTranscribing(true)
         setIsPaused(false)
         timer.start()
-
-        console.log('✅ [Recording] Started successfully')
 
         if (session?.status === 'draft') {
           handleStatusChange('active')
@@ -851,7 +844,6 @@ export const NewSession: React.FC = () => {
         mediaRecorderRef.current.pause()
         setIsPaused(true)
         timer.pause()
-        console.log('⏸️ [Recording] Paused')
       }
     } else {
       // Resume recording
@@ -859,7 +851,6 @@ export const NewSession: React.FC = () => {
         mediaRecorderRef.current.resume()
         setIsPaused(false)
         timer.start()
-        console.log('▶️ [Recording] Resumed')
       }
     }
   }
@@ -878,8 +869,6 @@ export const NewSession: React.FC = () => {
 
       // Handle recording stop event
       mediaRecorder.onstop = async () => {
-        console.log('🛑 [Recording] Stopped, processing audio...')
-
         // Stop all audio tracks
         if (audioStreamRef.current) {
           audioStreamRef.current.getTracks().forEach(track => track.stop())
@@ -949,6 +938,9 @@ export const NewSession: React.FC = () => {
           return
         }
 
+        // Stop timer immediately before processing
+        timer.pause()
+
         // Upload audio file and create transcription
         try {
           setIsProcessingAudio(true)
@@ -957,20 +949,15 @@ export const NewSession: React.FC = () => {
           const fileName = `recording-${Date.now()}.webm`
           const audioFile = new File([audioBlob], fileName, { type: 'audio/webm' })
 
-          console.log('📤 [Recording] Uploading and transcribing audio...')
-
           // Use processAudio method which handles: upload → transcribe → poll for completion
           const result = await transcriptionService.processAudio(audioFile, {
             onUploadComplete: (transcriptionId) => {
-              console.log('📤 [Recording] Audio uploaded, transcription ID:', transcriptionId)
               setProcessingMessage(t('sessions.recording.uploaded'))
             },
             onTranscriptionStarted: (transcriptionId) => {
-              console.log('🔄 [Recording] Transcription started:', transcriptionId)
               setProcessingMessage(t('sessions.recording.transcribing'))
             },
             onProgress: (status) => {
-              console.log('⏳ [Recording] Transcription status:', status.status)
               const statusMessages: Record<string, string> = {
                 'uploading': t('sessions.recording.uploading'),
                 'uploaded': t('sessions.recording.uploaded'),

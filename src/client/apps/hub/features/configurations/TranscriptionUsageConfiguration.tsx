@@ -234,7 +234,8 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700">
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-700 text-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto mb-2"></div>
           {t('transcription_usage.loading')}
         </div>
       </div>
@@ -551,7 +552,8 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         <p className="text-sm text-gray-600 mb-4">{t('transcription_usage.detailed_usage_subtitle')}</p>
 
         {detailsLoading ? (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700 text-center">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-gray-700 text-center">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-400 mx-auto mb-2"></div>
             {t('transcription_usage.loading_details')}
           </div>
         ) : detailRecords.length === 0 ? (

@@ -52,17 +52,20 @@ const DEFAULT_COST_PER_MINUTE = MODEL_COSTS[DEFAULT_STT_MODEL] || 0.0043;
 
 /**
  * Language mapping for Deepgram API based on tenant locale.
- * Supports Brazilian Portuguese and US English.
+ * NOTE: Not currently used - language determined by timezone in transcription.js
+ * (pt-BR for America/Sao_Paulo, en-US for everything else)
  */
 const LOCALE_TO_DEEPGRAM_LANGUAGE = {
   'pt-BR': 'pt-BR',  // Brazilian Portuguese
-  'en-US': 'en-US'   // US English (fallback for en-AU, etc.)
+  'en-US': 'en-US',  // US English
+  'en-AU': 'en-US'   // Australian English → use en-US for Deepgram
 };
 
 /**
- * Default language for transcription if tenant locale not found.
+ * Default language for transcription if tenant timezone not found.
+ * Changed to en-US as global default (pt-BR only for Brazil timezone).
  */
-const DEFAULT_LANGUAGE = 'pt-BR';
+const DEFAULT_LANGUAGE = 'en-US';
 
 module.exports = {
   TRANSCRIPTION_BASIC_MONTHLY_LIMIT,

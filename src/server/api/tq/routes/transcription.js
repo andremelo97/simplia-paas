@@ -413,8 +413,9 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
     console.log(`[Transcription] Starting transcription with webhook URL: ${webhookUrl}`);
 
     // Determine language for transcription
-    // Priority: 1) tenant config, 2) tenant locale, 3) default (pt-BR)
-    let transcriptionLanguage = DEFAULT_LANGUAGE;
+    // Priority: 1) tenant config, 2) tenant timezone, 3) default (en-US)
+    // Rule: pt-BR if timezone is America/Sao_Paulo, en-US for everything else
+    let transcriptionLanguage = 'en-US'; // Default to English
 
     try {
       // Try to get language from tenant transcription config
@@ -425,9 +426,13 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
 
       if (configQuery.rows.length > 0 && configQuery.rows[0].transcription_language) {
         transcriptionLanguage = configQuery.rows[0].transcription_language;
-      } else if (req.tenant?.locale) {
-        // Fall back to tenant locale from JWT/context
-        transcriptionLanguage = LOCALE_TO_DEEPGRAM_LANGUAGE[req.tenant.locale] || DEFAULT_LANGUAGE;
+        console.log(`[Transcription] Using config language: ${transcriptionLanguage}`);
+      } else if (req.tenant?.timezone) {
+        // Determine language based on timezone: pt-BR for Brazil, en-US for rest of world
+        transcriptionLanguage = req.tenant.timezone === 'America/Sao_Paulo' ? 'pt-BR' : 'en-US';
+        console.log(`[Transcription] Determined language from timezone ${req.tenant.timezone}: ${transcriptionLanguage}`);
+      } else {
+        console.log(`[Transcription] Using default language: ${transcriptionLanguage}`);
       }
     } catch (error) {
       console.warn('[Transcription] Failed to determine language, using default:', error.message);

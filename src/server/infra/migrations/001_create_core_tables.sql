@@ -464,20 +464,31 @@ COMMENT ON COLUMN public.tenant_transcription_config.custom_monthly_limit IS 'Cu
 COMMENT ON COLUMN public.tenant_transcription_config.transcription_language IS 'Language for transcription (pt-BR or en-US). NULL = use tenant locale as default';
 COMMENT ON COLUMN public.tenant_transcription_config.overage_allowed IS 'Whether tenant can exceed monthly limit (only if plan.allows_custom_limits = true)';
 
--- Tenant transcription usage tracking
+-- Tenant transcription usage tracking (per-transcription granular records)
 CREATE TABLE IF NOT EXISTS public.tenant_transcription_usage (
   id SERIAL PRIMARY KEY,
   tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
-  month DATE NOT NULL,
-  minutes_used INTEGER DEFAULT 0 CHECK (minutes_used >= 0),
+  transcription_id UUID,
+  audio_duration_seconds INTEGER NOT NULL CHECK (audio_duration_seconds >= 0),
+  stt_model VARCHAR(50) NOT NULL,
+  stt_provider_request_id VARCHAR(255),
+  cost_usd NUMERIC(10,4) NOT NULL DEFAULT 0.0000 CHECK (cost_usd >= 0),
+  usage_date DATE NOT NULL DEFAULT CURRENT_DATE,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  UNIQUE(tenant_id_fk, month)
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE public.tenant_transcription_usage IS 'Monthly transcription usage tracking per tenant';
-COMMENT ON COLUMN public.tenant_transcription_usage.month IS 'Month in YYYY-MM-01 format (first day of month)';
-COMMENT ON COLUMN public.tenant_transcription_usage.minutes_used IS 'Total minutes used in this month';
+CREATE INDEX idx_tenant_transcription_usage_tenant_id ON public.tenant_transcription_usage(tenant_id_fk);
+CREATE INDEX idx_tenant_transcription_usage_usage_date ON public.tenant_transcription_usage(usage_date);
+CREATE INDEX idx_tenant_transcription_usage_tenant_date ON public.tenant_transcription_usage(tenant_id_fk, usage_date);
+
+COMMENT ON TABLE public.tenant_transcription_usage IS 'Granular transcription usage tracking per transcription (for cost calculation and overage billing)';
+COMMENT ON COLUMN public.tenant_transcription_usage.transcription_id IS 'UUID of transcription record (may be NULL for legacy records)';
+COMMENT ON COLUMN public.tenant_transcription_usage.audio_duration_seconds IS 'Audio duration in seconds (source: Deepgram metadata.duration)';
+COMMENT ON COLUMN public.tenant_transcription_usage.stt_model IS 'Deepgram model used (nova-3, nova-2, enhanced, etc)';
+COMMENT ON COLUMN public.tenant_transcription_usage.stt_provider_request_id IS 'Deepgram request_id for audit trail';
+COMMENT ON COLUMN public.tenant_transcription_usage.cost_usd IS 'Calculated cost in USD based on model pricing and duration';
+COMMENT ON COLUMN public.tenant_transcription_usage.usage_date IS 'Date when transcription was completed (for monthly aggregation)';
 
 -- =============================================
 -- COMMENTS FOR DOCUMENTATION

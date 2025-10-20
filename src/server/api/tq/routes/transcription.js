@@ -410,7 +410,15 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
     }
 
     // Build webhook callback URL - webhook should go to TQ API server
-    const webhookUrl = `${process.env.API_BASE_URL || 'http://localhost:3001'}/api/tq/v1/transcriptions/webhook/deepgram`;
+    const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
+    const webhookUrl = `${apiBaseUrl}/api/tq/v1/transcriptions/webhook/deepgram`;
+
+    console.log(`[Transcription] Starting transcription with webhook URL: ${webhookUrl}`);
+
+    // Validate webhook URL (must be HTTPS in production, HTTP only for localhost)
+    if (!apiBaseUrl.startsWith('http://localhost') && !apiBaseUrl.startsWith('https://')) {
+      throw new Error(`Invalid API_BASE_URL: ${apiBaseUrl}. Must use HTTPS in production or http://localhost for development.`);
+    }
 
     // Determine language for transcription
     // Priority: 1) tenant config, 2) tenant locale, 3) default (pt-BR)
@@ -587,19 +595,21 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     console.log(`Transcription completed for transcription ${transcriptionId} (tenant: ${tenantId})`);
 
     // Register transcription usage for quota tracking (async, don't block response)
-    // Extract audio duration and model from webhook data
-    const audioDurationSeconds = webhookData.duration || transcriptionData.processing_duration_seconds || 0;
-    const sttModel = webhookData.model_info?.name || DEFAULT_STT_MODEL; // Default to system standard (Nova-3)
-    const sttProviderRequestId = webhookData.request_id || transcriptionData.request_id;
+    // Extract audio duration from Deepgram metadata
+    const audioDurationSeconds = Math.ceil(webhookData.metadata?.duration || transcriptionData.processing_duration_seconds || 0);
+    const sttProviderRequestId = webhookData.metadata?.request_id || transcriptionData.request_id;
 
-    // Import usage model and record usage (fire and forget)
+    // Import usage model and constants
     const { TenantTranscriptionUsage } = require('../../../infra/models/TenantTranscriptionUsage');
-    TenantTranscriptionUsage.recordUsage({
-      tenantId: parseInt(tenantId),
+    const { DEFAULT_STT_MODEL } = require('../../../infra/constants/transcription');
+
+    // Record usage with cost calculation (fire and forget)
+    TenantTranscriptionUsage.create(parseInt(tenantId), {
       transcriptionId: transcriptionId,
-      audioDurationSeconds: Math.ceil(audioDurationSeconds),
-      sttModel: sttModel,
-      sttProviderRequestId: sttProviderRequestId
+      audioDurationSeconds: audioDurationSeconds,
+      sttModel: DEFAULT_STT_MODEL, // Use system default model (nova-3-mono)
+      sttProviderRequestId: sttProviderRequestId,
+      usageDate: new Date()
     }).catch(error => {
       console.error(`[Transcription Usage] Failed to record usage for transcription ${transcriptionId}:`, error);
     });

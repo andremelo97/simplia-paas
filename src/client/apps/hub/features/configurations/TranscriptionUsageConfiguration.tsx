@@ -7,6 +7,8 @@ import { transcriptionUsageService } from '../../services/transcriptionUsageServ
 interface CurrentUsage {
   month: string
   minutesUsed: number
+  totalCost: number
+  totalTranscriptions: number
   limit: number
   remaining: number
   overage: number
@@ -17,8 +19,22 @@ interface CurrentUsage {
 interface UsageDataPoint {
   month: string
   minutesUsed: number
+  totalCost: number
+  totalTranscriptions: number
   limit: number
   overage: number
+}
+
+interface UsageDetailRecord {
+  id: number
+  transcriptionId: string
+  audioDurationSeconds: number
+  audioDurationMinutes: number
+  sttModel: string
+  costUsd: number
+  usageDate: string
+  createdAt: string
+  updatedAt: string
 }
 
 interface UsageData {
@@ -37,6 +53,7 @@ interface UsageData {
 }
 
 const BASIC_LIMIT = 2400 // Minimum allowed limit
+const RECORDS_PER_PAGE = 10
 
 export const TranscriptionUsageConfiguration: React.FC = () => {
   const { t } = useTranslation('hub')
@@ -51,9 +68,22 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
   const [originalLimit, setOriginalLimit] = useState<number>(BASIC_LIMIT)
   const [originalOverage, setOriginalOverage] = useState<boolean>(false)
 
+  // Detailed usage records (granular) with pagination
+  const [detailRecords, setDetailRecords] = useState<UsageDetailRecord[]>([])
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalRecords, setTotalRecords] = useState(0)
+
   useEffect(() => {
     loadUsage()
+    loadDetails(1) // Load first page of details
   }, [])
+
+  useEffect(() => {
+    if (usage) {
+      loadDetails(currentPage)
+    }
+  }, [currentPage])
 
   const loadUsage = async () => {
     try {
@@ -79,6 +109,22 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       console.error('Failed to load transcription usage:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadDetails = async (page: number) => {
+    try {
+      setDetailsLoading(true)
+      const offset = (page - 1) * RECORDS_PER_PAGE
+      const response = await transcriptionUsageService.getUsageDetails(RECORDS_PER_PAGE, offset)
+
+      setDetailRecords(response.data || [])
+      setTotalRecords(response.meta?.total || 0)
+    } catch (error) {
+      console.error('Failed to load transcription usage details:', error)
+      setDetailRecords([])
+    } finally {
+      setDetailsLoading(false)
     }
   }
 
@@ -132,6 +178,35 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
     const [year, month] = monthStr.split('-')
     const date = new Date(parseInt(year), parseInt(month) - 1)
     return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+  }
+
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${minutes}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const formatCost = (costUsd: number): string => {
+    return `$${costUsd.toFixed(4)}`
+  }
+
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
+
+  const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE)
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    }
   }
 
   if (loading) {
@@ -227,17 +302,17 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.used')}</div>
             <div className="text-2xl font-bold text-gray-900">
-              {usage.current.minutesUsed.toLocaleString()}
+              {usage.current.minutesUsed.toLocaleString()} min
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.limit')}</div>
             <div className="text-2xl font-bold text-gray-900">
-              {usage.current.limit.toLocaleString()}
+              {usage.current.limit.toLocaleString()} min
             </div>
           </div>
           <div className="bg-gray-50 rounded-lg p-4">
@@ -246,6 +321,18 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
               usage.current.remaining > 0 ? 'text-green-600' : 'text-red-600'
             }`}>
               {usage.current.remaining > 0 ? usage.current.remaining.toLocaleString() : '0'}
+            </div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.total_cost')}</div>
+            <div className="text-2xl font-bold text-[#B725B7]">
+              {formatCost(usage.current.totalCost)}
+            </div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.transcriptions')}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {usage.current.totalTranscriptions.toLocaleString()}
             </div>
           </div>
         </div>
@@ -390,6 +477,80 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
             </tbody>
           </table>
         </div>
+      </Card>
+
+      {/* Detailed Usage (Granular) */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('transcription_usage.detailed_usage')}</h2>
+        <p className="text-sm text-gray-600 mb-4">{t('transcription_usage.detailed_usage_subtitle')}</p>
+
+        {detailsLoading ? (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700 text-center">
+            {t('transcription_usage.loading_details')}
+          </div>
+        ) : detailRecords.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center text-gray-600">
+            {t('transcription_usage.no_details_yet')}
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.date')}</th>
+                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.duration')}</th>
+                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.cost')}</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.model')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {detailRecords.map((record) => (
+                    <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(record.usageDate)}</td>
+                      <td className="py-3 px-4 text-sm text-right text-gray-900 font-mono">
+                        {formatDuration(record.audioDurationSeconds)}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-right text-[#B725B7] font-semibold">
+                        {formatCost(record.costUsd)}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-600">
+                        <span className="px-2 py-1 bg-gray-100 rounded text-xs font-mono">
+                          {record.sttModel}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
+                <div className="text-sm text-gray-600">
+                  {t('transcription_usage.showing_page', { current: currentPage, total: totalPages })}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1 || detailsLoading}
+                  >
+                    {t('transcription_usage.previous')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages || detailsLoading}
+                  >
+                    {t('transcription_usage.next')}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </Card>
     </div>
   )

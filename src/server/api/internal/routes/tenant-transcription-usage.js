@@ -99,7 +99,9 @@ router.get('/transcription-usage', async (req, res) => {
 
     // Calculate effective limit and remaining
     const effectiveLimit = config.getEffectiveMonthlyLimit();
-    const minutesUsed = currentUsage.minutesUsed || 0;
+    const minutesUsed = currentUsage.totalMinutes || 0;
+    const totalCost = currentUsage.totalCost || 0;
+    const totalTranscriptions = currentUsage.totalTranscriptions || 0;
     const remaining = Math.max(0, effectiveLimit - minutesUsed);
     const overage = Math.max(0, minutesUsed - effectiveLimit);
     const percentUsed = effectiveLimit > 0 ? Math.round((minutesUsed / effectiveLimit) * 100) : 0;
@@ -114,6 +116,8 @@ router.get('/transcription-usage', async (req, res) => {
         current: {
           month: currentMonth,
           minutesUsed: minutesUsed,
+          totalCost: totalCost,
+          totalTranscriptions: totalTranscriptions,
           limit: effectiveLimit,
           remaining: remaining,
           overage: overage,
@@ -123,6 +127,8 @@ router.get('/transcription-usage', async (req, res) => {
         history: history.map(h => ({
           month: h.month.substring(0, 7), // Convert YYYY-MM-DD to YYYY-MM
           minutesUsed: h.minutesUsed,
+          totalCost: h.totalCost || 0,
+          totalTranscriptions: h.totalTranscriptions || 0,
           limit: effectiveLimit,
           overage: Math.max(0, h.minutesUsed - effectiveLimit)
         })),
@@ -144,6 +150,130 @@ router.get('/transcription-usage', async (req, res) => {
       error: {
         code: 500,
         message: 'Failed to retrieve transcription usage'
+      }
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /configurations/transcription-usage/details:
+ *   get:
+ *     tags: [Configurations]
+ *     summary: Get detailed transcription usage (granular)
+ *     description: |
+ *       **Scope:** Platform (User-scoped)
+ *
+ *       Get detailed transcription usage records for the authenticated user's tenant.
+ *       Returns granular data per transcription with pagination.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of records per page
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of records to skip
+ *     responses:
+ *       200:
+ *         description: Details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       transcriptionId:
+ *                         type: string
+ *                       audioDurationSeconds:
+ *                         type: integer
+ *                       audioDurationMinutes:
+ *                         type: number
+ *                       sttModel:
+ *                         type: string
+ *                       costUsd:
+ *                         type: number
+ *                       usageDate:
+ *                         type: string
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *       403:
+ *         description: Transcription not configured for tenant
+ */
+router.get('/transcription-usage/details', async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+
+    if (!tenantId) {
+      return res.status(401).json({
+        error: {
+          code: 401,
+          message: 'Authentication required'
+        }
+      });
+    }
+
+    // Verify transcription is configured
+    try {
+      await TenantTranscriptionConfig.findByTenantId(tenantId);
+    } catch (error) {
+      if (error instanceof TenantTranscriptionConfigNotFoundError) {
+        return res.status(403).json({
+          error: {
+            code: 403,
+            message: 'Transcription service not configured for your account'
+          }
+        });
+      }
+      throw error;
+    }
+
+    // Get detailed usage records with pagination
+    const records = await TenantTranscriptionUsage.getAllUsage(tenantId, { limit, offset });
+
+    // Get total count for pagination (rough estimate based on current month)
+    const currentUsage = await TenantTranscriptionUsage.getCurrentMonthUsage(tenantId);
+    const total = currentUsage.totalTranscriptions || 0;
+
+    res.json({
+      success: true,
+      data: records.map(r => r.toJSON()),
+      meta: {
+        total,
+        limit,
+        offset
+      }
+    });
+  } catch (error) {
+    console.error('[Hub] Get transcription usage details error:', error);
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to retrieve transcription usage details'
       }
     });
   }

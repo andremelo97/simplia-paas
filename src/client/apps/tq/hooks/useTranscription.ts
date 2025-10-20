@@ -88,7 +88,9 @@ export function useTranscription(): UseTranscriptionResult {
       transcript: statusResponse.transcript,
       confidenceScore: statusResponse.confidenceScore,
       processingDuration: statusResponse.processingDuration,
-      error: statusResponse.status === TranscriptStatus.FAILED ? 'Transcription failed' : null
+      error: statusResponse.status === TranscriptStatus.FAILED
+        ? (statusResponse as any).error || (statusResponse as any).message || 'Transcription failed'
+        : null
     }
 
     updateState(newState)
@@ -156,7 +158,8 @@ export function useTranscription(): UseTranscriptionResult {
 
     } catch (error) {
       console.error('[useTranscription] uploadAndTranscribe failed:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Transcription failed'
+      // Extract error message from AppError or generic Error
+      const errorMessage = (error as any)?.message || 'Transcription failed'
       updateState({
         isProcessing: false,
         error: errorMessage,
@@ -173,7 +176,8 @@ export function useTranscription(): UseTranscriptionResult {
       const statusResponse = await transcriptionService.getStatus(transcriptionId)
       handleStatusResponse(statusResponse)
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to check status'
+      // Extract error message from AppError or generic Error
+      const errorMessage = (error as any)?.message || 'Failed to check status'
       updateState({ error: errorMessage })
     }
   }, [handleStatusResponse, updateState])

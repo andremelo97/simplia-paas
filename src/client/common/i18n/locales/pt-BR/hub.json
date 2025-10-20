@@ -186,6 +186,19 @@
     "minutes_used": "Minutos Usados",
     "usage_percent": "Uso %",
     "minutes": "minutos",
-    "vip_only": "Disponível apenas para plano VIP"
+    "vip_only": "Disponível apenas para plano VIP",
+    "total_cost": "Custo Total (USD)",
+    "transcriptions": "Transcrições",
+    "detailed_usage": "Uso Detalhado",
+    "detailed_usage_subtitle": "Visualize cada transcrição individual com duração e custo",
+    "loading_details": "Carregando detalhes...",
+    "no_details_yet": "Nenhuma transcrição registrada ainda",
+    "date": "Data",
+    "duration": "Duração",
+    "cost": "Custo (USD)",
+    "model": "Modelo",
+    "showing_page": "Página {{current}} de {{total}}",
+    "previous": "Anterior",
+    "next": "Próximo"
   }
 }

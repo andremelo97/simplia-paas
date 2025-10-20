@@ -186,6 +186,19 @@
     "minutes_used": "Minutes Used",
     "usage_percent": "Usage %",
     "minutes": "minutes",
-    "vip_only": "VIP plan only"
+    "vip_only": "VIP plan only",
+    "total_cost": "Total Cost (USD)",
+    "transcriptions": "Transcriptions",
+    "detailed_usage": "Detailed Usage",
+    "detailed_usage_subtitle": "View individual transcriptions with duration and cost",
+    "loading_details": "Loading details...",
+    "no_details_yet": "No transcriptions recorded yet",
+    "date": "Date",
+    "duration": "Duration",
+    "cost": "Cost (USD)",
+    "model": "Model",
+    "showing_page": "Page {{current}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next"
   }
 }

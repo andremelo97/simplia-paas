@@ -120,6 +120,25 @@ class TranscriptionUsageService {
 
     return response.data
   }
+
+  /**
+   * Get detailed transcription usage records (granular)
+   * Returns per-transcription records with pagination
+   */
+  async getUsageDetails(limit: number = 10, offset: number = 0): Promise<any> {
+    const { tenantId } = useAuthStore.getState()
+
+    if (!tenantId) {
+      throw new Error('Tenant context not available')
+    }
+
+    // x-tenant-id header will be automatically injected by interceptor
+    const response = await api.get('/internal/api/v1/configurations/transcription-usage/details', {
+      params: { limit, offset }
+    })
+
+    return response.data
+  }
 }
 
 export const transcriptionUsageService = new TranscriptionUsageService()

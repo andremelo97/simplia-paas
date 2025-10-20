@@ -265,7 +265,7 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
           <div className="space-y-4">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
+              <AlertDescription className="text-red-900">
                 {state.error}
               </AlertDescription>
             </Alert>

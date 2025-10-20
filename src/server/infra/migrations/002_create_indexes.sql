@@ -167,14 +167,13 @@ CREATE INDEX IF NOT EXISTS idx_transcription_plans_slug ON public.transcription_
 CREATE INDEX IF NOT EXISTS idx_tenant_transcription_config_tenant ON public.tenant_transcription_config(tenant_id_fk);
 CREATE INDEX IF NOT EXISTS idx_tenant_transcription_config_plan ON public.tenant_transcription_config(plan_id_fk);
 
--- Tenant transcription usage lookup
-CREATE INDEX IF NOT EXISTS idx_tenant_transcription_usage_tenant ON public.tenant_transcription_usage(tenant_id_fk);
-CREATE INDEX IF NOT EXISTS idx_tenant_transcription_usage_month ON public.tenant_transcription_usage(month DESC);
-CREATE INDEX IF NOT EXISTS idx_tenant_transcription_usage_tenant_month ON public.tenant_transcription_usage(tenant_id_fk, month DESC);
+-- Tenant transcription usage lookup (indexes already created in 001_create_core_tables.sql)
+-- idx_tenant_transcription_usage_tenant_id
+-- idx_tenant_transcription_usage_usage_date
+-- idx_tenant_transcription_usage_tenant_date
 
 COMMENT ON INDEX idx_transcription_plans_active IS 'Fast lookup of active transcription plans';
 COMMENT ON INDEX idx_tenant_transcription_config_tenant IS 'Fast lookup of transcription config by tenant';
-COMMENT ON INDEX idx_tenant_transcription_usage_tenant_month IS 'Optimizes monthly usage queries by tenant';
 
 -- =============================================
 -- TENANT CONSISTENCY CONSTRAINTS AND TRIGGERS

@@ -895,9 +895,35 @@ export const NewSession: React.FC = () => {
 
         console.log('📊 [Recording] Audio created:', {
           size: `${audioSizeKB} KB`,
+          sizeBytes: audioBlob.size,
           duration: `${durationMin}:${durationSec.toString().padStart(2, '0')}`,
-          chunks: audioChunksRef.current.length
+          chunks: audioChunksRef.current.length,
+          chunkSizes: audioChunksRef.current.map(c => c.size),
+          mimeType: audioBlob.type
         })
+
+        // Validate audio has content
+        if (audioBlob.size === 0) {
+          console.error('❌ [Recording] Audio blob is empty! No data captured.')
+          publishFeedback({
+            kind: 'error',
+            code: 'RECORDING_EMPTY',
+            message: 'Recording failed - no audio data captured. Please try again.',
+            path: '/tq/new-session'
+          })
+
+          // Reset UI state
+          setIsTranscribing(false)
+          setIsPaused(false)
+          timer.reset()
+
+          // Clear refs
+          mediaRecorderRef.current = null
+          audioChunksRef.current = []
+
+          resolve()
+          return
+        }
 
         // Validate minimum duration (1 minute = 60 seconds)
         if (durationSeconds < 60) {
@@ -979,7 +1005,7 @@ export const NewSession: React.FC = () => {
           setIsPaused(false)
           setIsProcessingAudio(false)
           setProcessingMessage('')
-          timer.pause()
+          timer.reset()  // Reset timer instead of just pausing
 
           // Clear refs
           mediaRecorderRef.current = null

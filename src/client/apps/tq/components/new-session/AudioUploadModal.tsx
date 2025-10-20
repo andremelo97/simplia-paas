@@ -170,10 +170,14 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
             className={`
               border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
               ${isDragOver
-                ? 'border-blue-400 bg-blue-50'
+                ? 'bg-gray-50'
                 : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
               }
             `}
+            style={isDragOver ? {
+              borderColor: 'var(--brand-tertiary)',
+              backgroundColor: 'var(--brand-tertiary-bg)'
+            } : undefined}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}

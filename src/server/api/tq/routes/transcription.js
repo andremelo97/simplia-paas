@@ -539,27 +539,43 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     const signature = req.headers['x-deepgram-signature'];
     const payload = req.body.toString('utf8');
 
+    console.log('[Webhook] Received Deepgram webhook');
+
     // Validate webhook signature
     if (!deepgramService.validateWebhookSignature(payload, signature)) {
-      console.error('Invalid webhook signature');
+      console.error('[Webhook] Invalid webhook signature');
       return res.status(401).json({ error: 'Invalid signature' });
     }
 
     const webhookData = JSON.parse(payload);
+    console.log('[Webhook] Webhook payload keys:', Object.keys(webhookData));
 
     // Extract transcription metadata from callback
+    // Deepgram sends callback_metadata at root level, not inside metadata
     let transcriptionId, tenantId;
     try {
-      const metadata = JSON.parse(webhookData.metadata?.callback_metadata || '{}');
+      const callbackMetadata = webhookData.callback_metadata || webhookData.metadata?.callback_metadata;
+
+      if (!callbackMetadata) {
+        console.error('[Webhook] callback_metadata not found in payload');
+        return res.status(400).json({ error: 'Missing callback_metadata in webhook payload' });
+      }
+
+      const metadata = typeof callbackMetadata === 'string'
+        ? JSON.parse(callbackMetadata)
+        : callbackMetadata;
+
       transcriptionId = metadata.transcriptionId;
       tenantId = metadata.tenantId;
+
+      console.log('[Webhook] Extracted metadata:', { transcriptionId, tenantId });
     } catch (e) {
-      console.error('Failed to parse callback metadata:', e);
+      console.error('[Webhook] Failed to parse callback metadata:', e);
       return res.status(400).json({ error: 'Invalid callback metadata' });
     }
 
     if (!transcriptionId || !tenantId) {
-      console.error('Missing transcriptionId or tenantId in webhook callback');
+      console.error('[Webhook] Missing transcriptionId or tenantId in webhook callback');
       return res.status(400).json({ error: 'Missing transcription or tenant information' });
     }
 
@@ -607,7 +623,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     TenantTranscriptionUsage.create(parseInt(tenantId), {
       transcriptionId: transcriptionId,
       audioDurationSeconds: audioDurationSeconds,
-      sttModel: DEFAULT_STT_MODEL, // Use system default model (nova-3-mono)
+      sttModel: DEFAULT_STT_MODEL, // Use system default model (nova-3)
       sttProviderRequestId: sttProviderRequestId,
       usageDate: new Date()
     }).catch(error => {

@@ -355,20 +355,13 @@ router.put('/:id', async (req, res) => {
  *         description: Quote not found
  */
 router.delete('/:id', async (req, res) => {
-  try {
-    const schema = req.tenant.schema;
-    const { id } = req.params;
-
-    await Quote.delete(id, schema);
-
-    res.json({ message: 'Quote deleted successfully' });
-  } catch (error) {
-    if (error instanceof QuoteNotFoundError) {
-      return res.status(404).json({ error: error.message });
+  // Quotes cannot be deleted - data integrity requirement
+  return res.status(403).json({
+    error: {
+      code: 'QUOTE_DELETE_NOT_ALLOWED',
+      message: 'Quotes cannot be deleted. This operation is not permitted for data integrity reasons.'
     }
-    console.error('Error deleting quote:', error);
-    res.status(500).json({ error: 'Failed to delete quote' });
-  }
+  });
 });
 
 /**

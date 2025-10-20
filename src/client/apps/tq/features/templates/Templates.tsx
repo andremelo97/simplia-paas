@@ -10,19 +10,25 @@ import {
   Button,
   Alert,
   AlertDescription,
-  Paginator
+  Paginator,
+  ConfirmDialog
 } from '@client/common/ui'
 import { useTemplatesList } from '../../hooks/useTemplates'
 import { TemplateRow } from '../../components/templates/TemplateRow'
 import { TemplatesEmpty } from '../../components/templates/TemplatesEmpty'
 import { TemplateFilters } from '../../components/templates/TemplateFilters'
-import { Template } from '../../services/templates'
+import { Template, templatesService } from '../../services/templates'
 
 export const Templates: React.FC = () => {
   const { t } = useTranslation('tq')
   const [searchQuery, setSearchQuery] = useState('')
   const [includeInactive, setIncludeInactive] = useState(false)
   const navigate = useNavigate()
+
+  // ConfirmDialog state for delete
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{id: string, title: string} | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const {
     data: templates,
@@ -54,8 +60,31 @@ export const Templates: React.FC = () => {
     navigate(`/templates/${template.id}/edit`)
   }
 
-  const handleDeleteTemplate = () => {
-    refetch()
+  const handleDeleteTemplate = (template: Template) => {
+    setDeleteTarget({
+      id: template.id,
+      title: template.title
+    })
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
+    try {
+      await templatesService.deleteTemplate(deleteTarget.id)
+      // Feedback is handled automatically by HTTP interceptor
+      // Reload list
+      await refetch()
+    } catch (error) {
+      console.error('Failed to delete template:', error)
+      // Error feedback is also handled by HTTP interceptor
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+      setDeleteTarget(null)
+    }
   }
 
   return (
@@ -158,6 +187,17 @@ export const Templates: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+        title={t('templates.delete_template_title')}
+        description={t('templates.delete_template_description', { title: deleteTarget?.title })}
+        confirmText={t('common:delete')}
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

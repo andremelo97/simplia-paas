@@ -373,39 +373,13 @@ router.put('/:id', async (req, res) => {
  *         description: Clinical report not found
  */
 router.delete('/:id', async (req, res) => {
-  try {
-    const schema = req.tenant?.schema;
-    if (!schema) {
-      return res.status(400).json({
-        error: 'Tenant context not found',
-        meta: { code: 'TENANT_CONTEXT_MISSING' }
-      });
+  // Clinical Reports cannot be deleted - data integrity requirement
+  return res.status(403).json({
+    error: {
+      code: 'CLINICAL_REPORT_DELETE_NOT_ALLOWED',
+      message: 'Clinical reports cannot be deleted. This operation is not permitted for data integrity reasons.'
     }
-
-    const { id } = req.params;
-    const report = await ClinicalReport.delete(id, schema);
-
-    res.json({
-      data: report.toJSON(),
-      meta: {
-        code: 'CLINICAL_REPORT_DELETED',
-        message: 'Clinical report deleted successfully'
-      }
-    });
-  } catch (error) {
-    if (error instanceof ClinicalReportNotFoundError) {
-      return res.status(404).json({
-        error: error.message,
-        meta: { code: 'CLINICAL_REPORT_NOT_FOUND' }
-      });
-    }
-
-    console.error('Error deleting clinical report:', error);
-    res.status(500).json({
-      error: 'Failed to delete clinical report',
-      meta: { code: 'CLINICAL_REPORT_DELETE_ERROR' }
-    });
-  }
+  });
 });
 
 module.exports = router;

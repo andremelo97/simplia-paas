@@ -369,53 +369,91 @@ WHERE tenant_id_fk = 2
 
 Executado ANTES de iniciar transcrição (`POST /api/tq/v1/transcriptions/:id/transcribe`).
 
+**Importante:** O middleware **NÃO controla acesso** ao recurso de transcrição. O controle de acesso é feito via JWT `allowedApps` (se o usuário tem acesso ao app TQ, ele pode transcrever). O middleware **APENAS valida quotas de uso**.
+
 ```javascript
-const { TRANSCRIPTION_BASIC_MONTHLY_LIMIT } = require('../infra/constants/transcription');
-
 async function checkTranscriptionQuota(req, res, next) {
-  const tenantId = req.tenant.id;
+  try {
+    const tenantId = req.tenant?.id;
 
-  // 1. Buscar configuração do tenant
-  const config = await TenantTranscriptionConfig.findByTenant(tenantId);
+    if (!tenantId) {
+      return res.status(401).json({
+        error: { code: 401, message: 'Tenant authentication required' }
+      });
+    }
 
-  if (!config || !config.enabled) {
-    return res.status(403).json({
-      error: 'Transcription service not available',
-      message: 'Contact support to enable transcription.'
+    // Tentar buscar configuração do tenant (opcional)
+    let config = null;
+    let monthlyLimitMinutes = 60; // Default: 60 minutes/month
+    let overageAllowed = false; // Default: no overage
+
+    try {
+      config = await TenantTranscriptionConfig.findByTenantId(tenantId);
+      monthlyLimitMinutes = config.getEffectiveMonthlyLimit();
+      overageAllowed = config.plan?.allowsOverage || config.overageAllowed || false;
+    } catch (error) {
+      if (error instanceof TenantTranscriptionConfigNotFoundError) {
+        // Sem configuração - usa limites default (60 min/mês, sem overage)
+        console.log(`[Transcription Quota] No config for tenant ${tenantId}, using defaults (60 min/month, no overage)`);
+      } else {
+        throw error;
+      }
+    }
+
+    // Buscar uso do mês atual
+    const currentUsage = await TenantTranscriptionUsage.getCurrentMonthUsage(tenantId);
+
+    // Verificar se quota foi excedida
+    if (currentUsage.totalMinutes >= monthlyLimitMinutes) {
+      // Verificar se overage é permitido
+      if (!overageAllowed) {
+        return res.status(429).json({
+          error: {
+            code: 429,
+            message: 'Monthly transcription quota exceeded',
+            details: {
+              used: currentUsage.totalMinutes,
+              limit: monthlyLimitMinutes,
+              remaining: 0
+            }
+          }
+        });
+      }
+      // Se overage permitido, loga warning mas continua
+      console.warn(`[Transcription Quota] Tenant ${tenantId} exceeded quota but overage allowed (${currentUsage.totalMinutes}/${monthlyLimitMinutes} minutes)`);
+    }
+
+    // Anexa informações de quota ao request para uso downstream
+    req.transcriptionQuota = {
+      config: config,
+      usage: currentUsage,
+      limit: monthlyLimitMinutes,
+      remaining: Math.max(0, monthlyLimitMinutes - currentUsage.totalMinutes),
+      hasExceeded: currentUsage.totalMinutes >= monthlyLimitMinutes
+    };
+
+    next();
+  } catch (error) {
+    console.error('[Transcription Quota Middleware] Error:', error);
+    return res.status(500).json({
+      error: { code: 500, message: 'Failed to check transcription quota' }
     });
   }
-
-  // 2. Buscar uso do MÊS (agregação de usage_date >= início do mês)
-  const monthlyUsage = await TenantTranscriptionConfig.getUsage(tenantId, 'current_month');
-
-  // 3. Verificar limite MENSAL
-  if (config.monthlyLimit && monthlyUsage.minutesUsed >= config.monthlyLimit && !config.overageAllowed) {
-    return res.status(429).json({
-      error: 'Monthly transcription quota exceeded',
-      usage: {
-        used: monthlyUsage.minutesUsed,
-        limit: config.monthlyLimit,
-        plan: config.planName
-      },
-      message: `Monthly limit of ${config.monthlyLimit} minutes reached. Resets on ${getNextMonthDate()}.`
-    });
-  }
-
-  // 4. OK: permite transcrição
-  next();
 }
 ```
 
 **Exemplo de bloqueio (resposta 429):**
 ```json
 {
-  "error": "Monthly transcription quota exceeded",
-  "usage": {
-    "used": 2400,
-    "limit": 2400,
-    "plan": "Basic Plan"
-  },
-  "message": "Monthly limit of 2400 minutes reached. Resets on February 1st."
+  "error": {
+    "code": 429,
+    "message": "Monthly transcription quota exceeded",
+    "details": {
+      "used": 2400,
+      "limit": 2400,
+      "remaining": 0
+    }
+  }
 }
 ```
 

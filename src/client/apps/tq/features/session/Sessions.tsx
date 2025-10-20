@@ -9,13 +9,14 @@ import {
   Input,
   Alert,
   AlertDescription,
-  Paginator
+  Paginator,
+  ConfirmDialog
 } from '@client/common/ui'
 import { useSessionsList } from '../../hooks/useSessions'
 import { SessionRow } from '../../components/session/SessionRow'
 import { SessionsEmpty } from '../../components/session/SessionsEmpty'
 import { SessionFilters } from '../../components/session/SessionFilters'
-import { Session } from '../../services/sessions'
+import { Session, sessionsService } from '../../services/sessions'
 import { SessionStatus } from '../../types/sessionStatus'
 
 export const Sessions: React.FC = () => {
@@ -23,6 +24,11 @@ export const Sessions: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<SessionStatus | 'all'>('all')
   const navigate = useNavigate()
+
+  // ConfirmDialog state for delete
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{id: string, number: string} | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const {
     data: sessions,
@@ -55,8 +61,30 @@ export const Sessions: React.FC = () => {
   }
 
   const handleDeleteSession = (session: Session) => {
-    // Placeholder: Will be implemented later
-    console.log('Delete session:', session)
+    setDeleteTarget({
+      id: session.id,
+      number: session.number
+    })
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
+    try {
+      await sessionsService.deleteSession(deleteTarget.id)
+      // Feedback is handled automatically by HTTP interceptor
+      // Reload list
+      await refresh()
+    } catch (error) {
+      console.error('Failed to delete session:', error)
+      // Error feedback is also handled by HTTP interceptor
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+      setDeleteTarget(null)
+    }
   }
 
   return (
@@ -156,6 +184,18 @@ export const Sessions: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+        title={t('sessions.delete_session_title')}
+        description={t('sessions.delete_session_description', { number: deleteTarget?.number })}
+        confirmText={t('common:delete')}
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

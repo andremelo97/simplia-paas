@@ -261,7 +261,7 @@ router.put('/transcription-config', async (req, res) => {
       success: true,
       data: updatedConfig.toJSON(),
       meta: {
-        code: 'TRANSCRIPTION_CONFIG_UPDATED'
+        code: 'TENANT_TRANSCRIPTION_CONFIG_UPDATED'
       }
     });
   } catch (error) {

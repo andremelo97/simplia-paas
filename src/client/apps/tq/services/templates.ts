@@ -144,11 +144,18 @@ export const templatesService = {
   },
 
   /**
-   * Delete a template (soft delete)
+   * Delete a template
    */
   async delete(id: string): Promise<Template> {
     const response = await api.delete<{ data: ApiTemplate }>(`/api/tq/v1/templates/${id}`)
     return convertToCamelCase(response.data.data)
+  },
+
+  /**
+   * Delete a template (alias for delete)
+   */
+  async deleteTemplate(id: string): Promise<Template> {
+    return this.delete(id)
   },
 
   /**

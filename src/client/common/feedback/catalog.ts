@@ -30,6 +30,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "Tenant Deleted",
     message: "Tenant deleted successfully."
   },
+  TENANT_NAME_ALREADY_EXISTS: {
+    title: "Duplicate Tenant Name",
+    message: "A tenant with this name already exists. Please choose a different name."
+  },
 
   // License operations
   LICENSE_ACTIVATED: {
@@ -145,6 +149,32 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   PLAN_IN_USE: {
     title: "Cannot Deactivate",
     message: "This plan is currently assigned to one or more tenants and cannot be deactivated."
+  },
+
+  // TQ Delete Restrictions
+  PATIENT_HAS_SESSIONS: {
+    title: "Cannot Delete Patient",
+    message: "This patient has active sessions. Cannot delete patient with existing sessions."
+  },
+  SESSION_HAS_QUOTES: {
+    title: "Cannot Delete Session",
+    message: "This session has quotes attached. Cannot delete session with existing quotes."
+  },
+  SESSION_HAS_REPORTS: {
+    title: "Cannot Delete Session",
+    message: "This session has clinical reports attached. Cannot delete session with existing reports."
+  },
+  QUOTE_DELETE_NOT_ALLOWED: {
+    title: "Cannot Delete Quote",
+    message: "Quotes cannot be deleted for data integrity reasons."
+  },
+  CLINICAL_REPORT_DELETE_NOT_ALLOWED: {
+    title: "Cannot Delete Report",
+    message: "Clinical reports cannot be deleted for data integrity reasons."
+  },
+  ITEM_DELETE_NOT_ALLOWED: {
+    title: "Cannot Delete Item",
+    message: "Items cannot be deleted for data integrity reasons."
   },
 
   // Tenant Transcription Configuration

@@ -243,7 +243,9 @@
     },
     "filters": {
       "search_placeholder": "Search patients by name or email"
-    }
+    },
+    "delete_patient_title": "Delete Patient",
+    "delete_patient_description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone. Note: Patients with active sessions cannot be deleted."
   },
   "sessions": {
     "title": "Sessions",
@@ -319,7 +321,9 @@
       "find_quickly": "Find your session quickly",
       "search_placeholder": "Search by session number or patient name",
       "all": "All"
-    }
+    },
+    "delete_session_title": "Delete Session",
+    "delete_session_description": "Are you sure you want to delete session \"{{number}}\"? This action cannot be undone. Note: Sessions with quotes or clinical reports cannot be deleted."
   },
   "quotes": {
     "title": "Quotes",
@@ -573,7 +577,9 @@
       "find_quickly": "Find your template quickly",
       "search_placeholder": "Search templates by title or description",
       "include_inactive": "Include inactive templates"
-    }
+    },
+    "delete_template_title": "Delete Template",
+    "delete_template_description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone."
   },
   "public_quotes": {
     "edit_template": "Edit Template",
@@ -611,7 +617,7 @@
       "create_template": "Create Template",
       "loading_templates": "Loading templates...",
       "revoke_link_title": "Revoke Public Link?",
-      "revoke_link_description": "Are you sure you want to revoke the public link for quote {quoteNumber}? This will make the link inactive and inaccessible.",
+      "revoke_link_description": "Are you sure you want to revoke the public link for quote {{quoteNumber}}? This will make the link inactive and inaccessible.",
       "revoke_link": "Revoke Link",
       "back_to_quote": "Back to Quote",
       "no_content": "No Content",

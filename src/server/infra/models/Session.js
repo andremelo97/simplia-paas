@@ -262,6 +262,47 @@ class Session {
    * Delete a session within a tenant schema (hard delete)
    */
   static async delete(id, schema) {
+    // First, check if session has any quotes
+    const quoteCheckQuery = `
+      SELECT COUNT(*) as quote_count
+      FROM ${schema}.quote
+      WHERE session_id = $1
+    `;
+
+    const quoteCheck = await database.query(quoteCheckQuery, [id]);
+    const quoteCount = parseInt(quoteCheck.rows[0].quote_count);
+
+    if (quoteCount > 0) {
+      const error = new Error(
+        `Cannot delete session - session has ${quoteCount} quote${quoteCount > 1 ? 's' : ''} attached. Delete or reassign quotes first.`
+      );
+      error.code = 'SESSION_HAS_QUOTES';
+      error.statusCode = 400;
+      error.quoteCount = quoteCount;
+      throw error;
+    }
+
+    // Check if session has any clinical reports
+    const reportCheckQuery = `
+      SELECT COUNT(*) as report_count
+      FROM ${schema}.clinical_report
+      WHERE session_id = $1
+    `;
+
+    const reportCheck = await database.query(reportCheckQuery, [id]);
+    const reportCount = parseInt(reportCheck.rows[0].report_count);
+
+    if (reportCount > 0) {
+      const error = new Error(
+        `Cannot delete session - session has ${reportCount} clinical report${reportCount > 1 ? 's' : ''} attached. Delete or reassign reports first.`
+      );
+      error.code = 'SESSION_HAS_REPORTS';
+      error.statusCode = 400;
+      error.reportCount = reportCount;
+      throw error;
+    }
+
+    // If no quotes or reports, proceed with delete
     const query = `
       DELETE FROM ${schema}.session
       WHERE id = $1

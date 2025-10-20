@@ -504,25 +504,48 @@ router.delete('/:id', async (req, res) => {
     if (!schema) {
       return res.status(400).json({
         error: 'Bad Request',
-        message: 'Missing tenant context'
+        message: 'Tenant schema is required'
       });
     }
 
-    await Session.delete(id, schema);
+    const deletedSession = await Session.delete(id, schema);
 
     res.json({
+      success: true,
+      data: deletedSession.toJSON(),
       meta: {
-        code: 'SESSION_DELETED',
-        message: 'Session deleted successfully'
+        code: 'SESSION_DELETED'
       }
     });
   } catch (error) {
-    console.error('Delete session error:', error);
+    console.error('Error deleting session:', error);
 
     if (error instanceof SessionNotFoundError) {
       return res.status(404).json({
         error: 'Not Found',
         message: 'Session not found'
+      });
+    }
+
+    // Handle session with quotes error
+    if (error.code === 'SESSION_HAS_QUOTES') {
+      return res.status(400).json({
+        error: {
+          code: 'SESSION_HAS_QUOTES',
+          message: error.message,
+          quoteCount: error.quoteCount
+        }
+      });
+    }
+
+    // Handle session with reports error
+    if (error.code === 'SESSION_HAS_REPORTS') {
+      return res.status(400).json({
+        error: {
+          code: 'SESSION_HAS_REPORTS',
+          message: error.message,
+          reportCount: error.reportCount
+        }
       });
     }
 

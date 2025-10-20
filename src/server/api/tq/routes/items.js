@@ -345,22 +345,13 @@ router.put('/:id', async (req, res) => {
  *         description: Cannot delete item in use
  */
 router.delete('/:id', async (req, res) => {
-  try {
-    const schema = req.tenant.schema;
-    const { id } = req.params;
-
-    await Item.delete(id, schema);
-    res.json({ message: 'Item deleted successfully' });
-  } catch (error) {
-    if (error instanceof ItemNotFoundError) {
-      return res.status(404).json({ error: error.message });
+  // Items cannot be deleted - data integrity requirement
+  return res.status(403).json({
+    error: {
+      code: 'ITEM_DELETE_NOT_ALLOWED',
+      message: 'Items cannot be deleted. This operation is not permitted for data integrity reasons.'
     }
-    if (error.message.includes('Cannot delete item')) {
-      return res.status(400).json({ error: error.message });
-    }
-    console.error('Error deleting item:', error);
-    res.status(500).json({ error: 'Failed to delete item' });
-  }
+  });
 });
 
 

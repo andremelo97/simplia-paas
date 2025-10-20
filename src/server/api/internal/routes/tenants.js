@@ -456,6 +456,17 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Check for duplicate tenant name
+    const existingTenantByName = await Tenant.findByName(name.trim());
+    if (existingTenantByName) {
+      return res.status(409).json({
+        error: {
+          code: 'TENANT_NAME_ALREADY_EXISTS',
+          message: `A tenant with the name "${name.trim()}" already exists. Please choose a different name.`
+        }
+      });
+    }
+
     // Generate schema name from subdomain
     const schemaName = `tenant_${subdomain.replace(/-/g, '_')}`;
 

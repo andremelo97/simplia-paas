@@ -195,6 +195,38 @@
     "EMAIL_TEMPLATE_UPDATED": {
       "title": "Template Atualizado",
       "message": "Template de email atualizado com sucesso."
+    },
+    "TENANT_TRANSCRIPTION_CONFIG_UPDATED": {
+      "title": "Configuração Atualizada",
+      "message": "Configuração de transcrição atualizada com sucesso."
+    },
+    "TENANT_NAME_ALREADY_EXISTS": {
+      "title": "Nome de Tenant Duplicado",
+      "message": "Já existe um tenant com este nome. Por favor, escolha um nome diferente."
+    },
+    "PATIENT_HAS_SESSIONS": {
+      "title": "Não é Possível Deletar Paciente",
+      "message": "Este paciente possui sessões ativas. Não é possível deletar paciente com sessões existentes."
+    },
+    "SESSION_HAS_QUOTES": {
+      "title": "Não é Possível Deletar Sessão",
+      "message": "Esta sessão possui cotações vinculadas. Não é possível deletar sessão com cotações existentes."
+    },
+    "SESSION_HAS_REPORTS": {
+      "title": "Não é Possível Deletar Sessão",
+      "message": "Esta sessão possui relatórios clínicos vinculados. Não é possível deletar sessão com relatórios existentes."
+    },
+    "QUOTE_DELETE_NOT_ALLOWED": {
+      "title": "Não é Possível Deletar Cotação",
+      "message": "Cotações não podem ser deletadas por questões de integridade de dados."
+    },
+    "CLINICAL_REPORT_DELETE_NOT_ALLOWED": {
+      "title": "Não é Possível Deletar Relatório",
+      "message": "Relatórios clínicos não podem ser deletados por questões de integridade de dados."
+    },
+    "ITEM_DELETE_NOT_ALLOWED": {
+      "title": "Não é Possível Deletar Item",
+      "message": "Itens não podem ser deletados por questões de integridade de dados."
     }
   }
 }

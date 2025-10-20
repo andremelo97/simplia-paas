@@ -152,7 +152,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('SES' || LPAD(nextval('session_number_seq')::text, 6, '0')),
-        patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE CASCADE,
+        patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE RESTRICT,
         transcription_id UUID REFERENCES transcription(id) ON DELETE SET NULL,
         status session_status_enum NOT NULL DEFAULT 'draft'
       )
@@ -178,7 +178,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('QUO' || LPAD(nextval('quote_number_seq')::text, 6, '0')),
-        session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
+        session_id UUID NOT NULL REFERENCES session(id) ON DELETE RESTRICT,
         content TEXT,
         total NUMERIC(12, 2) DEFAULT 0.00,
         status quote_status_enum NOT NULL DEFAULT 'draft'
@@ -193,8 +193,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
-        quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
-        item_id UUID NOT NULL REFERENCES item(id) ON DELETE CASCADE,
+        quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE RESTRICT,
+        item_id UUID NOT NULL REFERENCES item(id) ON DELETE RESTRICT,
         name TEXT NOT NULL,
         base_price NUMERIC(10, 2) NOT NULL,
         quantity INTEGER DEFAULT 1,
@@ -224,7 +224,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('CLR' || LPAD(nextval('clinical_report_number_seq')::text, 6, '0')),
-        session_id UUID NOT NULL REFERENCES session(id) ON DELETE CASCADE,
+        session_id UUID NOT NULL REFERENCES session(id) ON DELETE RESTRICT,
         content TEXT NOT NULL
       )
     `);
@@ -477,7 +477,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         tenant_id INTEGER NOT NULL,
-        quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE CASCADE,
+        quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE RESTRICT,
         template_id UUID REFERENCES public_quote_template(id) ON DELETE SET NULL,
         access_token VARCHAR(64) UNIQUE NOT NULL,
         public_url TEXT,

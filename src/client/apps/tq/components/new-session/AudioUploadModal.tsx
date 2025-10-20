@@ -33,13 +33,16 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Reset state when modal opens/closes
+  // Reset state when modal opens (only on mount or when open changes from false to true)
+  const prevOpenRef = React.useRef(open)
   React.useEffect(() => {
-    if (open) {
+    // Only reset when modal transitions from closed to open
+    if (open && !prevOpenRef.current) {
       actions.reset()
       setIsDragOver(false)
     }
-  }, [open, actions])
+    prevOpenRef.current = open
+  }, [open]) // Removed 'actions' from dependencies to prevent unnecessary resets
 
   // Handle transcription completion
   React.useEffect(() => {
@@ -197,17 +200,44 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
         {state.isProcessing && (
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
-              <Loader className="h-5 w-5 animate-spin text-blue-500" />
+              <Loader className="h-5 w-5 animate-spin" style={{ color: 'var(--brand-tertiary)' }} />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  {state.progress.transcribing ? t('modals.audio_upload.transcribing') : t('modals.audio_upload.uploading')}
+                <div className="flex justify-between items-center mb-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {state.status === 'uploading' && t('modals.audio_upload.uploading')}
+                    {state.status === 'uploaded' && t('modals.audio_upload.starting_transcription')}
+                    {state.status === 'processing' && t('modals.audio_upload.transcribing')}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {state.status === 'uploading' && '33%'}
+                    {state.status === 'uploaded' && '66%'}
+                    {state.status === 'processing' && '90%'}
+                  </p>
+                </div>
+                <Progress
+                  value={
+                    state.status === 'uploading' ? 33 :
+                    state.status === 'uploaded' ? 66 :
+                    state.status === 'processing' ? 90 : 25
+                  }
+                  className="h-2"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  {state.status === 'uploading' && t('modals.audio_upload.uploading_file')}
+                  {state.status === 'uploaded' && t('modals.audio_upload.processing_audio')}
+                  {state.status === 'processing' && t('modals.audio_upload.transcription_in_progress')}
                 </p>
-                <Progress value={state.progress.uploaded ? (state.progress.transcribing ? 75 : 50) : 25} className="h-2 mt-1" />
               </div>
             </div>
-            <p className="text-xs text-gray-500">
-              {t('modals.audio_upload.please_wait')}
-            </p>
+            <div className="rounded-lg p-3" style={{
+              backgroundColor: 'var(--brand-tertiary-bg)',
+              borderColor: 'var(--brand-tertiary)',
+              borderWidth: '1px'
+            }}>
+              <p className="text-xs" style={{ color: 'var(--brand-tertiary-hover)' }}>
+                {t('modals.audio_upload.estimated_time')}
+              </p>
+            </div>
           </div>
         )}
 

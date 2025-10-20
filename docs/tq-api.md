@@ -168,6 +168,59 @@ Retrieve session details.
 #### PUT /sessions/{sessionId}
 Update session information.
 
+#### DELETE /sessions/{sessionId}
+Delete consultation session.
+
+**Validation Rules:**
+- Cannot delete session if it has associated quotes (error code: `SESSION_HAS_QUOTES`)
+- Cannot delete session if it has associated clinical reports (error code: `SESSION_HAS_REPORTS`)
+- Session can only be deleted if it has no dependencies
+
+**Request:**
+```http
+DELETE /api/tq/v1/sessions/{sessionId}
+Authorization: Bearer {token}
+x-tenant-id: {numeric_tenant_id}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid-string",
+    "number": "SESS000123",
+    "patientId": "uuid-string",
+    "transcriptionId": "uuid-string"
+  },
+  "meta": {
+    "code": "SESSION_DELETED"
+  }
+}
+```
+
+**Error Response (Has Quotes):**
+```json
+{
+  "error": {
+    "code": "SESSION_HAS_QUOTES",
+    "message": "Cannot delete session - session has 2 quotes attached.",
+    "quoteCount": 2
+  }
+}
+```
+
+**Error Response (Has Reports):**
+```json
+{
+  "error": {
+    "code": "SESSION_HAS_REPORTS",
+    "message": "Cannot delete session - session has 1 clinical report attached.",
+    "reportCount": 1
+  }
+}
+```
+
 ### Patients
 
 Manage patient records for consultations.
@@ -391,7 +444,7 @@ Reset the template to the locale-aware default (pt-BR or en-US).
   "data": {
     "id": "uuid-string",
     "subject": "Quote $quoteNumber$ - $clinicName$",
-    "body": "<p>Olá $patientName$...</p>",
+    "body": "<p>Olï¿½ $patientName$...</p>",
     "updatedAt": "2025-10-08T11:30:00Z"
   },
   "meta": {

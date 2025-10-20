@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit } from 'lucide-react'
+import { Edit, Trash2 } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { Template } from '../../services/templates'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -8,7 +8,7 @@ import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 interface TemplateRowProps {
   template: Template
   onEdit: (template: Template) => void
-  onDelete: () => void
+  onDelete: (template: Template) => void
 }
 
 export const TemplateRow: React.FC<TemplateRowProps> = ({
@@ -22,6 +22,10 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
 
   const handleEdit = () => {
     onEdit(template)
+  }
+
+  const handleDelete = () => {
+    onDelete(template)
   }
 
   const truncateContent = (content: string, maxLength: number = 80) => {
@@ -67,7 +71,7 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
       </div>
 
       {/* Actions - visible on hover */}
-      <div className={`w-24 flex items-center gap-1 transition-opacity duration-200 ${
+      <div className={`flex items-center gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}>
         <Tooltip content={t('common:edit')}>
@@ -79,6 +83,18 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
             aria-label={t('common:edit')}
           >
             <Edit className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
+
+        <Tooltip content={t('common:delete')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            aria-label={t('common:delete')}
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
           </Button>
         </Tooltip>
       </div>

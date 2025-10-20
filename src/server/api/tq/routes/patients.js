@@ -497,6 +497,17 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
+    // Handle patient with sessions error
+    if (error.code === 'PATIENT_HAS_SESSIONS') {
+      return res.status(400).json({
+        error: {
+          code: 'PATIENT_HAS_SESSIONS',
+          message: error.message,
+          sessionCount: error.sessionCount
+        }
+      });
+    }
+
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to delete patient'

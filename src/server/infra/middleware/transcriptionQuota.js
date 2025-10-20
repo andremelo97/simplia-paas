@@ -19,35 +19,23 @@ async function checkTranscriptionQuota(req, res, next) {
       });
     }
 
-    // Get tenant transcription config
-    let config;
+    // Try to get tenant transcription config (optional - if not exists, use defaults)
+    let config = null;
+    let monthlyLimitMinutes = 60; // Default: 60 minutes/month
+    let overageAllowed = false; // Default: no overage
+
     try {
       config = await TenantTranscriptionConfig.findByTenantId(tenantId);
+      monthlyLimitMinutes = config.getEffectiveMonthlyLimit();
+      overageAllowed = config.plan?.allowsOverage || config.overageAllowed || false;
     } catch (error) {
       if (error instanceof TenantTranscriptionConfigNotFoundError) {
-        // No config = transcription not enabled for this tenant
-        return res.status(403).json({
-          error: {
-            code: 403,
-            message: 'Transcription service not configured for your account'
-          }
-        });
+        // No config found - use default limits (60 min/month, no overage)
+        console.log(`[Transcription Quota] No config for tenant ${tenantId}, using defaults (60 min/month, no overage)`);
+      } else {
+        throw error;
       }
-      throw error;
     }
-
-    // Check if transcription is enabled
-    if (!config.enabled) {
-      return res.status(403).json({
-        error: {
-          code: 403,
-          message: 'Transcription service is disabled for your account'
-        }
-      });
-    }
-
-    // Get effective monthly limit
-    const monthlyLimitMinutes = config.getEffectiveMonthlyLimit();
 
     // Get current month usage
     const currentUsage = await TenantTranscriptionUsage.getCurrentMonthUsage(tenantId);
@@ -55,7 +43,7 @@ async function checkTranscriptionQuota(req, res, next) {
     // Check if quota exceeded
     if (currentUsage.totalMinutes >= monthlyLimitMinutes) {
       // Check if overage is allowed
-      if (!config.overageAllowed) {
+      if (!overageAllowed) {
         return res.status(429).json({
           error: {
             code: 429,

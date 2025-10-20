@@ -215,7 +215,9 @@
     },
     "filters": {
       "search_placeholder": "Buscar pacientes por nome ou e-mail"
-    }
+    },
+    "delete_patient_title": "Deletar Paciente",
+    "delete_patient_description": "Tem certeza que deseja deletar \"{{name}}\"? Esta ação não pode ser desfeita. Nota: Pacientes com sessões ativas não podem ser deletados."
   },
   "sessions": {
     "title": "Sessões",
@@ -291,7 +293,9 @@
       "find_quickly": "Encontre sua sessão rapidamente",
       "search_placeholder": "Buscar por número de sessão ou nome do paciente",
       "all": "Todas"
-    }
+    },
+    "delete_session_title": "Deletar Sessão",
+    "delete_session_description": "Tem certeza que deseja deletar a sessão \"{{number}}\"? Esta ação não pode ser desfeita. Nota: Sessões com cotações ou relatórios clínicos não podem ser deletadas."
   },
   "quotes": {
     "title": "Cotações",
@@ -545,7 +549,9 @@
       "find_quickly": "Encontre seu template rapidamente",
       "search_placeholder": "Buscar templates por título ou descrição",
       "include_inactive": "Incluir templates inativos"
-    }
+    },
+    "delete_template_title": "Deletar Template",
+    "delete_template_description": "Tem certeza que deseja deletar \"{{title}}\"? Esta ação não pode ser desfeita."
   },
   "public_quotes": {
     "edit_template": "Editar Template",
@@ -583,7 +589,7 @@
       "create_template": "Criar Template",
       "loading_templates": "Carregando templates...",
       "revoke_link_title": "Revogar Link Público?",
-      "revoke_link_description": "Tem certeza que deseja revogar o link público da cotação {quoteNumber}? Isso tornará o link inativo e inacessível.",
+      "revoke_link_description": "Tem certeza que deseja revogar o link público da cotação {{quoteNumber}}? Isso tornará o link inativo e inacessível.",
       "revoke_link": "Revogar Link",
       "back_to_quote": "Voltar para Cotação",
       "no_content": "Sem Conteúdo",

@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit, Trash2 } from 'lucide-react'
+import { Edit } from 'lucide-react'
 import { Button, Badge, Tooltip } from '@client/common/ui'
 import { Quote } from '../../services/quotes'
 import { formatQuoteStatus } from '../../hooks/useQuotes'
@@ -11,13 +11,11 @@ import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
 interface QuoteRowProps {
   quote: Quote
   onEdit?: (quote: Quote) => void
-  onDelete?: (quote: Quote) => void
 }
 
 export const QuoteRow: React.FC<QuoteRowProps> = ({
   quote,
-  onEdit,
-  onDelete
+  onEdit
 }) => {
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
@@ -28,12 +26,7 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
     onEdit?.(quote)
   }
 
-  const handleDelete = () => {
-    onDelete?.(quote)
-  }
-
   const editLabel = t('common:edit')
-  const deleteLabel = t('common:delete')
 
   return (
     <div
@@ -101,18 +94,6 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
             aria-label={editLabel}
           >
             <Edit className="w-4 h-4 text-gray-600" />
-          </Button>
-        </Tooltip>
-
-        <Tooltip content={deleteLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            aria-label={deleteLabel}
-          >
-            <Trash2 className="w-4 h-4 text-red-600" />
           </Button>
         </Tooltip>
       </div>

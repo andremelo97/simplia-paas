@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit, FileText, Trash2 } from 'lucide-react'
+import { Edit, FileText } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { ClinicalReport } from '../../services/clinicalReports'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -9,14 +9,12 @@ interface ClinicalReportRowProps {
   report: ClinicalReport
   onEdit?: (report: ClinicalReport) => void
   onView?: (report: ClinicalReport) => void
-  onDelete?: (report: ClinicalReport) => void
 }
 
 export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
   report,
   onEdit,
-  onView,
-  onDelete
+  onView
 }) => {
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
@@ -30,13 +28,8 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
     onView?.(report)
   }
 
-  const handleDelete = () => {
-    onDelete?.(report)
-  }
-
   const viewLabel = t('common:view')
   const editLabel = t('common:edit')
-  const deleteLabel = t('common:delete')
 
   return (
     <div
@@ -102,18 +95,6 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
             aria-label={editLabel}
           >
             <Edit className="w-4 h-4 text-gray-600" />
-          </Button>
-        </Tooltip>
-
-        <Tooltip content={deleteLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            aria-label={deleteLabel}
-          >
-            <Trash2 className="w-4 h-4 text-red-600" />
           </Button>
         </Tooltip>
       </div>

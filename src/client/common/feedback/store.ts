@@ -45,14 +45,14 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
       ...feedback,
       id: `feedback-${now}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: now,
-      duration: feedback.duration || (feedback.kind === 'error' ? 0 : 4000) // Errors persist, others auto-dismiss
+      duration: feedback.duration || (feedback.kind === 'error' ? 10000 : 4000) // Errors dismiss after 10s, others after 4s
     }
 
     set(state => ({
       feedbacks: [...state.feedbacks, newFeedback]
     }))
 
-    // Auto-dismiss non-error feedbacks
+    // Auto-dismiss all feedbacks with duration > 0
     if (newFeedback.duration && newFeedback.duration > 0) {
       setTimeout(() => {
         get().dequeue(newFeedback.id)

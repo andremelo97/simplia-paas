@@ -12,18 +12,25 @@ import {
   Badge,
   Alert,
   AlertDescription,
-  Paginator
+  Paginator,
+  ConfirmDialog
 } from '@client/common/ui'
 import { usePatientsList } from '../../hooks/usePatients'
 import { PatientRow } from '../../components/patients/PatientRow'
 import { PatientsEmpty } from '../../components/patients/PatientsEmpty'
 import { PatientFilters } from '../../components/patients/PatientFilters'
-import { Patient } from '../../services/patients'
+import { Patient, patientsService } from '../../services/patients'
+import { formatPatientName } from '../../hooks/usePatients'
 
 export const Patients: React.FC = () => {
   const { t } = useTranslation('tq')
   const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
+
+  // ConfirmDialog state for delete
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<{id: string, name: string} | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const {
     data: patients,
@@ -58,8 +65,30 @@ export const Patients: React.FC = () => {
   }
 
   const handleDeletePatient = (patient: Patient) => {
-    // Placeholder: Will be implemented later
-    console.log('Delete patient:', patient)
+    setDeleteTarget({
+      id: patient.id,
+      name: formatPatientName(patient)
+    })
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return
+
+    setIsDeleting(true)
+    try {
+      await patientsService.deletePatient(deleteTarget.id)
+      // Feedback is handled automatically by HTTP interceptor
+      // Reload list
+      await refresh()
+    } catch (error) {
+      console.error('Failed to delete patient:', error)
+      // Error feedback is also handled by HTTP interceptor
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
+      setDeleteTarget(null)
+    }
   }
 
 
@@ -168,6 +197,18 @@ export const Patients: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+        title={t('patients.delete_patient_title')}
+        description={t('patients.delete_patient_description', { name: deleteTarget?.name })}
+        confirmText={t('common:delete')}
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   )
 }

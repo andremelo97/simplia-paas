@@ -62,17 +62,27 @@ class Tenant {
   // Buscar tenant por subdomain
   static async findBySubdomain(subdomain) {
     const query = `
-      SELECT * FROM tenants 
+      SELECT * FROM tenants
       WHERE subdomain = $1 AND active = true
     `;
     const result = await database.query(query, [subdomain]);
     return result.rows[0] ? new Tenant(result.rows[0]) : null;
   }
 
+  // Buscar tenant por nome
+  static async findByName(name) {
+    const query = `
+      SELECT * FROM tenants
+      WHERE name = $1 AND active = true
+    `;
+    const result = await database.query(query, [name]);
+    return result.rows[0] ? new Tenant(result.rows[0]) : null;
+  }
+
   // Buscar tenant por ID
   static async findById(id) {
     const query = `
-      SELECT * FROM tenants 
+      SELECT * FROM tenants
       WHERE id = $1 AND active = true
     `;
     const result = await database.query(query, [id]);

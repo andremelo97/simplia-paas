@@ -143,8 +143,30 @@ class Patient {
 
   /**
    * Delete a patient within a tenant schema (hard delete)
+   * Only allows deletion if patient has NO sessions
    */
   static async delete(id, schema) {
+    // First, check if patient has any sessions
+    const sessionCheckQuery = `
+      SELECT COUNT(*) as session_count
+      FROM ${schema}.session
+      WHERE patient_id = $1
+    `;
+
+    const sessionCheck = await database.query(sessionCheckQuery, [id]);
+    const sessionCount = parseInt(sessionCheck.rows[0].session_count);
+
+    if (sessionCount > 0) {
+      const error = new Error(
+        `Cannot delete patient - patient has ${sessionCount} session${sessionCount > 1 ? 's' : ''} attached. Delete or reassign sessions first.`
+      );
+      error.code = 'PATIENT_HAS_SESSIONS';
+      error.statusCode = 400;
+      error.sessionCount = sessionCount;
+      throw error;
+    }
+
+    // If no sessions, proceed with delete
     const query = `
       DELETE FROM ${schema}.patient
       WHERE id = $1

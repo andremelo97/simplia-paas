@@ -77,9 +77,18 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     // The presence of dg-token header is sufficient to confirm it's from Deepgram
     console.log('[Webhook] ✅ Authenticated via dg-token header, processing webhook');
 
-    const payload = req.body.toString('utf8');
-
-    const webhookData = JSON.parse(payload);
+    // Parse body (may be Buffer or already parsed Object)
+    let webhookData;
+    if (Buffer.isBuffer(req.body)) {
+      // Body is Buffer (from express.raw middleware)
+      const payload = req.body.toString('utf8');
+      webhookData = JSON.parse(payload);
+    } else if (typeof req.body === 'object') {
+      // Body already parsed by express.json() middleware
+      webhookData = req.body;
+    } else {
+      throw new Error('Unexpected request body type');
+    }
 
     // Extract transcription metadata from callback
     // Deepgram sends callback_metadata at root level, not inside metadata

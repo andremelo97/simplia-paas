@@ -774,17 +774,30 @@ OPENAI_MODEL=gpt-4o-mini
 - **Word Timestamps**: Precise timing for each word (stored for future features)
 
 #### Webhook Processing
-Deepgram delivers results via webhook callback:
+
+**🔓 PUBLIC ENDPOINT** - No authentication or tenant middleware required.
+
+Deepgram delivers results via webhook callback. This endpoint is registered **before** tenant/auth middlewares because:
+- Deepgram is an external service that cannot send `x-tenant-id` headers
+- TenantId is extracted from `callback_metadata` in the payload
+- Authentication is handled via HMAC signature validation
+
+**Implementation:**
+- File: `src/server/api/tq/routes/deepgram-webhook.js`
+- Registered in: `src/server/tq-api.js` (before authenticated routes)
+- Tenant resolution: Queries `public.tenants` table using `tenantId` from payload
 
 ```http
-POST /api/tq/v1/transcriptions/webhook/deepgram
+POST /api/tq/v1/webhook/deepgram
 x-deepgram-signature: {hmac_signature}
 Content-Type: application/json
 
 {
   "request_id": "deepgram-request-id",
+  "callback_metadata": "{\"transcriptionId\":\"uuid\",\"tenantId\":\"2\"}",
   "metadata": {
-    "callback_metadata": "{\"transcriptionId\":\"uuid\",\"tenantId\":\"2\"}"
+    "duration": 183.5,
+    "request_id": "deepgram-request-id"
   },
   "results": {
     "channels": [{
@@ -798,14 +811,17 @@ Content-Type: application/json
 }
 ```
 
+**CRITICAL:** The `callback_metadata` is sent at **root level** of the payload, not inside `metadata` object.
+
 #### Error Handling
 Common Deepgram errors and solutions:
 
 | Error | Cause | Solution |
 |-------|-------|----------|
 | `REMOTE_CONTENT_ERROR` | Audio file not accessible | Check Supabase signed URL |
-| `Invalid callback URL` | Webhook URL unreachable | Use ngrok or deploy webhook |
-| `INVALID_MODEL` | Model not supported | Use supported model (nova-2) |
+| `Invalid callback URL` | Webhook URL unreachable | Use ngrok for dev or deploy publicly |
+| `400 Bad Request (Webhook)` | Tenant middleware blocking webhook | Webhook must be registered before auth middlewares |
+| `INVALID_MODEL` | Model not supported | Use supported model (nova-3) |
 | `FILE_TOO_LARGE` | File exceeds limits | Compress or split audio |
 
 ### Supabase Storage
@@ -1572,10 +1588,11 @@ The quote edit page (`/quotes/:id/edit`) follows best practices:
 ## Production Considerations
 
 ### Security
-- **Webhook Validation**: HMAC signature verification for Deepgram callbacks
-- **File Access**: Signed URLs with limited expiry for external services
-- **Tenant Isolation**: All data stored with tenant prefixes
-- **Authentication**: JWT + tenant header required for all endpoints
+- **Webhook Validation**: HMAC signature verification for Deepgram callbacks (public endpoint, no JWT required)
+- **Webhook Isolation**: Webhook registered before auth middlewares to bypass tenant validation
+- **File Access**: Public URLs for external services (Deepgram requires permanent access)
+- **Tenant Isolation**: All data stored in tenant-specific schemas
+- **Authentication**: JWT + x-tenant-id header required for all authenticated endpoints
 
 ### Performance
 - **Async Processing**: Non-blocking transcription workflow

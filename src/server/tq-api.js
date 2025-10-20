@@ -13,6 +13,7 @@ const { requireTranscriptionQuoteAccess } = require('./infra/middleware/appAcces
 // TQ App Routes
 const tqRoutes = require('./api/tq');
 const publicQuoteAccessRoutes = require('./api/tq/routes/public-quote-access');
+const deepgramWebhookRoutes = require('./api/tq/routes/deepgram-webhook');
 
 // Swagger
 const swaggerUi = require('swagger-ui-express');
@@ -70,9 +71,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Public quote access route (NO authentication, NO tenant middleware)
+// Public routes (NO authentication, NO tenant middleware)
 // Must be registered BEFORE the authenticated routes
 app.use(API_PREFIX, publicQuoteAccessRoutes);
+app.use(API_PREFIX, deepgramWebhookRoutes); // Deepgram webhook callback
 
 // TQ API routes with middlewares
 app.use(API_PREFIX,

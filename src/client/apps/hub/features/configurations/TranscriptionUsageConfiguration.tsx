@@ -97,6 +97,11 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         throw new Error('Missing required fields in usage data')
       }
 
+      // Ensure history is always an array
+      if (!usageData.history) {
+        usageData.history = []
+      }
+
       setUsage(usageData)
 
       // Initialize custom limit from config
@@ -359,45 +364,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         </div>
       </Card>
 
-      {/* Language Settings (Always Visible) */}
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Settings className="h-5 w-5 text-[#B725B7]" />
-          <h2 className="text-lg font-semibold text-gray-900">{t('transcription_usage.language_settings')}</h2>
-        </div>
-        <p className="text-sm text-gray-600 mb-6">
-          {t('transcription_usage.language_settings_description')}
-        </p>
-
-        {/* Transcription Language */}
-        <div className="mb-6">
-          <Label htmlFor="transcriptionLanguage">{t('transcription_usage.transcription_language')}</Label>
-          <Select
-            id="transcriptionLanguage"
-            value={transcriptionLanguage}
-            onChange={(e) => setTranscriptionLanguage(e.target.value)}
-            className="mt-2"
-          >
-            <option value="pt-BR">Português (Brasil)</option>
-            <option value="en-US">English (US)</option>
-          </Select>
-          <p className="text-xs text-gray-500 mt-2">
-            {t('transcription_usage.language_description')}
-          </p>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <Button
-            variant="primary"
-            onClick={handleSave}
-            disabled={saving || !hasChanges}
-          >
-            {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
-          </Button>
-        </div>
-      </Card>
-
       {/* Premium Features Configuration */}
       {hasAnyPremiumFeature && (
         <Card className="p-6">
@@ -489,6 +455,46 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         </Card>
       )}
 
+      {/* Language Settings (Always Visible) */}
+      <Card className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Settings className="h-5 w-5 text-[#B725B7]" />
+          <h2 className="text-lg font-semibold text-gray-900">{t('transcription_usage.language_settings')}</h2>
+        </div>
+        <p className="text-sm text-gray-600 mb-6">
+          {t('transcription_usage.language_settings_description')}
+        </p>
+
+        {/* Transcription Language */}
+        <div className="mb-6">
+          <Label htmlFor="transcriptionLanguage">{t('transcription_usage.transcription_language')}</Label>
+          <Select
+            id="transcriptionLanguage"
+            value={transcriptionLanguage}
+            onChange={(e) => setTranscriptionLanguage(e.target.value)}
+            className="mt-2"
+            options={[
+              { value: 'pt-BR', label: 'Português (Brasil)' },
+              { value: 'en-US', label: 'English (US)' }
+            ]}
+          />
+          <p className="text-xs text-gray-500 mt-2">
+            {t('transcription_usage.language_description')}
+          </p>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={saving || !hasChanges}
+          >
+            {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
+          </Button>
+        </div>
+      </Card>
+
       {/* Usage History */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('transcription_usage.usage_history')}</h2>
@@ -504,7 +510,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {usage.history.map((record) => {
+              {(usage.history || []).map((record) => {
                 const usagePercent = (record.minutesUsed / record.limit) * 100
                 return (
                   <tr key={record.month} className="border-b border-gray-100 hover:bg-gray-50">

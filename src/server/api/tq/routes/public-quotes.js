@@ -353,13 +353,19 @@ router.post('/', async (req, res) => {
       } catch (emailError) {
         console.error('Public quote email send failed. Rolling back generated link.', emailError);
 
+        // Rollback: delete the created public quote
         try {
           await PublicQuote.deleteById(publicQuote.id, schema);
         } catch (rollbackError) {
           console.error('Failed to rollback public quote after email failure:', rollbackError);
         }
 
-        emailError.code = emailError.code || 'PUBLIC_QUOTE_EMAIL_FAILED';
+        // Set specific error code based on error message
+        if (emailError.message && emailError.message.includes('Communication settings not configured')) {
+          emailError.code = 'SMTP_NOT_CONFIGURED';
+        } else {
+          emailError.code = emailError.code || 'PUBLIC_QUOTE_EMAIL_FAILED';
+        }
         throw emailError;
       }
     }
@@ -376,13 +382,16 @@ router.post('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Create public quote error:', error);
-    const isEmailFailure = error.code === 'PUBLIC_QUOTE_EMAIL_FAILED';
+
+    // Determine error code for HTTP interceptor feedback
+    const errorCode = error.code || 'PUBLIC_QUOTE_CREATION_FAILED';
+
     res.status(500).json({
       error: {
-        code: isEmailFailure ? 'PUBLIC_QUOTE_EMAIL_FAILED' : 'PUBLIC_QUOTE_CREATION_FAILED',
-        message: isEmailFailure ? 'Failed to send public quote email' : 'Failed to create public quote link'
+        code: errorCode,
+        message: error.message || 'Failed to create public quote link'
       },
-      message: isEmailFailure ? 'Failed to send public quote email' : 'Failed to create public quote link'
+      message: error.message || 'Failed to create public quote link'
     });
   }
 });

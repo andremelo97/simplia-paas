@@ -160,7 +160,7 @@ const Banner: React.FC<BannerProps> = ({ feedback, onClose }) => {
   return (
     <div
       ref={bannerRef}
-      className="fixed top-0 left-0 right-0 bg-red-600 text-white p-4 z-50"
+      className="fixed top-0 left-0 right-0 bg-red-600 text-white p-4 z-[9999]"
       role="alert"
       aria-live="assertive"
       tabIndex={-1}

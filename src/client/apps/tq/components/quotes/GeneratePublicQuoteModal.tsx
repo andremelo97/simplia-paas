@@ -14,7 +14,6 @@ import {
 import { Copy, CheckCircle2 } from 'lucide-react'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
-import { publishFeedback } from '@client/common/feedback'
 
 interface GeneratePublicQuoteModalProps {
   open: boolean
@@ -132,20 +131,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
       
       onSuccess?.(publicQuote)
     } catch (error) {
-      console.error('Failed to generate public quote:', error)
-      const errorCode =
-        (error as any)?.code === 'PUBLIC_QUOTE_EMAIL_FAILED'
-          ? 'PUBLIC_QUOTE_EMAIL_FAILED'
-          : 'PUBLIC_QUOTE_CREATION_FAILED'
-
-      publishFeedback({
-        kind: 'error',
-        code: errorCode,
-        title: t(`common:feedback.${errorCode}.title`),
-        message: t(`common:feedback.${errorCode}.message`),
-        path: '/api/tq/v1/public-quotes'
-      })
-
+      // HTTP interceptor handles feedback automatically - no manual publishFeedback needed
       setGeneratedQuote(null)
     } finally {
       setIsGenerating(false)

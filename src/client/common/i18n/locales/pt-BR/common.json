@@ -180,6 +180,10 @@
       "title": "Comunicação Atualizada",
       "message": "Configurações de comunicação salvas com sucesso."
     },
+    "SMTP_NOT_CONFIGURED": {
+      "title": "SMTP Não Configurado",
+      "message": "Você precisa configurar o servidor de email (SMTP) antes de gerar links públicos. Configure em Configurações > Comunicação."
+    },
     "PUBLIC_QUOTE_EMAIL_FAILED": {
       "title": "Falha no Envio do Email",
       "message": "Não foi possível enviar o email da cotação pública. Verifique as configurações de comunicação e tente novamente."

@@ -164,6 +164,10 @@
       "title": "Communication Updated",
       "message": "Communication settings saved successfully."
     },
+    "SMTP_NOT_CONFIGURED": {
+      "title": "SMTP Not Configured",
+      "message": "You need to configure your email server (SMTP) before generating public links. Configure in Settings > Communication."
+    },
     "PUBLIC_QUOTE_EMAIL_FAILED": {
       "title": "Email Delivery Failed",
       "message": "We couldn't send the public quote email. Please check your communication settings and try again."

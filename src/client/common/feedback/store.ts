@@ -29,8 +29,8 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
     }
 
     // Check for duplicate feedback within deduplication window
-    const existingFeedback = get().feedbacks.find(f => 
-      f.code === feedback.code && 
+    const existingFeedback = get().feedbacks.find(f =>
+      f.code === feedback.code &&
       f.kind === feedback.kind &&
       (now - f.timestamp) < DEDUP_WINDOW
     )

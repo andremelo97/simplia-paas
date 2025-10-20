@@ -100,6 +100,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "Communication Updated",
     message: "Communication settings saved successfully."
   },
+  SMTP_NOT_CONFIGURED: {
+    title: "SMTP Not Configured",
+    message: "Email server (SMTP) not configured. Configure in Settings > Communication."
+  },
 
   // Public quote operations
   PUBLIC_QUOTE_EMAIL_FAILED: {

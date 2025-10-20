@@ -328,7 +328,17 @@
       "all": "All"
     },
     "delete_session_title": "Delete Session",
-    "delete_session_description": "Are you sure you want to delete session \"{{number}}\"? This action cannot be undone. Note: Sessions with quotes or clinical reports cannot be deleted."
+    "delete_session_description": "Are you sure you want to delete session \"{{number}}\"? This action cannot be undone. Note: Sessions with quotes or clinical reports cannot be deleted.",
+    "recording": {
+      "too_short": "Recording is too short. Minimum duration is 1 minute. Your recording: {{duration}}",
+      "preparing": "Preparing audio file...",
+      "uploading": "Uploading audio file...",
+      "uploaded": "Audio uploaded! Starting transcription...",
+      "transcribing": "Transcribing audio... This may take a few moments.",
+      "processing": "Transcribing audio... Please wait.",
+      "completed": "Transcription complete! Loading results...",
+      "wait_message": "Please wait while we process your audio recording..."
+    }
   },
   "quotes": {
     "title": "Quotes",

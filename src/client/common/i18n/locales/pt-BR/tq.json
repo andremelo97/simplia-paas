@@ -300,7 +300,17 @@
       "all": "Todas"
     },
     "delete_session_title": "Deletar Sessão",
-    "delete_session_description": "Tem certeza que deseja deletar a sessão \"{{number}}\"? Esta ação não pode ser desfeita. Nota: Sessões com cotações ou relatórios clínicos não podem ser deletadas."
+    "delete_session_description": "Tem certeza que deseja deletar a sessão \"{{number}}\"? Esta ação não pode ser desfeita. Nota: Sessões com cotações ou relatórios clínicos não podem ser deletadas.",
+    "recording": {
+      "too_short": "Gravação muito curta. Duração mínima é 1 minuto. Sua gravação: {{duration}}",
+      "preparing": "Preparando arquivo de áudio...",
+      "uploading": "Enviando arquivo de áudio...",
+      "uploaded": "Áudio enviado! Iniciando transcrição...",
+      "transcribing": "Transcrevendo áudio... Isso pode levar alguns instantes.",
+      "processing": "Transcrevendo áudio... Por favor aguarde.",
+      "completed": "Transcrição concluída! Carregando resultados...",
+      "wait_message": "Por favor aguarde enquanto processamos sua gravação de áudio..."
+    }
   },
   "quotes": {
     "title": "Cotações",

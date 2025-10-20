@@ -439,6 +439,11 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
     }
 
     // Start Deepgram transcription with language targeting and extra metadata
+    console.log(`[Transcription] Starting Deepgram transcription for: ${transcriptionId}`);
+    console.log(`[Transcription] Audio URL: ${transcription.audio_url}`);
+    console.log(`[Transcription] Language: ${transcriptionLanguage}`);
+    console.log(`[Transcription] Model: ${DEFAULT_STT_MODEL}`);
+
     const transcriptionApiResult = await deepgramService.transcribeByUrl(
       transcription.audio_url,
       webhookUrl,
@@ -452,6 +457,8 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
         }
       }
     );
+
+    console.log(`[Transcription] Deepgram response received successfully`);
 
     // Update transcription with Deepgram request ID and status
     console.log(`[Transcription] Saving Deepgram request_id: ${transcriptionApiResult.request_id} for transcription: ${transcriptionId}`);
@@ -480,10 +487,22 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
 
   } catch (error) {
     await client.query('ROLLBACK');
-    console.error('Transcription start error:', error);
+    console.error('[Transcription] ❌ Failed to start transcription:', error);
+    console.error('[Transcription] ❌ Error stack:', error.stack);
+
+    // Provide more detailed error messages based on error type
+    let errorMessage = 'Failed to start transcription';
+    if (error.message.includes('Deepgram API key not configured')) {
+      errorMessage = 'Deepgram service not configured. Please contact support.';
+    } else if (error.message.includes('Deepgram API error')) {
+      errorMessage = 'Deepgram service error. Please try again or contact support.';
+    } else if (error.message.includes('audio_url')) {
+      errorMessage = 'Audio file not accessible. Please try uploading again.';
+    }
+
     res.status(500).json({
-      error: 'Failed to start transcription',
-      details: error.message
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   } finally {
     client.release();

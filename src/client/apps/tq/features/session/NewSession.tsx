@@ -156,6 +156,15 @@ export const NewSession: React.FC = () => {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
 
+  // Processing state for upload/transcription feedback
+  const [isProcessingAudio, setIsProcessingAudio] = useState(false)
+  const [processingMessage, setProcessingMessage] = useState('')
+
+  // MediaRecorder refs for actual audio recording
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+  const audioStreamRef = useRef<MediaStream | null>(null)
+
   // Audio upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false)
 
@@ -328,6 +337,23 @@ export const NewSession: React.FC = () => {
 
     return () => clearInterval(interval)
   }, [isTranscribing, isPaused])
+
+  // Cleanup on component unmount - stop recording and release microphone
+  useEffect(() => {
+    return () => {
+      // Stop MediaRecorder if active
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop()
+      }
+
+      // Stop all audio tracks
+      if (audioStreamRef.current) {
+        audioStreamRef.current.getTracks().forEach(track => track.stop())
+      }
+
+      console.log('🧹 [Recording] Cleanup completed on unmount')
+    }
+  }, [])
 
   // Handlers (mocked for now)
   const handleStatusChange = async (newStatus: 'draft' | 'active' | 'completed') => {
@@ -686,20 +712,16 @@ export const NewSession: React.FC = () => {
 
   // Handle transcription completion callback from the modal
   const handleTranscriptionComplete = useCallback((transcript: string, transcriptionId: string) => {
-    console.log('Transcription completed with ID:', transcriptionId)
-    console.log('Transcription text:', transcript)
+    console.log('✅ [Transcription] Completed with ID:', transcriptionId)
+    console.log('📝 [Transcription] Text length:', transcript.length, 'characters')
 
     // Update the transcription field with the result
     setTranscription(transcript)
 
-    // Show success feedback
-    publishFeedback({
-      kind: 'success',
-      code: 'TRANSCRIPTION_COMPLETED',
-      title: 'Transcription Complete',
-      message: 'Audio file has been transcribed successfully.',
-      path: '/tq/new-session'
-    })
+    // Store transcription ID for session creation
+    setCreatedTranscriptionId(transcriptionId)
+
+    // Success feedback is handled automatically by HTTP interceptor via TRANSCRIPTION_COMPLETED meta.code
   }, [])
 
   // New handlers for simplified UI
@@ -767,30 +789,214 @@ export const NewSession: React.FC = () => {
   }
 
 
-  const toggleTranscribing = () => {
+  const toggleTranscribing = async () => {
     if (!isTranscribing) {
-      // Start transcribing
-      setIsTranscribing(true)
-      setIsPaused(false)
-      timer.start()
-      if (session?.status === 'draft') {
-        handleStatusChange('active')
+      // Start recording
+      try {
+        console.log('🎤 [Recording] Starting audio capture...')
+
+        // Get user media (microphone access)
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: selectedDevice !== 'default' ? { exact: selectedDevice } : undefined,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        })
+
+        audioStreamRef.current = stream
+        audioChunksRef.current = []
+
+        // Create MediaRecorder with WEBM format (works with Deepgram)
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm'
+        })
+
+        mediaRecorderRef.current = mediaRecorder
+
+        // Collect audio data chunks
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data)
+            console.log('📦 [Recording] Chunk received:', event.data.size, 'bytes')
+          }
+        }
+
+        // Start recording
+        mediaRecorder.start(1000) // Collect chunks every 1 second
+
+        setIsTranscribing(true)
+        setIsPaused(false)
+        timer.start()
+
+        console.log('✅ [Recording] Started successfully')
+
+        if (session?.status === 'draft') {
+          handleStatusChange('active')
+        }
+
+      } catch (error) {
+        console.error('❌ [Recording] Failed to start:', error)
+        publishFeedback({
+          kind: 'error',
+          code: 'RECORDING_FAILED',
+          message: 'Failed to access microphone. Please check permissions.',
+          path: '/tq/new-session'
+        })
       }
     } else if (!isPaused) {
-      // Pause transcribing
-      setIsPaused(true)
-      timer.pause()
+      // Pause recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.pause()
+        setIsPaused(true)
+        timer.pause()
+        console.log('⏸️ [Recording] Paused')
+      }
     } else {
-      // Resume transcribing
-      setIsPaused(false)
-      timer.start()
+      // Resume recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
+        mediaRecorderRef.current.resume()
+        setIsPaused(false)
+        timer.start()
+        console.log('▶️ [Recording] Resumed')
+      }
     }
   }
 
-  const stopTranscribing = () => {
-    setIsTranscribing(false)
-    setIsPaused(false)
-    timer.pause()
+  const stopTranscribing = async () => {
+    if (!mediaRecorderRef.current) {
+      console.warn('⚠️ [Recording] No active recording to stop')
+      setIsTranscribing(false)
+      setIsPaused(false)
+      timer.pause()
+      return
+    }
+
+    return new Promise<void>((resolve) => {
+      const mediaRecorder = mediaRecorderRef.current!
+
+      // Handle recording stop event
+      mediaRecorder.onstop = async () => {
+        console.log('🛑 [Recording] Stopped, processing audio...')
+
+        // Stop all audio tracks
+        if (audioStreamRef.current) {
+          audioStreamRef.current.getTracks().forEach(track => track.stop())
+          audioStreamRef.current = null
+        }
+
+        // Create audio blob from chunks
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioSizeKB = (audioBlob.size / 1024).toFixed(2)
+        const durationSeconds = timer.time
+        const durationMin = Math.floor(durationSeconds / 60)
+        const durationSec = durationSeconds % 60
+
+        console.log('📊 [Recording] Audio created:', {
+          size: `${audioSizeKB} KB`,
+          duration: `${durationMin}:${durationSec.toString().padStart(2, '0')}`,
+          chunks: audioChunksRef.current.length
+        })
+
+        // Validate minimum duration (1 minute = 60 seconds)
+        if (durationSeconds < 60) {
+          const recordingDuration = `${durationMin}:${durationSec.toString().padStart(2, '0')}`
+          console.warn('⚠️ [Recording] Audio too short:', durationSeconds, 'seconds')
+          publishFeedback({
+            kind: 'error',
+            code: 'RECORDING_TOO_SHORT',
+            message: t('sessions.recording.too_short', { duration: recordingDuration }),
+            path: '/tq/new-session'
+          })
+
+          // Reset UI state
+          setIsTranscribing(false)
+          setIsPaused(false)
+          timer.reset()
+
+          // Clear refs
+          mediaRecorderRef.current = null
+          audioChunksRef.current = []
+
+          resolve()
+          return
+        }
+
+        // Upload audio file and create transcription
+        try {
+          setIsProcessingAudio(true)
+          setProcessingMessage(t('sessions.recording.preparing'))
+
+          const fileName = `recording-${Date.now()}.webm`
+          const audioFile = new File([audioBlob], fileName, { type: 'audio/webm' })
+
+          console.log('📤 [Recording] Uploading and transcribing audio...')
+
+          // Use processAudio method which handles: upload → transcribe → poll for completion
+          const result = await transcriptionService.processAudio(audioFile, {
+            onUploadComplete: (transcriptionId) => {
+              console.log('📤 [Recording] Audio uploaded, transcription ID:', transcriptionId)
+              setProcessingMessage(t('sessions.recording.uploaded'))
+            },
+            onTranscriptionStarted: (transcriptionId) => {
+              console.log('🔄 [Recording] Transcription started:', transcriptionId)
+              setProcessingMessage(t('sessions.recording.transcribing'))
+            },
+            onProgress: (status) => {
+              console.log('⏳ [Recording] Transcription status:', status.status)
+              const statusMessages: Record<string, string> = {
+                'uploading': t('sessions.recording.uploading'),
+                'uploaded': t('sessions.recording.uploaded'),
+                'processing': t('sessions.recording.processing'),
+                'completed': t('sessions.recording.completed')
+              }
+              setProcessingMessage(statusMessages[status.status] || t('sessions.recording.processing'))
+            }
+          })
+
+          console.log('✅ [Recording] Transcription completed:', result.transcriptionId)
+
+          setProcessingMessage(t('sessions.recording.completed'))
+
+          // Update UI with transcription result
+          setTranscription(result.transcript || '')
+          setCreatedTranscriptionId(result.transcriptionId)
+
+          // Success feedback is automatic via HTTP interceptor (TRANSCRIPTION_COMPLETED)
+
+        } catch (error) {
+          console.error('❌ [Recording] Failed to process audio:', error)
+          publishFeedback({
+            kind: 'error',
+            code: 'TRANSCRIPTION_UPLOAD_FAILED',
+            message: error instanceof Error ? error.message : 'Failed to process audio file. Please try again.',
+            path: '/tq/new-session'
+          })
+        } finally {
+          // Reset UI state
+          setIsTranscribing(false)
+          setIsPaused(false)
+          setIsProcessingAudio(false)
+          setProcessingMessage('')
+          timer.pause()
+
+          // Clear refs
+          mediaRecorderRef.current = null
+          audioChunksRef.current = []
+
+          resolve()
+        }
+      }
+
+      // Stop the recorder
+      if (mediaRecorder.state === 'recording' || mediaRecorder.state === 'paused') {
+        mediaRecorder.stop()
+      } else {
+        console.warn('⚠️ [Recording] MediaRecorder not in recordable state:', mediaRecorder.state)
+        resolve()
+      }
+    })
   }
 
   const getStatusColor = (status: string) => {
@@ -1167,6 +1373,29 @@ export const NewSession: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6"> {/* Added horizontal and bottom padding to match header */}
+          {/* Processing feedback - show when uploading/transcribing */}
+          {isProcessingAudio && (
+            <Alert className="mb-4" style={{
+              borderColor: 'var(--brand-tertiary)',
+              backgroundColor: 'var(--brand-tertiary-bg)'
+            }}>
+              <div className="flex items-center gap-3">
+                <div
+                  className="animate-spin rounded-full h-5 w-5 border-b-2"
+                  style={{ borderBottomColor: 'var(--brand-tertiary)' }}
+                />
+                <div>
+                  <p className="font-semibold" style={{ color: 'var(--brand-primary)' }}>
+                    {processingMessage}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {t('sessions.recording.wait_message')}
+                  </p>
+                </div>
+              </div>
+            </Alert>
+          )}
+
           <Textarea
             placeholder={t('sessions.placeholders.transcription')}
             value={transcription}

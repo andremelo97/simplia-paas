@@ -48,6 +48,20 @@ async function cleanupOldAudioFiles() {
       const schema = tenantRow.schema_name;
 
       try {
+        // Check if transcription table exists (skip schemas without TQ app)
+        const tableCheckQuery = `
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables
+            WHERE table_schema = $1
+            AND table_name = 'transcription'
+          )
+        `;
+        const tableCheck = await database.query(tableCheckQuery, [schema]);
+
+        if (!tableCheck.rows[0].exists) {
+          continue; // Skip schemas without TQ app provisioned
+        }
+
         // Find transcriptions with audio older than 24 hours in this tenant
         const query = `
           SELECT
@@ -83,18 +97,20 @@ async function cleanupOldAudioFiles() {
               `, [row.id]);
 
               totalDeleted++;
-              console.log(`[Cron] ✅ Deleted audio for transcription ${row.id} (${schema})`);
+              // Reduce logging to avoid rate limits
             } else {
               totalFailed++;
-              console.error(`[Cron] ❌ Failed to delete audio for transcription ${row.id} (${schema})`);
             }
           } catch (error) {
             totalFailed++;
-            console.error(`[Cron] ❌ Error processing transcription ${row.id} (${schema}):`, error);
+            console.error(`[Cron] Error deleting audio in ${schema}:`, error.message);
           }
         }
       } catch (error) {
-        console.error(`[Cron] ❌ Error processing schema ${schema}:`, error);
+        // Only log if it's not a "table doesn't exist" error
+        if (error.code !== '42P01') {
+          console.error(`[Cron] Error processing schema ${schema}:`, error.message);
+        }
       }
     }
 

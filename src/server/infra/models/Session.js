@@ -31,7 +31,9 @@ class Session {
     if (data.transcription_text !== undefined) {
       this.transcription = {
         text: data.transcription_text,
-        confidence: data.transcription_confidence
+        confidence: data.transcription_confidence,
+        audio_url: data.transcription_audio_url,
+        audio_deleted_at: data.transcription_audio_deleted_at
       };
     }
   }
@@ -49,7 +51,7 @@ class Session {
     }
 
     // Always include transcription data if available
-    query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence`;
+    query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence, t.audio_url as transcription_audio_url, t.audio_deleted_at as transcription_audio_deleted_at`;
 
     query += ` FROM ${schema}.session s`;
 
@@ -86,7 +88,7 @@ class Session {
     }
 
     // Always include transcription data if available
-    query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence`;
+    query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence, t.audio_url as transcription_audio_url, t.audio_deleted_at as transcription_audio_deleted_at`;
 
     query += ` FROM ${schema}.session s`;
 

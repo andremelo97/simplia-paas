@@ -277,13 +277,8 @@ export const EditSession: React.FC = () => {
   const hasTranscription = Boolean(transcription && transcription.trim().length > 0)
 
   // Check if audio is available for download
-  // Audio is available if transcription exists and has audio_url (not deleted)
-  const hasAudioAvailable = Boolean(
-    session.transcription_id &&
-    // Audio URL would be loaded by backend when includeTranscription=true
-    // For now, we'll try the download and let the backend return 404/410 if not available
-    hasTranscription
-  )
+  // Only show download button if session has transcription_id (audio was uploaded)
+  const hasAudioAvailable = Boolean(session.transcription_id)
 
   return (
     <div className="space-y-6">
@@ -295,18 +290,23 @@ export const EditSession: React.FC = () => {
           </p>
         </div>
 
-        {hasTranscription && (
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
+          {/* Download Audio Button - Only show if session has audio upload */}
+          {hasAudioAvailable && (
             <Button
               type="button"
               variant="tertiary"
               onClick={handleDownloadAudio}
-              disabled={isDownloadingAudio || !hasAudioAvailable}
+              disabled={isDownloadingAudio}
               isLoading={isDownloadingAudio}
             >
               <Download className="w-4 h-4 mr-2" />
               {isDownloadingAudio ? t('sessions.downloadingAudio') : t('sessions.downloadAudio')}
             </Button>
+          )}
+
+          {/* Create Documents Button - Show if has any transcription text */}
+          {hasTranscription && (
             <Button
               variant="primary"
               onClick={() => setShowTemplateModal(true)}
@@ -315,8 +315,8 @@ export const EditSession: React.FC = () => {
               <FileText className="w-4 h-4 mr-2" />
               {t('sessions.create_documents')}
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>

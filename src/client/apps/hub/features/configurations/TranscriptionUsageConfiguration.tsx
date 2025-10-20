@@ -1,0 +1,396 @@
+import React, { useState, useEffect } from 'react'
+import { Clock, TrendingUp, Settings, AlertCircle } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Button, Input, Card, Label, Progress, Alert, Checkbox } from '@client/common/ui'
+import { transcriptionUsageService } from '../../services/transcriptionUsageService'
+
+interface CurrentUsage {
+  month: string
+  minutesUsed: number
+  limit: number
+  remaining: number
+  overage: number
+  overageAllowed: boolean
+  percentUsed: number
+}
+
+interface UsageDataPoint {
+  month: string
+  minutesUsed: number
+  limit: number
+  overage: number
+}
+
+interface UsageData {
+  current: CurrentUsage
+  history: UsageDataPoint[]
+  plan: {
+    slug: string
+    name: string
+    allowsCustomLimits: boolean
+    allowsOverage: boolean
+  }
+  config?: {
+    customMonthlyLimit: number | null
+    overageAllowed: boolean
+  }
+}
+
+const BASIC_LIMIT = 2400 // Minimum allowed limit
+
+export const TranscriptionUsageConfiguration: React.FC = () => {
+  const { t } = useTranslation('hub')
+  const [usage, setUsage] = useState<UsageData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [customLimit, setCustomLimit] = useState<number>(BASIC_LIMIT)
+  const [overageAllowed, setOverageAllowed] = useState<boolean>(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  // Original values for comparison
+  const [originalLimit, setOriginalLimit] = useState<number>(BASIC_LIMIT)
+  const [originalOverage, setOriginalOverage] = useState<boolean>(false)
+
+  useEffect(() => {
+    loadUsage()
+  }, [])
+
+  const loadUsage = async () => {
+    try {
+      setLoading(true)
+      const usageData = await transcriptionUsageService.getUsage()
+
+      if (!usageData?.current || !usageData?.plan) {
+        throw new Error('Missing required fields in usage data')
+      }
+
+      setUsage(usageData)
+
+      // Initialize custom limit from config
+      const initLimit = usageData.config?.customMonthlyLimit || usageData.current.limit
+      setCustomLimit(initLimit)
+      setOriginalLimit(initLimit)
+
+      // Initialize overage allowed from config
+      const initOverage = usageData.config?.overageAllowed || false
+      setOverageAllowed(initOverage)
+      setOriginalOverage(initOverage)
+    } catch (error) {
+      console.error('Failed to load transcription usage:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSave = async () => {
+    if (!usage) return
+
+    // Validate custom limit if it changed
+    const limitChanged = customLimit !== originalLimit
+    const overageChanged = overageAllowed !== originalOverage
+
+    if (limitChanged && customLimit < BASIC_LIMIT) {
+      setValidationError(t('transcription_usage.validation_min_limit', { limit: BASIC_LIMIT }))
+      return
+    }
+
+    // Build update payload with only changed fields
+    const updates: { customMonthlyLimit?: number; overageAllowed?: boolean } = {}
+
+    if (limitChanged && usage.plan.allowsCustomLimits) {
+      updates.customMonthlyLimit = customLimit
+    }
+
+    if (overageChanged && usage.plan.allowsOverage) {
+      updates.overageAllowed = overageAllowed
+    }
+
+    // Nothing to save
+    if (Object.keys(updates).length === 0) {
+      return
+    }
+
+    try {
+      setSaving(true)
+      setValidationError(null)
+      await transcriptionUsageService.updateConfig(updates)
+      await loadUsage() // Reload to get updated data
+    } catch (error) {
+      console.error('Failed to update configuration:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const formatMinutes = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    return `${hours}h ${mins}m`
+  }
+
+  const formatMonth = (monthStr: string): string => {
+    const [year, month] = monthStr.split('-')
+    const date = new Date(parseInt(year), parseInt(month) - 1)
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+  }
+
+  if (loading) {
+    return (
+      <div className="p-8">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700">
+          {t('transcription_usage.loading')}
+        </div>
+      </div>
+    )
+  }
+
+  if (!usage) {
+    return (
+      <div className="p-8">
+        <Alert variant="error">{t('transcription_usage.error_loading')}</Alert>
+      </div>
+    )
+  }
+
+  const canCustomizeLimits = usage.plan.allowsCustomLimits
+  const canEnableOverage = usage.plan.allowsOverage
+  const hasAnyPremiumFeature = canCustomizeLimits || canEnableOverage
+  const isFullVIP = canCustomizeLimits && canEnableOverage
+  const hasOverage = usage.current.overage > 0
+
+  // Check if anything changed
+  const limitChanged = customLimit !== originalLimit
+  const overageChanged = overageAllowed !== originalOverage
+  const hasChanges = limitChanged || overageChanged
+
+  return (
+    <div className="p-8 space-y-6">
+      {/* Header */}
+      <div>
+        <div className="flex items-center gap-3 mb-2">
+          <Clock className="h-6 w-6 text-[#B725B7]" />
+          <h1 className="text-2xl font-bold text-gray-900">{t('transcription_usage.title')}</h1>
+          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#B725B7] text-white">
+            TQ
+          </span>
+        </div>
+        <p className="text-gray-600">
+          {t('transcription_usage.subtitle')}
+        </p>
+      </div>
+
+      {/* Plan Badge */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-600">{t('transcription_usage.current_plan')}</span>
+        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+          isFullVIP
+            ? 'bg-pink-100 text-pink-700'
+            : 'bg-gray-100 text-gray-700'
+        }`}>
+          {usage.plan.name}
+        </span>
+      </div>
+
+      {/* Current Month Usage */}
+      <Card className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="h-5 w-5 text-[#B725B7]" />
+          <h2 className="text-lg font-semibold text-gray-900">
+            {t('transcription_usage.current_month')} ({formatMonth(usage.current.month)})
+          </h2>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-gray-700">
+              {formatMinutes(usage.current.minutesUsed)} {t('transcription_usage.of')} {formatMinutes(usage.current.limit)} {t('transcription_usage.used')}
+            </span>
+            <span className="text-sm font-medium text-gray-700">
+              {usage.current.percentUsed.toFixed(1)}%
+            </span>
+          </div>
+          <Progress
+            value={usage.current.percentUsed}
+            className="h-3"
+          />
+          {usage.current.remaining > 0 ? (
+            <p className="text-sm text-gray-600 mt-2">
+              {formatMinutes(usage.current.remaining)} {t('transcription_usage.remaining').toLowerCase()}
+            </p>
+          ) : hasOverage ? (
+            <p className="text-sm text-red-600 mt-2">
+              ⚠️ {formatMinutes(usage.current.overage)} {t('transcription_usage.overage').toLowerCase()}
+              {!usage.current.overageAllowed && ` (${t('transcription_usage.vip_only').toLowerCase()})`}
+            </p>
+          ) : null}
+        </div>
+
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.used')}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {usage.current.minutesUsed.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.limit')}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {usage.current.limit.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.remaining')}</div>
+            <div className={`text-2xl font-bold ${
+              usage.current.remaining > 0 ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {usage.current.remaining > 0 ? usage.current.remaining.toLocaleString() : '0'}
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Premium Features Configuration */}
+      {hasAnyPremiumFeature && (
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Settings className="h-5 w-5 text-[#B725B7]" />
+            <h2 className="text-lg font-semibold text-gray-900">{t('transcription_usage.custom_quota_settings')}</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            {t('transcription_usage.premium_description')}
+          </p>
+
+          {/* Custom Limit */}
+          {canCustomizeLimits && (
+            <div className={canEnableOverage ? 'mb-6' : ''}>
+              <Label htmlFor="customLimit">{t('transcription_usage.monthly_limit')}</Label>
+              <div className="flex gap-3 mt-2">
+                <Input
+                  id="customLimit"
+                  type="number"
+                  min={BASIC_LIMIT}
+                  value={customLimit}
+                  onChange={(e) => {
+                    setCustomLimit(parseInt(e.target.value))
+                    setValidationError(null)
+                  }}
+                  error={validationError || undefined}
+                  className="flex-1"
+                />
+              </div>
+              {validationError && (
+                <p className="text-sm text-red-600 mt-2">{validationError}</p>
+              )}
+              <p className="text-xs text-gray-500 mt-2">
+                {t('transcription_usage.minimum_limit', { limit: BASIC_LIMIT.toLocaleString() })}
+              </p>
+            </div>
+          )}
+
+          {/* Overage Control */}
+          {canEnableOverage && (
+            <div className={canCustomizeLimits ? 'border-t pt-6' : ''}>
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="overageAllowed"
+                  checked={overageAllowed}
+                  onChange={(e) => setOverageAllowed(e.target.checked)}
+                  disabled={saving}
+                />
+                <div className="flex-1">
+                  <Label htmlFor="overageAllowed" className="font-medium text-gray-900">
+                    {t('transcription_usage.allow_overage')}
+                  </Label>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {t('transcription_usage.overage_description')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Single Save Button */}
+          <div className="mt-6 flex justify-end">
+            <Button
+              variant="primary"
+              onClick={handleSave}
+              disabled={saving || !hasChanges}
+            >
+              {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Non-Premium Info - COM GRADIENTE */}
+      {!hasAnyPremiumFeature && (
+        <Card className="p-6 relative overflow-hidden border-transparent">
+          {/* Gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#B725B7] via-[#E91E63] to-[#B725B7] opacity-10"></div>
+
+          <div className="relative flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-[#E91E63] mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-1">{t('transcription_usage.upgrade_title')}</h3>
+              <p className="text-sm text-gray-700">
+                {t('transcription_usage.upgrade_description')}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Usage History */}
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('transcription_usage.usage_history')}</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.month')}</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.minutes_used')}</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.limit')}</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.overage')}</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.usage_percent')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {usage.history.map((record) => {
+                const usagePercent = (record.minutesUsed / record.limit) * 100
+                return (
+                  <tr key={record.month} className="border-b border-gray-100 hover:bg-gray-50">
+                    <td className="py-3 px-4 text-sm text-gray-900">{formatMonth(record.month)}</td>
+                    <td className="py-3 px-4 text-sm text-right text-gray-900">
+                      {record.minutesUsed.toLocaleString()}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-right text-gray-600">
+                      {record.limit.toLocaleString()}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-right">
+                      {record.overage > 0 ? (
+                        <span className="text-red-600">{record.overage.toLocaleString()}</span>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-sm text-right">
+                      <span className={
+                        usagePercent > 100 ? 'text-red-600 font-semibold' :
+                        usagePercent > 80 ? 'text-orange-600' :
+                        'text-gray-900'
+                      }>
+                        {usagePercent.toFixed(1)}%
+                      </span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  )
+}

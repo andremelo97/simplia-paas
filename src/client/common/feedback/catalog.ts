@@ -121,12 +121,36 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Pricing created successfully."
   },
   PRICING_UPDATED: {
-    title: "Pricing Updated", 
+    title: "Pricing Updated",
     message: "Pricing updated successfully."
   },
   PRICING_ENDED: {
     title: "Period Ended",
     message: "Pricing period ended successfully."
+  },
+
+  // Transcription Plans operations
+  TRANSCRIPTION_PLAN_CREATED: {
+    title: "Plan Created",
+    message: "Transcription plan created successfully."
+  },
+  TRANSCRIPTION_PLAN_UPDATED: {
+    title: "Plan Updated",
+    message: "Transcription plan updated successfully."
+  },
+  TRANSCRIPTION_PLAN_DELETED: {
+    title: "Plan Deactivated",
+    message: "Transcription plan deactivated successfully."
+  },
+  PLAN_IN_USE: {
+    title: "Cannot Deactivate",
+    message: "This plan is currently assigned to one or more tenants and cannot be deactivated."
+  },
+
+  // Tenant Transcription Configuration
+  TENANT_TRANSCRIPTION_CONFIG_UPDATED: {
+    title: "Configuration Updated",
+    message: "Transcription configuration updated successfully."
   },
 
   // Authentication operations

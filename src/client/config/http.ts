@@ -1,5 +1,5 @@
 import { AppError, createAppError, isAppError } from '../common/feedback/types'
-import { mapStatusToErrorCode, getErrorMessage } from '../common/feedback/catalog'
+import { mapStatusToErrorCode, getErrorMessage, FEEDBACK_CATALOG } from '../common/feedback/catalog'
 import { publishFeedback, resolveFeedbackMessage } from '../common/feedback'
 import { shouldInjectTenantHeader, getCurrentTenantId } from '../common/auth/interceptor'
 
@@ -159,6 +159,23 @@ class HttpClient {
     const backendCode = errorData?.error?.code || errorData?.code
     const backendMessage = errorData?.error?.message || errorData?.message
     const fieldErrors = errorData?.error?.details || errorData?.details
+
+    // Auto-publish feedback for known error codes
+    if (backendCode && FEEDBACK_CATALOG[backendCode]) {
+      const feedbackMessage = resolveFeedbackMessage(
+        backendCode,
+        backendMessage,
+        { method: 'DELETE', path: endpoint }
+      )
+
+      publishFeedback({
+        kind: 'error',
+        code: backendCode,
+        title: feedbackMessage.title,
+        message: feedbackMessage.message || backendMessage,
+        path: endpoint
+      })
+    }
     
     // Handle expired token - automatic logout
     if (status === 401 && (

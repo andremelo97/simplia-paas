@@ -10,7 +10,7 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className, label, description, id, ...props }, ref) => {
     const checkboxId = id || React.useId()
-    
+
     return (
       <div className="flex items-start space-x-2">
         <div className="relative flex items-center">
@@ -21,9 +21,10 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             ref={ref}
             {...props}
           />
-          <div
+          <label
+            htmlFor={checkboxId}
             className={cn(
-              "flex h-4 w-4 shrink-0 rounded-sm border border-gray-300 transition-colors",
+              "flex h-4 w-4 shrink-0 rounded-sm border border-gray-300 transition-colors cursor-pointer",
               "focus-within:ring-2 focus-within:ring-[var(--brand-primary)] focus-within:ring-offset-1",
               "hover:border-gray-400",
               props.checked && "border-[var(--brand-primary)]",
@@ -37,13 +38,13 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
             {props.checked && (
               <Check className="h-3 w-3 text-white m-0.5" strokeWidth={3} />
             )}
-          </div>
+          </label>
         </div>
-        
+
         {(label || description) && (
           <div className="flex flex-col space-y-1">
             {label && (
-              <label 
+              <label
                 htmlFor={checkboxId}
                 className={cn(
                   "text-sm font-medium leading-none cursor-pointer",

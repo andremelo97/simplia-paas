@@ -19,6 +19,9 @@ const metricsRoutes = require('./api/internal/routes/metrics');
 const entitlementsRoutes = require('./api/internal/routes/entitlements');
 const brandingRoutes = require('./api/internal/routes/branding');
 const communicationRoutes = require('./api/internal/routes/communication');
+const transcriptionPlansRoutes = require('./api/internal/routes/transcription-plans');
+const tenantTranscriptionConfigRoutes = require('./api/internal/routes/tenant-transcription-config');
+const tenantTranscriptionUsageRoutes = require('./api/internal/routes/tenant-transcription-usage');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
@@ -104,13 +107,19 @@ internalRouter.use('/platform-auth', platformAuthRoutes);
 internalRouter.use('/auth', authRoutes);
 
 // Global platform routes (no tenant context needed)
-internalRouter.use('/applications', 
-  requireAuth, 
-  requirePlatformRole('internal_admin'), 
+internalRouter.use('/applications',
+  requireAuth,
+  requirePlatformRole('internal_admin'),
   applicationsRoutes
 );
 
 internalRouter.use('/tenants', tenantsRoutes);
+
+// Transcription Plans routes (platform-scoped, for internal admins only)
+internalRouter.use('/transcription-plans', transcriptionPlansRoutes);
+
+// Tenant Transcription Config routes (platform-scoped, for internal admins only)
+internalRouter.use('/tenants', tenantTranscriptionConfigRoutes);
 
 // Audit routes (platform-scoped, for internal admins only)
 internalRouter.use('/audit', auditRoutes);
@@ -121,6 +130,7 @@ internalRouter.use('/metrics', metricsRoutes);
 // Configurations routes (platform-scoped, uses authenticated user's tenant)
 internalRouter.use('/configurations/branding', brandingRoutes);
 internalRouter.use('/configurations/communication', communicationRoutes);
+internalRouter.use('/configurations', tenantTranscriptionUsageRoutes); // Transcription usage & config
 // Legacy path kept for backward compatibility
 internalRouter.use('/configurations/smtp', communicationRoutes);
 
@@ -154,6 +164,29 @@ tqApiRouter.use(tenantMiddleware, requireAuth, requireTranscriptionQuoteAccess()
 tqApiRouter.use(tqRoutes);
 
 app.use('/api/tq/v1', cors(internalCorsOptions), tqApiRouter);
+
+// ============================================================================
+// SWAGGER DOCUMENTATION SETUP
+// ============================================================================
+
+// Middleware to block docs access on non-internal domains
+const blockDocsOnNonInternalDomain = (req, res, next) => {
+  const hostname = req.hostname;
+
+  // Only allow docs on internal.simplialabs.co and localhost
+  const allowedHosts = ['internal.simplialabs.co', 'localhost', '127.0.0.1'];
+  const isAllowed = allowedHosts.some(host => hostname === host || hostname.startsWith(host));
+
+  if (!isAllowed) {
+    return res.status(404).json({
+      error: {
+        code: 404,
+        message: 'Documentation is not available on this domain'
+      }
+    });
+  }
+  next();
+};
 
 // Swagger Documentation (Protected by platform role)
 if (ENABLE_DOCS) {
@@ -190,6 +223,16 @@ if (ENABLE_DOCS) {
           name: 'Licenses',
           description: 'License management and application access control',
           'x-scope': 'mixed'
+        },
+        {
+          name: 'Transcription Plans',
+          description: 'Transcription quota plans management (Basic, VIP)',
+          'x-scope': 'global'
+        },
+        {
+          name: 'Transcription Configuration',
+          description: 'Tenant transcription quota configuration',
+          'x-scope': 'global'
         },
         {
           name: 'Audit',
@@ -245,7 +288,7 @@ if (ENABLE_DOCS) {
   });
 
   // Swagger UI setup with optional authentication
-  const swaggerSetup = swaggerUi.setup(swaggerSpec, {
+  const internalSwaggerSetup = swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Simplia Internal API Docs',
     swaggerOptions: {
@@ -257,15 +300,16 @@ if (ENABLE_DOCS) {
 
   if (DISABLE_DOCS_AUTH || process.env.NODE_ENV === 'development') {
     // No authentication required
-    app.use(DOCS_PATH, swaggerUi.serve, swaggerSetup);
+    app.use(DOCS_PATH, blockDocsOnNonInternalDomain, swaggerUi.serveFiles(swaggerSpec, {}), internalSwaggerSetup);
   } else {
     // Production: Require authentication and platform role
     app.use(
       DOCS_PATH,
+      blockDocsOnNonInternalDomain,
       requireAuth,
       requirePlatformRole('internal_admin'), // Only internal admins can access documentation
-      swaggerUi.serve,
-      swaggerSetup
+      swaggerUi.serveFiles(swaggerSpec, {}),
+      internalSwaggerSetup
     );
   }
 }
@@ -336,17 +380,27 @@ if (ENABLE_DOCS) {
 
   if (DISABLE_DOCS_AUTH || process.env.NODE_ENV === 'development') {
     // No authentication required
-    app.use('/docs/tq', swaggerUi.serve, tqSwaggerSetup);
+    app.use('/docs/tq', blockDocsOnNonInternalDomain, swaggerUi.serveFiles(tqSwaggerSpec, {}), tqSwaggerSetup);
   } else {
     // Production: Require authentication and platform role
     app.use(
       '/docs/tq',
+      blockDocsOnNonInternalDomain,
       requireAuth,
       requirePlatformRole('internal_admin'),
-      swaggerUi.serve,
+      swaggerUi.serveFiles(tqSwaggerSpec, {}),
       tqSwaggerSetup
     );
   }
+
+  // Documentation landing page
+  const pathModule = require('path');
+  const fs = require('fs');
+  const docsLandingPath = pathModule.join(__dirname, 'views', 'docs-landing.html');
+
+  app.get('/docs', blockDocsOnNonInternalDomain, (req, res) => {
+    res.sendFile(docsLandingPath);
+  });
 }
 
 // Global error handler

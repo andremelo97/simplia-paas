@@ -66,6 +66,9 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     const payload = req.body.toString('utf8');
 
     console.log('[Webhook] Received webhook');
+    console.log('[Webhook] Signature header:', signature ? `${signature.substring(0, 20)}...` : 'MISSING');
+    console.log('[Webhook] Payload length:', payload.length);
+    console.log('[Webhook] Has webhook secret:', !!deepgramService.webhookSecret);
 
     // Validate webhook signature
     if (!deepgramService.validateWebhookSignature(payload, signature)) {

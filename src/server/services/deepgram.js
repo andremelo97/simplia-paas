@@ -117,6 +117,7 @@ class DeepgramService {
 
     try {
       if (!signature || !payload) {
+        console.error('[Signature] Missing signature or payload');
         return false;
       }
 
@@ -129,15 +130,24 @@ class DeepgramService {
         .update(payload, 'utf8')
         .digest('hex');
 
+      console.log('[Signature] Received:', cleanSignature.substring(0, 20) + '...');
+      console.log('[Signature] Expected:', expectedSignature.substring(0, 20) + '...');
+      console.log('[Signature] Secret configured:', this.webhookSecret ? 'YES' : 'NO');
+      console.log('[Signature] Payload sample:', payload.substring(0, 100) + '...');
+
       // Compare signatures using crypto.timingSafeEqual to prevent timing attacks
       const sigBuffer = Buffer.from(cleanSignature, 'hex');
       const expectedBuffer = Buffer.from(expectedSignature, 'hex');
 
       if (sigBuffer.length !== expectedBuffer.length) {
+        console.error('[Signature] Length mismatch:', sigBuffer.length, 'vs', expectedBuffer.length);
         return false;
       }
 
-      return crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+      const isValid = crypto.timingSafeEqual(sigBuffer, expectedBuffer);
+      console.log('[Signature] Validation result:', isValid ? '✅ VALID' : '❌ INVALID');
+
+      return isValid;
 
     } catch (error) {
       console.error('Webhook signature validation error:', error);

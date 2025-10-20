@@ -173,6 +173,20 @@ class TenantTranscriptionUsage {
   }
 
   /**
+   * Get total count of all usage records for tenant
+   */
+  static async getTotalCount(tenantId) {
+    const query = `
+      SELECT COUNT(*) as count
+      FROM public.tenant_transcription_usage
+      WHERE tenant_id_fk = $1
+    `;
+
+    const result = await database.query(query, [tenantId]);
+    return parseInt(result.rows[0]?.count || 0);
+  }
+
+  /**
    * Calculate overage cost if tenant exceeded quota
    * Returns cost in USD for minutes over limit
    */

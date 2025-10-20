@@ -149,9 +149,10 @@ router.put('/:tenantId/transcription-config', async (req, res) => {
       });
     }
 
-    // Verify tenant exists
+    // Verify tenant exists and get timezone for language derivation
+    let tenant;
     try {
-      await Tenant.findById(parseInt(tenantId));
+      tenant = await Tenant.findById(parseInt(tenantId));
     } catch (error) {
       if (error instanceof TenantNotFoundError) {
         return res.status(404).json({
@@ -179,10 +180,14 @@ router.put('/:tenantId/transcription-config', async (req, res) => {
       throw error;
     }
 
+    // Derive language from tenant timezone (pt-BR for America/Sao_Paulo, en-US for others)
+    const defaultLanguage = tenant.timezone === 'America/Sao_Paulo' ? 'pt-BR' : 'en-US';
+
     // Upsert configuration (reset custom values when only planId is sent)
     const config = await TenantTranscriptionConfig.upsert(parseInt(tenantId), {
       planId: parseInt(planId),
       customMonthlyLimit: customMonthlyLimit ? parseInt(customMonthlyLimit) : null,
+      transcriptionLanguage: defaultLanguage, // Set language based on tenant timezone
       overageAllowed: overageAllowed === true  // Explicit boolean conversion (undefined becomes false)
     });
 

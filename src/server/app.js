@@ -55,7 +55,10 @@ if (ENABLE_HELMET) {
   }));
 }
 
-app.use(express.json());
+// Increase body size limit to 1GB for Deepgram webhooks with word_timestamps
+// Deepgram accepts audio files up to 1GB, which can generate very large webhook payloads
+// with extensive word-level timestamp data for long recordings (hours of audio)
+app.use(express.json({ limit: '1gb' }));
 
 // Health check (outside prefix for monitoring)
 app.get('/health', (req, res) => {

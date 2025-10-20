@@ -226,6 +226,7 @@ class TenantTranscriptionConfig {
       tenantId: this.tenantId,
       planId: this.planId,
       customMonthlyLimit: this.customMonthlyLimit,
+      transcriptionLanguage: this.transcriptionLanguage,
       overageAllowed: this.overageAllowed,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

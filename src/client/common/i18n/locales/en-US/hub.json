@@ -172,6 +172,8 @@
     "saving": "Saving...",
     "custom_quota_settings": "Custom Quota Settings",
     "premium_description": "Manage your premium transcription features.",
+    "transcription_language": "Transcription Language",
+    "language_description": "Select the default language that will be used to process your audio transcriptions. You can choose Portuguese (Brazil) or English (US).",
     "monthly_limit": "Monthly Limit (minutes)",
     "minimum_limit": "Minimum: {{limit}} minutes (40 hours)",
     "validation_min_limit": "Minimum limit is {{limit}} minutes (40 hours)",

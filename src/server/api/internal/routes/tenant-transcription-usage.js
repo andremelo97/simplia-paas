@@ -104,7 +104,8 @@ router.get('/transcription-usage', async (req, res) => {
     const totalTranscriptions = currentUsage.totalTranscriptions || 0;
     const remaining = Math.max(0, effectiveLimit - minutesUsed);
     const overage = Math.max(0, minutesUsed - effectiveLimit);
-    const percentUsed = effectiveLimit > 0 ? Math.round((minutesUsed / effectiveLimit) * 100) : 0;
+    // Use same precision as frontend (1 decimal place) to avoid inconsistency
+    const percentUsed = effectiveLimit > 0 ? parseFloat(((minutesUsed / effectiveLimit) * 100).toFixed(1)) : 0;
 
     // Get current month in YYYY-MM format
     const now = new Date();
@@ -140,6 +141,7 @@ router.get('/transcription-usage', async (req, res) => {
         },
         config: {
           customMonthlyLimit: config.customMonthlyLimit,
+          transcriptionLanguage: config.transcriptionLanguage,
           overageAllowed: config.overageAllowed || false
         }
       }
@@ -255,9 +257,8 @@ router.get('/transcription-usage/details', async (req, res) => {
     // Get detailed usage records with pagination
     const records = await TenantTranscriptionUsage.getAllUsage(tenantId, { limit, offset });
 
-    // Get total count for pagination (rough estimate based on current month)
-    const currentUsage = await TenantTranscriptionUsage.getCurrentMonthUsage(tenantId);
-    const total = currentUsage.totalTranscriptions || 0;
+    // Get total count for pagination (all records, not just current month)
+    const total = await TenantTranscriptionUsage.getTotalCount(tenantId);
 
     res.json({
       success: true,
@@ -316,7 +317,7 @@ router.get('/transcription-usage/details', async (req, res) => {
 router.put('/transcription-config', async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
-    const { customMonthlyLimit, overageAllowed } = req.body;
+    const { customMonthlyLimit, transcriptionLanguage, overageAllowed } = req.body;
 
     if (!tenantId) {
       return res.status(401).json({
@@ -328,11 +329,11 @@ router.put('/transcription-config', async (req, res) => {
     }
 
     // At least one field must be provided
-    if (customMonthlyLimit === undefined && overageAllowed === undefined) {
+    if (customMonthlyLimit === undefined && transcriptionLanguage === undefined && overageAllowed === undefined) {
       return res.status(400).json({
         error: {
           code: 400,
-          message: 'At least one field (customMonthlyLimit or overageAllowed) must be provided'
+          message: 'At least one field (customMonthlyLimit, transcriptionLanguage, or overageAllowed) must be provided'
         }
       });
     }
@@ -376,6 +377,18 @@ router.put('/transcription-config', async (req, res) => {
     const updates = {};
     if (customMonthlyLimit !== undefined) {
       updates.custom_monthly_limit = parseInt(customMonthlyLimit);
+    }
+    if (transcriptionLanguage !== undefined) {
+      // Validate language is pt-BR or en-US
+      if (transcriptionLanguage !== 'pt-BR' && transcriptionLanguage !== 'en-US') {
+        return res.status(400).json({
+          error: {
+            code: 400,
+            message: 'Transcription language must be either "pt-BR" or "en-US"'
+          }
+        });
+      }
+      updates.transcription_language = transcriptionLanguage;
     }
     if (overageAllowed !== undefined) {
       updates.overage_allowed = overageAllowed;

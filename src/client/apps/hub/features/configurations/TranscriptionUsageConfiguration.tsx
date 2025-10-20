@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Clock, TrendingUp, Settings, AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input, Card, Label, Progress, Alert, Checkbox } from '@client/common/ui'
+import { Button, Input, Card, Label, Progress, Alert, Checkbox, Select } from '@client/common/ui'
 import { transcriptionUsageService } from '../../services/transcriptionUsageService'
 
 interface CurrentUsage {
@@ -48,6 +48,7 @@ interface UsageData {
   }
   config?: {
     customMonthlyLimit: number | null
+    transcriptionLanguage: string | null
     overageAllowed: boolean
   }
 }
@@ -61,11 +62,13 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [customLimit, setCustomLimit] = useState<number>(BASIC_LIMIT)
+  const [transcriptionLanguage, setTranscriptionLanguage] = useState<string>('pt-BR')
   const [overageAllowed, setOverageAllowed] = useState<boolean>(false)
   const [validationError, setValidationError] = useState<string | null>(null)
 
   // Original values for comparison
   const [originalLimit, setOriginalLimit] = useState<number>(BASIC_LIMIT)
+  const [originalLanguage, setOriginalLanguage] = useState<string>('pt-BR')
   const [originalOverage, setOriginalOverage] = useState<boolean>(false)
 
   // Detailed usage records (granular) with pagination
@@ -101,6 +104,11 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       setCustomLimit(initLimit)
       setOriginalLimit(initLimit)
 
+      // Initialize transcription language from config
+      const initLanguage = usageData.config?.transcriptionLanguage || 'pt-BR'
+      setTranscriptionLanguage(initLanguage)
+      setOriginalLanguage(initLanguage)
+
       // Initialize overage allowed from config
       const initOverage = usageData.config?.overageAllowed || false
       setOverageAllowed(initOverage)
@@ -133,6 +141,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
 
     // Validate custom limit if it changed
     const limitChanged = customLimit !== originalLimit
+    const languageChanged = transcriptionLanguage !== originalLanguage
     const overageChanged = overageAllowed !== originalOverage
 
     if (limitChanged && customLimit < BASIC_LIMIT) {
@@ -141,10 +150,14 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
     }
 
     // Build update payload with only changed fields
-    const updates: { customMonthlyLimit?: number; overageAllowed?: boolean } = {}
+    const updates: { customMonthlyLimit?: number; transcriptionLanguage?: string; overageAllowed?: boolean } = {}
 
     if (limitChanged && usage.plan.allowsCustomLimits) {
       updates.customMonthlyLimit = customLimit
+    }
+
+    if (languageChanged) {
+      updates.transcriptionLanguage = transcriptionLanguage
     }
 
     if (overageChanged && usage.plan.allowsOverage) {
@@ -235,8 +248,9 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
 
   // Check if anything changed
   const limitChanged = customLimit !== originalLimit
+  const languageChanged = transcriptionLanguage !== originalLanguage
   const overageChanged = overageAllowed !== originalOverage
-  const hasChanges = limitChanged || overageChanged
+  const hasChanges = limitChanged || languageChanged || overageChanged
 
   return (
     <div className="p-8 space-y-6">
@@ -351,6 +365,23 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
           <p className="text-sm text-gray-600 mb-6">
             {t('transcription_usage.premium_description')}
           </p>
+
+          {/* Transcription Language (always visible) */}
+          <div className="mb-6">
+            <Label htmlFor="transcriptionLanguage">{t('transcription_usage.transcription_language')}</Label>
+            <Select
+              id="transcriptionLanguage"
+              value={transcriptionLanguage}
+              onChange={(e) => setTranscriptionLanguage(e.target.value)}
+              className="mt-2"
+            >
+              <option value="pt-BR">Português (Brasil)</option>
+              <option value="en-US">English (US)</option>
+            </Select>
+            <p className="text-xs text-gray-500 mt-2">
+              {t('transcription_usage.language_description')}
+            </p>
+          </div>
 
           {/* Custom Limit */}
           {canCustomizeLimits && (

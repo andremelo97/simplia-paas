@@ -172,6 +172,8 @@
     "saving": "Salvando...",
     "custom_quota_settings": "Configurações de Cota Personalizada",
     "premium_description": "Gerencie seus recursos premium de transcrição.",
+    "transcription_language": "Idioma da Transcrição",
+    "language_description": "Selecione o idioma padrão que será usado para processar suas transcrições de áudio. Você pode escolher Português (Brasil) ou Inglês (EUA).",
     "monthly_limit": "Limite Mensal (minutos)",
     "minimum_limit": "Mínimo: {{limit}} minutos (40 horas)",
     "validation_min_limit": "O limite mínimo é {{limit}} minutos (40 horas)",

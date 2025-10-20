@@ -171,10 +171,13 @@ class TranscriptionService {
     } = options
 
     let attempts = 0
+    console.log(`[transcriptionService] Starting polling for transcriptionId: ${transcriptionId} (max ${maxAttempts} attempts, ${intervalMs}ms interval)`)
 
     while (attempts < maxAttempts) {
       try {
+        console.log(`[transcriptionService] Polling attempt ${attempts + 1}/${maxAttempts}...`)
         const status = await this.getStatus(transcriptionId)
+        console.log(`[transcriptionService] Status response:`, status)
 
         // Call progress callback if provided
         if (onProgress) {
@@ -183,25 +186,30 @@ class TranscriptionService {
 
         // Check if transcription is complete
         if (status.status === TranscriptStatus.COMPLETED) {
+          console.log('[transcriptionService] ✅ Transcription COMPLETED!')
           return status
         }
 
         // Check if transcription failed
         if (status.status === TranscriptStatus.FAILED) {
+          console.error('[transcriptionService] ❌ Transcription FAILED')
           throw new Error('Transcription failed')
         }
 
         // Continue polling if still processing
         if (status.status === TranscriptStatus.PROCESSING) {
+          console.log(`[transcriptionService] Still PROCESSING, waiting ${intervalMs}ms...`)
           await this.sleep(intervalMs)
           attempts++
           continue
         }
 
         // Unexpected status
+        console.error(`[transcriptionService] ⚠️ Unexpected status: ${status.status}`)
         throw new Error(`Unexpected transcription status: ${status.status}`)
 
       } catch (error) {
+        console.error(`[transcriptionService] Polling error on attempt ${attempts + 1}:`, error)
         if (attempts === maxAttempts - 1) {
           throw error
         }
@@ -212,6 +220,7 @@ class TranscriptionService {
       }
     }
 
+    console.error(`[transcriptionService] ⏱️ Polling TIMED OUT after ${attempts} attempts`)
     throw new Error('Transcription polling timed out')
   }
 

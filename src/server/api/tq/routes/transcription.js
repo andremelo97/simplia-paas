@@ -549,21 +549,33 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     const webhookData = JSON.parse(payload);
     console.log('[Webhook] Webhook payload keys:', Object.keys(webhookData));
+    console.log('[Webhook] Full payload structure:', JSON.stringify(webhookData, null, 2).substring(0, 500) + '...');
 
     // Extract transcription metadata from callback
     // Deepgram sends callback_metadata at root level, not inside metadata
     let transcriptionId, tenantId;
     try {
+      console.log('[Webhook] Looking for callback_metadata...');
+      console.log('[Webhook] webhookData.callback_metadata =', webhookData.callback_metadata);
+      console.log('[Webhook] webhookData.metadata?.callback_metadata =', webhookData.metadata?.callback_metadata);
+
       const callbackMetadata = webhookData.callback_metadata || webhookData.metadata?.callback_metadata;
 
       if (!callbackMetadata) {
         console.error('[Webhook] callback_metadata not found in payload');
+        console.error('[Webhook] Available keys:', Object.keys(webhookData));
+        console.error('[Webhook] Metadata keys:', webhookData.metadata ? Object.keys(webhookData.metadata) : 'N/A');
         return res.status(400).json({ error: 'Missing callback_metadata in webhook payload' });
       }
+
+      console.log('[Webhook] Found callbackMetadata, type:', typeof callbackMetadata);
+      console.log('[Webhook] callbackMetadata value:', callbackMetadata);
 
       const metadata = typeof callbackMetadata === 'string'
         ? JSON.parse(callbackMetadata)
         : callbackMetadata;
+
+      console.log('[Webhook] Parsed metadata:', metadata);
 
       transcriptionId = metadata.transcriptionId;
       tenantId = metadata.tenantId;
@@ -571,6 +583,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       console.log('[Webhook] Extracted metadata:', { transcriptionId, tenantId });
     } catch (e) {
       console.error('[Webhook] Failed to parse callback metadata:', e);
+      console.error('[Webhook] Error stack:', e.stack);
       return res.status(400).json({ error: 'Invalid callback metadata' });
     }
 
@@ -583,12 +596,20 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     // Use tenant schema from middleware
     const tenantSchema = req.tenant?.schema || `tenant_${tenantId}`;
+    console.log(`[Webhook] Using schema: ${tenantSchema}`);
 
     // Process transcription results
+    console.log('[Webhook] Processing webhook payload...');
     const transcriptionData = deepgramService.processWebhookPayload(webhookData);
+    console.log('[Webhook] Processed data:', {
+      transcriptLength: transcriptionData.transcript?.length || 0,
+      confidenceScore: transcriptionData.confidence_score,
+      processingDuration: transcriptionData.processing_duration_seconds
+    });
 
     // Update transcription with results
-    await client.query(
+    console.log(`[Webhook] Updating transcription ${transcriptionId} to COMPLETED...`);
+    const updateResult = await client.query(
       `UPDATE ${tenantSchema}.transcription
        SET transcript = $1,
            confidence_score = $2,
@@ -596,7 +617,8 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
            processing_duration_seconds = $4,
            transcript_status = 'completed',
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $5`,
+       WHERE id = $5
+       RETURNING id, transcript_status`,
       [
         transcriptionData.transcript,
         transcriptionData.confidence_score,
@@ -606,9 +628,15 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       ]
     );
 
-    await client.query('COMMIT');
+    console.log(`[Webhook] Update result: ${updateResult.rowCount} rows affected`);
+    if (updateResult.rows.length > 0) {
+      console.log(`[Webhook] ✅ Transcription ${updateResult.rows[0].id} updated to status: ${updateResult.rows[0].transcript_status}`);
+    }
 
-    console.log(`Transcription completed for transcription ${transcriptionId} (tenant: ${tenantId})`);
+    await client.query('COMMIT');
+    console.log('[Webhook] Transaction COMMITTED');
+
+    console.log(`[Webhook] 🎉 Transcription completed for transcription ${transcriptionId} (tenant: ${tenantId})`);
 
     // Register transcription usage for quota tracking (async, don't block response)
     // Extract audio duration from Deepgram metadata
@@ -707,12 +735,15 @@ router.get('/:transcriptionId/status', async (req, res) => {
     const { transcriptionId } = req.params;
     const tenantId = req.headers['x-tenant-id'];
 
+    console.log(`[GET Status] Request for transcriptionId: ${transcriptionId}, tenantId: ${tenantId}`);
+
     if (!tenantId) {
       return res.status(400).json({ error: 'x-tenant-id header is required' });
     }
 
     // Use tenant schema from middleware
     const tenantSchema = req.tenant?.schema || `tenant_${tenantId}`;
+    console.log(`[GET Status] Using schema: ${tenantSchema}`);
 
     // Get transcription data
     const result = await client.query(
@@ -731,13 +762,17 @@ router.get('/:transcriptionId/status', async (req, res) => {
       [transcriptionId]
     );
 
+    console.log(`[GET Status] Query returned ${result.rows.length} rows`);
+
     if (result.rows.length === 0) {
+      console.log(`[GET Status] ❌ Transcription NOT FOUND`);
       return res.status(404).json({ error: 'Transcription not found' });
     }
 
     const transcription = result.rows[0];
+    console.log(`[GET Status] Found transcription with status: ${transcription.transcript_status}`);
 
-    res.json({
+    const response = {
       transcriptionId: transcription.id,
       status: transcription.transcript_status,
       transcript: transcription.transcript || null,
@@ -747,7 +782,11 @@ router.get('/:transcriptionId/status', async (req, res) => {
       hasAudio: !!transcription.audio_url,
       createdAt: transcription.created_at,
       updatedAt: transcription.updated_at
-    });
+    };
+
+    console.log(`[GET Status] Returning response:`, { ...response, transcript: response.transcript ? '(truncated)' : null });
+
+    res.json(response);
 
   } catch (error) {
     console.error('Status check error:', error);

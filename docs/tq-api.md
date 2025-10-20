@@ -758,8 +758,8 @@ The TQ API integrates with Deepgram for high-quality medical transcription.
 ```bash
 # Environment Variables
 DEEPGRAM_API_KEY=your-deepgram-api-key
-DEEPGRAM_WEBHOOK_SECRET=webhook-secret-for-validation
-API_BASE_URL=http://localhost:3004  # For webhook callbacks
+# Webhook authentication via dg-token header (automatically sent by Deepgram)
+API_BASE_URL=http://localhost:3001  # For webhook callbacks
 
 # OpenAI Configuration for AI Agent
 OPENAI_API_KEY=your-openai-api-key
@@ -775,21 +775,22 @@ OPENAI_MODEL=gpt-4o-mini
 
 #### Webhook Processing
 
-**🔓 PUBLIC ENDPOINT** - No authentication or tenant middleware required.
+**🔓 PUBLIC ENDPOINT** - No JWT authentication or tenant middleware required.
 
 Deepgram delivers results via webhook callback. This endpoint is registered **before** tenant/auth middlewares because:
 - Deepgram is an external service that cannot send `x-tenant-id` headers
 - TenantId is extracted from `callback_metadata` in the payload
-- Authentication is handled via HMAC signature validation
+- Authentication is handled via **dg-token header** (automatically sent by Deepgram with API Key)
 
 **Implementation:**
 - File: `src/server/api/tq/routes/deepgram-webhook.js`
-- Registered in: `src/server/tq-api.js` (before authenticated routes)
+- Registered in: `src/server/app.js` (before authenticated routes)
 - Tenant resolution: Queries `public.tenants` table using `tenantId` from payload
+- Callback URL format: `https://api.simplialabs.co/api/tq/v1/webhook/deepgram`
 
 ```http
 POST /api/tq/v1/webhook/deepgram
-x-deepgram-signature: {hmac_signature}
+dg-token: {deepgram_api_key}
 Content-Type: application/json
 
 {
@@ -813,6 +814,11 @@ Content-Type: application/json
 
 **CRITICAL:** The `callback_metadata` is sent at **root level** of the payload, not inside `metadata` object.
 
+**Security:**
+- Deepgram automatically sends `dg-token` header with the API Key used for the transcription request
+- Our webhook endpoint validates the token matches our configured `DEEPGRAM_API_KEY`
+- Only ports 80, 443, 8080, and 8443 are permitted by Deepgram for callbacks
+
 #### Error Handling
 Common Deepgram errors and solutions:
 
@@ -820,7 +826,7 @@ Common Deepgram errors and solutions:
 |-------|-------|----------|
 | `REMOTE_CONTENT_ERROR` | Audio file not accessible | Check Supabase signed URL |
 | `Invalid callback URL` | Webhook URL unreachable | Use ngrok for dev or deploy publicly |
-| `400 Bad Request (Webhook)` | Tenant middleware blocking webhook | Webhook must be registered before auth middlewares |
+| `401 Unauthorized (Webhook)` | Invalid dg-token header | Verify DEEPGRAM_API_KEY is configured correctly |
 | `INVALID_MODEL` | Model not supported | Use supported model (nova-3) |
 | `FILE_TOO_LARGE` | File exceeds limits | Compress or split audio |
 
@@ -1588,7 +1594,7 @@ The quote edit page (`/quotes/:id/edit`) follows best practices:
 ## Production Considerations
 
 ### Security
-- **Webhook Validation**: HMAC signature verification for Deepgram callbacks (public endpoint, no JWT required)
+- **Webhook Validation**: dg-token header authentication for Deepgram callbacks (public endpoint, no JWT required)
 - **Webhook Isolation**: Webhook registered before auth middlewares to bypass tenant validation
 - **File Access**: Public URLs for external services (Deepgram requires permanent access)
 - **Tenant Isolation**: All data stored in tenant-specific schemas

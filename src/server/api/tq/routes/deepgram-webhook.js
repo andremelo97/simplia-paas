@@ -62,19 +62,24 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
   const client = await db.getClient();
 
   try {
-    const signature = req.headers['x-deepgram-signature'];
-    const payload = req.body.toString('utf8');
+    // Validate dg-token header (Deepgram API Key Identifier)
+    const dgToken = req.headers['dg-token'];
+    const expectedToken = process.env.DEEPGRAM_API_KEY;
 
-    console.log('[Webhook] Received webhook');
-    console.log('[Webhook] Signature header:', signature ? `${signature.substring(0, 20)}...` : 'MISSING');
-    console.log('[Webhook] Payload length:', payload.length);
-    console.log('[Webhook] Has webhook secret:', !!deepgramService.webhookSecret);
-
-    // Validate webhook signature
-    if (!deepgramService.validateWebhookSignature(payload, signature)) {
-      console.error('[Webhook] ❌ Invalid signature');
-      return res.status(401).json({ error: 'Invalid signature' });
+    if (!dgToken) {
+      console.error('[Webhook] ❌ Missing dg-token header');
+      return res.status(401).json({ error: 'Authentication required' });
     }
+
+    // Deepgram sends the API Key itself in dg-token header
+    // We validate it matches our configured API key
+    if (dgToken !== expectedToken) {
+      console.error('[Webhook] ❌ Invalid dg-token');
+      return res.status(401).json({ error: 'Invalid authentication' });
+    }
+
+    const payload = req.body.toString('utf8');
+    console.log('[Webhook] ✅ Authenticated via dg-token, processing webhook');
 
     const webhookData = JSON.parse(payload);
 

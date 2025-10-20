@@ -401,16 +401,16 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
       return res.status(400).json({ error: 'No audio file uploaded for this transcription' });
     }
 
-    // Build webhook callback URL - webhook should go to TQ API server
+    // Build webhook callback URL (Deepgram will automatically add dg-token header)
     const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
     const webhookUrl = `${apiBaseUrl}/api/tq/v1/webhook/deepgram`;
-
-    console.log(`[Transcription] Starting transcription with webhook URL: ${webhookUrl}`);
 
     // Validate webhook URL (must be HTTPS in production, HTTP only for localhost)
     if (!apiBaseUrl.startsWith('http://localhost') && !apiBaseUrl.startsWith('https://')) {
       throw new Error(`Invalid API_BASE_URL: ${apiBaseUrl}. Must use HTTPS in production or http://localhost for development.`);
     }
+
+    console.log(`[Transcription] Starting transcription with webhook URL: ${webhookUrl}`);
 
     // Determine language for transcription
     // Priority: 1) tenant config, 2) tenant locale, 3) default (pt-BR)

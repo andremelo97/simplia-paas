@@ -28,15 +28,10 @@ try {
 class DeepgramService {
   constructor() {
     this.apiKey = process.env.DEEPGRAM_API_KEY;
-    this.webhookSecret = process.env.DEEPGRAM_WEBHOOK_SECRET;
     this.baseUrl = 'https://api.deepgram.com/v1';
 
     if (!this.apiKey) {
       console.warn('DEEPGRAM_API_KEY environment variable not found. Deepgram features will be disabled.');
-    }
-
-    if (!this.webhookSecret) {
-      console.warn('DEEPGRAM_WEBHOOK_SECRET environment variable not found. Webhook validation will be disabled.');
     }
   }
 
@@ -105,54 +100,14 @@ class DeepgramService {
   /**
    * Validate webhook signature using HMAC-SHA256
    *
+   * @deprecated This method is no longer used. Deepgram webhooks use Basic Auth instead.
    * @param {string} payload - Raw webhook payload
    * @param {string} signature - Signature from X-Deepgram-Signature header
    * @returns {boolean} True if signature is valid
    */
   validateWebhookSignature(payload, signature) {
-    if (!this.webhookSecret) {
-      console.warn('Webhook signature validation skipped - no webhook secret configured');
-      return true; // Allow webhook processing when secret is not configured
-    }
-
-    try {
-      if (!signature || !payload) {
-        console.error('[Signature] Missing signature or payload');
-        return false;
-      }
-
-      // Remove 'sha256=' prefix if present
-      const cleanSignature = signature.replace('sha256=', '');
-
-      // Calculate HMAC
-      const expectedSignature = crypto
-        .createHmac('sha256', this.webhookSecret)
-        .update(payload, 'utf8')
-        .digest('hex');
-
-      console.log('[Signature] Received:', cleanSignature.substring(0, 20) + '...');
-      console.log('[Signature] Expected:', expectedSignature.substring(0, 20) + '...');
-      console.log('[Signature] Secret configured:', this.webhookSecret ? 'YES' : 'NO');
-      console.log('[Signature] Payload sample:', payload.substring(0, 100) + '...');
-
-      // Compare signatures using crypto.timingSafeEqual to prevent timing attacks
-      const sigBuffer = Buffer.from(cleanSignature, 'hex');
-      const expectedBuffer = Buffer.from(expectedSignature, 'hex');
-
-      if (sigBuffer.length !== expectedBuffer.length) {
-        console.error('[Signature] Length mismatch:', sigBuffer.length, 'vs', expectedBuffer.length);
-        return false;
-      }
-
-      const isValid = crypto.timingSafeEqual(sigBuffer, expectedBuffer);
-      console.log('[Signature] Validation result:', isValid ? '✅ VALID' : '❌ INVALID');
-
-      return isValid;
-
-    } catch (error) {
-      console.error('Webhook signature validation error:', error);
-      return false;
-    }
+    console.warn('[Deprecated] validateWebhookSignature called - use Basic Auth instead');
+    return true;
   }
 
   /**

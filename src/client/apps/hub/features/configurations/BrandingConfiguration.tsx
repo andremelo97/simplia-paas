@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Upload, Palette, Video } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input, Card, Label } from '@client/common/ui'
+import { Button, Input, Card, Label, Alert, AlertDescription } from '@client/common/ui'
 import { brandingService, BrandingData } from '../../services/brandingService'
 import { ImageUploadModal } from '../../components/configurations/ImageUploadModal'
 import { VideoUploadModal } from '../../components/configurations/VideoUploadModal'
@@ -83,13 +83,18 @@ export const BrandingConfiguration: React.FC = () => {
     setBranding(prev => ({ ...prev, backgroundVideoUrl: videoUrl }))
   }
 
+  if (loading) {
+    return (
+      <div className="p-8">
+        <Alert>
+          <AlertDescription>{t('branding.loading')}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
   return (
     <div className="p-8 space-y-6">
-      {loading && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-700">
-          {t('branding.loading')}
-        </div>
-      )}
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">

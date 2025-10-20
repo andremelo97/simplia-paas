@@ -28,9 +28,9 @@
       "transcription_in_progress": "Transcrição em andamento, aguarde...",
       "estimated_time": "Tempo estimado: 1-2 minutos dependendo do tamanho do arquivo",
       "please_wait": "Por favor, aguarde enquanto enviamos seu arquivo de áudio",
-      "upload_complete": "Upload Completo!",
-      "transcription_complete": "Transcrição de áudio concluída com sucesso",
-      "success_message": "Arquivo de áudio enviado com sucesso. Você pode iniciar a transcrição agora.",
+      "upload_complete": "Transcrição Completa!",
+      "transcription_complete": "Seu áudio foi transcrito com sucesso",
+      "success_message": "A transcrição foi concluída e está pronta para uso.",
       "errors": {
         "invalid_type": "Tipo de arquivo inválido. Formatos suportados: {{formats}}",
         "file_too_large": "Arquivo muito grande. Tamanho máximo é {{maxSize}}MB",

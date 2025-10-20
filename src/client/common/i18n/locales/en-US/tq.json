@@ -28,9 +28,9 @@
       "transcription_in_progress": "Transcription in progress, please wait...",
       "estimated_time": "Estimated time: 1-2 minutes depending on file size",
       "please_wait": "Please wait while we upload your audio file",
-      "upload_complete": "Upload Complete!",
-      "transcription_complete": "Audio transcription completed successfully",
-      "success_message": "Audio file uploaded successfully. You can now start transcription.",
+      "upload_complete": "Transcription Complete!",
+      "transcription_complete": "Your audio has been successfully transcribed",
+      "success_message": "Transcription is complete and ready to use.",
       "errors": {
         "invalid_type": "Invalid file type. Supported formats: {{formats}}",
         "file_too_large": "File too large. Maximum size is {{maxSize}}MB",

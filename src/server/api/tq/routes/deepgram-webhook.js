@@ -167,6 +167,13 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     // Process transcription results
     const transcriptionData = deepgramService.processWebhookPayload(webhookData);
 
+    console.log(`[Webhook] Transcription data extracted:`, {
+      transcriptLength: transcriptionData.transcript?.length || 0,
+      transcriptPreview: transcriptionData.transcript?.substring(0, 100) || '(empty)',
+      confidenceScore: transcriptionData.confidence_score,
+      processingDuration: transcriptionData.processing_duration_seconds
+    });
+
     // Update transcription with results
     const updateResult = await client.query(
       `UPDATE ${tenantSchema}.transcription
@@ -177,7 +184,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
            transcript_status = 'completed',
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $5
-       RETURNING id, transcript_status`,
+       RETURNING id, transcript_status, LENGTH(transcript) as transcript_length`,
       [
         transcriptionData.transcript,
         transcriptionData.confidence_score,
@@ -187,7 +194,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       ]
     );
 
-    console.log(`[Webhook] ✅ Updated ${updateResult.rowCount} transcription(s)`);
+    console.log(`[Webhook] ✅ Updated ${updateResult.rowCount} transcription(s)`, updateResult.rows[0]);
 
     await client.query('COMMIT');
 

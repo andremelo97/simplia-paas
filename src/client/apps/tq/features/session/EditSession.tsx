@@ -13,7 +13,8 @@ import {
   Alert,
   AlertDescription,
   Select,
-  LinkToast
+  LinkToast,
+  Tooltip
 } from '@client/common/ui'
 import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
@@ -301,16 +302,18 @@ export const EditSession: React.FC = () => {
         <div className="flex items-center gap-3">
           {/* Download Audio Button - Only show if session has audio upload */}
           {hasAudioAvailable && (
-            <Button
-              type="button"
-              variant="tertiary"
-              onClick={handleDownloadAudio}
-              disabled={isDownloadingAudio}
-              isLoading={isDownloadingAudio}
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {isDownloadingAudio ? t('sessions.downloadingAudio') : t('sessions.downloadAudio')}
-            </Button>
+            <Tooltip content={t('sessions.audioDeletedAfter24h')} side="bottom">
+              <Button
+                type="button"
+                variant="tertiary"
+                onClick={handleDownloadAudio}
+                disabled={isDownloadingAudio}
+                isLoading={isDownloadingAudio}
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {isDownloadingAudio ? t('sessions.downloadingAudio') : t('sessions.downloadAudio')}
+              </Button>
+            </Tooltip>
           )}
 
           {/* Create Documents Button - Show if has any transcription text */}

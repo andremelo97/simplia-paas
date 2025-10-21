@@ -276,11 +276,11 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
           <div className="text-center space-y-4">
             <AlertCircle className="mx-auto h-12 w-12 text-blue-500" />
             <div>
-              <h3 className="text-lg font-medium text-gray-900">{t('sessions.transcription.empty_warning_title')}</h3>
+              <h3 className="text-lg font-medium text-gray-900">{t('sessions.transcription_warnings.empty_warning_title')}</h3>
               <p
                 className="text-gray-600 mt-1 text-sm whitespace-pre-line"
                 dangerouslySetInnerHTML={{
-                  __html: t('sessions.transcription.empty_warning_message').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  __html: t('sessions.transcription_warnings.empty_warning_message').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 }}
               />
             </div>

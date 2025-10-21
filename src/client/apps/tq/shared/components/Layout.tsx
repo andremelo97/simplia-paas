@@ -11,7 +11,7 @@ export const Layout: React.FC = () => {
   const location = useLocation()
   
   // Configurations page needs full height without padding (like Hub)
-  const isConfigurationsPage = location.pathname === '/configurations'
+  const isConfigurationsPage = location.pathname.startsWith('/configurations')
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">

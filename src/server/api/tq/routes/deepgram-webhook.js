@@ -177,10 +177,10 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     console.log(`[Webhook] 📊 Confidence: ${transcriptionData.confidence_score}`);
     console.log(`[Webhook] ⏱️  Duration: ${transcriptionData.processing_duration_seconds}s`);
 
-    // Check if transcript is empty or too short (10 characters or less indicates failure)
+    // Check if transcript is empty or too short (40 characters or less indicates failure)
     const isTranscriptEmpty = !transcriptionData.transcript || transcriptionData.transcript.trim() === '';
     const transcriptLength = transcriptionData.transcript?.trim().length || 0;
-    const isTooShort = transcriptLength <= 10;
+    const isTooShort = transcriptLength <= 40;
 
     console.log(`[Webhook] 🔢 Transcript length: ${transcriptLength} characters`);
 

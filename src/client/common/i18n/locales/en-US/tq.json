@@ -831,5 +831,11 @@
       "failed_to_save": "Failed to save email template. Please try again.",
       "failed_to_reset": "Failed to reset email template. Please try again."
     }
+  },
+  "transcription": {
+    "quota_exceeded_title": "Transcription Quota Exceeded",
+    "quota_exceeded_message": "You have reached your monthly limit of {{limit}} minutes. Cannot start new transcription until next month. Contact your account manager to increase your limit.",
+    "quota_warning_title": "Warning: Quota Near Limit",
+    "quota_warning_message": "You have used {{used}} of {{limit}} minutes ({{percent}}% of your monthly quota). Consider managing your usage or increasing your limit."
   }
 }

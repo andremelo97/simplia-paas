@@ -192,6 +192,14 @@
       "title": "Configuration Updated",
       "message": "Transcription configuration updated successfully."
     },
+    "CUSTOM_LIMIT_BELOW_PLAN_MINIMUM": {
+      "title": "Invalid Limit",
+      "message": "Custom limit cannot be below your plan's minimum limit."
+    },
+    "TRANSCRIPTION_QUOTA_EXCEEDED": {
+      "title": "Quota Exceeded",
+      "message": "Monthly transcription quota exceeded. Transcription cannot be started."
+    },
     "TENANT_NAME_ALREADY_EXISTS": {
       "title": "Duplicate Tenant Name",
       "message": "A tenant with this name already exists. Please choose a different name."

@@ -208,6 +208,14 @@
       "title": "Configuração Atualizada",
       "message": "Configuração de transcrição atualizada com sucesso."
     },
+    "CUSTOM_LIMIT_BELOW_PLAN_MINIMUM": {
+      "title": "Limite Inválido",
+      "message": "O limite customizado não pode ser menor que o limite mínimo do seu plano."
+    },
+    "TRANSCRIPTION_QUOTA_EXCEEDED": {
+      "title": "Cota Excedida",
+      "message": "Cota mensal de transcrição excedida. Não é possível iniciar a transcrição."
+    },
     "TENANT_NAME_ALREADY_EXISTS": {
       "title": "Nome de Tenant Duplicado",
       "message": "Já existe um tenant com este nome. Por favor, escolha um nome diferente."

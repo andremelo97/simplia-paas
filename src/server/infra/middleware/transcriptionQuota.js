@@ -53,6 +53,11 @@ async function checkTranscriptionQuota(req, res, next) {
               limit: monthlyLimitMinutes,
               remaining: 0
             }
+          },
+          meta: {
+            code: 'TRANSCRIPTION_QUOTA_EXCEEDED',
+            used: currentUsage.totalMinutes,
+            limit: monthlyLimitMinutes
           }
         });
       }

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, Button, Input, Label, Textarea, Checkbox } from '@client/common/ui'
 import { transcriptionPlansService, CreateTranscriptionPlanInput } from '../../services/transcriptionPlans'
 
-const BASIC_LIMIT = 2400 // From TRANSCRIPTION_BASIC_MONTHLY_LIMIT
-
 // System standard: Nova-3 with language parameter (Monolingual pricing)
 const SYSTEM_STT_MODEL = 'nova-3'
 const SYSTEM_COST_PER_MINUTE = 0.0043
@@ -16,7 +14,7 @@ export const CreateTranscriptionPlan: React.FC = () => {
   const [formData, setFormData] = useState<CreateTranscriptionPlanInput>({
     slug: '',
     name: '',
-    monthlyMinutesLimit: BASIC_LIMIT,
+    monthlyMinutesLimit: 2400,
     allowsCustomLimits: false,
     allowsOverage: false,
     sttModel: SYSTEM_STT_MODEL,
@@ -59,10 +57,6 @@ export const CreateTranscriptionPlan: React.FC = () => {
       errors.slug = 'Slug is required (generated from name)'
     } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
       errors.slug = 'Slug must contain only lowercase letters, numbers, and hyphens'
-    }
-
-    if (formData.monthlyMinutesLimit < BASIC_LIMIT) {
-      errors.monthlyMinutesLimit = `Monthly limit cannot be below ${BASIC_LIMIT} minutes`
     }
 
     if (formData.costPerMinuteUsd <= 0) {
@@ -148,7 +142,7 @@ export const CreateTranscriptionPlan: React.FC = () => {
               <Input
                 id="monthlyMinutesLimit"
                 type="number"
-                min={BASIC_LIMIT}
+                min={1}
                 value={formData.monthlyMinutesLimit}
                 onChange={(e) =>
                   setFormData({ ...formData, monthlyMinutesLimit: parseInt(e.target.value) })
@@ -159,7 +153,7 @@ export const CreateTranscriptionPlan: React.FC = () => {
                 <p className="text-sm text-red-600">{validationErrors.monthlyMinutesLimit}</p>
               )}
               <p className="text-sm text-gray-500">
-                Default monthly limit (minimum {BASIC_LIMIT} minutes / 40 hours)
+                Monthly limit in minutes (e.g., 2400 = 40 hours)
               </p>
             </div>
 

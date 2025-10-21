@@ -831,5 +831,11 @@
       "copy_link_password": "Copiar link e senha",
       "item": "Ver item"
     }
+  },
+  "transcription": {
+    "quota_exceeded_title": "Cota de Transcrição Excedida",
+    "quota_exceeded_message": "Você atingiu seu limite mensal de {{limit}} minutos. Não é possível iniciar nova transcrição até o próximo mês. Entre em contato com seu gerente de conta para aumentar seu limite.",
+    "quota_warning_title": "Atenção: Cota Próxima do Limite",
+    "quota_warning_message": "Você usou {{used}} de {{limit}} minutos ({{percent}}% da sua cota mensal). Considere gerenciar seu uso ou aumentar seu limite."
   }
 }

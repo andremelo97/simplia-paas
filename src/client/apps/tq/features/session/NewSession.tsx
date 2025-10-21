@@ -26,6 +26,7 @@ import {
   Badge,
   Select,
   Alert,
+  AlertTitle,
   AlertDescription,
   DropdownMenu,
   DropdownMenuTrigger,
@@ -46,7 +47,7 @@ import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 import { AIAgentModal } from '../../components/ai-agent/AIAgentModal'
 import { useTranscription } from '../../hooks/useTranscription'
-import { transcriptionService } from '../../services/transcriptionService'
+import { transcriptionService, QuotaResponse } from '../../services/transcriptionService'
 
 // Hook para debounce
 function useDebouncedValue<T>(value: T, delay: number): T {
@@ -193,6 +194,10 @@ export const NewSession: React.FC = () => {
   const [showSearchResults, setShowSearchResults] = useState(false)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
+  // Quota state
+  const [quota, setQuota] = useState<QuotaResponse | null>(null)
+  const [isLoadingQuota, setIsLoadingQuota] = useState(true)
+
   // Dropdown is now handled by the DropdownMenu component
 
   // Simulate autosave without API calls (for now)
@@ -200,6 +205,24 @@ export const NewSession: React.FC = () => {
 
   // Debounced search query
   const debouncedSearchQuery = useDebouncedValue(searchQuery, 300)
+
+  // Load quota on mount
+  useEffect(() => {
+    const loadQuota = async () => {
+      try {
+        setIsLoadingQuota(true)
+        const quotaData = await transcriptionService.getQuota()
+        setQuota(quotaData)
+      } catch (error) {
+        console.error('[NewSession] Failed to load quota:', error)
+        // Don't show error feedback - just fail silently and don't block UI
+      } finally {
+        setIsLoadingQuota(false)
+      }
+    }
+
+    loadQuota()
+  }, [])
 
   // Handle transcription completion from hook
   useEffect(() => {
@@ -358,6 +381,11 @@ export const NewSession: React.FC = () => {
       }
     }
   }, [])
+
+  // Derived quota state
+  const isQuotaExceeded = quota !== null && quota.remaining <= 0 && !quota.overageAllowed
+  const isQuotaWarning = quota !== null && quota.percentUsed >= 80 && quota.percentUsed < 100
+  const shouldDisableTranscription = isQuotaExceeded
 
   // Handlers (mocked for now)
   const handleStatusChange = async (newStatus: 'draft' | 'active' | 'completed') => {
@@ -1089,6 +1117,7 @@ export const NewSession: React.FC = () => {
                 onClick={transcribeMode === 'start' ? toggleTranscribing : () => setShowUploadModal(true)}
                 variant="primary"
                 size="lg"
+                disabled={shouldDisableTranscription}
                 className="font-semibold rounded-r-none border-r-0 bg-transparent hover:bg-transparent shadow-none border-0 text-white"
               >
                 {transcribeMode === 'start' ? (
@@ -1172,6 +1201,35 @@ export const NewSession: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Quota Alerts */}
+      {!isLoadingQuota && isQuotaExceeded && (
+        <Alert variant="gradient">
+          <AlertCircle className="h-5 w-5 text-[#E91E63] mt-0.5" />
+          <div>
+            <AlertTitle>{t('transcription.quota_exceeded_title')}</AlertTitle>
+            <AlertDescription>
+              {t('transcription.quota_exceeded_message', { limit: quota?.limit })}
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
+
+      {!isLoadingQuota && isQuotaWarning && !isQuotaExceeded && (
+        <Alert variant="warning">
+          <AlertCircle className="h-5 w-5 text-[#EAB308] mt-0.5" />
+          <div>
+            <AlertTitle>{t('transcription.quota_warning_title')}</AlertTitle>
+            <AlertDescription>
+              {t('transcription.quota_warning_message', {
+                used: quota?.minutesUsed,
+                limit: quota?.limit,
+                percent: quota?.percentUsed
+              })}
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
 
       <div className="border-t border-gray-200" />
 

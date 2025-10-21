@@ -426,7 +426,7 @@ CREATE TABLE IF NOT EXISTS public.transcription_plans (
   id SERIAL PRIMARY KEY,
   slug VARCHAR(50) NOT NULL UNIQUE,
   name VARCHAR(100) NOT NULL,
-  monthly_minutes_limit INTEGER NOT NULL CHECK (monthly_minutes_limit >= 2400),
+  monthly_minutes_limit INTEGER NOT NULL,
   allows_custom_limits BOOLEAN NOT NULL,
   allows_overage BOOLEAN NOT NULL,
   stt_model VARCHAR(50) NOT NULL,
@@ -439,7 +439,7 @@ CREATE TABLE IF NOT EXISTS public.transcription_plans (
 
 COMMENT ON TABLE public.transcription_plans IS 'Available transcription quota plans';
 COMMENT ON COLUMN public.transcription_plans.slug IS 'Unique identifier for the plan (basic, vip)';
-COMMENT ON COLUMN public.transcription_plans.monthly_minutes_limit IS 'Default monthly limit in minutes for this plan (minimum 2400)';
+COMMENT ON COLUMN public.transcription_plans.monthly_minutes_limit IS 'Default monthly limit in minutes for this plan';
 COMMENT ON COLUMN public.transcription_plans.allows_custom_limits IS 'Whether users can customize their monthly limits in Hub';
 COMMENT ON COLUMN public.transcription_plans.allows_overage IS 'Whether users can enable overage (usage beyond limits) in Hub';
 COMMENT ON COLUMN public.transcription_plans.stt_model IS 'Deepgram STT model to use (nova-3, nova-2, etc.)';
@@ -450,7 +450,7 @@ CREATE TABLE IF NOT EXISTS public.tenant_transcription_config (
   id SERIAL PRIMARY KEY,
   tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   plan_id_fk INTEGER NOT NULL REFERENCES transcription_plans(id) ON DELETE RESTRICT,
-  custom_monthly_limit INTEGER NULL CHECK (custom_monthly_limit IS NULL OR custom_monthly_limit >= 2400),
+  custom_monthly_limit INTEGER NULL,
   transcription_language VARCHAR(10) NULL,
   overage_allowed BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,

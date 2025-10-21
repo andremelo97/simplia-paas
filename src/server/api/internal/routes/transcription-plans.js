@@ -161,8 +161,9 @@ router.get('/:id', async (req, res) => {
  *                 example: "VIP Plan"
  *               monthlyMinutesLimit:
  *                 type: integer
- *                 minimum: 2400
+ *                 minimum: 1
  *                 example: 2400
+ *                 description: "Monthly limit in minutes (no minimum enforced for testing)"
  *               allowsCustomLimits:
  *                 type: boolean
  *                 example: false
@@ -212,15 +213,6 @@ router.post('/', async (req, res) => {
         error: {
           code: 400,
           message: 'Missing required fields: slug, name, monthlyMinutesLimit'
-        }
-      });
-    }
-
-    if (monthlyMinutesLimit < 2400) {
-      return res.status(400).json({
-        error: {
-          code: 400,
-          message: 'Monthly limit cannot be below 2400 minutes'
         }
       });
     }
@@ -289,7 +281,8 @@ router.post('/', async (req, res) => {
  *                 type: string
  *               monthlyMinutesLimit:
  *                 type: integer
- *                 minimum: 2400
+ *                 minimum: 1
+ *                 description: "Monthly limit in minutes (no minimum enforced for testing)"
  *               allowsCustomLimits:
  *                 type: boolean
  *               allowsOverage:
@@ -331,16 +324,6 @@ router.put('/:id', async (req, res) => {
     }
     if (body.active !== undefined) updates.active = body.active;
     if (body.description !== undefined) updates.description = body.description;
-
-    // Validation
-    if (updates.monthly_minutes_limit !== undefined && updates.monthly_minutes_limit < 2400) {
-      return res.status(400).json({
-        error: {
-          code: 400,
-          message: 'Monthly limit cannot be below 2400 minutes'
-        }
-      });
-    }
 
     const plan = await TranscriptionPlan.findById(parseInt(id));
     await plan.update(updates);

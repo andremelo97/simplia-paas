@@ -290,7 +290,7 @@ router.get('/transcription-usage/details', async (req, res) => {
  *       **Scope:** Platform (User-scoped)
  *
  *       Allows VIP users to customize their monthly transcription limit.
- *       Limit must be >= 2400 minutes (TRANSCRIPTION_BASIC_MONTHLY_LIMIT).
+ *       Limit must be >= plan's monthly_minutes_limit.
  *       Basic plan users cannot customize limits.
  *     security:
  *       - bearerAuth: []
@@ -304,13 +304,12 @@ router.get('/transcription-usage/details', async (req, res) => {
  *             properties:
  *               customMonthlyLimit:
  *                 type: integer
- *                 minimum: 2400
- *                 description: Custom monthly limit in minutes (must be >= 2400)
+ *                 description: Custom monthly limit in minutes (must be >= plan's limit)
  *     responses:
  *       200:
  *         description: Configuration updated successfully
  *       400:
- *         description: Invalid input (limit below 2400 or plan doesn't allow customization)
+ *         description: Invalid input (limit below plan minimum or plan doesn't allow customization)
  *       403:
  *         description: Transcription not configured or not VIP plan
  */
@@ -371,6 +370,25 @@ router.put('/transcription-config', async (req, res) => {
           message: 'Your current plan does not allow overage. Please upgrade to a plan that supports overage.'
         }
       });
+    }
+
+    // Validate custom limit against plan's monthly_minutes_limit
+    if (customMonthlyLimit !== undefined) {
+      const planMinLimit = config.plan?.monthlyMinutesLimit || 2400;
+
+      if (parseInt(customMonthlyLimit) < planMinLimit) {
+        return res.status(400).json({
+          error: {
+            code: 'CUSTOM_LIMIT_BELOW_PLAN_MINIMUM',
+            message: `Custom limit (${customMonthlyLimit}) cannot be below plan's minimum limit of ${planMinLimit} minutes`
+          },
+          meta: {
+            code: 'CUSTOM_LIMIT_BELOW_PLAN_MINIMUM',
+            planMinLimit: planMinLimit,
+            providedLimit: customMonthlyLimit
+          }
+        });
+      }
     }
 
     // Build update object

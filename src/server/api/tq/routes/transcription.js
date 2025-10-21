@@ -19,6 +19,8 @@ const {
   LOCALE_TO_DEEPGRAM_LANGUAGE,
   DEFAULT_LANGUAGE
 } = require('../../../infra/constants/transcription');
+const { TenantTranscriptionConfig } = require('../../../infra/models/TenantTranscriptionConfig');
+const { TenantTranscriptionUsage } = require('../../../infra/models/TenantTranscriptionUsage');
 
 const router = express.Router();
 const deepgramService = new DeepgramService();
@@ -165,6 +167,102 @@ router.post('/', async (req, res) => {
     });
   } finally {
     client.release();
+  }
+});
+
+/**
+ * @openapi
+ * /tq/transcriptions/quota:
+ *   get:
+ *     tags: [TQ - Transcription]
+ *     summary: Get current transcription quota usage
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Get the current month's transcription quota usage for the authenticated tenant.
+ *       Returns minutes used, limit, remaining minutes, and percentage used.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Numeric tenant identifier
+ *     responses:
+ *       200:
+ *         description: Quota data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 minutesUsed:
+ *                   type: integer
+ *                   description: Total minutes used in current month
+ *                 limit:
+ *                   type: integer
+ *                   description: Monthly limit in minutes (plan or custom)
+ *                 remaining:
+ *                   type: integer
+ *                   description: Remaining minutes (limit - used)
+ *                 percentUsed:
+ *                   type: number
+ *                   description: Percentage of quota used (0-100)
+ *                 overageAllowed:
+ *                   type: boolean
+ *                   description: Whether tenant can exceed quota
+ *       400:
+ *         description: Invalid request (missing header)
+ *       404:
+ *         description: Transcription config not found for tenant
+ *       500:
+ *         description: Server error
+ */
+router.get('/quota', async (req, res) => {
+  try {
+    const tenantId = req.headers['x-tenant-id'];
+
+    if (!tenantId) {
+      return res.status(400).json({ error: 'x-tenant-id header is required' });
+    }
+
+    // Get tenant configuration with plan details
+    const config = await TenantTranscriptionConfig.findByTenantId(parseInt(tenantId));
+
+    // Get current month usage
+    const usage = await TenantTranscriptionUsage.getCurrentMonthUsage(parseInt(tenantId));
+
+    // Calculate effective limit (respects custom limits if allowed)
+    const limit = config.getEffectiveMonthlyLimit();
+    const minutesUsed = usage.totalMinutes;
+    const remaining = Math.max(0, limit - minutesUsed);
+    const percentUsed = limit > 0 ? Math.round((minutesUsed / limit) * 100) : 0;
+
+    res.json({
+      minutesUsed,
+      limit,
+      remaining,
+      percentUsed,
+      overageAllowed: config.overageAllowed || false
+    });
+
+  } catch (error) {
+    console.error('[Quota] Error retrieving quota:', error);
+
+    // Handle config not found
+    if (error.name === 'TenantTranscriptionConfigNotFoundError') {
+      return res.status(404).json({
+        error: 'Transcription configuration not found for tenant',
+        details: error.message
+      });
+    }
+
+    res.status(500).json({
+      error: 'Failed to retrieve transcription quota',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

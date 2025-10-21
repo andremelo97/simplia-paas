@@ -166,7 +166,7 @@
     "manage_limit": "Gerenciar limite",
     "limit": "Limite",
     "custom_limit": "Limite personalizado",
-    "custom_limit_hint": "Mínimo: 2.400 minutos (40 horas)",
+    "custom_limit_hint": "Definido pelo seu plano",
     "save_limit": "Salvar limite",
     "save_changes": "Salvar Alterações",
     "saving": "Salvando...",
@@ -177,12 +177,18 @@
     "transcription_language": "Idioma da Transcrição",
     "language_description": "Selecione o idioma padrão que será usado para processar suas transcrições de áudio. Você pode escolher Português (Brasil) ou Inglês (EUA).",
     "monthly_limit": "Limite Mensal (minutos)",
-    "minimum_limit": "Mínimo: {{limit}} minutos (40 horas)",
-    "validation_min_limit": "O limite mínimo é {{limit}} minutos (40 horas)",
+    "minimum_limit": "Mínimo: {{limit}} minutos",
+    "validation_min_limit": "O limite mínimo é {{limit}} minutos",
     "allow_overage": "Permitir ultrapassar o limite",
     "overage_description": "Se ativado, você poderá continuar transcrevendo além do seu limite mensal. Cobranças adicionais podem ser aplicadas.",
-    "upgrade_title": "Quer personalizar sua cota?",
-    "upgrade_description": "Faça upgrade para um plano VIP para definir limites mensais personalizados e desbloquear recursos adicionais. Entre em contato com seu gerente de conta para mais informações.",
+    "upgrade_title": "Quer fazer upgrade do seu plano?",
+    "upgrade_description": "Faça upgrade para um plano VIP e desbloqueie:",
+    "upgrade_benefits": {
+      "custom_limit": "Alterar limite mensal como quiser",
+      "overage": "Permitir ultrapassar o limite sem bloqueios",
+      "priority_support": "Suporte prioritário"
+    },
+    "upgrade_cta": "Entre em contato com seu gerente de conta para mais informações.",
     "usage_history": "Histórico de Uso (Últimos 6 Meses)",
     "last_6_months": "Últimos 6 meses",
     "no_history": "Sem histórico de uso disponível",
@@ -203,6 +209,10 @@
     "model": "Modelo",
     "showing_page": "Página {{current}} de {{total}}",
     "previous": "Anterior",
-    "next": "Próximo"
+    "next": "Próximo",
+    "quota_warning_title": "Atenção: Cota Próxima do Limite",
+    "quota_warning_message": "Você usou {{used}} de {{limit}} minutos ({{percent}}%). Considere gerenciar seu uso ou aumentar seu limite.",
+    "quota_exceeded_title": "Cota Excedida",
+    "quota_exceeded_message": "Você atingiu seu limite mensal de {{limit}} minutos. Não é possível iniciar nova transcrição até o próximo mês. Entre em contato com seu gerente de conta para aumentar seu limite."
   }
 }

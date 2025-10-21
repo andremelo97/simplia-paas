@@ -108,11 +108,6 @@ class TenantTranscriptionConfig {
       overageAllowed = false
     } = configData;
 
-    // Validate custom limit if provided
-    if (customMonthlyLimit !== null && customMonthlyLimit < TRANSCRIPTION_BASIC_MONTHLY_LIMIT) {
-      throw new InvalidCustomLimitError(customMonthlyLimit, TRANSCRIPTION_BASIC_MONTHLY_LIMIT);
-    }
-
     const query = `
       INSERT INTO public.tenant_transcription_config (
         tenant_id_fk,
@@ -156,13 +151,6 @@ class TenantTranscriptionConfig {
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
-
-    // Validate custom limit if being updated
-    if (updates.custom_monthly_limit !== undefined &&
-        updates.custom_monthly_limit !== null &&
-        updates.custom_monthly_limit < TRANSCRIPTION_BASIC_MONTHLY_LIMIT) {
-      throw new InvalidCustomLimitError(updates.custom_monthly_limit, TRANSCRIPTION_BASIC_MONTHLY_LIMIT);
-    }
 
     for (const [key, value] of Object.entries(updates)) {
       if (allowedUpdates.includes(key) && value !== undefined) {

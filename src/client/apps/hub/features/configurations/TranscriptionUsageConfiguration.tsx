@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Clock, TrendingUp, Settings, AlertCircle } from 'lucide-react'
+import { Clock, TrendingUp, Settings, AlertCircle, Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input, Card, Label, Progress, Alert, Checkbox, Select } from '@client/common/ui'
+import { Button, Input, Card, Label, Progress, Alert, AlertTitle, AlertDescription, Checkbox, Select } from '@client/common/ui'
 import { transcriptionUsageService } from '../../services/transcriptionUsageService'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
@@ -54,7 +54,6 @@ interface UsageData {
   }
 }
 
-const BASIC_LIMIT = 2400 // Minimum allowed limit
 const RECORDS_PER_PAGE = 10
 
 export const TranscriptionUsageConfiguration: React.FC = () => {
@@ -63,13 +62,13 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
   const [usage, setUsage] = useState<UsageData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [customLimit, setCustomLimit] = useState<number>(BASIC_LIMIT)
+  const [customLimit, setCustomLimit] = useState<number>(2400)
   const [transcriptionLanguage, setTranscriptionLanguage] = useState<string>('pt-BR')
   const [overageAllowed, setOverageAllowed] = useState<boolean>(false)
   const [validationError, setValidationError] = useState<string | null>(null)
 
   // Original values for comparison
-  const [originalLimit, setOriginalLimit] = useState<number>(BASIC_LIMIT)
+  const [originalLimit, setOriginalLimit] = useState<number>(2400)
   const [originalLanguage, setOriginalLanguage] = useState<string>('pt-BR')
   const [originalOverage, setOriginalOverage] = useState<boolean>(false)
 
@@ -78,6 +77,9 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
+
+  // Calculate plan minimum limit dynamically based on current plan
+  const planMinLimit = usage?.current?.limit || 2400
 
   useEffect(() => {
     loadUsage()
@@ -155,8 +157,8 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
     const languageChanged = transcriptionLanguage !== originalLanguage
     const overageChanged = overageAllowed !== originalOverage
 
-    if (limitChanged && customLimit < BASIC_LIMIT) {
-      setValidationError(t('transcription_usage.validation_min_limit', { limit: BASIC_LIMIT }))
+    if (limitChanged && customLimit < planMinLimit) {
+      setValidationError(t('transcription_usage.validation_min_limit', { limit: planMinLimit }))
       return
     }
 
@@ -281,6 +283,34 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         </span>
       </div>
 
+      {/* Non-Premium Info - VIP UPGRADE CARD (First thing user sees) */}
+      {!hasAnyPremiumFeature && (
+        <Alert variant="gradient">
+          <AlertCircle className="h-5 w-5 text-[#E91E63] mt-0.5" />
+          <div className="flex-1">
+            <AlertTitle>{t('transcription_usage.upgrade_title')}</AlertTitle>
+            <AlertDescription>
+              <p className="mb-3">{t('transcription_usage.upgrade_description')}</p>
+              <ul className="space-y-2 mb-3">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
+                  <span>{t('transcription_usage.upgrade_benefits.custom_limit')}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
+                  <span>{t('transcription_usage.upgrade_benefits.overage')}</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
+                  <span>{t('transcription_usage.upgrade_benefits.priority_support')}</span>
+                </li>
+              </ul>
+              <p className="text-xs text-gray-600">{t('transcription_usage.upgrade_cta')}</p>
+            </AlertDescription>
+          </div>
+        </Alert>
+      )}
+
       {/* Current Month Usage */}
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
@@ -308,13 +338,41 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
             <p className="text-sm text-gray-600 mt-2">
               {formatMinutes(usage.current.remaining)} {t('transcription_usage.remaining').toLowerCase()}
             </p>
-          ) : hasOverage ? (
+          ) : hasOverage && usage.current.overageAllowed ? (
             <p className="text-sm text-red-600 mt-2">
               ⚠️ {formatMinutes(usage.current.overage)} {t('transcription_usage.overage').toLowerCase()}
-              {!usage.current.overageAllowed && ` (${t('transcription_usage.vip_only').toLowerCase()})`}
             </p>
           ) : null}
         </div>
+
+        {/* Quota Alerts */}
+        {usage.current.remaining <= 0 && !usage.current.overageAllowed && (
+          <Alert variant="gradient" className="mb-4">
+            <AlertCircle className="h-5 w-5 text-[#E91E63] mt-0.5" />
+            <div>
+              <AlertTitle>{t('transcription_usage.quota_exceeded_title')}</AlertTitle>
+              <AlertDescription>
+                {t('transcription_usage.quota_exceeded_message', { limit: usage.current.limit })}
+              </AlertDescription>
+            </div>
+          </Alert>
+        )}
+
+        {usage.current.remaining > 0 && usage.current.percentUsed >= 80 && (
+          <Alert variant="warning" className="mb-4">
+            <AlertCircle className="h-5 w-5 text-[#EAB308] mt-0.5" />
+            <div>
+              <AlertTitle>{t('transcription_usage.quota_warning_title')}</AlertTitle>
+              <AlertDescription>
+                {t('transcription_usage.quota_warning_message', {
+                  used: usage.current.minutesUsed,
+                  limit: usage.current.limit,
+                  percent: usage.current.percentUsed.toFixed(1)
+                })}
+              </AlertDescription>
+            </div>
+          </Alert>
+        )}
 
         {/* Metrics Grid */}
         <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${canEnableOverage ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
@@ -375,7 +433,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
                 <Input
                   id="customLimit"
                   type="number"
-                  min={BASIC_LIMIT}
+                  min={planMinLimit}
                   value={customLimit}
                   onChange={(e) => {
                     setCustomLimit(parseInt(e.target.value))
@@ -387,7 +445,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
               </div>
               {!validationError && (
                 <p className="text-xs text-gray-500 mt-2">
-                  {t('transcription_usage.minimum_limit', { limit: BASIC_LIMIT.toLocaleString() })}
+                  {t('transcription_usage.minimum_limit', { limit: planMinLimit.toLocaleString() })}
                 </p>
               )}
             </div>
@@ -424,24 +482,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
             >
               {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
             </Button>
-          </div>
-        </Card>
-      )}
-
-      {/* Non-Premium Info - COM GRADIENTE */}
-      {!hasAnyPremiumFeature && (
-        <Card className="p-6 relative overflow-hidden border-transparent">
-          {/* Gradient background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#B725B7] via-[#E91E63] to-[#B725B7] opacity-10"></div>
-
-          <div className="relative flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-[#E91E63] mt-0.5" />
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-1">{t('transcription_usage.upgrade_title')}</h3>
-              <p className="text-sm text-gray-700">
-                {t('transcription_usage.upgrade_description')}
-              </p>
-            </div>
           </div>
         </Card>
       )}

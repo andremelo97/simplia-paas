@@ -2,17 +2,18 @@
 
 ## 📋 Visão Geral
 
-Sistema de controle de uso e cobrança de transcrição de áudio para texto (STT - Speech-to-Text), com quotas mensais configuráveis por tenant. Permite diferentes planos (Basic, VIP) com limites flexíveis e monitoramento de custos em tempo real.
+Sistema de controle de uso e cobrança de transcrição de áudio para texto (STT - Speech-to-Text), com quotas mensais configuráveis por tenant. Permite diferentes planos (Starter, Basic, VIP, Custom) com limites flexíveis e monitoramento de custos em tempo real.
 
 ---
 
 ## 🎯 Objetivos
 
 1. **Controlar custos** - Evitar gastos excessivos com API de transcrição externa
-2. **Flexibilidade** - Oferecer planos diferentes (Basic com limite fixo, VIP customizável)
+2. **Flexibilidade** - Oferecer planos diferentes (Starter, Basic, VIP, Custom) com limites dinâmicos por plano
 3. **Transparência** - Admin do tenant visualiza uso e custos no Hub
 4. **Gestão centralizada** - Equipe interna configura planos via Internal Admin
 5. **Escalabilidade** - Arquitetura preparada para trocar fornecedor STT sem reescrever código
+6. **Self-Service** - Usuários VIP podem configurar seus próprios limites customizados no Hub
 
 ---
 
@@ -75,43 +76,41 @@ Quota de Transcrição (separada):
 
 ## ⚙️ Configuração e Limites do Sistema
 
-### **Variável de Ambiente e Constante**
+### **Sistema de Limites Dinâmicos**
 
-O limite mínimo do plano Basic é configurável via variável de ambiente:
+O sistema **NÃO usa limites hardcoded**. Todos os limites são definidos dinamicamente pelos planos configurados na tabela `transcription_plans`:
 
-```bash
-# .env
-TRANSCRIPTION_BASIC_MONTHLY_LIMIT=2400  # Minutos (40 horas)
-```
+**Planos Disponíveis (Seed Padrão):**
+1. **Starter Plan**: 1.200 min/mês (20 horas) - Fixo, sem customização, sem overage
+2. **Basic Plan**: 2.400 min/mês (40 horas) - Fixo, sem customização, sem overage
+3. **VIP Plan**: Customizável (mínimo definido pelo plano) - Permite custom limits + overage
 
-**Backend Constant:**
-```javascript
-// src/server/infra/constants/transcription.js
-const TRANSCRIPTION_BASIC_MONTHLY_LIMIT = parseInt(
-  process.env.TRANSCRIPTION_BASIC_MONTHLY_LIMIT || '2400'
-);
+**Planos Custom (Criados via Internal Admin):**
+- Podem ter **APENAS** `allows_custom_limits=true` (ex: Premium com 5.000 min customizáveis)
+- Podem ter **APENAS** `allows_overage=true` (ex: Standard com overage mas limite fixo)
+- Podem ter **AMBOS** (VIP completo)
 
-module.exports = {
-  TRANSCRIPTION_BASIC_MONTHLY_LIMIT
-};
-```
+### **Regra de Validação: Custom Limit >= Plan Limit**
 
-### **Regra Crítica: VIP >= Basic**
-
-**Plano VIP NÃO pode ter limite customizado abaixo do Basic:**
-- Se Basic = 2.400 min/mês, então VIP >= 2.400 min/mês
-- Evita que clientes "paguem mais para usar menos"
-- Validação obrigatória no frontend e backend
+**Planos com custom limits NÃO podem ter limites customizados abaixo do limite base do plano:**
+- Se o plano define `monthly_minutes_limit=2400`, então custom >= 2.400
+- Se o plano define `monthly_minutes_limit=1200`, então custom >= 1.200
+- Evita que clientes "contratem mais para usar menos"
+- Validação obrigatória no frontend e backend usando `plan.monthlyMinutesLimit`
 
 **Exemplo:**
 ```
 ✅ Válido:
-- Basic: 2.400 min/mês (fixo)
-- VIP: 5.000 min/mês (custom)
+- Plano VIP (base: 2.400 min/mês)
+- Custom limit: 5.000 min/mês
+
+✅ Válido:
+- Plano Starter (base: 1.200 min/mês)
+- Sem custom limits (usa o fixo de 1.200)
 
 ❌ Inválido:
-- Basic: 2.400 min/mês (fixo)
-- VIP: 1.500 min/mês (custom) ← NÃO PERMITIDO
+- Plano VIP (base: 2.400 min/mês)
+- Custom limit: 1.500 min/mês ← NÃO PERMITIDO (abaixo do base)
 ```
 
 ---
@@ -264,15 +263,18 @@ CREATE TABLE public.transcription_plans (
 ```
 
 **Dados iniciais (seed):**
-| id | slug  | name       | monthly_limit | allows_custom | cost_per_min | active |
-|----|-------|------------|---------------|---------------|--------------|--------|
-| 1  | basic | Basic Plan | 2400          | false         | 0.0052       | true   |
-| 2  | vip   | VIP Plan   | NULL          | true          | 0.0052       | true   |
+| id | slug    | name         | monthly_limit | allows_custom | allows_overage | cost_per_min | active |
+|----|---------|--------------|---------------|---------------|----------------|--------------|--------|
+| 1  | starter | Starter Plan | 1200          | false         | false          | 0.0043       | true   |
+| 2  | basic   | Basic Plan   | 2400          | false         | false          | 0.0043       | true   |
+| 3  | vip     | VIP Plan     | 2400          | true          | true           | 0.0043       | true   |
 
 **Lógica:**
-- **Basic**: Limite fixo (2.400 min/mês ≈ 40h), sem customização
-- **VIP**: Sem limite padrão, admin define valor personalizado (mínimo 2.400)
+- **Starter**: Limite fixo (1.200 min/mês ≈ 20h), sem customização, sem overage
+- **Basic**: Limite fixo (2.400 min/mês ≈ 40h), sem customização, sem overage
+- **VIP**: Limite base 2.400 min/mês, permite customização (mínimo 2.400) + overage
 - **CRUD completo**: Internal Admin pode criar/editar/deletar/ativar/desativar planos
+- **Custom Plans**: Admins podem criar planos com apenas custom limits OU apenas overage
 
 ---
 
@@ -285,38 +287,46 @@ CREATE TABLE public.tenant_transcription_config (
   id SERIAL PRIMARY KEY,
   tenant_id_fk INTEGER NOT NULL UNIQUE REFERENCES public.tenants(id),
   plan_id_fk INTEGER NOT NULL REFERENCES public.transcription_plans(id),
-  custom_monthly_limit INTEGER,
+  custom_monthly_limit INTEGER NULL,
+  transcription_language VARCHAR(10) DEFAULT 'pt-BR',
   overage_allowed BOOLEAN DEFAULT false,
   enabled BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-
-  -- Constraint: custom_monthly_limit >= TRANSCRIPTION_BASIC_MONTHLY_LIMIT
-  CONSTRAINT custom_limit_min_basic CHECK (
-    custom_monthly_limit IS NULL
-    OR custom_monthly_limit >= 2400
-  ),
-
-  -- Constraint: custom limits only for VIP
-  CONSTRAINT custom_limits_only_if_allowed CHECK (
-    (SELECT allows_custom_limits FROM transcription_plans WHERE id = plan_id_fk) = true
-    OR custom_monthly_limit IS NULL
-  )
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
+**IMPORTANTE:** O sistema **NÃO usa CHECK constraints hardcoded** no banco. A validação de limites é feita dinamicamente no backend usando `plan.monthlyMinutesLimit`:
+
+```javascript
+// Backend validation (tenant-transcription-usage.js)
+const planMinLimit = config.plan?.monthlyMinutesLimit || 2400;
+
+if (parseInt(customMonthlyLimit) < planMinLimit) {
+  return res.status(400).json({
+    error: {
+      code: 'CUSTOM_LIMIT_BELOW_PLAN_MINIMUM',
+      message: `Custom limit (${customMonthlyLimit}) cannot be below plan's minimum limit of ${planMinLimit} minutes`
+    }
+  });
+}
+```
+
 **Exemplo de registros:**
-| tenant_id | plan_id | custom_monthly | overage_allowed | enabled |
-|-----------|---------|----------------|-----------------|---------|
-| 1         | 1       | NULL           | false           | true    |
-| 2         | 2       | 10000          | true            | true    |
-| 3         | 1       | NULL           | false           | true    |
+| tenant_id | plan_id | custom_monthly | overage_allowed | enabled | transcription_language |
+|-----------|---------|----------------|-----------------|---------|------------------------|
+| 1         | 1       | NULL           | false           | true    | pt-BR                  |
+| 2         | 3       | 10000          | true            | true    | pt-BR                  |
+| 3         | 2       | NULL           | false           | true    | en-US                  |
+| 4         | 1       | NULL           | false           | true    | pt-BR                  |
 
 **Lógica:**
-- Se `plan_id=1` (Basic): `custom_monthly_limit` deve ser NULL (constraint)
-- Se `plan_id=2` (VIP): `custom_monthly_limit` >= 2400 (constraint)
+- Se `plan_id=1` (Starter): `custom_monthly_limit` deve ser NULL, usa 1.200 min do plano
+- Se `plan_id=2` (Basic): `custom_monthly_limit` deve ser NULL, usa 2.400 min do plano
+- Se `plan_id=3` (VIP): `custom_monthly_limit` >= 2.400 (validado no backend dinamicamente)
 - `overage_allowed=true`: processa mesmo após exceder limite (mas registra alerta)
 - `enabled=false`: desabilita transcrição completamente
+- `transcription_language`: pt-BR ou en-US (usado no Deepgram para monolingual pricing)
 
 ---
 
@@ -613,8 +623,7 @@ Rota: `/configurations` → Drawer item: "Transcription" (admin-only)
 ║  ┌─────────────────────────────────────────────────────────┐ ║
 ║  │ 10000                                                    │ ║
 ║  └─────────────────────────────────────────────────────────┘ ║
-║  Minimum: 2,400 minutes (40 hours)                           ║
-║  Maximum: 50,000 minutes (833 hours)                         ║
+║  Definido pelo seu plano                                     ║
 ║                                                               ║
 ║  ☑ Allow Overage Processing                                  ║
 ║  Continue processing transcriptions even after quota limit   ║
@@ -644,13 +653,13 @@ Rota: `/configurations` → Drawer item: "Transcription" (admin-only)
 ║  │ 🔒 Custom Limits Not Available                          │ ║
 ║  │                                                          │ ║
 ║  │ Your Basic plan includes:                               │ ║
-║  │ • Monthly Limit: 2,400 minutes (40 hours)               │ ║
+║  │ • Monthly Limit: 2,400 minutes                          │ ║
 ║  │ • Overage: Not Allowed                                  │ ║
 ║  │                                                          │ ║
 ║  │ 🎯 Upgrade to VIP Plan to unlock:                       │ ║
-║  │ • Set custom monthly limit (min 2,400)                  │ ║
+║  │ • Set custom monthly limit                              │ ║
 ║  │ • Enable overage processing                             │ ║
-║  │ • Flexible quota management                             │ ║
+║  │ • Priority support                                      │ ║
 ║  │                                                          │ ║
 ║  │ ┌───────────────────┐                                   │ ║
 ║  │ │ Contact Support   │                                   │ ║
@@ -664,14 +673,11 @@ Rota: `/configurations` → Drawer item: "Transcription" (admin-only)
 
 **Validações Frontend:**
 ```javascript
-const TRANSCRIPTION_BASIC_MONTHLY_LIMIT = 2400; // From constants
+// Validação dinâmica baseada no plano selecionado
+const planMinLimit = usage.plan.monthlyMinutesLimit; // Ex: 2400 para VIP
 
-if (customMonthlyLimit < TRANSCRIPTION_BASIC_MONTHLY_LIMIT) {
-  error = `VIP plan limit must be at least ${TRANSCRIPTION_BASIC_MONTHLY_LIMIT} minutes (same as Basic plan)`;
-}
-
-if (customMonthlyLimit > 50000) {
-  error = "Monthly limit cannot exceed 50,000 minutes";
+if (customMonthlyLimit < planMinLimit) {
+  error = `Custom limit must be at least ${planMinLimit} minutes (defined by your plan)`;
 }
 ```
 
@@ -705,37 +711,46 @@ Response (Success):
 Response (Error - Below minimum):
 {
   "error": {
-    "code": 400,
-    "message": "VIP plan limit must be at least 2400 minutes (same as Basic plan)"
+    "code": "CUSTOM_LIMIT_BELOW_PLAN_MINIMUM",
+    "message": "Custom limit (1500) cannot be below plan's minimum limit of 2400 minutes"
+  },
+  "meta": {
+    "code": "CUSTOM_LIMIT_BELOW_PLAN_MINIMUM",
+    "planMinLimit": 2400,
+    "providedLimit": 1500
   }
 }
 ```
 
 **Validações Backend:**
 ```javascript
-const { TRANSCRIPTION_BASIC_MONTHLY_LIMIT } = require('../constants/transcription');
+// 1. Verificar se o plano permite customização
+const config = await TenantTranscriptionConfig.findByTenantId(tenantId);
 
-// Validar se é VIP
-const config = await TenantTranscriptionConfig.findByTenant(req.tenant.id);
-
-if (!config.allowsCustomLimits) {
+if (!config.canCustomizeLimits()) {
   return res.status(403).json({
     error: {
       code: 403,
-      message: "Custom limits are only available for VIP plan. Contact support to upgrade."
+      message: 'Your current plan does not allow custom limits. Please upgrade to VIP plan.'
     }
   });
 }
 
-// Validar limites razoáveis
-if (customMonthlyLimit < TRANSCRIPTION_BASIC_MONTHLY_LIMIT) {
-  return res.status(400).json({
-    error: `VIP plan limit must be at least ${TRANSCRIPTION_BASIC_MONTHLY_LIMIT} minutes (same as Basic plan)`
-  });
-}
+// 2. Validar limite mínimo dinamicamente baseado no plano
+const planMinLimit = config.plan?.monthlyMinutesLimit || 2400;
 
-if (customMonthlyLimit > 50000) {
-  return res.status(400).json({ error: "Monthly limit cannot exceed 50,000 minutes" });
+if (parseInt(customMonthlyLimit) < planMinLimit) {
+  return res.status(400).json({
+    error: {
+      code: 'CUSTOM_LIMIT_BELOW_PLAN_MINIMUM',
+      message: `Custom limit (${customMonthlyLimit}) cannot be below plan's minimum limit of ${planMinLimit} minutes`
+    },
+    meta: {
+      code: 'CUSTOM_LIMIT_BELOW_PLAN_MINIMUM',
+      planMinLimit: planMinLimit,
+      providedLimit: customMonthlyLimit
+    }
+  });
 }
 ```
 
@@ -867,7 +882,8 @@ Localização: `/tenants/:id/edit` → Nova seção após "Entitlements"
 ║  ┌─────────────────────────────────────────────────────────┐ ║
 ║  │ 10000                                                    │ ║
 ║  └─────────────────────────────────────────────────────────┘ ║
-║  Only for VIP plan. Minimum: 2,400 minutes.                  ║
+║  Only for plans with custom limits enabled. Minimum defined  ║
+║  by selected plan.                                           ║
 ║                                                               ║
 ║  ☑ Allow Overage                                             ║
 ║  Process transcriptions even after exceeding quota.          ║
@@ -890,14 +906,13 @@ Localização: `/tenants/:id/edit` → Nova seção após "Entitlements"
 
 **Validações Frontend:**
 ```javascript
-const TRANSCRIPTION_BASIC_MONTHLY_LIMIT = 2400;
-
+// Validação dinâmica baseada no plano selecionado
 if (selectedPlan.allowsCustomLimits && !customMonthlyLimit) {
-  error = "VIP plan requires custom monthly limit to be set";
+  error = "This plan requires a custom monthly limit to be set";
 }
 
-if (selectedPlan.allowsCustomLimits && customMonthlyLimit < TRANSCRIPTION_BASIC_MONTHLY_LIMIT) {
-  error = `Custom limit must be at least ${TRANSCRIPTION_BASIC_MONTHLY_LIMIT} minutes`;
+if (selectedPlan.allowsCustomLimits && customMonthlyLimit < selectedPlan.monthlyMinutesLimit) {
+  error = `Custom limit must be at least ${selectedPlan.monthlyMinutesLimit} minutes (plan minimum)`;
 }
 
 if (!selectedPlan.allowsCustomLimits && customMonthlyLimit) {
@@ -1010,13 +1025,13 @@ Contact support to upgrade to VIP plan for higher limits."
 [Contact Support] [OK]
 ```
 
-### **Erro 2: VIP limite abaixo do mínimo (400)**
+### **Erro 2: Custom limit abaixo do mínimo do plano (400)**
 ```
 Frontend mostra:
 "❌ Invalid custom limit
 
-VIP plan requires a minimum of 2,400 minutes per month (same as Basic plan).
-Please increase your limit to at least 2,400 minutes."
+Custom limit (1500) cannot be below plan's minimum limit of 2400 minutes.
+Please increase your limit to match your plan's minimum."
 
 [OK]
 ```
@@ -1061,41 +1076,41 @@ Contact support to activate this feature."
 ## 📝 Checklist de Implementação
 
 ### **Backend**
-- [ ] Constant: criar `src/server/infra/constants/transcription.js` com `TRANSCRIPTION_BASIC_MONTHLY_LIMIT`
-- [ ] Migration: criar `transcription_plans` (com updated_at)
-- [ ] Migration: criar `tenant_transcription_config` (com constraint >= 2400)
-- [ ] Migration: criar `tenant_transcription_usage`
-- [ ] Seed: popular `transcription_plans` (Basic, VIP)
-- [ ] Model: `TranscriptionPlan.js` (CRUD completo)
-- [ ] Model: `TenantTranscriptionConfig.js` (com validação de limite mínimo)
-- [ ] Middleware: `checkTranscriptionQuota.js`
-- [ ] Modificar webhook: adicionar registro de uso
-- [ ] Rotas Hub: `GET /me/transcription-usage` (visualização de uso)
-- [ ] Rotas Hub: `PUT /me/transcription-config` (self-service VIP com validação >= 2400)
-- [ ] Rotas Internal Admin Plans: `GET /transcription-plans` (listar)
-- [ ] Rotas Internal Admin Plans: `POST /transcription-plans` (criar)
-- [ ] Rotas Internal Admin Plans: `PUT /transcription-plans/:id` (editar)
-- [ ] Rotas Internal Admin Plans: `DELETE /transcription-plans/:id` (soft delete)
-- [ ] Rotas Internal Admin Tenant: `GET /tenants/:id/transcription-config`
-- [ ] Rotas Internal Admin Tenant: `PUT /tenants/:id/transcription-config` (validação >= 2400)
+- [x] Migration: criar `transcription_plans` (com updated_at, allows_custom_limits, allows_overage)
+- [x] Migration: criar `tenant_transcription_config` (SEM constraints hardcoded)
+- [x] Migration: criar `tenant_transcription_usage`
+- [x] Seed: popular `transcription_plans` (Starter 1200, Basic 2400, VIP 2400+)
+- [x] Model: `TranscriptionPlan.js` (CRUD completo)
+- [x] Model: `TenantTranscriptionConfig.js` (com validação dinâmica via `plan.monthlyMinutesLimit`)
+- [x] Middleware: `checkTranscriptionQuota.js` (usa `config.getEffectiveMonthlyLimit()` dinamicamente)
+- [x] Modificar webhook: adicionar registro de uso
+- [x] Rotas Hub: `GET /configurations/transcription-usage` (visualização de uso)
+- [x] Rotas Hub: `PUT /configurations/transcription-config` (self-service VIP com validação dinâmica)
+- [x] Rotas Internal Admin Plans: `GET /transcription-plans` (listar)
+- [x] Rotas Internal Admin Plans: `POST /transcription-plans` (criar)
+- [x] Rotas Internal Admin Plans: `PUT /transcription-plans/:id` (editar)
+- [x] Rotas Internal Admin Plans: `DELETE /transcription-plans/:id` (deactivate)
+- [x] Rotas Internal Admin Tenant: `GET /tenants/:id/transcription-config`
+- [x] Rotas Internal Admin Tenant: `PUT /tenants/:id/transcription-config` (validação dinâmica)
+- [x] Validações dinâmicas: Todas validações usam `plan.monthlyMinutesLimit`, não valores hardcoded
 
 ### **Frontend Hub**
-- [ ] Página: `TranscriptionUsage.tsx` (visualização de uso)
-- [ ] Componente: `TranscriptionConfiguration.tsx` (self-service VIP dentro de /configurations)
-- [ ] Service: `transcriptionUsageService.ts`
-- [ ] Service: `transcriptionConfigService.ts` (self-service)
-- [ ] Sidebar: item "Transcription Usage" (admin-only)
-- [ ] Configurations Drawer: item "Transcription" (admin-only, visível para todos)
-- [ ] Component: `LockedFeatureCard.tsx` (visual indicator para Basic users)
-- [ ] Tradução i18n (pt-BR e en-US)
+- [x] Página: `TranscriptionUsageConfiguration.tsx` (visualização de uso + self-service)
+- [x] Service: `transcriptionUsageService.ts`
+- [x] Sidebar: item "Configurations" (admin-only)
+- [x] Configurations Layout: Reutilizado para múltiplas configs
+- [x] VIP Upgrade Card: Gradient styling com benefits list
+- [x] Premium Features Card: Condicional baseado em `allowsCustomLimits` e `allowsOverage`
+- [x] Alert Component: Variants `warning` e `gradient` com flex layout
+- [x] Tradução i18n (pt-BR e en-US) - Removidas referências hardcoded "(40 horas)"
 
 ### **Frontend Internal Admin**
-- [ ] Página: `TranscriptionPlans.tsx` (CRUD completo de planos)
-- [ ] Página: `CreatePlan.tsx` / `EditPlan.tsx` (formulários de plano)
-- [ ] Service: `transcriptionPlansService.ts`
-- [ ] Seção: `TranscriptionConfigSection.tsx` (em tenant edit - apenas seleciona plano)
-- [ ] Sidebar: item "Transcription Plans" (nova aba)
-- [ ] Validações de plano (Basic vs VIP, limite >= 2400)
+- [x] Página: `TranscriptionPlans.tsx` (CRUD completo de planos)
+- [x] Página: `CreateTranscriptionPlan.tsx` / `EditTranscriptionPlan.tsx` (formulários de plano)
+- [x] Service: `transcriptionPlansService.ts`
+- [x] Seção: `TenantTranscriptionConfiguration.tsx` (em tenant edit)
+- [x] Sidebar: item "Transcription Plans" (nova aba)
+- [x] Validações de plano dinâmicas (usa `plan.monthlyMinutesLimit`)
 
 ### **Testes**
 - [ ] Teste unitário: cálculo de custos por modelo
@@ -1112,9 +1127,11 @@ Contact support to activate this feature."
 - **STT (Speech-to-Text)**: Tecnologia de conversão de áudio em texto
 - **Quota**: Limite de uso mensal
 - **Overage**: Uso além do limite configurado
-- **Basic Plan**: Plano com limite fixo de 2.400 min/mês, não customizável
-- **VIP Plan**: Plano premium com limite customizável (mínimo 2.400 min/mês)
-- **TRANSCRIPTION_BASIC_MONTHLY_LIMIT**: Constante que define limite mínimo (2.400)
+- **Starter Plan**: Plano básico com limite fixo de 1.200 min/mês (20h), não customizável
+- **Basic Plan**: Plano padrão com limite fixo de 2.400 min/mês (40h), não customizável
+- **VIP Plan**: Plano premium com limite base de 2.400 min/mês, customizável (permite custom limits + overage)
+- **Custom Plans**: Planos criados via Internal Admin com apenas `allows_custom_limits` OU apenas `allows_overage`
+- **Dynamic Validation**: Sistema de validação que usa `plan.monthlyMinutesLimit` ao invés de valores hardcoded
 - **Tenant**: Cliente/organização na plataforma multi-tenant
 - **Internal Admin**: Interface administrativa para equipe interna (Simplia)
 - **Hub**: Portal self-service para admins dos tenants

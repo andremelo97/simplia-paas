@@ -166,7 +166,7 @@
     "manage_limit": "Manage Limit",
     "limit": "Limit",
     "custom_limit": "Custom Limit",
-    "custom_limit_hint": "Minimum: 2,400 minutes (40 hours)",
+    "custom_limit_hint": "Defined by your plan",
     "save_limit": "Save Limit",
     "save_changes": "Save Changes",
     "saving": "Saving...",
@@ -177,12 +177,18 @@
     "transcription_language": "Transcription Language",
     "language_description": "Select the default language that will be used to process your audio transcriptions. You can choose Portuguese (Brazil) or English (US).",
     "monthly_limit": "Monthly Limit (minutes)",
-    "minimum_limit": "Minimum: {{limit}} minutes (40 hours)",
-    "validation_min_limit": "Minimum limit is {{limit}} minutes (40 hours)",
+    "minimum_limit": "Minimum: {{limit}} minutes",
+    "validation_min_limit": "Minimum limit is {{limit}} minutes",
     "allow_overage": "Allow overage usage",
     "overage_description": "If enabled, you can continue transcribing beyond your monthly limit. Additional charges may apply.",
-    "upgrade_title": "Want to customize your quota?",
-    "upgrade_description": "Upgrade to a VIP plan to set custom monthly limits and unlock additional features. Contact your account manager for more information.",
+    "upgrade_title": "Want to upgrade your plan?",
+    "upgrade_description": "Upgrade to a VIP plan and unlock:",
+    "upgrade_benefits": {
+      "custom_limit": "Change monthly limit as you wish",
+      "overage": "Allow overage without blocks",
+      "priority_support": "Priority support"
+    },
+    "upgrade_cta": "Contact your account manager for more information.",
     "usage_history": "Usage History (Last 6 Months)",
     "last_6_months": "Last 6 months",
     "no_history": "No usage history available",
@@ -203,6 +209,10 @@
     "model": "Model",
     "showing_page": "Page {{current}} of {{total}}",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "quota_warning_title": "Warning: Quota Near Limit",
+    "quota_warning_message": "You have used {{used}} of {{limit}} minutes ({{percent}}%). Consider managing your usage or increasing your limit.",
+    "quota_exceeded_title": "Quota Exceeded",
+    "quota_exceeded_message": "You have reached your monthly limit of {{limit}} minutes. Cannot start new transcription until next month. Contact your account manager to increase your limit."
   }
 }

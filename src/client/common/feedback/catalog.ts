@@ -186,6 +186,14 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "Configuration Updated",
     message: "Transcription configuration updated successfully."
   },
+  CUSTOM_LIMIT_BELOW_PLAN_MINIMUM: {
+    title: "Invalid Limit",
+    message: "Custom limit cannot be below your plan's minimum limit."
+  },
+  TRANSCRIPTION_QUOTA_EXCEEDED: {
+    title: "Quota Exceeded",
+    message: "Monthly transcription quota exceeded. Transcription cannot be started."
+  },
 
   // Authentication operations
   LOGIN_SUCCESS: {

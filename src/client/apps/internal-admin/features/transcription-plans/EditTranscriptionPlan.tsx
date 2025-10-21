@@ -7,8 +7,6 @@ import {
   UpdateTranscriptionPlanInput
 } from '../../services/transcriptionPlans'
 
-const BASIC_LIMIT = 2400
-
 // System standard: Nova-3 with language parameter (Monolingual pricing)
 const SYSTEM_COST_PER_MINUTE = 0.0043
 
@@ -51,10 +49,6 @@ export const EditTranscriptionPlan: React.FC = () => {
 
     if (formData.name && !formData.name.trim()) {
       errors.name = 'Name cannot be empty'
-    }
-
-    if (formData.monthlyMinutesLimit && formData.monthlyMinutesLimit < BASIC_LIMIT) {
-      errors.monthlyMinutesLimit = `Monthly limit cannot be below ${BASIC_LIMIT} minutes`
     }
 
     if (formData.costPerMinuteUsd && formData.costPerMinuteUsd <= 0) {
@@ -140,7 +134,7 @@ export const EditTranscriptionPlan: React.FC = () => {
               <Input
                 id="monthlyMinutesLimit"
                 type="number"
-                min={BASIC_LIMIT}
+                min={1}
                 value={formData.monthlyMinutesLimit}
                 onChange={(e) =>
                   setFormData({ ...formData, monthlyMinutesLimit: parseInt(e.target.value) })
@@ -150,7 +144,7 @@ export const EditTranscriptionPlan: React.FC = () => {
               {validationErrors.monthlyMinutesLimit && (
                 <p className="text-sm text-red-600">{validationErrors.monthlyMinutesLimit}</p>
               )}
-              <p className="text-sm text-gray-500">Minimum {BASIC_LIMIT} minutes (40 hours)</p>
+              <p className="text-sm text-gray-500">Monthly limit in minutes (e.g., 2400 = 40 hours)</p>
             </div>
 
             <div className="space-y-2">

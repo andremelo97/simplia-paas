@@ -56,6 +56,14 @@ export interface TranscriptionError {
   details?: string
 }
 
+export interface QuotaResponse {
+  minutesUsed: number
+  limit: number
+  remaining: number
+  percentUsed: number
+  overageAllowed: boolean
+}
+
 class TranscriptionService {
   private readonly baseUrl = '/api/tq/v1/transcriptions'
 
@@ -287,6 +295,14 @@ class TranscriptionService {
       console.error('Error marking transcription as failed:', error)
       // Don't throw here to avoid masking the original error
     }
+  }
+
+  /**
+   * Get current transcription quota usage
+   */
+  async getQuota(): Promise<QuotaResponse> {
+    const response = await api.get(`${this.baseUrl}/quota`)
+    return response
   }
 
   /**

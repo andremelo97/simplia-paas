@@ -99,8 +99,8 @@ CREATE TABLE IF NOT EXISTS tenant_applications (
     user_limit INTEGER DEFAULT 999999, -- Seat limit per application
     seats_used INTEGER DEFAULT 0, -- Current seats used
     active BOOLEAN NOT NULL DEFAULT true,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(tenant_id_fk, application_id_fk)
 );
 
@@ -125,8 +125,8 @@ CREATE TABLE IF NOT EXISTS user_application_access (
     currency_snapshot CHAR(3),
     user_type_id_snapshot_fk INTEGER REFERENCES user_types(id),
     granted_cycle TEXT CHECK (granted_cycle IN ('monthly','yearly')),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(tenant_id_fk, user_id_fk, application_id_fk) -- Unique per tenant (1:1 compatible, NxN ready)
 );
 
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS application_access_logs (
     endpoint VARCHAR(255), -- Legacy endpoint field
     ip_address INET,
     user_agent TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE application_access_logs IS 'Comprehensive audit trail for all access attempts';

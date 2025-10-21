@@ -91,6 +91,9 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       throw new Error('Unexpected request body type');
     }
 
+    // DEBUG: Log full webhook payload
+    console.log('[Webhook] 🔍 DEBUG - Full webhook payload:', JSON.stringify(webhookData, null, 2));
+
     // Extract request_id from webhook to find the transcription
     // Deepgram does not support callback_metadata, so we use request_id correlation
     const requestId = webhookData.metadata?.request_id;
@@ -177,37 +180,58 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     console.log(`[Webhook] 📊 Confidence: ${transcriptionData.confidence_score}`);
     console.log(`[Webhook] ⏱️  Duration: ${transcriptionData.processing_duration_seconds}s`);
 
+    // DEBUG: Log full transcription data for debugging
+    console.log(`[Webhook] 🔍 DEBUG - Full transcriptionData:`, JSON.stringify(transcriptionData, null, 2));
+
     // Check if transcript is empty or too short (40 characters or less indicates failure)
-    const isTranscriptEmpty = !transcriptionData.transcript || transcriptionData.transcript.trim() === '';
-    const transcriptLength = transcriptionData.transcript?.trim().length || 0;
-    const isTooShort = transcriptLength <= 40;
+    try {
+      console.log(`[Webhook] 🔍 DEBUG - Starting validation...`);
+      console.log(`[Webhook] 🔍 DEBUG - transcriptionData.transcript type:`, typeof transcriptionData.transcript);
+      console.log(`[Webhook] 🔍 DEBUG - transcriptionData.transcript value:`, transcriptionData.transcript);
 
-    console.log(`[Webhook] 🔢 Transcript length: ${transcriptLength} characters`);
+      const isTranscriptEmpty = !transcriptionData.transcript || transcriptionData.transcript.trim() === '';
+      console.log(`[Webhook] 🔍 DEBUG - isTranscriptEmpty:`, isTranscriptEmpty);
 
-    if (isTranscriptEmpty || isTooShort) {
-      const reason = isTranscriptEmpty ? 'empty transcript' : `too short (${transcriptLength} characters)`;
-      console.log(`[Webhook] ⚠️  Failed transcription detected: ${reason} - marking as failed (no charge to user)`);
+      const transcriptLength = transcriptionData.transcript?.trim().length || 0;
+      console.log(`[Webhook] 🔍 DEBUG - transcriptLength:`, transcriptLength);
 
-      // Update status to failed_empty_transcript but keep the record (user can still download audio)
-      await client.query(
-        `UPDATE ${tenantSchema}.transcription
-         SET transcript_status = 'failed_empty_transcript',
-             updated_at = CURRENT_TIMESTAMP
-         WHERE id = $1`,
-        [transcriptionId]
-      );
+      const isTooShort = transcriptLength <= 40;
+      console.log(`[Webhook] 🔍 DEBUG - isTooShort:`, isTooShort);
 
-      await client.query('COMMIT');
+      console.log(`[Webhook] 🔢 Transcript length: ${transcriptLength} characters`);
 
-      // Do NOT register usage (no cost for empty/failed transcriptions)
-      console.log(`[Webhook] 💰 No usage recorded - user will NOT be charged for failed transcript`);
+      if (isTranscriptEmpty || isTooShort) {
+        const reason = isTranscriptEmpty ? 'empty transcript' : `too short (${transcriptLength} characters)`;
+        console.log(`[Webhook] ⚠️  Failed transcription detected: ${reason} - marking as failed (no charge to user)`);
 
-      return res.json({
-        success: true,
-        message: `Failed transcription detected (${reason}) - no charge applied`,
-        emptyTranscript: true,
-        transcriptLength
-      });
+        // Update status to failed_empty_transcript but keep the record (user can still download audio)
+        await client.query(
+          `UPDATE ${tenantSchema}.transcription
+           SET transcript_status = 'failed_empty_transcript',
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $1`,
+          [transcriptionId]
+        );
+
+        await client.query('COMMIT');
+
+        // Do NOT register usage (no cost for empty/failed transcriptions)
+        console.log(`[Webhook] 💰 No usage recorded - user will NOT be charged for failed transcript`);
+
+        return res.json({
+          success: true,
+          message: `Failed transcription detected (${reason}) - no charge applied`,
+          emptyTranscript: true,
+          transcriptLength
+        });
+      }
+
+      console.log(`[Webhook] ✅ Validation passed - transcript is valid (${transcriptLength} characters)`);
+
+    } catch (validationError) {
+      console.error(`[Webhook] ❌ ERROR during validation:`, validationError);
+      console.error(`[Webhook] ❌ ERROR stack:`, validationError.stack);
+      // Continue execution even if validation fails
     }
 
     // Update transcription with results (only if transcript is NOT empty)

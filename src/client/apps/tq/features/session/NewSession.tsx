@@ -211,7 +211,7 @@ export const NewSession: React.FC = () => {
       })
     } else if (transcriptionState.status === 'failed_empty_transcript') {
       publishFeedback({
-        kind: 'warning',
+        kind: 'info',
         title: t('sessions.transcription.empty_warning_title'),
         message: t('sessions.transcription.empty_warning_message')
       })

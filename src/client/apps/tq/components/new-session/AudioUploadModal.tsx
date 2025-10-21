@@ -44,22 +44,18 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
     prevOpenRef.current = open
   }, [open]) // Removed 'actions' from dependencies to prevent unnecessary resets
 
-  // Handle transcription completion
+  // Handle transcription completion (including empty/short transcripts)
   React.useEffect(() => {
-    if (state.status === 'completed' && state.transcript && transcriptionId && onTranscriptionComplete) {
+    const isCompleted = state.status === 'completed' || state.status === 'failed_empty_transcript'
+
+    if (isCompleted && state.transcript && transcriptionId && onTranscriptionComplete) {
       // Pass both transcript text and transcriptionId
       onTranscriptionComplete(state.transcript, transcriptionId)
 
-      // Auto-close modal after a short delay
+      // Auto-close modal after a short delay (even for empty/short transcripts)
       setTimeout(() => {
         onClose()
       }, 1500)
-    }
-
-    // Do NOT auto-close if transcription failed due to empty result
-    // User should manually close after seeing the warning message
-    if (state.status === 'failed_empty_transcript') {
-      // Keep modal open - user will close manually after reading warning
     }
   }, [state.status, state.transcript, transcriptionId, onTranscriptionComplete, onClose])
 

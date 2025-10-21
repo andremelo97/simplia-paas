@@ -17,7 +17,8 @@ export enum TranscriptStatus {
   UPLOADED = 'uploaded',
   PROCESSING = 'processing',
   COMPLETED = 'completed',
-  FAILED = 'failed'
+  FAILED = 'failed',
+  FAILED_EMPTY_TRANSCRIPT = 'failed_empty_transcript'
 }
 
 // API response types
@@ -181,9 +182,13 @@ class TranscriptionService {
           onProgress(status)
         }
 
-        // Check if transcription is complete
-        if (status.status === TranscriptStatus.COMPLETED) {
-          console.log('[Transcription] Completed')
+        // Check if transcription is complete (including empty/short transcripts)
+        if (status.status === TranscriptStatus.COMPLETED || status.status === TranscriptStatus.FAILED_EMPTY_TRANSCRIPT) {
+          if (status.status === TranscriptStatus.FAILED_EMPTY_TRANSCRIPT) {
+            console.log('[Transcription] Completed with empty/short transcript (no charge)')
+          } else {
+            console.log('[Transcription] Completed')
+          }
           return status
         }
 

@@ -34,6 +34,8 @@ import { PreviewPublicQuoteTemplate } from '../features/public-quotes/PreviewPub
 import { PublicQuoteAccess } from '../features/public-quotes/PublicQuoteAccess'
 import { PreviewPublicQuoteLink } from '../features/public-quotes/PreviewPublicQuoteLink'
 import { Configurations } from '../features/configurations/Configurations'
+import { AIAgentConfiguration } from '../features/configurations/AIAgentConfiguration'
+import { EmailTemplateConfiguration } from '../features/configurations/EmailTemplateConfiguration'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -163,7 +165,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="public-quotes/templates/:id/design" element={<DesignPublicQuoteTemplate />} />
 
         {/* Configurations */}
-        <Route path="configurations" element={<Configurations />} />
+        <Route path="configurations" element={<Configurations />}>
+          <Route index element={<Navigate to="ai-agent" replace />} />
+          <Route path="ai-agent" element={<AIAgentConfiguration />} />
+          <Route path="email-template" element={<EmailTemplateConfiguration />} />
+        </Route>
 
         <Route path="*" element={<NotFound />} />
       </Route>

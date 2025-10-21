@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { Palette, Mail, Clock } from 'lucide-react';
 import { ConfigurationLayout, ConfigurationOption } from '@client/common/ui';
-import { BrandingConfiguration } from './BrandingConfiguration';
-import { CommunicationConfiguration } from './CommunicationConfiguration';
-import { TranscriptionUsageConfiguration } from './TranscriptionUsageConfiguration';
 import { useTranslation } from 'react-i18next';
 
 type ConfigurationSection = 'branding' | 'communication' | 'transcription';
 
 export const Configurations: React.FC = () => {
   const { t } = useTranslation('hub');
-  const [activeSection, setActiveSection] = useState<ConfigurationSection>('branding');
 
   const configOptions: ConfigurationOption<ConfigurationSection>[] = [
     {
@@ -37,12 +34,9 @@ export const Configurations: React.FC = () => {
     <ConfigurationLayout
       title={t('sidebar.configurations')}
       options={configOptions}
-      activeSection={activeSection}
-      onSectionChange={setActiveSection}
+      basePath="/configurations"
     >
-      {activeSection === 'branding' && <BrandingConfiguration />}
-      {activeSection === 'communication' && <CommunicationConfiguration />}
-      {activeSection === 'transcription' && <TranscriptionUsageConfiguration />}
+      <Outlet />
     </ConfigurationLayout>
   );
 };

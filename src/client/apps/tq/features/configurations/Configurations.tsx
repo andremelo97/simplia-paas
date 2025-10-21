@@ -1,15 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Bot, Mail } from 'lucide-react';
 import { ConfigurationLayout, ConfigurationOption } from '@client/common/ui';
-import { AIAgentConfiguration } from './AIAgentConfiguration';
-import { EmailTemplateConfiguration } from './EmailTemplateConfiguration';
 
 type ConfigurationSection = 'ai-agent' | 'email-template';
 
 export const Configurations: React.FC = () => {
   const { t } = useTranslation('tq');
-  const [activeSection, setActiveSection] = useState<ConfigurationSection>('ai-agent');
 
   const configOptions: ConfigurationOption<ConfigurationSection>[] = [
     {
@@ -30,11 +28,9 @@ export const Configurations: React.FC = () => {
     <ConfigurationLayout
       title={t('sidebar.configurations')}
       options={configOptions}
-      activeSection={activeSection}
-      onSectionChange={setActiveSection}
+      basePath="/configurations"
     >
-      {activeSection === 'ai-agent' && <AIAgentConfiguration />}
-      {activeSection === 'email-template' && <EmailTemplateConfiguration />}
+      <Outlet />
     </ConfigurationLayout>
   );
 };

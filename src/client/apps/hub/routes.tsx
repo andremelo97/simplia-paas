@@ -5,6 +5,9 @@ import { Layout } from './components/Layout'
 import { Login } from './pages/Login'
 import { Home } from './pages/Home'
 import { Configurations } from './features/configurations/Configurations'
+import { BrandingConfiguration } from './features/configurations/BrandingConfiguration'
+import { CommunicationConfiguration } from './features/configurations/CommunicationConfiguration'
+import { TranscriptionUsageConfiguration } from './features/configurations/TranscriptionUsageConfiguration'
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, isLoading, isHydrated } = useAuthStore()
@@ -67,7 +70,25 @@ export const router = createBrowserRouter([
           },
           {
             path: 'configurations',
-            element: <Configurations />
+            element: <Configurations />,
+            children: [
+              {
+                index: true,
+                element: <Navigate to="branding" replace />
+              },
+              {
+                path: 'branding',
+                element: <BrandingConfiguration />
+              },
+              {
+                path: 'communication',
+                element: <CommunicationConfiguration />
+              },
+              {
+                path: 'transcription',
+                element: <TranscriptionUsageConfiguration />
+              }
+            ]
           }
         ]
       }

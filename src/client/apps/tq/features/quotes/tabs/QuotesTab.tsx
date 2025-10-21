@@ -115,14 +115,14 @@ export const QuotesTab: React.FC = () => {
           {!loading && !error && (quotes?.length || 0) > 0 && (
             <>
               {/* Header Row */}
-              <div className="flex items-center gap-6 py-2 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-6 py-3 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
                 <div className="w-24">{t('common.created')}</div>
                 <div className="flex-1">{t('quotes.title')}</div>
                 <div className="flex-1">{t('common.session')}</div>
                 <div className="flex-1">{t('common.status')}</div>
                 <div className="flex-1">{t('common.patient')}</div>
                 <div className="w-24">{t('common.total')}</div>
-                <div className="w-24"></div> {/* Space for actions */}
+                <div className="w-20"></div> {/* Space for actions */}
               </div>
 
               {/* Quote Rows */}

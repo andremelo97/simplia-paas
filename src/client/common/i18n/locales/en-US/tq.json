@@ -297,6 +297,10 @@
     "downloadingAudio": "Downloading...",
     "audioDeletedAfter24h": "⚠️ Audio will be automatically deleted after 24 hours",
     "audioNotAvailable": "Audio not available or already deleted",
+    "transcription": {
+      "empty_warning_title": "Empty Transcription",
+      "empty_warning_message": "Your transcription returned empty. This happens when the audio language differs from the system configuration. To change the language setting: Hub > Settings > Transcription.\n\n✅ Your usage limit was not consumed for this transcription."
+    },
     "pages": {
       "management_title": "Session Management",
       "management_subtitle": "View and manage your transcription sessions",

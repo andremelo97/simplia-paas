@@ -209,6 +209,12 @@ export const NewSession: React.FC = () => {
         code: 'TRANSCRIPTION_COMPLETED',
         message: `Transcription completed with ${Math.round((transcriptionState.confidenceScore || 0) * 100)}% confidence`
       })
+    } else if (transcriptionState.status === 'failed_empty_transcript') {
+      publishFeedback({
+        kind: 'warning',
+        title: t('sessions.transcription.empty_warning_title'),
+        message: t('sessions.transcription.empty_warning_message')
+      })
     } else if (transcriptionState.status === 'failed' && transcriptionState.error) {
       publishFeedback({
         kind: 'error',
@@ -216,7 +222,7 @@ export const NewSession: React.FC = () => {
         message: transcriptionState.error
       })
     }
-  }, [transcriptionState.status, transcriptionState.transcript, transcriptionState.error, transcriptionState.confidenceScore])
+  }, [transcriptionState.status, transcriptionState.transcript, transcriptionState.error, transcriptionState.confidenceScore, t])
 
   // Simulate autosave feedback (for now)
   useEffect(() => {

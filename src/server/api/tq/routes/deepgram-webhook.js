@@ -177,7 +177,40 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     console.log(`[Webhook] 📊 Confidence: ${transcriptionData.confidence_score}`);
     console.log(`[Webhook] ⏱️  Duration: ${transcriptionData.processing_duration_seconds}s`);
 
-    // Update transcription with results
+    // Check if transcript is empty or has too few words (4 or less indicates failure)
+    const isTranscriptEmpty = !transcriptionData.transcript || transcriptionData.transcript.trim() === '';
+    const wordCount = transcriptionData.word_timestamps?.length || 0;
+    const isTooFewWords = wordCount <= 4;
+
+    console.log(`[Webhook] 🔢 Word count: ${wordCount}`);
+
+    if (isTranscriptEmpty || isTooFewWords) {
+      const reason = isTranscriptEmpty ? 'empty transcript' : `too few words (${wordCount} words)`;
+      console.log(`[Webhook] ⚠️  Failed transcription detected: ${reason} - marking as failed (no charge to user)`);
+
+      // Update status to failed_empty_transcript but keep the record (user can still download audio)
+      await client.query(
+        `UPDATE ${tenantSchema}.transcription
+         SET transcript_status = 'failed_empty_transcript',
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [transcriptionId]
+      );
+
+      await client.query('COMMIT');
+
+      // Do NOT register usage (no cost for empty/failed transcriptions)
+      console.log(`[Webhook] 💰 No usage recorded - user will NOT be charged for failed transcript`);
+
+      return res.json({
+        success: true,
+        message: `Failed transcription detected (${reason}) - no charge applied`,
+        emptyTranscript: true,
+        wordCount
+      });
+    }
+
+    // Update transcription with results (only if transcript is NOT empty)
     const updateResult = await client.query(
       `UPDATE ${tenantSchema}.transcription
        SET transcript = $1,

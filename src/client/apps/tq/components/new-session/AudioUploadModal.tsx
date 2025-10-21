@@ -55,6 +55,12 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
         onClose()
       }, 1500)
     }
+
+    // Do NOT auto-close if transcription failed due to empty result
+    // User should manually close after seeing the warning message
+    if (state.status === 'failed_empty_transcript') {
+      // Keep modal open - user will close manually after reading warning
+    }
   }, [state.status, state.transcript, transcriptionId, onTranscriptionComplete, onClose])
 
   // Validate file type and size

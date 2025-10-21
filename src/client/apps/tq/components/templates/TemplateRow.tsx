@@ -36,42 +36,40 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
 
   return (
     <div
-      className="flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="flex items-center gap-6 flex-1 min-w-0">
-        {/* Created At */}
-        <div className="w-24">
-          <span className="text-sm text-gray-600">
-            {formatShortDate(template.createdAt)}
-          </span>
-        </div>
-
-        {/* Title */}
-        <div className="min-w-0 flex-1">
-          <span className="font-medium text-gray-900 truncate">
-            {template.title}
-          </span>
-        </div>
-
-        {/* Description or Content Preview */}
-        <div className="min-w-0 flex-1">
-          <span className="text-gray-600 truncate">
-            {template.description || truncateContent(template.content)}
-          </span>
-        </div>
-
-        {/* Usage Count */}
-        <div className="w-20">
-          <span className="text-gray-600 text-sm">
-            {template.usageCount}
-          </span>
-        </div>
+      {/* Created At */}
+      <div className="w-24">
+        <span className="text-sm text-gray-600">
+          {formatShortDate(template.createdAt)}
+        </span>
       </div>
 
-      {/* Actions - visible on hover */}
-      <div className={`flex items-center gap-1 transition-opacity duration-200 ${
+      {/* Title */}
+      <div className="min-w-0 flex-1">
+        <span className="font-medium text-gray-900 truncate">
+          {template.title}
+        </span>
+      </div>
+
+      {/* Description or Content Preview */}
+      <div className="min-w-0 flex-1">
+        <span className="text-gray-600 truncate">
+          {template.description || truncateContent(template.content)}
+        </span>
+      </div>
+
+      {/* Usage Count */}
+      <div className="w-20">
+        <span className="text-gray-600 text-sm">
+          {template.usageCount}
+        </span>
+      </div>
+
+      {/* Actions - visible on hover - Fixed width to match header */}
+      <div className={`w-24 flex items-center justify-end gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}>
         <Tooltip content={t('common:edit')}>

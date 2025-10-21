@@ -757,7 +757,9 @@
     "new_session": "Nova Sessão",
     "create": "Criar",
     "edit": "Editar",
-    "design": "Design"
+    "design": "Design",
+    "ai_agent": "Agentes de IA",
+    "email_template": "Template de Email"
   },
   "configurations": {
     "ai_agent": {

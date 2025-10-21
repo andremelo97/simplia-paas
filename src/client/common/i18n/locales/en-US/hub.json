@@ -5,7 +5,10 @@
   "no_apps": "You don't have access to any applications yet.",
   "breadcrumbs": {
     "home": "Home",
-    "configurations": "Configurations"
+    "configurations": "Configurations",
+    "branding": "Branding",
+    "communication": "Communication",
+    "transcription": "Transcription"
   },
   "login": {
     "title": "Sign in to continue",

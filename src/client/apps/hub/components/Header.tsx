@@ -26,7 +26,10 @@ const buildBreadcrumbs = (pathname: string, t: TFunction<'hub'>): BreadcrumbItem
 
   const mapSegmentToLabel = (segment: string) => {
     const mapping: Record<string, string> = {
-      configurations: t('breadcrumbs.configurations')
+      configurations: t('breadcrumbs.configurations'),
+      branding: t('breadcrumbs.branding'),
+      communication: t('breadcrumbs.communication'),
+      transcription: t('breadcrumbs.transcription')
     }
     return mapping[segment] || segment.charAt(0).toUpperCase() + segment.slice(1)
   }

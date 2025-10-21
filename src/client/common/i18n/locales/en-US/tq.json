@@ -785,7 +785,9 @@
     "new_session": "New Session",
     "create": "Create",
     "edit": "Edit",
-    "design": "Design"
+    "design": "Design",
+    "ai_agent": "AI Agents",
+    "email_template": "Email Template"
   },
   "configurations": {
     "ai_agent": {

@@ -177,15 +177,15 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     console.log(`[Webhook] 📊 Confidence: ${transcriptionData.confidence_score}`);
     console.log(`[Webhook] ⏱️  Duration: ${transcriptionData.processing_duration_seconds}s`);
 
-    // Check if transcript is empty or has too few words (4 or less indicates failure)
+    // Check if transcript is empty or too short (10 characters or less indicates failure)
     const isTranscriptEmpty = !transcriptionData.transcript || transcriptionData.transcript.trim() === '';
-    const wordCount = transcriptionData.word_timestamps?.length || 0;
-    const isTooFewWords = wordCount <= 4;
+    const transcriptLength = transcriptionData.transcript?.trim().length || 0;
+    const isTooShort = transcriptLength <= 10;
 
-    console.log(`[Webhook] 🔢 Word count: ${wordCount}`);
+    console.log(`[Webhook] 🔢 Transcript length: ${transcriptLength} characters`);
 
-    if (isTranscriptEmpty || isTooFewWords) {
-      const reason = isTranscriptEmpty ? 'empty transcript' : `too few words (${wordCount} words)`;
+    if (isTranscriptEmpty || isTooShort) {
+      const reason = isTranscriptEmpty ? 'empty transcript' : `too short (${transcriptLength} characters)`;
       console.log(`[Webhook] ⚠️  Failed transcription detected: ${reason} - marking as failed (no charge to user)`);
 
       // Update status to failed_empty_transcript but keep the record (user can still download audio)
@@ -206,7 +206,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
         success: true,
         message: `Failed transcription detected (${reason}) - no charge applied`,
         emptyTranscript: true,
-        wordCount
+        transcriptLength
       });
     }
 

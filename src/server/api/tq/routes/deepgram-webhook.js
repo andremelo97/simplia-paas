@@ -183,7 +183,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     // DEBUG: Log full transcription data for debugging
     console.log(`[Webhook] 🔍 DEBUG - Full transcriptionData:`, JSON.stringify(transcriptionData, null, 2));
 
-    // Check if transcript is empty or too short (40 characters or less indicates failure)
+    // Check if transcript is empty or too short (60 characters or less indicates failure)
     try {
       console.log(`[Webhook] 🔍 DEBUG - Starting validation...`);
       console.log(`[Webhook] 🔍 DEBUG - transcriptionData.transcript type:`, typeof transcriptionData.transcript);
@@ -195,7 +195,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       const transcriptLength = transcriptionData.transcript?.trim().length || 0;
       console.log(`[Webhook] 🔍 DEBUG - transcriptLength:`, transcriptLength);
 
-      const isTooShort = transcriptLength <= 40;
+      const isTooShort = transcriptLength <= 60;
       console.log(`[Webhook] 🔍 DEBUG - isTooShort:`, isTooShort);
 
       console.log(`[Webhook] 🔢 Transcript length: ${transcriptLength} characters`);

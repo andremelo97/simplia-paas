@@ -271,7 +271,7 @@
     "audioNotAvailable": "Áudio não disponível ou já foi deletado",
     "transcription": {
       "empty_warning_title": "Transcrição Vazia",
-      "empty_warning_message": "Sua transcrição retornou vazia. Isso acontece quando o idioma do áudio é diferente da configuração do sistema. Para mudar a configuração de idioma: Hub > Configurações > Transcrição.\n\n✅ Seu limite de uso não foi consumido por esta transcrição."
+      "empty_warning_message": "Sua transcrição retornou vazia. Isso acontece quando o idioma do áudio é diferente da configuração do sistema. Para mudar a configuração de idioma: Hub > Configurações > Transcrição.\n\n**Seu limite de uso não foi consumido por esta transcrição.**"
     },
     "pages": {
       "management_title": "Gerenciamento de Sessões",

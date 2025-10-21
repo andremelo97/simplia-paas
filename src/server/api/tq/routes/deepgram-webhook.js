@@ -203,17 +203,44 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       if (isTranscriptEmpty || isTooShort) {
         const reason = isTranscriptEmpty ? 'empty transcript' : `too short (${transcriptLength} characters)`;
         console.log(`[Webhook] ⚠️  Failed transcription detected: ${reason} - marking as failed (no charge to user)`);
+        console.log(`[Webhook] 🔍 DEBUG - About to UPDATE with transcriptionId: ${transcriptionId}, schema: ${tenantSchema}`);
+
+        // Check current status before UPDATE
+        const beforeUpdate = await client.query(
+          `SELECT id, transcript_status FROM ${tenantSchema}.transcription WHERE id = $1`,
+          [transcriptionId]
+        );
+        console.log(`[Webhook] 🔍 DEBUG - Current status BEFORE update:`, beforeUpdate.rows[0]);
 
         // Update status to failed_empty_transcript but keep the record (user can still download audio)
-        await client.query(
+        const updateResult = await client.query(
           `UPDATE ${tenantSchema}.transcription
            SET transcript_status = 'failed_empty_transcript',
                updated_at = CURRENT_TIMESTAMP
-           WHERE id = $1`,
+           WHERE id = $1
+           RETURNING id, transcript_status`,
           [transcriptionId]
         );
 
+        console.log(`[Webhook] 🔍 DEBUG - UPDATE result rowCount: ${updateResult.rowCount}`);
+        console.log(`[Webhook] 🔍 DEBUG - UPDATE RETURNING:`, updateResult.rows[0]);
+
+        if (updateResult.rowCount === 0) {
+          console.error(`[Webhook] ❌ ERROR - UPDATE affected 0 rows! Transcription ID ${transcriptionId} not found in ${tenantSchema}.transcription`);
+        } else {
+          console.log(`[Webhook] ✅ Successfully updated ${updateResult.rowCount} row(s) to failed_empty_transcript`);
+        }
+
+        console.log(`[Webhook] 🔍 DEBUG - About to COMMIT transaction...`);
         await client.query('COMMIT');
+        console.log(`[Webhook] ✅ Transaction committed successfully`);
+
+        // Verify status after commit
+        const afterCommit = await client.query(
+          `SELECT id, transcript_status FROM ${tenantSchema}.transcription WHERE id = $1`,
+          [transcriptionId]
+        );
+        console.log(`[Webhook] 🔍 DEBUG - Current status AFTER commit:`, afterCommit.rows[0]);
 
         // Do NOT register usage (no cost for empty/failed transcriptions)
         console.log(`[Webhook] 💰 No usage recorded - user will NOT be charged for failed transcript`);

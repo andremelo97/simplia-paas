@@ -473,7 +473,7 @@ CREATE TABLE IF NOT EXISTS public.tenant_transcription_usage (
   stt_model VARCHAR(50) NOT NULL,
   stt_provider_request_id VARCHAR(255),
   cost_usd NUMERIC(10,4) NOT NULL DEFAULT 0.0000 CHECK (cost_usd >= 0),
-  usage_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  usage_date TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

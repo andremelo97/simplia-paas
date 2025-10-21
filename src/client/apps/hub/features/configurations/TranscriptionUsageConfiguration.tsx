@@ -3,6 +3,7 @@ import { Clock, TrendingUp, Settings, AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Label, Progress, Alert, Checkbox, Select } from '@client/common/ui'
 import { transcriptionUsageService } from '../../services/transcriptionUsageService'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface CurrentUsage {
   month: string
@@ -58,6 +59,7 @@ const RECORDS_PER_PAGE = 10
 
 export const TranscriptionUsageConfiguration: React.FC = () => {
   const { t } = useTranslation('hub')
+  const { formatShortDate, formatMonthYear } = useDateFormatter()
   const [usage, setUsage] = useState<UsageData | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -196,12 +198,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
     return `${hours}h ${mins}m`
   }
 
-  const formatMonth = (monthStr: string): string => {
-    const [year, month] = monthStr.split('-')
-    const date = new Date(parseInt(year), parseInt(month) - 1)
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-  }
-
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -210,11 +206,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
 
   const formatCost = (costUsd: number): string => {
     return `$${costUsd.toFixed(4)}`
-  }
-
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   }
 
   const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE)
@@ -295,7 +286,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         <div className="flex items-center gap-2 mb-4">
           <TrendingUp className="h-5 w-5 text-[#B725B7]" />
           <h2 className="text-lg font-semibold text-gray-900">
-            {t('transcription_usage.current_month')} ({formatMonth(usage.current.month)})
+            {t('transcription_usage.current_month')} ({formatMonthYear(new Date(usage.current.month + '-01'))})
           </h2>
         </div>
 
@@ -515,7 +506,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
                 const usagePercent = (record.minutesUsed / record.limit) * 100
                 return (
                   <tr key={record.month} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-sm text-gray-900">{formatMonth(record.month)}</td>
+                    <td className="py-3 px-4 text-sm text-gray-900">{formatMonthYear(new Date(record.month + '-01'))}</td>
                     <td className="py-3 px-4 text-sm text-right text-gray-900">
                       {record.minutesUsed.toLocaleString()}
                     </td>
@@ -578,7 +569,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
                 <tbody>
                   {detailRecords.map((record) => (
                     <tr key={record.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(record.usageDate)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{formatShortDate(record.usageDate)}</td>
                       <td className="py-3 px-4 text-sm text-right text-gray-900 font-mono">
                         {formatDuration(record.audioDurationSeconds)}
                       </td>

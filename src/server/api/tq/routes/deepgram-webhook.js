@@ -245,12 +245,15 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
         // Do NOT register usage (no cost for empty/failed transcriptions)
         console.log(`[Webhook] 💰 No usage recorded - user will NOT be charged for failed transcript`);
 
-        return res.json({
+        console.log(`[Webhook] 🔍 DEBUG - Sending 200 OK response to Deepgram...`);
+        res.status(200).json({
           success: true,
           message: `Failed transcription detected (${reason}) - no charge applied`,
           emptyTranscript: true,
           transcriptLength
         });
+        console.log(`[Webhook] ✅ Response sent successfully - webhook processing complete`);
+        return;
       }
 
       console.log(`[Webhook] ✅ Validation passed - transcript is valid (${transcriptLength} characters)`);
@@ -303,7 +306,9 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       console.error(`[Transcription Usage] Failed to record usage for transcription ${transcriptionId}:`, error);
     });
 
-    res.json({ success: true, message: 'Transcription processed successfully' });
+    console.log(`[Webhook] 🔍 DEBUG - Sending 200 OK response to Deepgram (valid transcript)...`);
+    res.status(200).json({ success: true, message: 'Transcription processed successfully' });
+    console.log(`[Webhook] ✅ Response sent successfully - webhook processing complete`);
 
   } catch (error) {
     // Only rollback if transaction was started

@@ -385,12 +385,13 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
                   className="flex-1"
                 />
               </div>
-              {validationError && (
+              {validationError ? (
                 <p className="text-sm text-red-600 mt-2">{validationError}</p>
+              ) : (
+                <p className="text-xs text-gray-500 mt-2">
+                  {t('transcription_usage.minimum_limit', { limit: BASIC_LIMIT.toLocaleString() })}
+                </p>
               )}
-              <p className="text-xs text-gray-500 mt-2">
-                {t('transcription_usage.minimum_limit', { limit: BASIC_LIMIT.toLocaleString() })}
-              </p>
             </div>
           )}
 

@@ -44,18 +44,23 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
     prevOpenRef.current = open
   }, [open]) // Removed 'actions' from dependencies to prevent unnecessary resets
 
-  // Handle transcription completion (including empty/short transcripts)
+  // Handle transcription completion
   React.useEffect(() => {
-    const isCompleted = state.status === 'completed' || state.status === 'failed_empty_transcript'
-
-    if (isCompleted && state.transcript && transcriptionId && onTranscriptionComplete) {
+    if (state.status === 'completed' && state.transcript && transcriptionId && onTranscriptionComplete) {
       // Pass both transcript text and transcriptionId
       onTranscriptionComplete(state.transcript, transcriptionId)
 
-      // Auto-close modal after a short delay (even for empty/short transcripts)
+      // Auto-close modal after a short delay
       setTimeout(() => {
         onClose()
       }, 1500)
+    }
+
+    // For empty/short transcripts: keep modal open, show feedback inside
+    if (state.status === 'failed_empty_transcript' && state.transcript && transcriptionId && onTranscriptionComplete) {
+      // Pass transcript but DO NOT auto-close - user must close manually
+      onTranscriptionComplete(state.transcript, transcriptionId)
+      // Modal stays open to show info message
     }
   }, [state.status, state.transcript, transcriptionId, onTranscriptionComplete, onClose])
 
@@ -263,6 +268,24 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
                 {t('modals.audio_upload.success_message')}
               </AlertDescription>
             </Alert>
+          </div>
+        )}
+
+        {/* Empty/Short Transcript Info State */}
+        {state.status === 'failed_empty_transcript' && (
+          <div className="text-center space-y-4">
+            <AlertCircle className="mx-auto h-12 w-12 text-blue-500" />
+            <div>
+              <h3 className="text-lg font-medium text-gray-900">{t('sessions.transcription.empty_warning_title')}</h3>
+              <p className="text-gray-600 mt-1 text-sm whitespace-pre-line">
+                {t('sessions.transcription.empty_warning_message')}
+              </p>
+            </div>
+            <div className="flex justify-center space-x-3 mt-4">
+              <Button variant="primary" onClick={onClose}>
+                {t('common.close')}
+              </Button>
+            </div>
           </div>
         )}
 

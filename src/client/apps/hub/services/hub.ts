@@ -128,6 +128,22 @@ class HubService {
     }
   }
 
+  async changePassword(currentPassword: string, newPassword: string) {
+    const { tenantId } = useAuthStore.getState()
+
+    if (!tenantId) {
+      throw new Error('Tenant context not available')
+    }
+
+    // x-tenant-id header will be automatically injected by interceptor
+    const response = await api.post('/internal/api/v1/auth/change-password', {
+      currentPassword,
+      newPassword
+    })
+
+    return response.data
+  }
+
   async getEntitlements(): Promise<EntitlementsResponse> {
     const { tenantId } = useAuthStore.getState()
 

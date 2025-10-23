@@ -1,6 +1,6 @@
 const express = require('express');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
-const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth');
+const { requireAuth, requireManagerOrAdmin, createRateLimit } = require('../../../infra/middleware/auth');
 const { Session, SessionNotFoundError } = require('../../../infra/models/Session');
 
 const router = express.Router();
@@ -284,7 +284,7 @@ router.get('/:id', async (req, res) => {
  *       401:
  *         description: Authentication required
  */
-router.post('/', async (req, res) => {
+router.post('/', requireManagerOrAdmin, async (req, res) => {
   try {
     const schema = req.tenant?.schema;
 

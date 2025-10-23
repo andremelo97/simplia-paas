@@ -1,9 +1,11 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
 const authService = require('../../../infra/authService');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
 const { requireAuth, optionalAuth, createRateLimit } = require('../../../infra/middleware/auth');
 const { validatePassword, isValidEmail } = require('../../../../shared/types/user');
 const db = require('../../../infra/db/database');
+const User = require('../../../infra/models/User');
 
 const router = express.Router();
 
@@ -209,6 +211,162 @@ router.post('/logout', requireAuth, async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Logout failed'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /auth/change-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Change user password
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Allows authenticated user to change their own password.
+ *       Requires current password for verification.
+ *       After successful password change, user must login again.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Tenant identifier
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Current password for verification
+ *               newPassword:
+ *                 type: string
+ *                 description: New password (minimum 6 characters)
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: 'PASSWORD_CHANGED' }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     userId: { type: integer }
+ *                     changedAt: { type: string }
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Invalid current password or authentication required
+ */
+router.post('/change-password', requireAuth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user?.userId;
+    const tenantId = req.tenant?.id;
+
+    // Validate request
+    if (!userId || !tenantId) {
+      return res.status(401).json({
+        error: {
+          code: 401,
+          message: 'Authentication required'
+        }
+      });
+    }
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Current password and new password are required'
+        }
+      });
+    }
+
+    // Validate new password strength
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'New password must be at least 6 characters long'
+        }
+      });
+    }
+
+    // Check if new password is different from current
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'New password must be different from current password'
+        }
+      });
+    }
+
+    // Fetch user with password hash
+    const user = await User.findById(userId, tenantId);
+
+    if (!user) {
+      return res.status(401).json({
+        error: {
+          code: 401,
+          message: 'User not found'
+        }
+      });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.passwordHash);
+
+    if (!isValidPassword) {
+      return res.status(401).json({
+        error: {
+          code: 'INVALID_CURRENT_PASSWORD',
+          message: 'The current password you entered is incorrect'
+        }
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 10;
+    const newPasswordHash = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update password
+    await user.updatePassword(newPasswordHash);
+
+    res.json({
+      success: true,
+      meta: {
+        code: 'PASSWORD_CHANGED'
+      },
+      data: {
+        userId: user.id,
+        changedAt: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to change password'
+      }
     });
   }
 });

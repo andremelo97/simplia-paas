@@ -1,6 +1,6 @@
 const express = require('express');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
-const { requireAuth } = require('../../../infra/middleware/auth');
+const { requireAuth, requireAdmin } = require('../../../infra/middleware/auth');
 const { getLocaleFromTimezone } = require('../../../infra/utils/localeMapping');
 const { AIAgentConfiguration, AIAgentConfigurationNotFoundError } = require('../../../infra/models/AIAgentConfiguration');
 
@@ -70,7 +70,7 @@ console.log('🔧 [AI Agent Configuration Router] AI Agent Configuration router 
  *       500:
  *         description: Internal server error
  */
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const schema = req.tenant?.schema;
 
@@ -165,7 +165,7 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.put('/', async (req, res) => {
+router.put('/', requireAdmin, async (req, res) => {
   try {
     const schema = req.tenant?.schema;
 
@@ -259,7 +259,7 @@ router.put('/', async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.post('/reset', async (req, res) => {
+router.post('/reset', requireAdmin, async (req, res) => {
   try {
     const schema = req.tenant?.schema;
 

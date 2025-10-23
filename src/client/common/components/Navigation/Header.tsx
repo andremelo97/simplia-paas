@@ -2,16 +2,17 @@ import React from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { LogOut, Bell, Search } from 'lucide-react'
-import { 
-  Button, 
-  Avatar, 
+import {
+  Button,
+  Avatar,
   AvatarFallback,
   Breadcrumb,
   BreadcrumbList,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbPage,
-  BreadcrumbSeparator
+  BreadcrumbSeparator,
+  Tooltip
 } from '@client/common/ui'
 import { cn } from '@client/common/utils/cn'
 
@@ -39,6 +40,8 @@ export interface HeaderProps {
   user?: User | null
   tenant?: Tenant | null
   onLogout?: () => void
+  onUserClick?: () => void
+  userTooltip?: string
   getBreadcrumbs?: (pathname: string) => BreadcrumbItem[]
   showSearch?: boolean
   showNotifications?: boolean
@@ -107,6 +110,8 @@ export const Header: React.FC<HeaderProps> = ({
   user,
   tenant,
   onLogout,
+  onUserClick,
+  userTooltip,
   getBreadcrumbs = defaultGetBreadcrumbs,
   showSearch = true,
   showNotifications = true,
@@ -242,11 +247,35 @@ export const Header: React.FC<HeaderProps> = ({
             )}
             
             {/* Avatar */}
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-gray-900 text-white text-sm font-medium">
-                {getInitials(user?.firstName, user?.lastName, user?.email)}
-              </AvatarFallback>
-            </Avatar>
+            {onUserClick && userTooltip ? (
+              <Tooltip content={userTooltip} side="bottom">
+                <div
+                  onClick={onUserClick}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                  role="button"
+                  aria-label={userTooltip}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      onUserClick()
+                    }
+                  }}
+                >
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-gray-900 text-white text-sm font-medium">
+                      {getInitials(user?.firstName, user?.lastName, user?.email)}
+                    </AvatarFallback>
+                  </Avatar>
+                </div>
+              </Tooltip>
+            ) : (
+              <Avatar className="w-8 h-8">
+                <AvatarFallback className="bg-gray-900 text-white text-sm font-medium">
+                  {getInitials(user?.firstName, user?.lastName, user?.email)}
+                </AvatarFallback>
+              </Avatar>
+            )}
             
             {/* Logout */}
             {showLogout && onLogout && (

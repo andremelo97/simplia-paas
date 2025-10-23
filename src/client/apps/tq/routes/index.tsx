@@ -120,7 +120,11 @@ export const AppRoutes: React.FC = () => {
       >
         <Route index element={<Home />} />
         <Route path="home" element={<Home />} />
-        <Route path="new-session" element={<NewSession />} />
+        <Route path="new-session" element={
+          <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
+            <NewSession />
+          </RouteGuard>
+        } />
         <Route path="sessions" element={<Sessions />} />
         <Route path="sessions/:id/edit" element={<EditSession />} />
         <Route path="patients" element={<Patients />} />
@@ -164,8 +168,12 @@ export const AppRoutes: React.FC = () => {
         {/* Design Public Quote Template - Full screen Puck editor */}
         <Route path="public-quotes/templates/:id/design" element={<DesignPublicQuoteTemplate />} />
 
-        {/* Configurations */}
-        <Route path="configurations" element={<Configurations />}>
+        {/* Configurations - Admin only */}
+        <Route path="configurations" element={
+          <RouteGuard requireAuth requiredRole="admin" requiredApp="tq">
+            <Configurations />
+          </RouteGuard>
+        }>
           <Route index element={<Navigate to="ai-agent" replace />} />
           <Route path="ai-agent" element={<AIAgentConfiguration />} />
           <Route path="email-template" element={<EmailTemplateConfiguration />} />

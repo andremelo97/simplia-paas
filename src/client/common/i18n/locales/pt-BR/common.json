@@ -243,6 +243,18 @@
     "ITEM_DELETE_NOT_ALLOWED": {
       "title": "Não é Possível Deletar Item",
       "message": "Itens não podem ser deletados por questões de integridade de dados."
+    },
+    "PASSWORD_CHANGED": {
+      "title": "Senha Alterada",
+      "message": "Sua senha foi alterada com sucesso. Por favor, faça login novamente."
+    },
+    "INVALID_CURRENT_PASSWORD": {
+      "title": "Senha Incorreta",
+      "message": "A senha atual que você digitou está incorreta."
+    },
+    "DUPLICATE_USER": {
+      "title": "Usuário Já Existe",
+      "message": "Um usuário com este e-mail já existe neste tenant."
     }
   }
 }

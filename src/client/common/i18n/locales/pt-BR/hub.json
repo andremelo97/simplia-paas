@@ -6,6 +6,7 @@
   "breadcrumbs": {
     "home": "Início",
     "configurations": "Configurações",
+    "user_configurations": "Configurações de Usuário",
     "branding": "Marca",
     "communication": "Comunicação",
     "transcription": "Transcrição"
@@ -217,5 +218,27 @@
     "quota_warning_message": "Você usou {{used}} de {{limit}} minutos ({{percent}}%). Considere gerenciar seu uso ou aumentar seu limite.",
     "quota_exceeded_title": "Cota Excedida",
     "quota_exceeded_message": "Você atingiu seu limite mensal de {{limit}} minutos. Não é possível iniciar nova transcrição até o próximo mês. Entre em contato com seu gerente de conta para aumentar seu limite."
+  },
+  "header": {
+    "user_settings_tooltip": "Configurações de Usuário"
+  },
+  "user_settings": {
+    "title": "Configurações de Usuário",
+    "password": {
+      "section_title": "Senha",
+      "current_password": "Senha Atual",
+      "new_password": "Nova Senha",
+      "confirm_password": "Confirmar Nova Senha",
+      "submit": "Mudar Senha",
+      "submitting": "Alterando...",
+      "validation": {
+        "current_required": "Senha atual é obrigatória",
+        "new_required": "Nova senha é obrigatória",
+        "new_min_length": "Senha deve ter no mínimo 6 caracteres",
+        "confirm_required": "Confirme sua nova senha",
+        "passwords_dont_match": "As senhas não coincidem",
+        "same_as_current": "Nova senha deve ser diferente da senha atual"
+      }
+    }
   }
 }

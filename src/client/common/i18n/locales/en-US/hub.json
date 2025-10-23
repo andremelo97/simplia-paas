@@ -6,6 +6,7 @@
   "breadcrumbs": {
     "home": "Home",
     "configurations": "Configurations",
+    "user_configurations": "User Settings",
     "branding": "Branding",
     "communication": "Communication",
     "transcription": "Transcription"
@@ -217,5 +218,27 @@
     "quota_warning_message": "You have used {{used}} of {{limit}} minutes ({{percent}}%). Consider managing your usage or increasing your limit.",
     "quota_exceeded_title": "Quota Exceeded",
     "quota_exceeded_message": "You have reached your monthly limit of {{limit}} minutes. Cannot start new transcription until next month. Contact your account manager to increase your limit."
+  },
+  "header": {
+    "user_settings_tooltip": "User Settings"
+  },
+  "user_settings": {
+    "title": "User Settings",
+    "password": {
+      "section_title": "Password",
+      "current_password": "Current Password",
+      "new_password": "New Password",
+      "confirm_password": "Confirm New Password",
+      "submit": "Change Password",
+      "submitting": "Changing...",
+      "validation": {
+        "current_required": "Current password is required",
+        "new_required": "New password is required",
+        "new_min_length": "Password must be at least 6 characters",
+        "confirm_required": "Please confirm your new password",
+        "passwords_dont_match": "Passwords don't match",
+        "same_as_current": "New password must be different from current password"
+      }
+    }
   }
 }

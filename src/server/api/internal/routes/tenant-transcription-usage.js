@@ -1,5 +1,5 @@
 const express = require('express');
-const { requireAuth } = require('../../../infra/middleware/auth');
+const { requireAuth, requireAdmin } = require('../../../infra/middleware/auth');
 const {
   TenantTranscriptionConfig,
   TenantTranscriptionConfigNotFoundError,
@@ -62,7 +62,7 @@ router.use(requireAuth);
  *       403:
  *         description: Transcription not configured for tenant
  */
-router.get('/transcription-usage', async (req, res) => {
+router.get('/transcription-usage', requireAdmin, async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
 
@@ -224,7 +224,7 @@ router.get('/transcription-usage', async (req, res) => {
  *       403:
  *         description: Transcription not configured for tenant
  */
-router.get('/transcription-usage/details', async (req, res) => {
+router.get('/transcription-usage/details', requireAdmin, async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
     const limit = parseInt(req.query.limit) || 10;
@@ -313,7 +313,7 @@ router.get('/transcription-usage/details', async (req, res) => {
  *       403:
  *         description: Transcription not configured or not VIP plan
  */
-router.put('/transcription-config', async (req, res) => {
+router.put('/transcription-config', requireAdmin, async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
     const { customMonthlyLimit, transcriptionLanguage, overageAllowed } = req.body;

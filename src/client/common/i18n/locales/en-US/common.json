@@ -227,6 +227,18 @@
     "ITEM_DELETE_NOT_ALLOWED": {
       "title": "Cannot Delete Item",
       "message": "Items cannot be deleted for data integrity reasons."
+    },
+    "PASSWORD_CHANGED": {
+      "title": "Password Changed",
+      "message": "Your password has been changed successfully. Please sign in again."
+    },
+    "INVALID_CURRENT_PASSWORD": {
+      "title": "Incorrect Password",
+      "message": "The current password you entered is incorrect."
+    },
+    "DUPLICATE_USER": {
+      "title": "User Already Exists",
+      "message": "A user with this email already exists in this tenant."
     }
   }
 }

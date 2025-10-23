@@ -3357,7 +3357,7 @@ router.post('/:tenantId/users', async (req, res) => {
     if (error.name === 'DuplicateUserError') {
       return res.status(409).json({
         error: {
-          code: 409,
+          code: 'DUPLICATE_USER',
           message: error.message
         }
       });

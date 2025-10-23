@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth');
+const { requireAuth, requireAdmin, createRateLimit } = require('../../../infra/middleware/auth');
 const { TenantBranding, TenantBrandingNotFoundError } = require('../../../infra/models/TenantBranding');
 const SupabaseStorageService = require('../../../services/supabaseStorage');
 
@@ -107,7 +107,7 @@ router.use(internalRateLimit);
  *       401:
  *         description: Authentication required
  */
-router.get('/', async (req, res) => {
+router.get('/', requireAdmin, async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
 
@@ -181,7 +181,7 @@ router.get('/', async (req, res) => {
  *       400:
  *         description: Validation error
  */
-router.put('/', async (req, res) => {
+router.put('/', requireAdmin, async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
 
@@ -280,7 +280,7 @@ router.put('/', async (req, res) => {
  *       404:
  *         description: No custom branding configuration found
  */
-router.delete('/', async (req, res) => {
+router.delete('/', requireAdmin, async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
 
@@ -388,7 +388,7 @@ router.delete('/', async (req, res) => {
  *       413:
  *         description: File too large (max 5MB)
  */
-router.post('/upload-image', upload.single('image'), async (req, res) => {
+router.post('/upload-image', requireAdmin, upload.single('image'), async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
     const { type } = req.query;
@@ -527,7 +527,7 @@ router.post('/upload-image', upload.single('image'), async (req, res) => {
  *       413:
  *         description: File too large (max 20MB)
  */
-router.post('/upload-video', videoUpload.single('video'), async (req, res) => {
+router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
 

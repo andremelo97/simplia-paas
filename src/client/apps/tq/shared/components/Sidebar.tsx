@@ -15,11 +15,12 @@ export const Sidebar: React.FC = () => {
       href: '/',
       icon: Home
     },
-    {
+    // New Session - only for manager and admin (hide from operations)
+    ...(user?.role !== 'operations' ? [{
       name: t('sidebar.new_session'),
       href: '/new-session',
       icon: Plus
-    },
+    }] : []),
     {
       name: t('sidebar.patients'),
       href: '/patients',

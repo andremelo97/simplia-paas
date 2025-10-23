@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 import type { TFunction } from 'i18next'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/auth'
 import { hubService } from '../services/hub'
 import { Header as CommonHeader } from '@client/common/components'
@@ -27,6 +28,7 @@ const buildBreadcrumbs = (pathname: string, t: TFunction<'hub'>): BreadcrumbItem
   const mapSegmentToLabel = (segment: string) => {
     const mapping: Record<string, string> = {
       configurations: t('breadcrumbs.configurations'),
+      'user-configurations': t('breadcrumbs.user_configurations'),
       branding: t('breadcrumbs.branding'),
       communication: t('breadcrumbs.communication'),
       transcription: t('breadcrumbs.transcription')
@@ -59,6 +61,7 @@ const getDisplayRole = (user: any) => {
 export const Header: React.FC = () => {
   const { user, tenantName, tenantSlug } = useAuthStore()
   const { t } = useTranslation('hub')
+  const navigate = useNavigate()
 
   const localizedBreadcrumbs = useCallback(
     (pathname: string) => buildBreadcrumbs(pathname, t),
@@ -67,6 +70,10 @@ export const Header: React.FC = () => {
 
   const handleLogout = () => {
     hubService.logout()
+  }
+
+  const handleUserClick = () => {
+    navigate('/user-configurations')
   }
 
   // Create tenant object for header display
@@ -80,6 +87,8 @@ export const Header: React.FC = () => {
       user={user}
       tenant={tenant}
       onLogout={handleLogout}
+      onUserClick={handleUserClick}
+      userTooltip={t('header.user_settings_tooltip')}
       getBreadcrumbs={localizedBreadcrumbs}
       getDisplayRole={getDisplayRole}
       showSearch={false} // Hub doesn't need search

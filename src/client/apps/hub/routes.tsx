@@ -4,7 +4,7 @@ import { useAuthStore } from './store/auth'
 import { Layout } from './components/Layout'
 import { Login } from './pages/Login'
 import { Home } from './pages/Home'
-import { UserConfigurations } from './pages/UserConfigurations'
+// import { UserConfigurations } from './pages/UserConfigurations' // Commented: modal now opens directly from header
 import { Configurations } from './features/configurations/Configurations'
 import { BrandingConfiguration } from './features/configurations/BrandingConfiguration'
 import { CommunicationConfiguration } from './features/configurations/CommunicationConfiguration'
@@ -91,10 +91,11 @@ export const router = createBrowserRouter([
             index: true,
             element: <Home />
           },
-          {
-            path: 'user-configurations',
-            element: <UserConfigurations />
-          },
+          // Commented: user settings now opens as modal from header click
+          // {
+          //   path: 'user-configurations',
+          //   element: <UserConfigurations />
+          // },
           {
             path: 'configurations',
             element: <AdminRoute />,

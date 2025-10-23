@@ -148,24 +148,30 @@ export const AIAgentConfiguration: React.FC = () => {
         )}
 
         {/* Available variables help */}
-        <div className="bg-gray-50 border border-gray-200 rounded-md p-4 mt-4">
-          <h3 className="text-sm font-medium text-gray-900 mb-2">
-            {t('configurations.ai_agent.available_variables')}
-          </h3>
-          <ul className="text-sm text-gray-700 space-y-1">
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$patient.first_name$</code> - Nome do paciente</li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$patient.last_name$</code> - Sobrenome do paciente</li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$patient.fullName$</code> - Nome completo do paciente</li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$date.now$</code> - Data atual</li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$session.created_at$</code> - Data da sessão</li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$transcription$</code> - Transcrição completa <span className="text-red-600 font-semibold">*</span></li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$me.first_name$</code> - Seu nome</li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$me.last_name$</code> - Seu sobrenome</li>
-            <li><code className="bg-gray-100 px-1.5 py-0.5 rounded">$me.fullName$</code> - Seu nome completo</li>
-          </ul>
-          <p className="text-xs text-gray-600 mt-2">
-            <span className="text-red-600 font-semibold">*</span> {t('configurations.ai_agent.transcription_required')}
-          </p>
+        <div className="relative overflow-hidden bg-white border border-[#B725B7] rounded-md p-4 mt-4">
+          {/* Gradient background overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#B725B7] via-[#E91E63] to-[#B725B7] opacity-10" />
+
+          {/* Content */}
+          <div className="relative">
+            <h3 className="text-sm font-medium text-gray-900 mb-2">
+              {t('configurations.ai_agent.available_variables')}
+            </h3>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.first_name$</code> - Nome do paciente</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.last_name$</code> - Sobrenome do paciente</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.fullName$</code> - Nome completo do paciente</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$date.now$</code> - Data atual</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$session.created_at$</code> - Data da sessão</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$transcription$</code> - Transcrição completa <span className="text-red-600 font-semibold">*</span></li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.first_name$</code> - Seu nome</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.last_name$</code> - Seu sobrenome</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.fullName$</code> - Seu nome completo</li>
+            </ul>
+            <p className="text-xs text-gray-600 mt-2">
+              <span className="text-red-600 font-semibold">*</span> {t('configurations.ai_agent.transcription_required')}
+            </p>
+          </div>
         </div>
       </Card>
 

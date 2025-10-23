@@ -191,20 +191,26 @@ export const EmailTemplateConfiguration: React.FC = () => {
           </div>
 
           {/* Available variables help */}
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-            <h3 className="text-sm font-medium text-blue-900 mb-2">
-              {t('configurations.email_template.available_variables')}
-            </h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$quoteNumber$</code> - {t('configurations.email_template.var_quote_number')}</li>
-              <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$patientName$</code> - {t('configurations.email_template.var_patient_name')}</li>
-              <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$clinicName$</code> - {t('configurations.email_template.var_clinic_name')}</li>
-              <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$PUBLIC_LINK$</code> - {t('configurations.email_template.var_public_link')} <span className="text-red-600 font-semibold">*</span></li>
-              <li><code className="bg-blue-100 px-1.5 py-0.5 rounded">$PASSWORD_BLOCK$</code> - {t('configurations.email_template.var_password_block')} <span className="text-red-600 font-semibold">*</span></li>
-            </ul>
-            <p className="text-xs text-blue-700 mt-2">
-              <span className="text-red-600 font-semibold">*</span> {t('configurations.email_template.required_variable')}
-            </p>
+          <div className="relative overflow-hidden bg-white border border-[#B725B7] rounded-md p-4">
+            {/* Gradient background overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#B725B7] via-[#E91E63] to-[#B725B7] opacity-10" />
+
+            {/* Content */}
+            <div className="relative">
+              <h3 className="text-sm font-medium text-gray-900 mb-2">
+                {t('configurations.email_template.available_variables')}
+              </h3>
+              <ul className="text-sm text-gray-700 space-y-1">
+                <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$quoteNumber$</code> - {t('configurations.email_template.var_quote_number')}</li>
+                <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patientName$</code> - {t('configurations.email_template.var_patient_name')}</li>
+                <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$clinicName$</code> - {t('configurations.email_template.var_clinic_name')}</li>
+                <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$PUBLIC_LINK$</code> - {t('configurations.email_template.var_public_link')} <span className="text-red-600 font-semibold">*</span></li>
+                <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$PASSWORD_BLOCK$</code> - {t('configurations.email_template.var_password_block')} <span className="text-red-600 font-semibold">*</span></li>
+              </ul>
+              <p className="text-xs text-gray-600 mt-2">
+                <span className="text-red-600 font-semibold">*</span> {t('configurations.email_template.required_variable')}
+              </p>
+            </div>
           </div>
 
           {/* Action buttons */}

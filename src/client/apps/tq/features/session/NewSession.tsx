@@ -160,6 +160,7 @@ export const NewSession: React.FC = () => {
   // Processing state for upload/transcription feedback
   const [isProcessingAudio, setIsProcessingAudio] = useState(false)
   const [processingMessage, setProcessingMessage] = useState('')
+  const [processingError, setProcessingError] = useState(false) // Track if processing resulted in error
 
   // MediaRecorder refs for actual audio recording
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -823,7 +824,11 @@ export const NewSession: React.FC = () => {
 
   const toggleTranscribing = async () => {
     if (!isTranscribing) {
-      // Start recording
+      // Start recording - clear any previous error state
+      setProcessingError(false)
+      setIsProcessingAudio(false)
+      setProcessingMessage('')
+
       try {
         // Get user media (microphone access)
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -1004,15 +1009,14 @@ export const NewSession: React.FC = () => {
 
           console.log('✅ [Recording] Transcription completed:', result.transcriptionId)
 
-          setProcessingMessage(t('sessions.recording.completed'))
-
-          // Check for empty transcript (language mismatch) and show feedback
+          // Check for empty transcript (language mismatch) and show inline error
           if (result.status === 'failed_empty_transcript') {
-            publishFeedback({
-              kind: 'info',
-              title: t('sessions.transcription_warnings.empty_warning_title'),
-              message: t('sessions.transcription_warnings.empty_warning_message')
-            })
+            setProcessingError(true)
+            setProcessingMessage(t('sessions.transcription_warnings.empty_warning_title'))
+            setIsProcessingAudio(true) // Keep alert visible
+            // Don't clear isProcessingAudio in finally - user needs to see error
+          } else {
+            setProcessingMessage(t('sessions.recording.completed'))
           }
 
           // Update UI with transcription result
@@ -1030,11 +1034,16 @@ export const NewSession: React.FC = () => {
             path: '/tq/new-session'
           })
         } finally {
-          // Reset UI state
+          // Reset UI state (but keep error feedback visible if processingError is true)
           setIsTranscribing(false)
           setIsPaused(false)
-          setIsProcessingAudio(false)
-          setProcessingMessage('')
+
+          // Only clear processing feedback if there was no error
+          if (!processingError) {
+            setIsProcessingAudio(false)
+            setProcessingMessage('')
+          }
+
           timer.reset()  // Reset timer instead of just pausing
 
           // Clear refs
@@ -1459,23 +1468,31 @@ export const NewSession: React.FC = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6 pb-6"> {/* Added horizontal and bottom padding to match header */}
-          {/* Processing feedback - show when uploading/transcribing */}
+          {/* Processing feedback - show when uploading/transcribing or when there's info message */}
           {isProcessingAudio && (
             <Alert className="mb-4" style={{
-              borderColor: 'var(--brand-tertiary)',
-              backgroundColor: 'var(--brand-tertiary-bg)'
+              borderColor: processingError ? '#3b82f6' : 'var(--brand-tertiary)',
+              backgroundColor: processingError ? '#dbeafe' : 'var(--brand-tertiary-bg)'
             }}>
               <div className="flex items-center gap-3">
-                <div
-                  className="animate-spin rounded-full h-5 w-5 border-b-2"
-                  style={{ borderBottomColor: 'var(--brand-tertiary)' }}
-                />
+                {!processingError && (
+                  <div
+                    className="animate-spin rounded-full h-5 w-5 border-b-2"
+                    style={{ borderBottomColor: 'var(--brand-tertiary)' }}
+                  />
+                )}
+                {processingError && (
+                  <AlertCircle className="h-5 w-5 text-blue-600" />
+                )}
                 <div>
-                  <p className="font-semibold" style={{ color: 'var(--brand-primary)' }}>
+                  <p className="font-semibold" style={{ color: processingError ? '#2563eb' : 'var(--brand-primary)' }}>
                     {processingMessage}
                   </p>
                   <p className="text-sm text-gray-600 mt-1">
-                    {t('sessions.recording.wait_message')}
+                    {processingError
+                      ? t('sessions.transcription_warnings.empty_warning_message')
+                      : t('sessions.recording.wait_message')
+                    }
                   </p>
                 </div>
               </div>

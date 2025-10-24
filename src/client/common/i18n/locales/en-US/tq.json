@@ -298,8 +298,8 @@
     "audioDeletedAfter24h": "⚠️ Audio will be automatically deleted after 24 hours",
     "audioNotAvailable": "Audio not available or already deleted",
     "transcription_warnings": {
-      "empty_warning_title": "Empty Transcription",
-      "empty_warning_message": "Your transcription returned empty. This happens when the audio language differs from the system configuration. To change the language setting: Hub > Settings > Transcription.\n\n**Your usage limit was not consumed for this transcription.**"
+      "empty_warning_title": "Oops, something went wrong...",
+      "empty_warning_message": "We couldn't transcribe your audio. This can happen when the audio language is different from your system configuration. To adjust: Hub > Settings > Transcription.\n\n**Don't worry, your usage limit was not consumed.**"
     },
     "pages": {
       "management_title": "Session Management",

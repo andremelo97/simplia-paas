@@ -57,7 +57,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
           JOIN pg_namespace n ON t.typnamespace = n.oid
           WHERE t.typname = 'transcript_status_enum' AND n.nspname = '${schema}'
         ) THEN
-          CREATE TYPE transcript_status_enum AS ENUM ('created','uploading','uploaded','processing','completed','failed','failed_empty_transcript');
+          CREATE TYPE transcript_status_enum AS ENUM ('created','uploading','uploaded','processing','completed','failed','failed_empty_transcript','expired');
         END IF;
       END$$;
     `);

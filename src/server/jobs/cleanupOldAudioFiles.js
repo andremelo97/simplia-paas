@@ -89,10 +89,10 @@ async function cleanupOldAudioFiles() {
             const deleted = await deleteFileByUrl(row.audio_url);
 
             if (deleted) {
-              // Update database - clear URL and mark as deleted
+              // Update database - clear URL, mark as deleted, and set status to expired
               await database.query(`
                 UPDATE ${schema}.transcription
-                SET audio_url = NULL, audio_deleted_at = NOW()
+                SET audio_url = NULL, audio_deleted_at = NOW(), transcript_status = 'expired'
                 WHERE id = $1
               `, [row.id]);
 

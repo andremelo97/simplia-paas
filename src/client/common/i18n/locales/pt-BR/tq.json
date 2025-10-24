@@ -270,8 +270,8 @@
     "audioDeletedAfter24h": "⚠️ O áudio será automaticamente deletado após 24 horas",
     "audioNotAvailable": "Áudio não disponível ou já foi deletado",
     "transcription_warnings": {
-      "empty_warning_title": "Transcrição Vazia",
-      "empty_warning_message": "Sua transcrição retornou vazia. Isso acontece quando o idioma do áudio é diferente da configuração do sistema. Para mudar a configuração de idioma: Hub > Configurações > Transcrição.\n\n**Seu limite de uso não foi consumido por esta transcrição.**"
+      "empty_warning_title": "Ops, algo deu errado...",
+      "empty_warning_message": "Não conseguimos transcrever seu áudio. Isso pode acontecer quando o idioma do áudio é diferente da configuração do sistema. Para ajustar: Hub > Configurações > Transcrição.\n\n**Não se preocupe, seu limite de uso não foi consumido.**"
     },
     "pages": {
       "management_title": "Gerenciamento de Sessões",

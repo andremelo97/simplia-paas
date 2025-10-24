@@ -983,7 +983,23 @@ export const NewSession: React.FC = () => {
           const fileName = `recording-${Date.now()}.webm`
           const audioFile = new File([audioBlob], fileName, { type: 'audio/webm' })
 
-          // Use processAudio method which handles: upload → transcribe → poll for completion
+          // Use hook's uploadAndTranscribe which updates transcriptionState (triggers useEffect for feedback)
+          const transcriptionId = await transcriptionActions.uploadAndTranscribe(audioFile)
+
+          // Get final result from state
+          const result = {
+            transcriptionId,
+            status: transcriptionState.status,
+            transcript: transcriptionState.transcript,
+            confidenceScore: transcriptionState.confidenceScore,
+            processingDuration: transcriptionState.processingDuration
+          }
+
+          console.log('✅ [Recording] Transcription completed:', result.transcriptionId)
+
+          setProcessingMessage(t('sessions.recording.completed'))
+
+          /* OLD CODE - Replaced by hook usage
           const result = await transcriptionService.processAudio(audioFile, {
             onUploadComplete: (transcriptionId) => {
               setProcessingMessage(t('sessions.recording.uploaded'))
@@ -1001,10 +1017,7 @@ export const NewSession: React.FC = () => {
               setProcessingMessage(statusMessages[status.status] || t('sessions.recording.processing'))
             }
           })
-
-          console.log('✅ [Recording] Transcription completed:', result.transcriptionId)
-
-          setProcessingMessage(t('sessions.recording.completed'))
+          */
 
           // Update UI with transcription result
           setTranscription(result.transcript || '')

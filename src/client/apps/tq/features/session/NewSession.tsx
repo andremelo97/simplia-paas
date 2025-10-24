@@ -981,6 +981,8 @@ export const NewSession: React.FC = () => {
         timer.pause()
 
         // Upload audio file and create transcription
+        let shouldKeepAlertVisible = false // Local variable to avoid React state timing issues
+
         try {
           setIsProcessingAudio(true)
           setProcessingMessage(t('sessions.recording.preparing'))
@@ -1011,10 +1013,10 @@ export const NewSession: React.FC = () => {
 
           // Check for empty transcript (language mismatch) and show inline error
           if (result.status === 'failed_empty_transcript') {
+            shouldKeepAlertVisible = true // Use local variable - React state won't update in time for finally block
             setProcessingError(true)
             setProcessingMessage(t('sessions.transcription_warnings.empty_warning_title'))
             setIsProcessingAudio(true) // Keep alert visible
-            // Don't clear isProcessingAudio in finally - user needs to see error
           } else {
             setProcessingMessage(t('sessions.recording.completed'))
           }
@@ -1034,12 +1036,13 @@ export const NewSession: React.FC = () => {
             path: '/tq/new-session'
           })
         } finally {
-          // Reset UI state (but keep error feedback visible if processingError is true)
+          // Reset UI state (but keep error feedback visible if shouldKeepAlertVisible is true)
           setIsTranscribing(false)
           setIsPaused(false)
 
           // Only clear processing feedback if there was no error
-          if (!processingError) {
+          // Use local variable instead of state to avoid timing issues
+          if (!shouldKeepAlertVisible) {
             setIsProcessingAudio(false)
             setProcessingMessage('')
           }

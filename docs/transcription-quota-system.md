@@ -469,51 +469,181 @@ async function checkTranscriptionQuota(req, res, next) {
 
 ---
 
-## 📊 Registro de Uso (Webhook)
+## 📊 Registro de Uso (Webhook + Cron Job)
 
-Após transcrição completada, webhook registra uso:
+### **Fluxo de Registro de Custos:**
+
+O sistema utiliza uma abordagem híbrida para garantir custos precisos:
+
+1. **Webhook (Imediato)**: Calcula custo localmente baseado em detecção de idioma
+2. **Cron Job (Diário)**: Atualiza com custo real da API de gerenciamento do Deepgram
+
+### **1. Webhook Handler (Registro Imediato)**
+
+Após transcrição completada, webhook registra uso com cálculo local:
 
 ```javascript
 // Dentro do webhook handler (após salvar transcript)
 
-// 1. Extrair modelo usado do provider
-const modelCosts = {
-  'nova-3': 0.0052,      // Multilingual
-  'nova-3-mono': 0.0043, // Monolingual
-  'nova-2': 0.0043,
-  'nova': 0.0043,
-  'enhanced': 0.0059,
-  'base': 0.0043
-};
+// 1. Calcular custo local baseado em detecção de idioma
+const audioDurationSeconds = Math.ceil(webhookData.metadata?.duration || 0);
+const detectedLanguage = transcriptionData.detected_language || null;
 
-const model = transcriptionData.model_used || 'nova-3'; // System default: Nova-3 Multilingual
-const costPerMinute = modelCosts[model] || 0.0052;
+// 2. Registrar na tabela de uso (fire and forget)
+// Custo real será atualizado mais tarde pelo cron job diário
+TenantTranscriptionUsage.create(parseInt(tenantId), {
+  transcriptionId: transcriptionId,
+  audioDurationSeconds: audioDurationSeconds,
+  sttModel: DEFAULT_STT_MODEL, // 'nova-3'
+  detectedLanguage: detectedLanguage, // 'pt', 'en', etc. (se multilingual)
+  sttProviderRequestId: sttProviderRequestId, // request_id do Deepgram
+  usageDate: new Date()
+}).catch(error => {
+  console.error(`[Transcription Usage] Failed to record usage for transcription ${transcriptionId}:`, error);
+});
 
-// 2. Calcular custo real
-const durationMinutes = transcriptionData.processing_duration_seconds / 60;
-const costUsd = durationMinutes * costPerMinute;
+console.log(`[Webhook] ✅ Usage logged with local cost calculation`);
+```
 
-// 3. Registrar na tabela de uso
-await client.query(`
-  INSERT INTO public.tenant_transcription_usage (
-    tenant_id_fk,
-    transcription_id,
-    audio_duration_seconds,
-    stt_model,
-    stt_provider_request_id,
-    cost_usd,
-    usage_date
-  ) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_DATE)
-`, [
-  tenantId,
-  transcriptionId,
-  transcriptionData.processing_duration_seconds,
-  model,
-  transcriptionData.request_id,
-  costUsd
-]);
+**Cálculo Local de Custo** (`TenantTranscriptionUsage.create()`):
+```javascript
+static async create(tenantId, data) {
+  const {
+    audioDurationSeconds,
+    sttModel = DEFAULT_STT_MODEL,
+    detectedLanguage = null,
+    costUsd = null // Opcional: custo real do Deepgram
+  } = data;
 
-console.log(`Usage logged: Tenant ${tenantId} - ${durationMinutes.toFixed(2)} min - $${costUsd.toFixed(4)}`);
+  // Usar custo fornecido OU calcular localmente
+  let finalCostUsd;
+
+  if (costUsd !== null) {
+    // Usar custo real da API de gerenciamento do Deepgram
+    finalCostUsd = costUsd;
+  } else {
+    // Calcular localmente baseado em detecção de idioma
+    const durationMinutes = audioDurationSeconds / 60;
+
+    const costPerMinute = detectedLanguage
+      ? MULTILINGUAL_COST_PER_MINUTE  // $0.0052/min (multilingual)
+      : (MODEL_COSTS[sttModel] || DEFAULT_COST_PER_MINUTE); // $0.0043/min (monolingual)
+
+    finalCostUsd = durationMinutes * costPerMinute;
+  }
+
+  // INSERT com custo calculado
+  await database.query(`
+    INSERT INTO public.tenant_transcription_usage (
+      tenant_id_fk, transcription_id, audio_duration_seconds,
+      stt_model, detected_language, stt_provider_request_id,
+      cost_usd, usage_date
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  `, [
+    tenantId, transcriptionId, audioDurationSeconds,
+    sttModel, detectedLanguage, sttProviderRequestId,
+    finalCostUsd.toFixed(4), usageDate
+  ]);
+}
+```
+
+### **2. Cron Job Diário (Atualização de Custos)**
+
+**Objetivo**: Substituir cálculos locais por custos reais da API do Deepgram.
+
+**Arquivo**: `src/server/jobs/updateTranscriptionCosts.js`
+
+**Agendamento**: Todos os dias às 2 AM (0 2 * * *)
+
+**Processo**:
+```javascript
+async function updateTranscriptionCosts() {
+  console.log('[Cron] Starting transcription cost update job...');
+
+  if (!DEEPGRAM_PROJECT_ID) {
+    console.warn('[Cron] DEEPGRAM_PROJECT_ID not configured - skipping cost update');
+    return;
+  }
+
+  // 1. Buscar registros das últimas 24 horas
+  const query = `
+    SELECT
+      id, stt_provider_request_id, cost_usd as current_cost,
+      audio_duration_seconds, detected_language
+    FROM public.tenant_transcription_usage
+    WHERE stt_provider_request_id IS NOT NULL
+      AND usage_date >= NOW() - INTERVAL '24 hours'
+    ORDER BY usage_date DESC
+  `;
+
+  const result = await database.query(query);
+
+  // 2. Para cada registro, buscar custo real do Deepgram
+  for (const row of result.rows) {
+    const requestId = row.stt_provider_request_id;
+
+    // Buscar custo via Deepgram Management API
+    const costData = await deepgramService.getRequestCost(DEEPGRAM_PROJECT_ID, requestId);
+
+    if (costData.usd !== null) {
+      const realCost = costData.usd;
+      const currentCost = parseFloat(row.current_cost);
+
+      // 3. Atualizar APENAS se custo mudou significativamente (>$0.0001)
+      if (Math.abs(realCost - currentCost) > 0.0001) {
+        await database.query(`
+          UPDATE public.tenant_transcription_usage
+          SET cost_usd = $1, updated_at = NOW()
+          WHERE id = $2
+        `, [realCost.toFixed(4), row.id]);
+
+        console.log(`[Cron] ✅ Updated cost for request ${requestId}: ${currentCost.toFixed(4)} → ${realCost.toFixed(4)}`);
+      }
+    } else {
+      console.warn(`[Cron] ⚠️ Cost not available for request ${requestId} - keeping local calculation`);
+    }
+
+    // Delay de 50ms entre chamadas (evitar rate limit)
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+
+  console.log(`[Cron] Cost update complete: ${totalUpdated} updated, ${totalUnchanged} unchanged, ${totalFailed} failed`);
+}
+```
+
+**Deepgram Management API** (`DeepgramService.getRequestCost()`):
+```javascript
+async getRequestCost(projectId, requestId) {
+  const url = `https://api.deepgram.com/v1/projects/${projectId}/requests/${requestId}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Token ${this.apiKey}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const result = await response.json();
+  const costUsd = result.response?.details?.usd || null;
+
+  return {
+    usd: costUsd,
+    details: result.response?.details || {}
+  };
+}
+```
+
+**Benefícios do Cron Job**:
+- ✅ Não bloqueia webhook (resposta imediata)
+- ✅ Dá 24h para Deepgram processar custos
+- ✅ Processamento em lote (mais eficiente)
+- ✅ Retry automático para falhas
+- ✅ Fallback para cálculo local se API indisponível
+
+**Variável de Ambiente**:
+```bash
+DEEPGRAM_PROJECT_ID=your-deepgram-project-id
 ```
 
 ---

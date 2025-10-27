@@ -1,6 +1,7 @@
 require('dotenv').config();
 const app = require('./app');
 const { initAudioCleanupJob } = require('./jobs/cleanupOldAudioFiles');
+const { initTranscriptionCostUpdateJob } = require('./jobs/updateTranscriptionCosts');
 
 const PORT = process.env.PORT || 3001;
 
@@ -9,5 +10,6 @@ app.listen(PORT, () => {
 
   // Initialize cron jobs
   initAudioCleanupJob();
+  initTranscriptionCostUpdateJob();
 });
  

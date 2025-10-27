@@ -294,47 +294,7 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       console.log(`[Webhook] 🌍 Language detected: ${detectedLanguage} (confidence: ${transcriptionData.language_confidence})`);
     }
 
-    // Fetch real cost from Deepgram Management API (async, fire and forget)
-    (async () => {
-      try {
-        const deepgramProjectId = process.env.DEEPGRAM_PROJECT_ID;
-        let costUsd = null;
-
-        // Try to get real cost from Deepgram Management API
-        if (deepgramProjectId && sttProviderRequestId) {
-          try {
-            console.log(`[Transcription Usage] 💰 Fetching real cost from Deepgram Management API...`);
-            const costData = await deepgramService.getRequestCost(deepgramProjectId, sttProviderRequestId);
-            costUsd = costData.usd;
-
-            if (costUsd !== null) {
-              console.log(`[Transcription Usage] ✅ Real cost from Deepgram: $${costUsd}`);
-            } else {
-              console.warn(`[Transcription Usage] ⚠️ Cost not available from Deepgram, will use local calculation`);
-            }
-          } catch (apiError) {
-            console.warn(`[Transcription Usage] ⚠️ Failed to fetch real cost from Deepgram, will use local calculation:`, apiError.message);
-          }
-        } else {
-          console.warn(`[Transcription Usage] ⚠️ Missing DEEPGRAM_PROJECT_ID or request_id, using local calculation`);
-        }
-
-        // Record usage with real cost (or null to trigger local calculation)
-        await TenantTranscriptionUsage.create(parseInt(tenantId), {
-          transcriptionId: transcriptionId,
-          audioDurationSeconds: audioDurationSeconds,
-          sttModel: DEFAULT_STT_MODEL, // Use system default model (nova-3)
-          detectedLanguage: detectedLanguage, // Language code (e.g., 'pt', 'en', 'es') if multilingual mode
-          sttProviderRequestId: sttProviderRequestId,
-          costUsd: costUsd, // Use real cost from Deepgram, or null for local calculation
-          usageDate: new Date()
-        });
-
-        console.log(`[Transcription Usage] ✅ Usage recorded successfully`);
-      } catch (error) {
-        console.error(`[Transcription Usage] ❌ Failed to record usage for transcription ${transcriptionId}:`, error);
-      }
-    })();
+// Record usage with local cost calculation (fire and forget)    // Real cost will be updated later by daily cron job    TenantTranscriptionUsage.create(parseInt(tenantId), {      transcriptionId: transcriptionId,      audioDurationSeconds: audioDurationSeconds,      sttModel: DEFAULT_STT_MODEL, // Use system default model (nova-3)      detectedLanguage: detectedLanguage, // Language code (e.g., "pt", "en", "es") if multilingual mode      sttProviderRequestId: sttProviderRequestId,      usageDate: new Date()    }).catch(error => {      console.error(`[Transcription Usage] Failed to record usage for transcription ${transcriptionId}:`, error);    });
 
     console.log(`[Webhook] 🔍 DEBUG - Sending 200 OK response to Deepgram (valid transcript)...`);
     res.status(200).json({ success: true, message: 'Transcription processed successfully' });

@@ -222,6 +222,55 @@ class DeepgramService {
     // Minimum 5 seconds, maximum 10 minutes (Deepgram limit)
     return Math.min(Math.max(estimateSeconds, 5), 600);
   }
+
+  /**
+   * Get request cost from Deepgram Management API
+   *
+   * @param {string} projectId - Deepgram project ID
+   * @param {string} requestId - Request ID from transcription
+   * @returns {Promise<{usd: number, details: object}>} Cost in USD and details
+   */
+  async getRequestCost(projectId, requestId) {
+    try {
+      const url = `https://api.deepgram.com/v1/projects/${projectId}/requests/${requestId}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${this.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Deepgram] ❌ Management API error:', response.status, response.statusText);
+        console.error('[Deepgram] ❌ Error details:', errorText);
+        throw new Error(`Deepgram Management API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      // Extract cost from response.details.usd
+      const costUsd = result.response?.details?.usd || null;
+
+      if (costUsd === null) {
+        console.warn('[Deepgram] ⚠️ Cost not available in Management API response');
+        return { usd: null, details: result.response?.details || {} };
+      }
+
+      console.log(`[Deepgram] 💰 Request cost: $${costUsd}`);
+
+      return {
+        usd: costUsd,
+        details: result.response?.details || {}
+      };
+
+    } catch (error) {
+      console.error('[Deepgram] ❌ Failed to fetch request cost:', error.message);
+      throw error;
+    }
+  }
 }
 
 module.exports = DeepgramService;

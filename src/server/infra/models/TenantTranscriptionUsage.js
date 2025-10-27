@@ -16,31 +16,7 @@ class TenantTranscriptionUsage {
     this.updatedAt = data.updated_at;
   }
 
-  /**
-   * Create a new transcription usage record
-   * Calculates cost based on duration and model
-   * If detectedLanguage is present, uses multilingual pricing ($0.0052/min)
-   * Otherwise uses monolingual pricing ($0.0043/min for nova-3)
-   */
-  static async create(tenantId, data) {
-    const {
-      transcriptionId,
-      audioDurationSeconds,
-      sttModel = DEFAULT_STT_MODEL,
-      detectedLanguage = null,
-      sttProviderRequestId,
-      usageDate = new Date()
-    } = data;
-
-    // Calculate cost based on model pricing and language detection
-    const durationMinutes = audioDurationSeconds / 60;
-
-    // If detectedLanguage is present, it means multilingual mode was used
-    const costPerMinute = detectedLanguage
-      ? MULTILINGUAL_COST_PER_MINUTE  // $0.0052/min for multilingual
-      : (MODEL_COSTS[sttModel] || DEFAULT_COST_PER_MINUTE); // $0.0043/min for monolingual
-
-    const costUsd = durationMinutes * costPerMinute;
+/**   * Create a new transcription usage record   *   * Cost calculation priority:   * 1. If costUsd is provided (from Deepgram Management API), use it   * 2. Otherwise, calculate locally based on language detection:   *    - Multilingual (detectedLanguage present): $0.0052/min   *    - Monolingual (no detectedLanguage): $0.0043/min   */  static async create(tenantId, data) {    const {      transcriptionId,      audioDurationSeconds,      sttModel = DEFAULT_STT_MODEL,      detectedLanguage = null,      sttProviderRequestId,      costUsd = null, // Real cost from Deepgram (optional)      usageDate = new Date()    } = data;    // Use provided cost or calculate locally    let finalCostUsd;    if (costUsd !== null) {      // Use real cost from Deepgram Management API      finalCostUsd = costUsd;      console.log(`[TenantTranscriptionUsage] Using real cost from Deepgram: $${finalCostUsd}`);    } else {      // Fallback: Calculate cost locally based on model pricing and language detection      const durationMinutes = audioDurationSeconds / 60;      // If detectedLanguage is present, it means multilingual mode was used      const costPerMinute = detectedLanguage        ? MULTILINGUAL_COST_PER_MINUTE  // $0.0052/min for multilingual        : (MODEL_COSTS[sttModel] || DEFAULT_COST_PER_MINUTE); // $0.0043/min for monolingual      finalCostUsd = durationMinutes * costPerMinute;      console.log(`[TenantTranscriptionUsage] Using local cost calculation: $${finalCostUsd.toFixed(4)}`);    }
 
     const query = `
       INSERT INTO public.tenant_transcription_usage (

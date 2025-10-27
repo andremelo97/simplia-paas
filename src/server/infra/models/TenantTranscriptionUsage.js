@@ -1,5 +1,5 @@
 const database = require('../db/database');
-const { DEFAULT_STT_MODEL, MODEL_COSTS, DEFAULT_COST_PER_MINUTE } = require('../constants/transcription');
+const { DEFAULT_STT_MODEL, MODEL_COSTS, DEFAULT_COST_PER_MINUTE, MULTILINGUAL_COST_PER_MINUTE } = require('../constants/transcription');
 
 class TenantTranscriptionUsage {
   constructor(data) {
@@ -19,6 +19,8 @@ class TenantTranscriptionUsage {
   /**
    * Create a new transcription usage record
    * Calculates cost based on duration and model
+   * If detectedLanguage is present, uses multilingual pricing ($0.0052/min)
+   * Otherwise uses monolingual pricing ($0.0043/min for nova-3)
    */
   static async create(tenantId, data) {
     const {
@@ -30,9 +32,14 @@ class TenantTranscriptionUsage {
       usageDate = new Date()
     } = data;
 
-    // Calculate cost based on model pricing
+    // Calculate cost based on model pricing and language detection
     const durationMinutes = audioDurationSeconds / 60;
-    const costPerMinute = MODEL_COSTS[sttModel] || DEFAULT_COST_PER_MINUTE;
+
+    // If detectedLanguage is present, it means multilingual mode was used
+    const costPerMinute = detectedLanguage
+      ? MULTILINGUAL_COST_PER_MINUTE  // $0.0052/min for multilingual
+      : (MODEL_COSTS[sttModel] || DEFAULT_COST_PER_MINUTE); // $0.0043/min for monolingual
+
     const costUsd = durationMinutes * costPerMinute;
 
     const query = `

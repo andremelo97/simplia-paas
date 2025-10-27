@@ -98,8 +98,10 @@ ON CONFLICT (email) DO NOTHING;
 -- =============================================
 
 -- Insert default transcription plans (Starter, Basic, and VIP)
--- System standard: Nova-3 with language targeting (Monolingual pricing: $0.0043/min)
-INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, cost_per_minute_usd, active, description)
+-- Two strategies available:
+--   1. Monolingual (language_detection_enabled=false): Nova-3 with language parameter (pt-BR/en-US) - $0.0043/min
+--   2. Multilingual (language_detection_enabled=true): Nova-3 with detect_language=true - $0.0052/min
+INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, language_detection_enabled, cost_per_minute_usd, active, description)
 VALUES
   (
     'starter',
@@ -108,9 +110,10 @@ VALUES
     false,
     false,
     'nova-3',
+    false,
     0.0043,
     true,
-    'Entry-level transcription plan with 1200 minutes (20 hours) monthly quota. Uses Nova-3 model with language targeting (pt-BR or en-US). Fixed limit, no customization, no overage.'
+    'Entry-level transcription plan with 1200 minutes (20 hours) monthly quota. Uses Nova-3 Monolingual with language targeting (pt-BR or en-US). Fixed limit, no customization, no overage.'
   ),
   (
     'basic',
@@ -119,9 +122,10 @@ VALUES
     false,
     false,
     'nova-3',
+    false,
     0.0043,
     true,
-    'Standard transcription plan with 2400 minutes (40 hours) monthly quota. Uses Nova-3 model with language targeting (pt-BR or en-US). Fixed limit, no customization, no overage.'
+    'Standard transcription plan with 2400 minutes (40 hours) monthly quota. Uses Nova-3 Monolingual with language targeting (pt-BR or en-US). Fixed limit, no customization, no overage.'
   ),
   (
     'vip',
@@ -130,9 +134,10 @@ VALUES
     true,
     true,
     'nova-3',
+    false,
     0.0043,
     true,
-    'Premium transcription plan with customizable monthly quota. Uses Nova-3 model with language targeting (pt-BR or en-US). Allows custom limits and overage.'
+    'Premium transcription plan with customizable monthly quota. Uses Nova-3 Monolingual with language targeting (pt-BR or en-US). Allows custom limits and overage.'
   )
 ON CONFLICT (slug) DO NOTHING;
 

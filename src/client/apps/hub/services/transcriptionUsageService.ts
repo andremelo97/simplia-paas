@@ -27,11 +27,13 @@ interface TranscriptionUsageResponse {
       slug: string
       name: string
       allowsCustomLimits: boolean
+      allowsOverage: boolean
+      languageDetectionEnabled: boolean
     }
     config: {
       customMonthlyLimit: number | null
+      transcriptionLanguage: string | null
       overageAllowed: boolean
-      enabled: boolean
     }
   }
   meta: {
@@ -74,7 +76,7 @@ class TranscriptionUsageService {
    * Get transcription usage for current user's tenant
    * Fetches current month usage, 6-month history, and plan details
    */
-  async getUsage(): Promise<TranscriptionUsageResponse> {
+  async getUsage(): Promise<TranscriptionUsageResponse['data']> {
     const { tenantId } = useAuthStore.getState()
 
     if (!tenantId) {
@@ -101,7 +103,7 @@ class TranscriptionUsageService {
     // x-tenant-id header will be automatically injected by interceptor
     const response = await api.get('/internal/api/v1/configurations/transcription-config')
 
-    return response.data
+    return response.data.data
   }
 
   /**
@@ -118,7 +120,7 @@ class TranscriptionUsageService {
     // x-tenant-id header will be automatically injected by interceptor
     const response = await api.put('/internal/api/v1/configurations/transcription-config', config)
 
-    return response.data
+    return response.data.data
   }
 
   /**

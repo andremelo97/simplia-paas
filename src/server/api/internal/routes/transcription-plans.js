@@ -151,7 +151,7 @@ router.get('/:id', async (req, res) => {
  *         application/json:
  *           schema:
  *             type: object
- *             required: [slug, name, monthlyMinutesLimit, sttModel, costPerMinuteUsd, allowsCustomLimits, allowsOverage, active]
+ *             required: [slug, name, monthlyMinutesLimit, sttModel, languageDetectionEnabled, costPerMinuteUsd, allowsCustomLimits, allowsOverage, active]
  *             properties:
  *               slug:
  *                 type: string
@@ -163,7 +163,7 @@ router.get('/:id', async (req, res) => {
  *                 type: integer
  *                 minimum: 1
  *                 example: 2400
- *                 description: "Monthly limit in minutes (no minimum enforced for testing)"
+ *                 description: "Monthly limit in minutes"
  *               allowsCustomLimits:
  *                 type: boolean
  *                 example: false
@@ -175,11 +175,15 @@ router.get('/:id', async (req, res) => {
  *               sttModel:
  *                 type: string
  *                 example: "nova-3"
- *                 description: "Deepgram STT model (nova-3 with language targeting)"
+ *                 description: "Deepgram STT model (always nova-3)"
+ *               languageDetectionEnabled:
+ *                 type: boolean
+ *                 example: false
+ *                 description: "If true, uses detect_language=true (multilingual $0.0052/min). If false, uses language parameter (monolingual $0.0043/min)"
  *               costPerMinuteUsd:
  *                 type: number
  *                 example: 0.0043
- *                 description: "System standard - Nova-3 Monolingual with language parameter (pt-BR or en-US)"
+ *                 description: "Cost per minute: $0.0043 for monolingual, $0.0052 for multilingual"
  *               active:
  *                 type: boolean
  *                 example: true
@@ -202,6 +206,7 @@ router.post('/', async (req, res) => {
       allowsCustomLimits,
       allowsOverage,
       sttModel,
+      languageDetectionEnabled,
       costPerMinuteUsd,
       active,
       description
@@ -224,6 +229,7 @@ router.post('/', async (req, res) => {
       allowsCustomLimits,
       allowsOverage,
       sttModel,
+      languageDetectionEnabled,
       costPerMinuteUsd,
       active,
       description
@@ -289,6 +295,8 @@ router.post('/', async (req, res) => {
  *                 type: boolean
  *               sttModel:
  *                 type: string
+ *               languageDetectionEnabled:
+ *                 type: boolean
  *               costPerMinuteUsd:
  *                 type: number
  *               active:
@@ -308,6 +316,7 @@ router.put('/:id', async (req, res) => {
 
     // Convert camelCase to snake_case for database
     const updates = {};
+    if (body.slug !== undefined) updates.slug = body.slug;
     if (body.name !== undefined) updates.name = body.name;
     if (body.monthlyMinutesLimit !== undefined) {
       updates.monthly_minutes_limit = body.monthlyMinutesLimit;
@@ -319,6 +328,9 @@ router.put('/:id', async (req, res) => {
       updates.allows_overage = body.allowsOverage;
     }
     if (body.sttModel !== undefined) updates.stt_model = body.sttModel;
+    if (body.languageDetectionEnabled !== undefined) {
+      updates.language_detection_enabled = body.languageDetectionEnabled;
+    }
     if (body.costPerMinuteUsd !== undefined) {
       updates.cost_per_minute_usd = body.costPerMinuteUsd;
     }

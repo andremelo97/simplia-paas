@@ -430,6 +430,7 @@ CREATE TABLE IF NOT EXISTS public.transcription_plans (
   allows_custom_limits BOOLEAN NOT NULL,
   allows_overage BOOLEAN NOT NULL,
   stt_model VARCHAR(50) NOT NULL,
+  language_detection_enabled BOOLEAN NOT NULL DEFAULT false,
   cost_per_minute_usd NUMERIC(10, 6) NOT NULL,
   active BOOLEAN NOT NULL,
   description TEXT,
@@ -443,7 +444,8 @@ COMMENT ON COLUMN public.transcription_plans.monthly_minutes_limit IS 'Default m
 COMMENT ON COLUMN public.transcription_plans.allows_custom_limits IS 'Whether users can customize their monthly limits in Hub';
 COMMENT ON COLUMN public.transcription_plans.allows_overage IS 'Whether users can enable overage (usage beyond limits) in Hub';
 COMMENT ON COLUMN public.transcription_plans.stt_model IS 'Deepgram STT model to use (nova-3, nova-2, etc.)';
-COMMENT ON COLUMN public.transcription_plans.cost_per_minute_usd IS 'Cost per minute in USD (calculated based on stt_model)';
+COMMENT ON COLUMN public.transcription_plans.language_detection_enabled IS 'If true, uses detect_language=true (multilingual $0.0052/min). If false, uses language parameter targeting (monolingual $0.0043/min)';
+COMMENT ON COLUMN public.transcription_plans.cost_per_minute_usd IS 'Cost per minute in USD (calculated based on stt_model + language_detection_enabled)';
 
 -- Tenant transcription configuration
 CREATE TABLE IF NOT EXISTS public.tenant_transcription_config (
@@ -471,12 +473,15 @@ CREATE TABLE IF NOT EXISTS public.tenant_transcription_usage (
   transcription_id UUID,
   audio_duration_seconds INTEGER NOT NULL CHECK (audio_duration_seconds >= 0),
   stt_model VARCHAR(50) NOT NULL,
+  detected_language VARCHAR(10) NULL,
   stt_provider_request_id VARCHAR(255),
   cost_usd NUMERIC(10,4) NOT NULL DEFAULT 0.0000 CHECK (cost_usd >= 0),
   usage_date TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+COMMENT ON COLUMN public.tenant_transcription_usage.detected_language IS 'Language detected by Deepgram when language_detection_enabled=true (e.g., "pt", "en", "es"). NULL if using targeted language parameter';
 
 CREATE INDEX idx_tenant_transcription_usage_tenant_id ON public.tenant_transcription_usage(tenant_id_fk);
 CREATE INDEX idx_tenant_transcription_usage_usage_date ON public.tenant_transcription_usage(usage_date);

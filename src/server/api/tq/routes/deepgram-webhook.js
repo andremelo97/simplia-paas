@@ -288,12 +288,18 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
     // Extract audio duration from Deepgram metadata
     const audioDurationSeconds = Math.ceil(webhookData.metadata?.duration || transcriptionData.processing_duration_seconds || 0);
     const sttProviderRequestId = webhookData.metadata?.request_id || transcriptionData.request_id;
+    const detectedLanguage = transcriptionData.detected_language || null; // Language code if detect_language was used
+
+    if (detectedLanguage) {
+      console.log(`[Webhook] 🌍 Language detected: ${detectedLanguage} (confidence: ${transcriptionData.language_confidence})`);
+    }
 
     // Record usage with cost calculation (fire and forget)
     TenantTranscriptionUsage.create(parseInt(tenantId), {
       transcriptionId: transcriptionId,
       audioDurationSeconds: audioDurationSeconds,
       sttModel: DEFAULT_STT_MODEL, // Use system default model (nova-3)
+      detectedLanguage: detectedLanguage, // Language code (e.g., 'pt', 'en', 'es') if multilingual mode
       sttProviderRequestId: sttProviderRequestId,
       usageDate: new Date()
     }).catch(error => {

@@ -8,6 +8,7 @@ class TenantTranscriptionUsage {
     this.transcriptionId = data.transcription_id;
     this.audioDurationSeconds = parseInt(data.audio_duration_seconds) || 0;
     this.sttModel = data.stt_model || DEFAULT_STT_MODEL;
+    this.detectedLanguage = data.detected_language || null;
     this.sttProviderRequestId = data.stt_provider_request_id;
     this.costUsd = parseFloat(data.cost_usd) || 0;
     this.usageDate = data.usage_date;
@@ -24,6 +25,7 @@ class TenantTranscriptionUsage {
       transcriptionId,
       audioDurationSeconds,
       sttModel = DEFAULT_STT_MODEL,
+      detectedLanguage = null,
       sttProviderRequestId,
       usageDate = new Date()
     } = data;
@@ -39,11 +41,12 @@ class TenantTranscriptionUsage {
         transcription_id,
         audio_duration_seconds,
         stt_model,
+        detected_language,
         stt_provider_request_id,
         cost_usd,
         usage_date
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `;
 
@@ -52,6 +55,7 @@ class TenantTranscriptionUsage {
       transcriptionId,
       audioDurationSeconds,
       sttModel,
+      detectedLanguage,
       sttProviderRequestId,
       costUsd.toFixed(4),
       usageDate

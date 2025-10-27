@@ -8,6 +8,7 @@ export interface TranscriptionPlan {
   allowsCustomLimits: boolean
   allowsOverage: boolean
   sttModel: string
+  languageDetectionEnabled: boolean
   costPerMinuteUsd: number
   active: boolean
   description: string | null
@@ -22,17 +23,20 @@ export interface CreateTranscriptionPlanInput {
   allowsCustomLimits: boolean
   allowsOverage: boolean
   sttModel: string
+  languageDetectionEnabled: boolean
   costPerMinuteUsd: number
   active: boolean
   description?: string
 }
 
 export interface UpdateTranscriptionPlanInput {
+  slug?: string
   name?: string
   monthlyMinutesLimit?: number
   allowsCustomLimits?: boolean
   allowsOverage?: boolean
   sttModel?: string
+  languageDetectionEnabled?: boolean
   costPerMinuteUsd?: number
   active?: boolean
   description?: string

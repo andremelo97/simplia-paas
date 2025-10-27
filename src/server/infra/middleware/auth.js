@@ -257,6 +257,9 @@ function requireRole(allowedRoles) {
  * Admin-only middleware
  */
 function requireAdmin(req, res, next) {
+  console.log('[requireAdmin] Checking admin access');
+  console.log('[requireAdmin] req.user:', JSON.stringify(req.user, null, 2));
+  console.log('[requireAdmin] req.user.role:', req.user?.role);
   return requireRole('admin')(req, res, next);
 }
 

@@ -3,9 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, Button, Input, Label, Textarea, Checkbox } from '@client/common/ui'
 import { transcriptionPlansService, CreateTranscriptionPlanInput } from '../../services/transcriptionPlans'
 
-// System standard: Nova-3 with language parameter (Monolingual pricing)
-const SYSTEM_STT_MODEL = 'nova-3'
-const SYSTEM_COST_PER_MINUTE = 0.0043
+// System standard: Nova-3 model with two pricing strategies
+const STT_MODEL_OPTIONS = [
+  {
+    value: 'nova-3-monolingual',
+    label: 'Nova-3 Monolingual (pt-BR/en-US targeting)',
+    cost: 0.0043,
+    languageDetection: false
+  },
+  {
+    value: 'nova-3-multilingual',
+    label: 'Nova-3 Multilingual (auto-detect 16 languages)',
+    cost: 0.0052,
+    languageDetection: true
+  }
+]
 
 export const CreateTranscriptionPlan: React.FC = () => {
   const navigate = useNavigate()
@@ -17,8 +29,9 @@ export const CreateTranscriptionPlan: React.FC = () => {
     monthlyMinutesLimit: 2400,
     allowsCustomLimits: false,
     allowsOverage: false,
-    sttModel: SYSTEM_STT_MODEL,
-    costPerMinuteUsd: SYSTEM_COST_PER_MINUTE,
+    sttModel: 'nova-3',
+    languageDetectionEnabled: false,
+    costPerMinuteUsd: 0.0043,
     active: true,
     description: ''
   })
@@ -44,6 +57,18 @@ export const CreateTranscriptionPlan: React.FC = () => {
       name: newName,
       slug: generateSlug(newName)
     })
+  }
+
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = STT_MODEL_OPTIONS.find(opt => opt.value === e.target.value)
+    if (selectedOption) {
+      setFormData({
+        ...formData,
+        sttModel: 'nova-3', // Always store 'nova-3' in DB
+        languageDetectionEnabled: selectedOption.languageDetection,
+        costPerMinuteUsd: selectedOption.cost
+      })
+    }
   }
 
   const validate = (): boolean => {
@@ -157,17 +182,27 @@ export const CreateTranscriptionPlan: React.FC = () => {
               </p>
             </div>
 
-            {/* STT Model (Read-only) */}
+            {/* STT Model & Language Strategy */}
             <div className="space-y-2">
-              <Label htmlFor="sttModel">STT Model</Label>
-              <Input
+              <Label htmlFor="sttModel">
+                STT Model & Language Strategy <span className="text-red-500">*</span>
+              </Label>
+              <select
                 id="sttModel"
-                value={`${formData.sttModel} ($${formData.costPerMinuteUsd.toFixed(4)}/min)`}
-                disabled
-                className="bg-gray-50 cursor-not-allowed"
-              />
+                value={formData.languageDetectionEnabled ? 'nova-3-multilingual' : 'nova-3-monolingual'}
+                onChange={handleModelChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B725B7] focus:border-transparent"
+              >
+                {STT_MODEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label} - ${option.cost.toFixed(4)}/min
+                  </option>
+                ))}
+              </select>
               <p className="text-sm text-gray-500">
-                Deepgram model with language targeting (pt-BR or en-US)
+                {formData.languageDetectionEnabled
+                  ? '🌍 Multilingual: Automatically detects language from audio (16 languages supported)'
+                  : '🎯 Monolingual: Uses targeted language parameter (pt-BR or en-US)'}
               </p>
             </div>
 

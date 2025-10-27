@@ -35,9 +35,14 @@ const DEFAULT_STT_MODEL = process.env.DEEPGRAM_MODEL || 'nova-3';
  * Model costs per minute in USD.
  * Updated based on current Deepgram pricing (as of January 2025).
  * Source: https://deepgram.com/pricing
+ *
+ * IMPORTANT: Deepgram model is always 'nova-3' in API calls.
+ * The cost difference comes from the language strategy:
+ * 1. Monolingual (language=pt-BR or en-US): $0.0043/min
+ * 2. Multilingual (detect_language=true): $0.0052/min
  */
 const MODEL_COSTS = {
-  'nova-3': 0.0043,       // Nova-3 (SYSTEM DEFAULT - multilingual)
+  'nova-3': 0.0043,       // Nova-3 with language parameter (Monolingual)
   'nova-2': 0.0043,       // Nova-2 (legacy)
   'nova': 0.0043,         // Nova-1 (legacy)
   'enhanced': 0.0059,     // Enhanced model
@@ -46,9 +51,15 @@ const MODEL_COSTS = {
 
 /**
  * Default cost per minute for transcription.
- * Based on Nova-3 model (system default).
+ * Based on Nova-3 Monolingual (system default).
  */
 const DEFAULT_COST_PER_MINUTE = MODEL_COSTS[DEFAULT_STT_MODEL] || 0.0043;
+
+/**
+ * Cost per minute for multilingual transcription with language detection.
+ * Uses same nova-3 model but with detect_language=true parameter.
+ */
+const MULTILINGUAL_COST_PER_MINUTE = 0.0052;
 
 /**
  * Language mapping for Deepgram API based on tenant locale.
@@ -73,6 +84,7 @@ module.exports = {
   DEFAULT_STT_MODEL,
   MODEL_COSTS,
   DEFAULT_COST_PER_MINUTE,
+  MULTILINGUAL_COST_PER_MINUTE,
   LOCALE_TO_DEEPGRAM_LANGUAGE,
   DEFAULT_LANGUAGE
 };

@@ -41,6 +41,8 @@ class DeepgramService {
    * @param {string} audioUrl - Signed URL to the audio file (.webm)
    * @param {string} callbackUrl - Webhook URL for receiving transcription results
    * @param {Object} options - Additional transcription options
+   * @param {boolean} options.detectLanguage - Enable language detection (multilingual)
+   * @param {string} options.language - Target language (only if detectLanguage=false)
    * @returns {Promise<Object>} Deepgram response with request_id
    */
   async transcribeByUrl(audioUrl, callbackUrl, options = {}) {
@@ -54,15 +56,25 @@ class DeepgramService {
       };
 
       // Build query parameters
-      const queryParams = new URLSearchParams({
-        model: options.model || 'nova-2',
-        language: options.language || 'pt-BR',
+      const baseParams = {
+        model: options.model || 'nova-3',
         smart_format: 'true',
         punctuate: 'true',
         diarize: 'false',
         callback: callbackUrl,
         ...options.additionalParams
-      });
+      };
+
+      // Language strategy: either detect_language OR language parameter
+      if (options.detectLanguage) {
+        // Multilingual mode: use language detection
+        baseParams.detect_language = 'true';
+      } else {
+        // Monolingual mode: use specific language parameter
+        baseParams.language = options.language || 'pt-BR';
+      }
+
+      const queryParams = new URLSearchParams(baseParams);
 
       // Add extra metadata for webhook correlation (tenantId, schema, transcriptionId)
       if (options.extra) {
@@ -76,8 +88,12 @@ class DeepgramService {
       // Debug logging for Deepgram request
       console.log('[Deepgram] 🚀 Starting transcription request');
       console.log('[Deepgram] 📍 Audio URL:', audioUrl);
-      console.log('[Deepgram] 🔧 Model:', options.model || 'nova-2');
-      console.log('[Deepgram] 🌐 Language:', options.language || 'pt-BR');
+      console.log('[Deepgram] 🔧 Model:', options.model || 'nova-3');
+      if (options.detectLanguage) {
+        console.log('[Deepgram] 🌐 Language Strategy: Multilingual (detect_language=true)');
+      } else {
+        console.log('[Deepgram] 🌐 Language Strategy: Monolingual (language=' + (options.language || 'pt-BR') + ')');
+      }
       console.log('[Deepgram] 🔗 Callback URL:', callbackUrl);
       if (options.extra) {
         console.log('[Deepgram] 📦 Extra metadata:', options.extra);
@@ -156,6 +172,10 @@ class DeepgramService {
       const confidence = bestAlternative.confidence || 0;
       const words = bestAlternative.words || [];
 
+      // Extract detected language (only present when detect_language=true)
+      const detectedLanguage = channel.detected_language || null;
+      const languageConfidence = channel.language_confidence || null;
+
       return {
         transcript: transcript.trim(),
         confidence_score: Math.round(confidence * 10000) / 10000, // Round to 4 decimal places
@@ -163,7 +183,9 @@ class DeepgramService {
         processing_duration_seconds: metadata?.duration ? Math.ceil(metadata.duration) : null, // Round up to integer
         request_id: metadata?.request_id || null,
         model_used: metadata?.model_info?.name || null,
-        language: metadata?.language || null
+        language: metadata?.language || null,
+        detected_language: detectedLanguage, // BCP-47 language tag (e.g., 'pt', 'en', 'es')
+        language_confidence: languageConfidence // Confidence score for detected language
       };
 
     } catch (error) {

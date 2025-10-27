@@ -38,7 +38,8 @@ class TenantTranscriptionConfig {
         tp.name as plan_name,
         tp.monthly_minutes_limit as plan_monthly_minutes_limit,
         tp.allows_custom_limits as plan_allows_custom_limits,
-        tp.allows_overage as plan_allows_overage
+        tp.allows_overage as plan_allows_overage,
+        tp.language_detection_enabled as plan_language_detection_enabled
       FROM public.tenant_transcription_config ttc
       INNER JOIN public.transcription_plans tp ON ttc.plan_id_fk = tp.id
       WHERE ttc.tenant_id_fk = $1
@@ -56,7 +57,8 @@ class TenantTranscriptionConfig {
       name: result.rows[0].plan_name,
       monthlyMinutesLimit: parseInt(result.rows[0].plan_monthly_minutes_limit),
       allowsCustomLimits: result.rows[0].plan_allows_custom_limits,
-      allowsOverage: result.rows[0].plan_allows_overage
+      allowsOverage: result.rows[0].plan_allows_overage,
+      languageDetectionEnabled: result.rows[0].plan_language_detection_enabled
     };
 
     return config;
@@ -73,7 +75,8 @@ class TenantTranscriptionConfig {
         tp.name as plan_name,
         tp.monthly_minutes_limit as plan_monthly_minutes_limit,
         tp.allows_custom_limits as plan_allows_custom_limits,
-        tp.allows_overage as plan_allows_overage
+        tp.allows_overage as plan_allows_overage,
+        tp.language_detection_enabled as plan_language_detection_enabled
       FROM public.tenant_transcription_config ttc
       INNER JOIN public.transcription_plans tp ON ttc.plan_id_fk = tp.id
       WHERE ttc.id = $1
@@ -91,7 +94,8 @@ class TenantTranscriptionConfig {
       name: result.rows[0].plan_name,
       monthlyMinutesLimit: parseInt(result.rows[0].plan_monthly_minutes_limit),
       allowsCustomLimits: result.rows[0].plan_allows_custom_limits,
-      allowsOverage: result.rows[0].plan_allows_overage
+      allowsOverage: result.rows[0].plan_allows_overage,
+      languageDetectionEnabled: result.rows[0].plan_language_detection_enabled
     };
 
     return config;

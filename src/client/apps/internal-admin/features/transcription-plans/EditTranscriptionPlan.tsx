@@ -7,8 +7,21 @@ import {
   UpdateTranscriptionPlanInput
 } from '../../services/transcriptionPlans'
 
-// System standard: Nova-3 with language parameter (Monolingual pricing)
-const SYSTEM_COST_PER_MINUTE = 0.0043
+// System standard: Nova-3 model with two pricing strategies
+const STT_MODEL_OPTIONS = [
+  {
+    value: 'nova-3-monolingual',
+    label: 'Nova-3 Monolingual (pt-BR/en-US targeting)',
+    cost: 0.0043,
+    languageDetection: false
+  },
+  {
+    value: 'nova-3-multilingual',
+    label: 'Nova-3 Multilingual (auto-detect 16 languages)',
+    cost: 0.0052,
+    languageDetection: true
+  }
+]
 
 export const EditTranscriptionPlan: React.FC = () => {
   const navigate = useNavigate()
@@ -30,6 +43,7 @@ export const EditTranscriptionPlan: React.FC = () => {
           monthlyMinutesLimit: data.monthlyMinutesLimit,
           allowsCustomLimits: data.allowsCustomLimits,
           allowsOverage: data.allowsOverage,
+          languageDetectionEnabled: data.languageDetectionEnabled,
           costPerMinuteUsd: data.costPerMinuteUsd,
           active: data.active,
           description: data.description || ''
@@ -43,6 +57,38 @@ export const EditTranscriptionPlan: React.FC = () => {
 
     fetchPlan()
   }, [id])
+
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Remove duplicate hyphens
+      .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+  }
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newName = e.target.value
+    setFormData({
+      ...formData,
+      name: newName,
+      slug: generateSlug(newName)
+    })
+  }
+
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOption = STT_MODEL_OPTIONS.find(opt => opt.value === e.target.value)
+    if (selectedOption) {
+      setFormData({
+        ...formData,
+        sttModel: 'nova-3', // Always store 'nova-3' in DB
+        languageDetectionEnabled: selectedOption.languageDetection,
+        costPerMinuteUsd: selectedOption.cost
+      })
+    }
+  }
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {}
@@ -108,7 +154,7 @@ export const EditTranscriptionPlan: React.FC = () => {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={handleNameChange}
                 error={validationErrors.name}
               />
               {validationErrors.name && (
@@ -117,15 +163,19 @@ export const EditTranscriptionPlan: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="slug">Slug</Label>
+              <Label htmlFor="slug">Slug <span className="text-red-500">*</span></Label>
               <Input
                 id="slug"
-                value={plan.slug}
+                value={formData.slug || plan.slug}
                 disabled
                 className="bg-gray-50 cursor-not-allowed"
+                error={validationErrors.slug}
               />
+              {validationErrors.slug && (
+                <p className="text-sm text-red-600">{validationErrors.slug}</p>
+              )}
               <p className="text-sm text-gray-500">
-                Unique identifier (cannot be changed)
+                Auto-generated from name (unique identifier)
               </p>
             </div>
 
@@ -147,16 +197,27 @@ export const EditTranscriptionPlan: React.FC = () => {
               <p className="text-sm text-gray-500">Monthly limit in minutes (e.g., 2400 = 40 hours)</p>
             </div>
 
+            {/* STT Model & Language Strategy */}
             <div className="space-y-2">
-              <Label htmlFor="sttModel">STT Model</Label>
-              <Input
+              <Label htmlFor="sttModel">
+                STT Model & Language Strategy <span className="text-red-500">*</span>
+              </Label>
+              <select
                 id="sttModel"
-                value={`${formData.sttModel || 'nova-3'} ($${(formData.costPerMinuteUsd || SYSTEM_COST_PER_MINUTE).toFixed(4)}/min)`}
-                disabled
-                className="bg-gray-50 cursor-not-allowed"
-              />
+                value={formData.languageDetectionEnabled ? 'nova-3-multilingual' : 'nova-3-monolingual'}
+                onChange={handleModelChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#B725B7] focus:border-transparent"
+              >
+                {STT_MODEL_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label} - ${option.cost.toFixed(4)}/min
+                  </option>
+                ))}
+              </select>
               <p className="text-sm text-gray-500">
-                Deepgram model with language targeting (pt-BR or en-US)
+                {formData.languageDetectionEnabled
+                  ? '🌍 Multilingual: Automatically detects language from audio (16 languages supported)'
+                  : '🎯 Monolingual: Uses targeted language parameter (pt-BR or en-US)'}
               </p>
             </div>
 

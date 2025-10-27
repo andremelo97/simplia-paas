@@ -510,50 +510,76 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
 
     console.log(`[Transcription] Starting transcription with webhook URL: ${webhookUrl}`);
 
-    // Determine language for transcription
-    // Priority: 1) tenant config, 2) tenant timezone, 3) default (en-US)
-    // Rule: pt-BR if timezone is America/Sao_Paulo, en-US for everything else
-    let transcriptionLanguage = 'en-US'; // Default to English
+    // Get tenant transcription config and plan to determine language strategy
+    let detectLanguage = false;
+    let transcriptionLanguage = 'en-US'; // Default for monolingual mode
 
     try {
-      // Try to get language from tenant transcription config
+      // Fetch config with plan details to check if language detection is enabled
       const configQuery = await client.query(
-        'SELECT transcription_language FROM public.tenant_transcription_config WHERE tenant_id_fk = $1',
+        `SELECT ttc.transcription_language, tp.language_detection_enabled
+         FROM public.tenant_transcription_config ttc
+         INNER JOIN public.transcription_plans tp ON ttc.plan_id_fk = tp.id
+         WHERE ttc.tenant_id_fk = $1`,
         [tenantId]
       );
 
-      if (configQuery.rows.length > 0 && configQuery.rows[0].transcription_language) {
-        transcriptionLanguage = configQuery.rows[0].transcription_language;
-        console.log(`[Transcription] Using config language: ${transcriptionLanguage}`);
-      } else if (req.tenant?.timezone) {
-        // Determine language based on timezone: pt-BR for Brazil, en-US for rest of world
-        transcriptionLanguage = req.tenant.timezone === 'America/Sao_Paulo' ? 'pt-BR' : 'en-US';
-        console.log(`[Transcription] Determined language from timezone ${req.tenant.timezone}: ${transcriptionLanguage}`);
+      if (configQuery.rows.length > 0) {
+        const planConfig = configQuery.rows[0];
+        detectLanguage = planConfig.language_detection_enabled || false;
+
+        if (detectLanguage) {
+          console.log(`[Transcription] Plan uses MULTILINGUAL mode (detect_language=true)`);
+        } else {
+          // Monolingual mode: determine target language
+          // Priority: 1) config language, 2) timezone-based, 3) default
+          if (planConfig.transcription_language) {
+            transcriptionLanguage = planConfig.transcription_language;
+            console.log(`[Transcription] Using config language: ${transcriptionLanguage}`);
+          } else if (req.tenant?.timezone) {
+            transcriptionLanguage = req.tenant.timezone === 'America/Sao_Paulo' ? 'pt-BR' : 'en-US';
+            console.log(`[Transcription] Determined language from timezone ${req.tenant.timezone}: ${transcriptionLanguage}`);
+          } else {
+            console.log(`[Transcription] Using default language: ${transcriptionLanguage}`);
+          }
+          console.log(`[Transcription] Plan uses MONOLINGUAL mode (language=${transcriptionLanguage})`);
+        }
       } else {
-        console.log(`[Transcription] Using default language: ${transcriptionLanguage}`);
+        // No config found - fallback to default monolingual
+        console.warn(`[Transcription] No config found for tenant ${tenantId}, using default monolingual (en-US)`);
+        if (req.tenant?.timezone) {
+          transcriptionLanguage = req.tenant.timezone === 'America/Sao_Paulo' ? 'pt-BR' : 'en-US';
+        }
       }
     } catch (error) {
-      console.warn('[Transcription] Failed to determine language, using default:', error.message);
+      console.warn('[Transcription] Failed to fetch plan config, using default monolingual:', error.message);
     }
 
-    // Start Deepgram transcription with language targeting and extra metadata
+    // Start Deepgram transcription with plan-based language strategy
     console.log(`[Transcription] Starting Deepgram transcription for: ${transcriptionId}`);
     console.log(`[Transcription] Audio URL: ${transcription.audio_url}`);
-    console.log(`[Transcription] Language: ${transcriptionLanguage}`);
     console.log(`[Transcription] Model: ${DEFAULT_STT_MODEL}`);
+    console.log(`[Transcription] Language Strategy: ${detectLanguage ? 'Multilingual (detect_language)' : `Monolingual (${transcriptionLanguage})`}`);
+
+    const deepgramOptions = {
+      model: DEFAULT_STT_MODEL, // System default: nova-3
+      detectLanguage: detectLanguage, // Plan setting
+      extra: {
+        tenantId: tenantId,
+        schema: tenantSchema,
+        transcriptionId: transcriptionId
+      }
+    };
+
+    // Add language parameter only for monolingual mode
+    if (!detectLanguage) {
+      deepgramOptions.language = transcriptionLanguage;
+    }
 
     const transcriptionApiResult = await deepgramService.transcribeByUrl(
       transcription.audio_url,
       webhookUrl,
-      {
-        model: DEFAULT_STT_MODEL, // System default: Nova-3
-        language: transcriptionLanguage, // pt-BR or en-US
-        extra: {
-          tenantId: tenantId,
-          schema: tenantSchema,
-          transcriptionId: transcriptionId
-        }
-      }
+      deepgramOptions
     );
 
     console.log(`[Transcription] Deepgram response received successfully`);

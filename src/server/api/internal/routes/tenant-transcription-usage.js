@@ -64,9 +64,13 @@ router.use(requireAuth);
  */
 router.get('/transcription-usage', requireAdmin, async (req, res) => {
   try {
+    console.log('[Hub Transcription Usage] Request received');
+    console.log('[Hub Transcription Usage] req.user:', JSON.stringify(req.user, null, 2));
+
     const tenantId = req.user?.tenantId;
 
     if (!tenantId) {
+      console.log('[Hub Transcription Usage] ❌ No tenantId found');
       return res.status(401).json({
         error: {
           code: 401,
@@ -74,6 +78,8 @@ router.get('/transcription-usage', requireAdmin, async (req, res) => {
         }
       });
     }
+
+    console.log('[Hub Transcription Usage] ✅ TenantId:', tenantId);
 
     // Get tenant configuration
     let config;
@@ -137,7 +143,8 @@ router.get('/transcription-usage', requireAdmin, async (req, res) => {
           slug: config.plan?.slug || 'unknown',
           name: config.plan?.name || 'Unknown Plan',
           allowsCustomLimits: config.plan?.allowsCustomLimits || false,
-          allowsOverage: config.plan?.allowsOverage || false
+          allowsOverage: config.plan?.allowsOverage || false,
+          languageDetectionEnabled: config.plan?.languageDetectionEnabled || false
         },
         config: {
           customMonthlyLimit: config.customMonthlyLimit,
@@ -226,11 +233,15 @@ router.get('/transcription-usage', requireAdmin, async (req, res) => {
  */
 router.get('/transcription-usage/details', requireAdmin, async (req, res) => {
   try {
+    console.log('[Hub Transcription Details] Request received');
+    console.log('[Hub Transcription Details] req.user:', JSON.stringify(req.user, null, 2));
+
     const tenantId = req.user?.tenantId;
     const limit = parseInt(req.query.limit) || 10;
     const offset = parseInt(req.query.offset) || 0;
 
     if (!tenantId) {
+      console.log('[Hub Transcription Details] ❌ No tenantId found');
       return res.status(401).json({
         error: {
           code: 401,
@@ -238,6 +249,8 @@ router.get('/transcription-usage/details', requireAdmin, async (req, res) => {
         }
       });
     }
+
+    console.log('[Hub Transcription Details] ✅ TenantId:', tenantId);
 
     // Verify transcription is configured
     try {
@@ -315,10 +328,14 @@ router.get('/transcription-usage/details', requireAdmin, async (req, res) => {
  */
 router.put('/transcription-config', requireAdmin, async (req, res) => {
   try {
+    console.log('[Hub Transcription Config] PUT request received');
+    console.log('[Hub Transcription Config] req.user:', JSON.stringify(req.user, null, 2));
+
     const tenantId = req.user?.tenantId;
     const { customMonthlyLimit, transcriptionLanguage, overageAllowed } = req.body;
 
     if (!tenantId) {
+      console.log('[Hub Transcription Config] ❌ No tenantId found');
       return res.status(401).json({
         error: {
           code: 401,
@@ -326,6 +343,8 @@ router.put('/transcription-config', requireAdmin, async (req, res) => {
         }
       });
     }
+
+    console.log('[Hub Transcription Config] ✅ TenantId:', tenantId);
 
     // At least one field must be provided
     if (customMonthlyLimit === undefined && transcriptionLanguage === undefined && overageAllowed === undefined) {

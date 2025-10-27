@@ -23,6 +23,7 @@ class TranscriptionPlan {
     this.allowsCustomLimits = data.allows_custom_limits;
     this.allowsOverage = data.allows_overage;
     this.sttModel = data.stt_model;
+    this.languageDetectionEnabled = data.language_detection_enabled;
     this.costPerMinuteUsd = parseFloat(data.cost_per_minute_usd);
     this.active = data.active;
     this.description = data.description;
@@ -101,6 +102,7 @@ class TranscriptionPlan {
       allowsCustomLimits,
       allowsOverage,
       sttModel,
+      languageDetectionEnabled,
       costPerMinuteUsd,
       active,
       description = null
@@ -124,11 +126,12 @@ class TranscriptionPlan {
         allows_custom_limits,
         allows_overage,
         stt_model,
+        language_detection_enabled,
         cost_per_minute_usd,
         active,
         description
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
 
@@ -139,6 +142,7 @@ class TranscriptionPlan {
       allowsCustomLimits,
       allowsOverage,
       sttModel,
+      languageDetectionEnabled,
       costPerMinuteUsd,
       active,
       description
@@ -152,11 +156,13 @@ class TranscriptionPlan {
    */
   async update(updates) {
     const allowedUpdates = [
+      'slug',
       'name',
       'monthly_minutes_limit',
       'allows_custom_limits',
       'allows_overage',
       'stt_model',
+      'language_detection_enabled',
       'cost_per_minute_usd',
       'active',
       'description'
@@ -282,6 +288,7 @@ class TranscriptionPlan {
       allowsCustomLimits: this.allowsCustomLimits,
       allowsOverage: this.allowsOverage,
       sttModel: this.sttModel,
+      languageDetectionEnabled: this.languageDetectionEnabled,
       costPerMinuteUsd: this.costPerMinuteUsd,
       active: this.active,
       description: this.description,

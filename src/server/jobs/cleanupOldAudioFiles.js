@@ -4,7 +4,7 @@
  * Deletes audio files older than 24 hours from Supabase Storage
  * and updates the database to reflect the deletion.
  *
- * **Schedule:** Runs once daily at 2 AM (0 2 * * *)
+ * **Schedule:** Runs hourly (0 * * * *)
  *
  * **Process:**
  * 1. Find all transcriptions with audio_url older than 24 hours
@@ -15,10 +15,10 @@
  * After deletion, audio_url becomes invalid/broken link - no point keeping it.
  * Setting to NULL prevents 404 errors and keeps database clean.
  *
- * **Why Daily:**
- * - Cleans up files older than 24 hours once per day
- * - Runs only once per day to minimize cloud costs
- * - Scheduled at 2 AM (low traffic period)
+ * **Why Hourly:**
+ * - Ensures files are deleted within 24 hours of creation
+ * - Prevents files from exceeding the 24-hour threshold
+ * - Runs at the top of every hour
  */
 
 const cron = require('node-cron');
@@ -154,15 +154,15 @@ async function cleanupOldAudioFiles() {
 
 /**
  * Initialize cron job
- * Runs once daily at 2 AM (0 2 * * *)
+ * Runs hourly (0 * * * *)
  */
 function initAudioCleanupJob() {
-  // Schedule: Every day at 2 AM
-  cron.schedule('0 2 * * *', () => {
+  // Schedule: Every hour at minute 0
+  cron.schedule('0 * * * *', () => {
     cleanupOldAudioFiles();
   });
 
-  console.log('[Cron] Audio cleanup job scheduled (runs daily at 2 AM)');
+  console.log('[Cron] Audio cleanup job scheduled (runs hourly)');
 }
 
 module.exports = {

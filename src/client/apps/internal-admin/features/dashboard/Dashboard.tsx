@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardContent, Skeleton, Alert, Button, EmptyState } from '@client/common/ui'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Card, CardHeader, CardContent, Skeleton, Alert, Button, EmptyState, Select, Paginator } from '@client/common/ui'
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Minus, Users, Building, Package, Activity, BookOpen, Clock, CheckCircle, XCircle, Loader } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Users, Building, Package, Activity, BookOpen, Clock, CheckCircle, XCircle, Loader, Filter } from 'lucide-react'
 import { metricsService, PlatformMetrics } from '../../services/metrics'
 import { jobsService, JobExecution } from '../../services/jobs'
 
@@ -78,6 +78,10 @@ export const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [jobs, setJobs] = useState<JobExecution[]>([])
   const [jobsLoading, setJobsLoading] = useState(true)
+  const [jobNameFilter, setJobNameFilter] = useState<string>('all')
+  const [dateFilter, setDateFilter] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   const fetchMetrics = async () => {
     try {
@@ -118,6 +122,49 @@ export const Dashboard: React.FC = () => {
     if (newThisWeek > 0 || newThisMonth > 0) return 'up'
     return 'stable'
   }
+
+  // Filter jobs based on selected filters
+  const filteredJobs = useMemo(() => {
+    if (!jobs || jobs.length === 0) return []
+
+    return jobs.filter((job) => {
+      // Filter by job name
+      if (jobNameFilter !== 'all' && job.job_name !== jobNameFilter) {
+        return false
+      }
+
+      // Filter by date
+      const jobDate = new Date(job.started_at)
+      const now = new Date()
+
+      if (dateFilter === 'today') {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        return jobDate >= today
+      } else if (dateFilter === 'last_7_days') {
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        return jobDate >= sevenDaysAgo
+      } else if (dateFilter === 'last_30_days') {
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+        return jobDate >= thirtyDaysAgo
+      }
+
+      return true
+    })
+  }, [jobs, jobNameFilter, dateFilter])
+
+  // Paginate filtered jobs
+  const paginatedJobs = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredJobs.slice(startIndex, endIndex)
+  }, [filteredJobs, currentPage, itemsPerPage])
+
+  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage)
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [jobNameFilter, dateFilter])
 
   return (
     <div className="space-y-8">
@@ -235,14 +282,58 @@ export const Dashboard: React.FC = () => {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="space-y-4"
       >
-        <div className="border-b border-gray-200/50 pb-6 mb-6">
+        <div className="pb-4 mb-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="h-8 w-1 bg-purple-600 rounded-full"></div>
             <h2 className="text-xl font-semibold text-gray-900">Background Jobs</h2>
           </div>
-          <p className="text-gray-600 ml-6">
-            Automated maintenance tasks that run daily at night to optimize storage and update transcription costs
+          <p className="text-gray-600 ml-6 mb-4">
+            Automated maintenance tasks that run hourly to optimize storage and update transcription costs
           </p>
+
+          {/* Filters */}
+          <Card className="p-4 ml-6">
+          <div className="flex items-center gap-4">
+            <Filter className="h-5 w-5 text-gray-600" />
+            <div className="flex gap-4 flex-1">
+              <div className="w-48">
+                <Select
+                  value={jobNameFilter}
+                  onChange={(e) => setJobNameFilter(e.target.value)}
+                  options={[
+                    { value: 'all', label: 'All Jobs' },
+                    { value: 'audio_cleanup', label: 'Audio Cleanup' },
+                    { value: 'cost_update', label: 'Cost Update' }
+                  ]}
+                />
+              </div>
+              <div className="w-48">
+                <Select
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  options={[
+                    { value: 'all', label: 'All Time' },
+                    { value: 'today', label: 'Today' },
+                    { value: 'last_7_days', label: 'Last 7 Days' },
+                    { value: 'last_30_days', label: 'Last 30 Days' }
+                  ]}
+                />
+              </div>
+            </div>
+            {(jobNameFilter !== 'all' || dateFilter !== 'all') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setJobNameFilter('all')
+                  setDateFilter('all')
+                }}
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -258,9 +349,9 @@ export const Dashboard: React.FC = () => {
                 </Card>
               ))}
             </>
-          ) : jobs && jobs.length > 0 ? (
+          ) : filteredJobs && filteredJobs.length > 0 ? (
             <>
-              {jobs.map((job) => {
+              {paginatedJobs.map((job) => {
                 const statusConfig = {
                   running: {
                     icon: <Loader className="h-5 w-5 animate-spin" />,
@@ -372,6 +463,17 @@ export const Dashboard: React.FC = () => {
             />
           )}
         </div>
+
+        {/* Paginator */}
+        {filteredJobs.length > itemsPerPage && (
+          <div className="flex justify-center mt-6">
+            <Paginator
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        )}
       </motion.section>
 
     </div>

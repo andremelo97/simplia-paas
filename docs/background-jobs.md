@@ -6,12 +6,12 @@ The background jobs system runs automated maintenance tasks daily at night to op
 ## Jobs
 
 ### 1. Audio Cleanup Job
-**Schedule**: Daily at 2:00 AM (UTC)
+**Schedule**: Hourly (every hour at minute 0)
 **Job Name**: `audio_cleanup`
 **Purpose**: Delete old audio files from Supabase storage to reduce storage costs
 
 **What it does**:
-- Queries all transcriptions older than 30 days
+- Queries all transcriptions older than 24 hours
 - Extracts audio file paths from database records
 - Deletes corresponding files from Supabase storage buckets
 - Logs statistics (deleted, failed counts)
@@ -22,7 +22,7 @@ The background jobs system runs automated maintenance tasks daily at night to op
 - `deleted`: Number of files successfully deleted
 - `failed`: Number of files that failed to delete
 
-**Cron expression**: `0 2 * * *` (2 AM daily)
+**Cron expression**: `0 * * * *` (hourly)
 
 ### 2. Cost Update Job
 **Schedule**: Daily at 3:00 AM (UTC)

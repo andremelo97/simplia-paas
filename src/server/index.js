@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 
-  // Initialize cron jobs
+  // Initialize cron jobs (run once per day at night)
   initAudioCleanupJob();
   initTranscriptionCostUpdateJob();
 });

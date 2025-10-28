@@ -33,20 +33,31 @@
 
 ### Custos Base (Deepgram)
 
-- **Custo Deepgram:** $0.0043/min (R$ 0.022/min)
-- **Fornecedor:** Deepgram Nova-3 (pt-BR + en-US)
+- **Custo Deepgram (Monolingual):** $0.0043/min (R$ 0.022/min)
+- **Custo Deepgram (Multilingual):** $0.0052/min (R$ 0.027/min)
+- **Fornecedor:** Deepgram Nova-3
 - **Modelo de cobrança:** Pay-as-you-go
+- **Cálculo de custos:** Híbrido (local + cron job diário com custos reais da API Deepgram)
 
 ### Planos Oferecidos
 
-| Plano | Min/Mês | Horas/Mês | Custo Deepgram | Preço Venda | Margem | Incluso |
-|-------|---------|-----------|----------------|-------------|--------|---------|
-| **Basic** | 2.400 | 40h | R$ 53 | R$ 0 | -R$ 53 | ✅ Incluso na licença TQ |
-| **Professional** | 6.000 | 100h | R$ 132 | R$ 149 | R$ 17 (11%) | ❌ Add-on |
-| **Business** | 12.000 | 200h | R$ 264 | R$ 279 | R$ 15 (5%) | ❌ Add-on |
-| **VIP** | Custom | Custom | Variável | R$ 0.025/min | 14% | ❌ Custom |
+**Nota importante sobre custos:**
+- Custos baseados em **modo multilingual** ($0.0052/min) para cenário conservador
+- Custos reais podem ser menores se maioria usar modo monolingual ($0.0043/min)
+- Sistema calcula automaticamente baseado em detecção de idioma
+
+| Plano | Min/Mês | Horas/Mês | Custo Deepgram (Multilingual) | Preço Venda | Margem | Incluso |
+|-------|---------|-----------|-------------------------------|-------------|--------|---------|
+| **Basic** | 2.400 | 40h | R$ 65 | R$ 0 | -R$ 65 | ✅ Incluso na licença TQ |
+| **Professional** | 6.000 | 100h | R$ 162 | R$ 179 | R$ 17 (9%) | ❌ Add-on |
+| **Business** | 12.000 | 200h | R$ 324 | R$ 349 | R$ 25 (7%) | ❌ Add-on |
+| **VIP** | Custom | Custom | Variável | R$ 0.030/min | 11% | ❌ Custom |
 
 **Nota:** Basic (2.400 min) é incluso em cada licença TQ. Custo absorvido como CAC.
+
+**Otimização de custos:**
+- Clientes monolingual (apenas pt-BR ou apenas en-US): -17% custo vs multilingual
+- Cron job diário atualiza custos com valores reais da API Deepgram (precisão de centavos)
 
 ---
 
@@ -59,7 +70,7 @@
 | **CRM** | R$ 149 | R$ 1.788 | 🚧 2026 | Vendedores |
 | **Automation** | R$ 199 | R$ 2.388 | 🚧 2027 | Analistas |
 
-**Cada licença TQ inclui:** 2.400 min/mês de transcrição (valor R$ 53)
+**Cada licença TQ inclui:** 2.400 min/mês de transcrição (valor R$ 53-65 dependendo de monolingual vs multilingual)
 
 ### Free Trial
 
@@ -70,7 +81,7 @@
 - Onboarding call com suporte
 - Conversão esperada: 25-30%
 
-**Custo trial:** R$ 13 (600 min × R$ 0.022) - absorvido como CAC
+**Custo trial:** R$ 13-16 (600 min × R$ 0.022-0.027, depende de mono/multi) - absorvido como CAC
 
 ---
 
@@ -80,15 +91,22 @@
 
 **Composição:**
 - 1 licença TQ (1 × R$ 89 = R$ 89)
-- Basic incluso: 2.400 min/mês (R$ 53 de custo)
+- Basic incluso: 2.400 min/mês (R$ 53-65 de custo)
 
 **Preço:**
 - **R$ 79/mês** (12% desconto)
 - **ARR: R$ 948**
 
-**Target:** Psicólogos autônomos, consultórios individuais
+**Target:** Psicólogos autônomos, terapeutas individuais (geralmente monolingual pt-BR)
 
 **Diferencial:** Preço acessível para quem está começando
+
+**Cenário de uso:**
+- 1 profissional atendendo 4-5 pacientes/dia
+- 30-40 min por sessão
+- 20 dias úteis/mês
+- Total: ~2.000-2.400 min/mês (dentro do Basic)
+- Idioma: 100% pt-BR (monolingual) - custo real ~R$ 44-53/mês
 
 ---
 
@@ -96,14 +114,20 @@
 
 **Composição:**
 - 2 licenças TQ (2 × R$ 89 = R$ 178)
-- Basic incluso: 2 × 2.400 = 4.800 min/mês (R$ 106 de custo)
+- Basic incluso: 2 × 2.400 = 4.800 min/mês (R$ 106-130 de custo)
 
 **Preço:**
 - Individual: R$ 178/mês
 - Bundle: **R$ 159/mês** (10% desconto)
 - **ARR: R$ 1.908**
 
-**Target:** Parcerias, consultórios compartilhados
+**Target:** Parcerias, consultórios compartilhados (psicoterapia, nutrição)
+
+**Cenário de uso:**
+- 2 profissionais compartilhando espaço
+- ~3-4 pacientes/dia cada
+- Total: ~3.600-4.800 min/mês (dentro do Basic)
+- Idioma: 100% pt-BR (monolingual) - custo real ~R$ 80-106/mês
 
 ---
 
@@ -111,14 +135,21 @@
 
 **Composição:**
 - 3 licenças TQ (3 × R$ 89 = R$ 267)
-- Basic incluso: 3 × 2.400 = 7.200 min/mês (R$ 159 de custo)
+- Basic incluso: 3 × 2.400 = 7.200 min/mês (R$ 159-195 de custo)
 
 **Preço:**
 - Individual: R$ 267/mês
 - Bundle: **R$ 229/mês** (15% desconto)
 - **ARR: R$ 2.748**
 
-**Target:** Consultórios (1-3 profissionais)
+**Target:** Consultórios pequenos (1-3 profissionais, psicologia/nutrição)
+
+**Cenário de uso:**
+- 3 profissionais em consultório
+- ~3-4 pacientes/dia cada
+- Total: ~5.400-7.200 min/mês (dentro do Basic)
+- Idioma: Predominantemente pt-BR (85% monolingual, 15% multilingual)
+- Custo real estimado: ~R$ 130-160/mês (mix de mono/multi)
 
 ---
 
@@ -126,15 +157,22 @@
 
 **Composição:**
 - 10 licenças TQ (10 × R$ 89 = R$ 890)
-- Basic incluso: 10 × 2.400 = 24.000 min/mês (R$ 528 de custo)
-- Upgrade Professional: +6.000 min (R$ 149)
+- Basic incluso: 10 × 2.400 = 24.000 min/mês (R$ 528-650 de custo)
+- Upgrade Professional: +6.000 min (R$ 179)
 
 **Preço:**
-- Individual: R$ 1.039/mês
-- Bundle: **R$ 899/mês** (15% desconto)
+- Individual: R$ 1.069/mês
+- Bundle: **R$ 899/mês** (16% desconto)
 - **ARR: R$ 10.788**
 
-**Target:** Clínicas pequenas (6-15 profissionais)
+**Target:** Clínicas pequenas (6-15 profissionais, multidisciplinar)
+
+**Cenário de uso:**
+- 10 profissionais (psicólogos, psiquiatras, terapeutas)
+- ~4 pacientes/dia cada (alta demanda)
+- Total: ~24.000 min/mês (Basic) + 6.000 min (Professional) = 30.000 min/mês
+- Idioma: 70% pt-BR (monolingual), 30% multilingual (pacientes estrangeiros)
+- Custo real estimado: ~R$ 680-750/mês (mix pesado de mono/multi)
 
 ---
 
@@ -142,15 +180,22 @@
 
 **Composição:**
 - 25 licenças TQ (25 × R$ 89 = R$ 2.225)
-- Basic incluso: 25 × 2.400 = 60.000 min/mês (R$ 1.320 de custo)
-- Upgrade Business: +12.000 min (R$ 279)
+- Basic incluso: 25 × 2.400 = 60.000 min/mês (R$ 1.320-1.620 de custo)
+- Upgrade Business: +12.000 min (R$ 349)
 
 **Preço:**
-- Individual: R$ 2.504/mês
-- Bundle: **R$ 1.999/mês** (20% desconto)
+- Individual: R$ 2.574/mês
+- Bundle: **R$ 1.999/mês** (22% desconto)
 - **ARR: R$ 23.988**
 
-**Target:** Clínicas médias/grandes (16-30 profissionais)
+**Target:** Clínicas médias/grandes (16-30 profissionais, alta diversidade)
+
+**Cenário de uso:**
+- 25 profissionais (equipe multidisciplinar com médicos, psicólogos, terapeutas)
+- ~5 pacientes/dia por profissional (volume alto)
+- Total: ~60.000 min/mês (Basic) + 12.000 min (Business) = 72.000 min/mês
+- Idioma: 50% pt-BR (monolingual), 50% multilingual (clínica internacional/turismo médico)
+- Custo real estimado: ~R$ 1.620-1.950/mês (mix equilibrado mono/multi)
 
 ---
 
@@ -158,14 +203,23 @@
 
 **Composição:**
 - 50+ licenças TQ
-- VIP custom limits
-- Overage permitido
+- VIP custom limits (ex: 200.000 min/mês base)
+- Overage permitido (ilimitado)
 - Account manager dedicado
 - SLA 99.9%
+- Treinamento on-site
 
 **Preço:** **Custom (R$ 5.000-15.000/mês)**
 
-**Target:** Hospitais, redes de clínicas
+**Target:** Hospitais, redes de clínicas, grupos internacionais
+
+**Cenário de uso:**
+- 50-100+ profissionais (hospital com múltiplas especialidades)
+- ~8-10 pacientes/dia por profissional (volume hospitalar)
+- Total: ~240.000-480.000 min/mês (4.000-8.000 horas)
+- Idioma: 40% pt-BR (monolingual), 60% multilingual (hospital internacional, turismo médico)
+- Custo real estimado: ~R$ 5.400-11.000/mês (mix pesado multilingual)
+- **Margem:** 45-55% (volume compensa custo alto de multilingual)
 
 ---
 
@@ -186,14 +240,15 @@ ARR:                   R$ 8.544
 
 #### Custos Variáveis
 ```
-Transcrição (19.2k min): R$ 422  (custo Deepgram)
-AI Agent (OpenAI):       R$ 40   (50 requests/mês GPT-4o-mini)
-Storage (Supabase):      R$ 3    (rateado, $25/50 tenants)
-Database:                R$ 2    (rateado)
-Emails:                  R$ 10   (200 emails/mês)
-Compute:                 R$ 3    (rateado)
+Transcrição (19.2k min): R$ 422-520  (custo Deepgram, depende de mono/multi)
+                                      Assumindo 70% mono + 30% multi: ~R$ 465
+AI Agent (OpenAI):       R$ 40        (50 requests/mês GPT-4o-mini)
+Storage (Supabase):      R$ 3         (rateado, $25/50 tenants)
+Database:                R$ 2         (rateado)
+Emails:                  R$ 10        (200 emails/mês)
+Compute:                 R$ 3         (rateado)
 ────────────────────────────────────────
-Total Variável:         R$ 480/mês
+Total Variável:         R$ 523/mês    (conservador, 70% mono + 30% multi)
 ```
 
 #### Custos Fixos (Rateados)
@@ -204,14 +259,17 @@ Infra base:             R$ 11/tenant (R$ 1.100 / 100 tenants)
 #### Margem
 ```
 Receita:                R$ 712
-Custos Variáveis:       R$ 480
+Custos Variáveis:       R$ 523  (cenário conservador: 70% mono + 30% multi)
 Custos Fixos:           R$ 11
 ────────────────────────────────────────
-Lucro Bruto:            R$ 221/mês
-Margem Bruta:           31%
+Lucro Bruto:            R$ 178/mês
+Margem Bruta:           25%
 ```
 
-**Nota:** Margem aumenta com upsell (Professional/Business plans) para 50-60%.
+**Notas:**
+- Margem aumenta com upsell (Professional/Business plans) para 40-50%
+- Margem real pode ser 30-35% se maioria dos tenants usar modo monolingual
+- Sistema calcula custos reais via cron job diário (precisão de centavos)
 
 ---
 
@@ -222,28 +280,31 @@ Margem Bruta:           31%
 - Churn: 5%/mês (Ano 1)
 - ARPU médio: R$ 656/tenant
 - 20% fazem upgrade para Professional/Business
+- Mix idiomas: 70% monolingual, 30% multilingual (conservador)
 
 ### Tabela de Projeção
 
 | Mês | Tenants | MRR | Custos | Lucro | Margem |
 |-----|---------|-----|--------|-------|--------|
-| M1 | 10 | R$ 6.6k | R$ 4.9k | R$ 1.7k | 26% |
-| M3 | 28 | R$ 18.4k | R$ 13.5k | R$ 4.9k | 27% |
-| M6 | 53 | R$ 34.8k | R$ 25.5k | R$ 9.3k | 27% |
-| M9 | 74 | R$ 48.6k | R$ 35.6k | R$ 13.0k | 27% |
-| M12 | 92 | R$ 60.4k | R$ 44.2k | R$ 16.2k | 27% |
+| M1 | 10 | R$ 6.6k | R$ 5.3k | R$ 1.3k | 20% |
+| M3 | 28 | R$ 18.4k | R$ 14.6k | R$ 3.8k | 21% |
+| M6 | 53 | R$ 34.8k | R$ 27.5k | R$ 7.3k | 21% |
+| M9 | 74 | R$ 48.6k | R$ 38.4k | R$ 10.2k | 21% |
+| M12 | 92 | R$ 60.4k | R$ 47.7k | R$ 12.7k | 21% |
 
 ### Acumulado Ano 1
 
 ```
 Receita Total:          R$ 442k
-Custos Total:           R$ 323k
+Custos Total:           R$ 349k
 ────────────────────────────────────────
-Lucro Bruto Ano 1:      R$ 119k
-Margem Bruta:           27%
+Lucro Bruto Ano 1:      R$ 93k
+Margem Bruta:           21%
 ```
 
 **ARR (final M12):** R$ 725k
+
+**Nota:** Margem conservadora (assume 70% mono + 30% multi). Margem real pode chegar a 30-35% se maioria for monolingual.
 
 ---
 
@@ -255,8 +316,10 @@ Margem Bruta:           27%
 | **MRR** | R$ 31k | R$ 60k | R$ 126k |
 | **ARR** | R$ 378k | R$ 725k | R$ 1.5M |
 | **Receita Ano 1** | R$ 207k | R$ 442k | R$ 889k |
-| **Lucro Ano 1** | R$ 56k | R$ 119k | R$ 240k |
-| **Margem** | 27% | 27% | 27% |
+| **Lucro Ano 1** | R$ 43k | R$ 93k | R$ 187k |
+| **Margem** | 21% | 21% | 21% |
+
+**Nota:** Margens conservadoras (70% mono + 30% multi). Com perfil 100% monolingual, margens sobem para 30-35%.
 
 ---
 
@@ -264,18 +327,23 @@ Margem Bruta:           27%
 
 ### Receita e Margem por Pacote
 
-| Pacote | Preço/Mês | Custo/Mês | Lucro/Mês | Margem | ARR |
-|--------|-----------|-----------|-----------|--------|-----|
-| **Solo** (1 user) | R$ 79 | R$ 64 | R$ 15 | 19% | R$ 948 |
-| **Duo** (2 users) | R$ 159 | R$ 117 | R$ 42 | 26% | R$ 1.9k |
-| **Starter** (3 users) | R$ 229 | R$ 177 | R$ 52 | 23% | R$ 2.7k |
-| **Growth** (10 users) | R$ 899 | R$ 615 | R$ 284 | 32% | R$ 10.8k |
-| **Scale** (25 users) | R$ 1.999 | R$ 1.452 | R$ 547 | 27% | R$ 24k |
-| **Enterprise** (50 users) | R$ 8.000 | R$ 5.500 | R$ 2.500 | 31% | R$ 96k |
+| Pacote | Preço/Mês | Custo/Mês (Conservador) | Lucro/Mês | Margem | ARR | Mix Idiomas Típico |
+|--------|-----------|-------------------------|-----------|--------|-----|--------------------|
+| **Solo** (1 user) | R$ 79 | R$ 75 | R$ 4 | 5% | R$ 948 | 95% mono (psicólogos BR) |
+| **Duo** (2 users) | R$ 159 | R$ 139 | R$ 20 | 13% | R$ 1.9k | 90% mono |
+| **Starter** (3 users) | R$ 229 | R$ 208 | R$ 21 | 9% | R$ 2.7k | 85% mono, 15% multi |
+| **Growth** (10 users) | R$ 899 | R$ 738 | R$ 161 | 18% | R$ 10.8k | 70% mono, 30% multi |
+| **Scale** (25 users) | R$ 1.999 | R$ 1.679 | R$ 320 | 16% | R$ 24k | 50% mono, 50% multi |
+| **Enterprise** (50 users) | R$ 8.000 | R$ 4.400 | R$ 3.600 | 45% | R$ 96k | 40% mono, 60% multi |
 
-**Melhor Margem:** Growth (32%) - sweet spot entre volume e eficiência.
+**Melhor Margem:** Enterprise (45%) - volume alto compensa custo multilingual.
 
-**Estratégia de Entrada:** Solo/Duo capturam profissionais liberais (margem menor, mas volume maior).
+**Pior Margem:** Solo (5%) - preço de entrada, custo absorvido como CAC.
+
+**Estratégia:**
+- Solo/Duo: Captura profissionais liberais (margem baixa, mas alto volume + upsell)
+- Growth: Sweet spot operacional (margem 18%, volume médio)
+- Enterprise: Alto valor (margem 45%, contratos anuais)
 
 ---
 
@@ -288,34 +356,36 @@ CAC (Custo Aquisição):      R$ 350
 ARPU (Receita/Tenant):      R$ 656/mês
 Churn (mensal):             5% (Ano 1) → 2% (Ano 2)
 Customer Lifetime:          20 meses (5% churn)
-Gross Margin:               27%
+Gross Margin:               21% (conservador, 70% mono + 30% multi)
+                            até 35% (otimista, 100% monolingual)
 ```
 
 ### Cálculo LTV
 
 ```
 LTV = ARPU × Lifetime × Gross Margin
-LTV = R$ 656 × 20 × 0.27
-LTV = R$ 3.542
+LTV (Conservador) = R$ 656 × 20 × 0.21 = R$ 2.755
+LTV (Otimista)    = R$ 656 × 20 × 0.35 = R$ 4.592
 ```
 
 ### LTV/CAC Ratio
 
 ```
-LTV/CAC = R$ 3.542 / R$ 350 = 10.1x
+LTV/CAC (Conservador) = R$ 2.755 / R$ 350 = 7.9x
+LTV/CAC (Otimista)    = R$ 4.592 / R$ 350 = 13.1x
 ```
 
-✅ **Saudável** (>3x é bom para SaaS B2B)
+✅ **Excelente** (>3x é bom para SaaS B2B, estamos em 7.9-13.1x)
 
 ### Payback Period
 
 ```
 Payback = CAC / (ARPU × Gross Margin)
-Payback = R$ 350 / (R$ 656 × 0.27)
-Payback = 2 meses
+Payback (Conservador) = R$ 350 / (R$ 656 × 0.21) = 2.5 meses
+Payback (Otimista)    = R$ 350 / (R$ 656 × 0.35) = 1.5 meses
 ```
 
-✅ **Excelente** (<12 meses é saudável)
+✅ **Excelente** (<12 meses é saudável, estamos em 1.5-2.5 meses)
 
 ---
 
@@ -329,10 +399,13 @@ Payback = 2 meses
 | **MRR** | R$ 60k | R$ 312k | R$ 1.003k |
 | **ARR** | R$ 725k | R$ 3.7M | R$ 12M |
 | **Receita Acum.** | R$ 442k | R$ 2.1M | R$ 7.8M |
-| **Lucro Bruto** | R$ 119k | R$ 630k | R$ 2.3M |
-| **Margem** | 27% | 30% | 30% |
+| **Lucro Bruto** | R$ 93k | R$ 630k | R$ 2.3M |
+| **Margem** | 21% | 30% | 30% |
 
-**Nota:** ARPU aumenta com lançamento CRM (2026) e Automation (2027).
+**Notas:**
+- ARPU aumenta com lançamento CRM (2026) e Automation (2027)
+- Margem Ano 1 conservadora (21%) por mix mono/multi
+- Margem Ano 2-3 melhora (30%) com escala e otimização de custos
 
 ---
 
@@ -348,12 +421,14 @@ Payback = 2 meses
 
 ### Add-ons Transcrição
 
-| Plano | Min/Mês | Preço/Mês | Cenário |
-|-------|---------|-----------|---------|
-| Basic | 2.400 | Incluso | Padrão |
-| Professional | +6.000 | +R$ 149 | Heavy users |
-| Business | +12.000 | +R$ 279 | Muito heavy |
-| VIP | Custom | Custom | Enterprise |
+| Plano | Min/Mês | Preço/Mês | Cenário | Custo Estimado (Mix) |
+|-------|---------|-----------|---------|---------------------|
+| Basic | 2.400 | Incluso | Padrão | R$ 53-65 |
+| Professional | +6.000 | +R$ 179 | Heavy users | +R$ 132-162 |
+| Business | +12.000 | +R$ 349 | Muito heavy | +R$ 264-324 |
+| VIP | Custom | Custom | Enterprise | Variável |
+
+**Nota:** Custos dependem do mix monolingual vs multilingual por tenant.
 
 ### Pacotes (Bundles)
 
@@ -373,20 +448,28 @@ Payback = 2 meses
 ### Fornecedores (Final)
 
 ✅ **Storage:** Supabase ($25/mês fixo)
-✅ **Transcrição:** Deepgram Nova-3 ($0.0043/min)
+✅ **Transcrição:** Deepgram Nova-3
+   - Monolingual: $0.0043/min (pt-BR ou en-US isolado)
+   - Multilingual: $0.0052/min (detecção automática de idioma)
+   - Cron job diário atualiza custos reais via Management API
 ✅ **AI Agent:** OpenAI GPT-4o-mini ($0.15/1M tokens)
 ✅ **Database:** Supabase/Railway (Postgres)
 ✅ **Compute:** Railway/Fly.io (API servers)
 
 ### Pricing (Final)
 
-✅ **Licença TQ:** R$ 89/user/mês (inclui 2.400 min)
-✅ **Add-on Professional:** R$ 149/mês (+6k min)
-✅ **Add-on Business:** R$ 279/mês (+12k min)
-✅ **Bundles:** 10-20% desconto
+✅ **Licença TQ:** R$ 89/user/mês (inclui 2.400 min mono/multi)
+✅ **Add-on Professional:** R$ 179/mês (+6k min)
+✅ **Add-on Business:** R$ 349/mês (+12k min)
+✅ **Bundles:** 10-22% desconto
 ✅ **Entrada:** Solo (R$ 79) e Duo (R$ 159) - baixa fricção
 ✅ **Volume:** Starter/Growth - clínicas pequenas/médias
 ✅ **Premium:** Scale/Enterprise - clínicas grandes/hospitais
+
+**Estratégia de custos:**
+- Sistema calcula automaticamente mono vs multilingual por transcrição
+- Cron job diário substitui custos locais por valores reais do Deepgram
+- Precisão de centavos para análise financeira mensal
 
 ### Go-to-Market
 
@@ -411,16 +494,18 @@ Payback = 2 meses
 
 ### Viabilidade
 
-✅ **Margem Bruta:** 27% (aumenta para 50-60% com upsells)
-✅ **LTV/CAC:** 10x (saudável)
-✅ **Payback:** 2 meses (excelente)
+✅ **Margem Bruta:** 21-35% (depende de mix mono/multi, aumenta para 40-50% com upsells)
+✅ **LTV/CAC:** 7.9-13.1x (excelente, depende de mix)
+✅ **Payback:** 1.5-2.5 meses (excelente)
 ✅ **Break-even:** M2-M3 (rápido)
 
 ### Projeções
 
-📈 **Ano 1:** R$ 725k ARR (92 tenants)
-📈 **Ano 2:** R$ 3.7M ARR (350 tenants, lançamento CRM)
-📈 **Ano 3:** R$ 12M ARR (850 tenants, expansão)
+📈 **Ano 1:** R$ 725k ARR (92 tenants) - Margem 21% (conservadora)
+📈 **Ano 2:** R$ 3.7M ARR (350 tenants, lançamento CRM) - Margem 30%
+📈 **Ano 3:** R$ 12M ARR (850 tenants, expansão) - Margem 30%
+
+**Nota:** Margens melhoram com escala e otimização mono/multi
 
 ### Investimento Requerido
 
@@ -432,8 +517,10 @@ Payback = 2 meses
 ### ROI
 
 🎯 **ARR Ano 1:** R$ 725k
-🎯 **Lucro Ano 1:** R$ 119k
+🎯 **Lucro Ano 1:** R$ 93k (conservador, mix 70/30 mono/multi)
 🎯 **Valuation (10x ARR):** R$ 7.2M
+
+**Upside:** Lucro pode chegar a R$ 130-150k se maioria dos tenants for monolingual (cenário realista para Brasil)
 
 ---
 

@@ -4,17 +4,19 @@
  * Fetches real costs from Deepgram Management API for transcriptions
  * that were processed in the last 24 hours and updates the database.
  *
- * **Schedule:** Runs once daily at 2 AM (0 2 * * *)
+ * **Schedule:** Runs once daily at 3 AM (0 3 * * *)
  *
  * **Process:**
  * 1. Find all transcription usage records from the last 24 hours
- * 2. Fetch real cost from Deepgram Management API
- * 3. Update database with real cost (if available)
+ * 2. Extract project ID from request_id (format: {project_id}.{unique_id})
+ * 3. Fetch real cost from Deepgram Management API
+ * 4. Update database with real cost (if available)
  *
  * **Why Daily:**
  * - Gives Deepgram time to process and make cost data available
  * - Processes in batch (more efficient than per-request)
  * - Doesn't block webhook response time
+ * - Runs only once per day to minimize cloud costs
  */
 
 const cron = require('node-cron');
@@ -22,21 +24,52 @@ const database = require('../infra/db/database');
 const DeepgramService = require('../services/deepgram');
 
 const deepgramService = new DeepgramService();
-const DEEPGRAM_PROJECT_ID = process.env.DEEPGRAM_PROJECT_ID;
+
+/**
+ * Extract project ID from Deepgram request ID
+ * Request IDs have format: {project_id}.{unique_id}
+ * Example: "abc123def-456-789.xyz987-654-321" → "abc123def-456-789"
+ */
+function extractProjectIdFromRequestId(requestId) {
+  if (!requestId || typeof requestId !== 'string') {
+    return null;
+  }
+
+  const parts = requestId.split('.');
+  return parts.length >= 2 ? parts[0] : null;
+}
 
 /**
  * Update transcription costs with real values from Deepgram
  * Processes all usage records from the last 24 hours
  */
 async function updateTranscriptionCosts() {
-  console.log('[Cron] Starting transcription cost update job...');
-
-  if (!DEEPGRAM_PROJECT_ID) {
-    console.warn('[Cron] DEEPGRAM_PROJECT_ID not configured - skipping cost update');
-    return;
-  }
+  const startTime = Date.now();
+  let executionId = null;
 
   try {
+    // Log job start
+    const startResult = await database.query(`
+      INSERT INTO public.job_executions (job_name, status, started_at)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+      RETURNING id
+    `, ['cost_update', 'running']);
+
+    executionId = startResult.rows[0].id;
+    console.log('[Job] Starting transcription cost update job...');
+
+    if (!deepgramService.apiKey) {
+      console.warn('[Job] DEEPGRAM_API_KEY not configured - skipping cost update');
+
+      // Update execution as failed
+      await database.query(`
+        UPDATE public.job_executions
+        SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, error_message = $3
+        WHERE id = $4
+      `, ['failed', Date.now() - startTime, 'DEEPGRAM_API_KEY not configured', executionId]);
+
+      return;
+    }
     // Find all usage records from last 24 hours with request_id
     const query = `
       SELECT
@@ -54,23 +87,33 @@ async function updateTranscriptionCosts() {
     const result = await database.query(query);
 
     if (result.rows.length === 0) {
-      console.log('[Cron] No transcription usage records found in last 24 hours');
+      console.log('[Job] No transcription usage records found in last 24 hours');
       return;
     }
 
-    console.log(`[Cron] Found ${result.rows.length} transcription usage records to update`);
+    console.log(`[Job] Found ${result.rows.length} transcription usage records to update`);
 
     let totalUpdated = 0;
     let totalFailed = 0;
     let totalUnchanged = 0;
+    let totalSkipped = 0;
 
     // Process each usage record
     for (const row of result.rows) {
       try {
         const requestId = row.stt_provider_request_id;
 
+        // Extract project ID from request_id
+        const projectId = extractProjectIdFromRequestId(requestId);
+
+        if (!projectId) {
+          totalSkipped++;
+          console.warn(`[Job] ⚠️ Could not extract project ID from request ${requestId} - skipping`);
+          continue;
+        }
+
         // Fetch real cost from Deepgram Management API
-        const costData = await deepgramService.getRequestCost(DEEPGRAM_PROJECT_ID, requestId);
+        const costData = await deepgramService.getRequestCost(projectId, requestId);
 
         if (costData.usd !== null) {
           const realCost = costData.usd;
@@ -85,13 +128,13 @@ async function updateTranscriptionCosts() {
             `, [realCost.toFixed(4), row.id]);
 
             totalUpdated++;
-            console.log(`[Cron] ✅ Updated cost for request ${requestId}: $${currentCost.toFixed(4)} → $${realCost.toFixed(4)}`);
+            console.log(`[Job] ✅ Updated cost for request ${requestId}: $${currentCost.toFixed(4)} → $${realCost.toFixed(4)}`);
           } else {
             totalUnchanged++;
           }
         } else {
           totalFailed++;
-          console.warn(`[Cron] ⚠️ Cost not available for request ${requestId} - keeping local calculation`);
+          console.warn(`[Job] ⚠️ Cost not available for request ${requestId} - keeping local calculation`);
         }
 
         // Small delay to avoid rate limits (50ms between requests)
@@ -99,27 +142,44 @@ async function updateTranscriptionCosts() {
 
       } catch (error) {
         totalFailed++;
-        console.error(`[Cron] ❌ Error updating cost for record ${row.id}:`, error.message);
+        console.error(`[Job] ❌ Error updating cost for record ${row.id}:`, error.message);
       }
     }
 
-    console.log(`[Cron] Cost update complete: ${totalUpdated} updated, ${totalUnchanged} unchanged, ${totalFailed} failed`);
+    console.log(`[Job] Cost update complete: ${totalUpdated} updated, ${totalUnchanged} unchanged, ${totalSkipped} skipped, ${totalFailed} failed`);
+
+    // Log job success
+    await database.query(`
+      UPDATE public.job_executions
+      SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, stats = $3
+      WHERE id = $4
+    `, ['success', Date.now() - startTime, JSON.stringify({ updated: totalUpdated, unchanged: totalUnchanged, skipped: totalSkipped, failed: totalFailed }), executionId]);
+
   } catch (error) {
-    console.error('[Cron] Cost update job failed:', error);
+    console.error('[Job] Cost update job failed:', error);
+
+    // Log job failure
+    if (executionId) {
+      await database.query(`
+        UPDATE public.job_executions
+        SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, error_message = $3
+        WHERE id = $4
+      `, ['failed', Date.now() - startTime, error.message, executionId]);
+    }
   }
 }
 
 /**
  * Initialize cron job
- * Runs once daily at 2 AM (0 2 * * *)
+ * Runs once daily at 3 AM (0 3 * * *)
  */
 function initTranscriptionCostUpdateJob() {
-  // Schedule: Every day at 2 AM
-  cron.schedule('0 2 * * *', () => {
+  // Schedule: Every day at 3 AM
+  cron.schedule('0 3 * * *', () => {
     updateTranscriptionCosts();
   });
 
-  console.log('[Cron] Transcription cost update job scheduled (runs daily at 2 AM)');
+  console.log('[Cron] Transcription cost update job scheduled (runs daily at 3 AM)');
 }
 
 module.exports = {

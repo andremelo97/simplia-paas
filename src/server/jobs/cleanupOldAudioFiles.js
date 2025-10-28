@@ -1,10 +1,10 @@
 /**
  * Audio File Cleanup Cron Job
  *
- * Automatically deletes audio files older than 24 hours from Supabase Storage
+ * Deletes audio files older than 24 hours from Supabase Storage
  * and updates the database to reflect the deletion.
  *
- * **Schedule:** Runs every hour (0 * * * *)
+ * **Schedule:** Runs once daily at 2 AM (0 2 * * *)
  *
  * **Process:**
  * 1. Find all transcriptions with audio_url older than 24 hours
@@ -14,6 +14,11 @@
  * **Why Clean URLs:**
  * After deletion, audio_url becomes invalid/broken link - no point keeping it.
  * Setting to NULL prevents 404 errors and keeps database clean.
+ *
+ * **Why Daily:**
+ * - Cleans up files older than 24 hours once per day
+ * - Runs only once per day to minimize cloud costs
+ * - Scheduled at 2 AM (low traffic period)
  */
 
 const cron = require('node-cron');
@@ -25,9 +30,19 @@ const { deleteFileByUrl } = require('../services/supabaseStorage');
  * Runs across all tenant schemas (global cleanup)
  */
 async function cleanupOldAudioFiles() {
-  console.log('[Cron] Starting audio cleanup job...');
+  const startTime = Date.now();
+  let executionId = null;
 
   try {
+    // Log job start
+    const startResult = await database.query(`
+      INSERT INTO public.job_executions (job_name, status, started_at)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+      RETURNING id
+    `, ['audio_cleanup', 'running']);
+
+    executionId = startResult.rows[0].id;
+    console.log('[Job] Starting audio cleanup job...');
     // Find all tenant schemas
     const schemasResult = await database.query(`
       SELECT schema_name
@@ -36,7 +51,7 @@ async function cleanupOldAudioFiles() {
     `);
 
     if (schemasResult.rows.length === 0) {
-      console.log('[Cron] No active tenants found');
+      console.log('[Job] No active tenants found');
       return;
     }
 
@@ -80,7 +95,7 @@ async function cleanupOldAudioFiles() {
           continue; // No audios to cleanup in this tenant
         }
 
-        console.log(`[Cron] Found ${result.rows.length} audio files to delete in ${schema}`);
+        console.log(`[Job] Found ${result.rows.length} audio files to delete in ${schema}`);
 
         // Delete each audio file
         for (const row of result.rows) {
@@ -103,34 +118,51 @@ async function cleanupOldAudioFiles() {
             }
           } catch (error) {
             totalFailed++;
-            console.error(`[Cron] Error deleting audio in ${schema}:`, error.message);
+            console.error(`[Job] Error deleting audio in ${schema}:`, error.message);
           }
         }
       } catch (error) {
         // Only log if it's not a "table doesn't exist" error
         if (error.code !== '42P01') {
-          console.error(`[Cron] Error processing schema ${schema}:`, error.message);
+          console.error(`[Job] Error processing schema ${schema}:`, error.message);
         }
       }
     }
 
-    console.log(`[Cron] Audio cleanup complete: ${totalDeleted} deleted, ${totalFailed} failed`);
+    console.log(`[Job] Audio cleanup complete: ${totalDeleted} deleted, ${totalFailed} failed`);
+
+    // Log job success
+    await database.query(`
+      UPDATE public.job_executions
+      SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, stats = $3
+      WHERE id = $4
+    `, ['success', Date.now() - startTime, JSON.stringify({ deleted: totalDeleted, failed: totalFailed }), executionId]);
+
   } catch (error) {
-    console.error('[Cron] Audio cleanup job failed:', error);
+    console.error('[Job] Audio cleanup job failed:', error);
+
+    // Log job failure
+    if (executionId) {
+      await database.query(`
+        UPDATE public.job_executions
+        SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, error_message = $3
+        WHERE id = $4
+      `, ['failed', Date.now() - startTime, error.message, executionId]);
+    }
   }
 }
 
 /**
  * Initialize cron job
- * Runs every hour at minute 0 (0 * * * *)
+ * Runs once daily at 2 AM (0 2 * * *)
  */
 function initAudioCleanupJob() {
-  // Schedule: Every hour
-  cron.schedule('0 * * * *', () => {
+  // Schedule: Every day at 2 AM
+  cron.schedule('0 2 * * *', () => {
     cleanupOldAudioFiles();
   });
 
-  console.log('[Cron] Audio cleanup job scheduled (runs every hour)');
+  console.log('[Cron] Audio cleanup job scheduled (runs daily at 2 AM)');
 }
 
 module.exports = {

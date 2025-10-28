@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { Card, CardHeader, CardContent, Skeleton, Alert, Button } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Skeleton, Alert, Button, EmptyState } from '@client/common/ui'
 import { motion } from 'framer-motion'
-import { TrendingUp, TrendingDown, Minus, Users, Building, Package, Activity, BookOpen } from 'lucide-react'
+import { TrendingUp, TrendingDown, Minus, Users, Building, Package, Activity, BookOpen, Clock, CheckCircle, XCircle, Loader } from 'lucide-react'
 import { metricsService, PlatformMetrics } from '../../services/metrics'
+import { jobsService, JobExecution } from '../../services/jobs'
 
 const MetricCard: React.FC<{
   title: string
@@ -75,17 +76,19 @@ export const Dashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [jobs, setJobs] = useState<JobExecution[]>([])
+  const [jobsLoading, setJobsLoading] = useState(true)
 
   const fetchMetrics = async () => {
     try {
       setLoading(true)
       setError(null)
       console.log('🔄 [Dashboard] Fetching platform metrics...')
-      
+
       const data = await metricsService.getPlatformOverview()
       setMetrics(data)
       console.log('✅ [Dashboard] Metrics loaded:', data)
-      
+
     } catch (err: any) {
       console.error('❌ [Dashboard] Failed to load metrics:', err)
       setError(err.message || 'Failed to load metrics')
@@ -94,8 +97,21 @@ export const Dashboard: React.FC = () => {
     }
   }
 
+  const fetchJobs = async () => {
+    try {
+      setJobsLoading(true)
+      const data = await jobsService.getStatus()
+      setJobs(data)
+    } catch (err: any) {
+      console.error('❌ [Dashboard] Failed to load jobs:', err)
+    } finally {
+      setJobsLoading(false)
+    }
+  }
+
   useEffect(() => {
     fetchMetrics()
+    fetchJobs()
   }, [])
 
   const getTrend = (newThisWeek: number, newThisMonth: number): 'up' | 'down' | 'stable' => {
@@ -208,6 +224,152 @@ export const Dashboard: React.FC = () => {
             <div className="col-span-4 text-center py-8">
               <p className="text-gray-500">No metrics data available</p>
             </div>
+          )}
+        </div>
+      </motion.section>
+
+      {/* Background Jobs Section */}
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="space-y-4"
+      >
+        <div className="border-b border-gray-200/50 pb-6 mb-6">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="h-8 w-1 bg-purple-600 rounded-full"></div>
+            <h2 className="text-xl font-semibold text-gray-900">Background Jobs</h2>
+          </div>
+          <p className="text-gray-600 ml-6">
+            Automated maintenance tasks that run daily at night to optimize storage and update transcription costs
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {jobsLoading ? (
+            <>
+              {Array.from({ length: 2 }).map((_, i) => (
+                <Card key={i} className="p-6">
+                  <div className="space-y-4">
+                    <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </Card>
+              ))}
+            </>
+          ) : jobs && jobs.length > 0 ? (
+            <>
+              {jobs.map((job) => {
+                const statusConfig = {
+                  running: {
+                    icon: <Loader className="h-5 w-5 animate-spin" />,
+                    color: 'bg-blue-100 text-blue-700 border-blue-200',
+                    label: 'Running'
+                  },
+                  success: {
+                    icon: <CheckCircle className="h-5 w-5" />,
+                    color: 'bg-green-100 text-green-700 border-green-200',
+                    label: 'Success'
+                  },
+                  failed: {
+                    icon: <XCircle className="h-5 w-5" />,
+                    color: 'bg-red-100 text-red-700 border-red-200',
+                    label: 'Failed'
+                  }
+                }
+
+                const config = statusConfig[job.status]
+                const jobNameDisplay = job.job_name === 'audio_cleanup' ? 'Audio Cleanup' : 'Cost Update'
+
+                return (
+                  <Card key={job.job_name} className="border-gray-200/50 shadow-sm hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        {/* Job Name & Status */}
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900">{jobNameDisplay}</h3>
+                          <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${config.color}`}>
+                            {config.icon}
+                            <span className="text-sm font-medium">{config.label}</span>
+                          </div>
+                        </div>
+
+                        {/* Last Run Time */}
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Clock className="h-4 w-4" />
+                          <span>Last run: {new Date(job.started_at).toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
+                        </div>
+
+                        {/* Duration */}
+                        {job.duration_ms && (
+                          <div className="text-sm text-gray-600">
+                            Duration: {(job.duration_ms / 1000).toFixed(2)}s
+                          </div>
+                        )}
+
+                        {/* Stats */}
+                        {job.stats && Object.keys(job.stats).length > 0 && (
+                          <div className="pt-3 border-t border-gray-200">
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              {job.stats.deleted !== undefined && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Deleted:</span>
+                                  <span className="font-medium text-gray-900">{job.stats.deleted}</span>
+                                </div>
+                              )}
+                              {job.stats.failed !== undefined && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Failed:</span>
+                                  <span className="font-medium text-red-600">{job.stats.failed}</span>
+                                </div>
+                              )}
+                              {job.stats.updated !== undefined && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Updated:</span>
+                                  <span className="font-medium text-gray-900">{job.stats.updated}</span>
+                                </div>
+                              )}
+                              {job.stats.unchanged !== undefined && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Unchanged:</span>
+                                  <span className="font-medium text-gray-900">{job.stats.unchanged}</span>
+                                </div>
+                              )}
+                              {job.stats.skipped !== undefined && (
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Skipped:</span>
+                                  <span className="font-medium text-orange-600">{job.stats.skipped}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Error Message */}
+                        {job.error_message && (
+                          <Alert variant="error" className="mt-3">
+                            {job.error_message}
+                          </Alert>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </>
+          ) : (
+            <EmptyState
+              title="No job executions yet"
+              description="Background jobs will appear here once they start running"
+              icon={<Clock className="h-6 w-6 text-gray-400" />}
+              className="col-span-2"
+            />
           )}
         </div>
       </motion.section>

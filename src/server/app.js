@@ -22,6 +22,7 @@ const communicationRoutes = require('./api/internal/routes/communication');
 const transcriptionPlansRoutes = require('./api/internal/routes/transcription-plans');
 const tenantTranscriptionConfigRoutes = require('./api/internal/routes/tenant-transcription-config');
 const tenantTranscriptionUsageRoutes = require('./api/internal/routes/tenant-transcription-usage');
+const jobsRoutes = require('./api/internal/routes/jobs');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
@@ -130,6 +131,9 @@ internalRouter.use('/audit', auditRoutes);
 
 // Metrics routes (platform-scoped, for internal admins only)
 internalRouter.use('/metrics', metricsRoutes);
+
+// Jobs routes (platform-scoped, for internal admins only)
+internalRouter.use('/jobs', jobsRoutes);
 
 // Configurations routes (platform-scoped, uses authenticated user's tenant)
 internalRouter.use('/configurations/branding', brandingRoutes);

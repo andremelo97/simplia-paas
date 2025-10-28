@@ -5,8 +5,13 @@
  */
 
 const express = require('express');
+const { requireAuth } = require('../../../infra/middleware/auth');
+const { requirePlatformRole } = require('../../../infra/middleware/platformRole');
 const router = express.Router();
 const database = require('../../../infra/db/database');
+
+// Apply authentication and platform admin role requirement
+router.use(requireAuth, requirePlatformRole('internal_admin'));
 
 /**
  * @swagger

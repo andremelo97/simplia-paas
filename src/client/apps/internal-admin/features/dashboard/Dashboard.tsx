@@ -76,12 +76,14 @@ export const Dashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [jobs, setJobs] = useState<JobExecution[]>([])
-  const [jobsLoading, setJobsLoading] = useState(true)
-  const [jobNameFilter, setJobNameFilter] = useState<string>('all')
-  const [dateFilter, setDateFilter] = useState<string>('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+
+  // Background Jobs state - TEMPORARILY DISABLED
+  // const [jobs, setJobs] = useState<JobExecution[]>([])
+  // const [jobsLoading, setJobsLoading] = useState(true)
+  // const [jobNameFilter, setJobNameFilter] = useState<string>('all')
+  // const [dateFilter, setDateFilter] = useState<string>('all')
+  // const [currentPage, setCurrentPage] = useState(1)
+  // const itemsPerPage = 10
 
   const fetchMetrics = async () => {
     try {
@@ -101,21 +103,22 @@ export const Dashboard: React.FC = () => {
     }
   }
 
-  const fetchJobs = async () => {
-    try {
-      setJobsLoading(true)
-      const data = await jobsService.getStatus()
-      setJobs(data)
-    } catch (err: any) {
-      console.error('❌ [Dashboard] Failed to load jobs:', err)
-    } finally {
-      setJobsLoading(false)
-    }
-  }
+  // Background Jobs fetch - TEMPORARILY DISABLED
+  // const fetchJobs = async () => {
+  //   try {
+  //     setJobsLoading(true)
+  //     const data = await jobsService.getStatus()
+  //     setJobs(data)
+  //   } catch (err: any) {
+  //     console.error('❌ [Dashboard] Failed to load jobs:', err)
+  //   } finally {
+  //     setJobsLoading(false)
+  //   }
+  // }
 
   useEffect(() => {
     fetchMetrics()
-    fetchJobs()
+    // fetchJobs() // TEMPORARILY DISABLED
   }, [])
 
   const getTrend = (newThisWeek: number, newThisMonth: number): 'up' | 'down' | 'stable' => {
@@ -123,48 +126,49 @@ export const Dashboard: React.FC = () => {
     return 'stable'
   }
 
-  // Filter jobs based on selected filters
-  const filteredJobs = useMemo(() => {
-    if (!jobs || jobs.length === 0) return []
+  // Background Jobs filters - TEMPORARILY DISABLED
+  // // Filter jobs based on selected filters
+  // const filteredJobs = useMemo(() => {
+  //   if (!jobs || jobs.length === 0) return []
 
-    return jobs.filter((job) => {
-      // Filter by job name
-      if (jobNameFilter !== 'all' && job.job_name !== jobNameFilter) {
-        return false
-      }
+  //   return jobs.filter((job) => {
+  //     // Filter by job name
+  //     if (jobNameFilter !== 'all' && job.job_name !== jobNameFilter) {
+  //       return false
+  //     }
 
-      // Filter by date
-      const jobDate = new Date(job.started_at)
-      const now = new Date()
+  //     // Filter by date
+  //     const jobDate = new Date(job.started_at)
+  //     const now = new Date()
 
-      if (dateFilter === 'today') {
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        return jobDate >= today
-      } else if (dateFilter === 'last_7_days') {
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        return jobDate >= sevenDaysAgo
-      } else if (dateFilter === 'last_30_days') {
-        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-        return jobDate >= thirtyDaysAgo
-      }
+  //     if (dateFilter === 'today') {
+  //       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  //       return jobDate >= today
+  //     } else if (dateFilter === 'last_7_days') {
+  //       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  //       return jobDate >= sevenDaysAgo
+  //     } else if (dateFilter === 'last_30_days') {
+  //       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+  //       return jobDate >= thirtyDaysAgo
+  //     }
 
-      return true
-    })
-  }, [jobs, jobNameFilter, dateFilter])
+  //     return true
+  //   })
+  // }, [jobs, jobNameFilter, dateFilter])
 
-  // Paginate filtered jobs
-  const paginatedJobs = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    return filteredJobs.slice(startIndex, endIndex)
-  }, [filteredJobs, currentPage, itemsPerPage])
+  // // Paginate filtered jobs
+  // const paginatedJobs = useMemo(() => {
+  //   const startIndex = (currentPage - 1) * itemsPerPage
+  //   const endIndex = startIndex + itemsPerPage
+  //   return filteredJobs.slice(startIndex, endIndex)
+  // }, [filteredJobs, currentPage, itemsPerPage])
 
-  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage)
+  // const totalPages = Math.ceil(filteredJobs.length / itemsPerPage)
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [jobNameFilter, dateFilter])
+  // // Reset to page 1 when filters change
+  // useEffect(() => {
+  //   setCurrentPage(1)
+  // }, [jobNameFilter, dateFilter])
 
   return (
     <div className="space-y-8">
@@ -275,8 +279,8 @@ export const Dashboard: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* Background Jobs Section */}
-      <motion.section
+      {/* Background Jobs Section - TEMPORARILY DISABLED */}
+      {/* <motion.section
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -291,7 +295,6 @@ export const Dashboard: React.FC = () => {
             Automated maintenance tasks that run hourly to optimize storage and update transcription costs
           </p>
 
-          {/* Filters */}
           <Card className="p-4 ml-6">
           <div className="flex items-center gap-4">
             <Filter className="h-5 w-5 text-gray-600" />
@@ -377,7 +380,6 @@ export const Dashboard: React.FC = () => {
                   <Card key={job.job_name} className="border-gray-200/50 shadow-sm hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                       <div className="space-y-4">
-                        {/* Job Name & Status */}
                         <div className="flex items-center justify-between">
                           <h3 className="text-lg font-semibold text-gray-900">{jobNameDisplay}</h3>
                           <div className={`flex items-center gap-2 px-3 py-1 rounded-full border ${config.color}`}>
@@ -386,7 +388,6 @@ export const Dashboard: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Last Run Time */}
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Clock className="h-4 w-4" />
                           <span>Last run: {new Date(job.started_at).toLocaleString('en-US', {
@@ -397,14 +398,12 @@ export const Dashboard: React.FC = () => {
                           })}</span>
                         </div>
 
-                        {/* Duration */}
                         {job.duration_ms && (
                           <div className="text-sm text-gray-600">
                             Duration: {(job.duration_ms / 1000).toFixed(2)}s
                           </div>
                         )}
 
-                        {/* Stats */}
                         {job.stats && Object.keys(job.stats).length > 0 && (
                           <div className="pt-3 border-t border-gray-200">
                             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -442,7 +441,6 @@ export const Dashboard: React.FC = () => {
                           </div>
                         )}
 
-                        {/* Error Message */}
                         {job.error_message && (
                           <Alert variant="error" className="mt-3">
                             {job.error_message}
@@ -464,7 +462,6 @@ export const Dashboard: React.FC = () => {
           )}
         </div>
 
-        {/* Paginator */}
         {filteredJobs.length > itemsPerPage && (
           <div className="flex justify-center mt-6">
             <Paginator
@@ -474,7 +471,7 @@ export const Dashboard: React.FC = () => {
             />
           </div>
         )}
-      </motion.section>
+      </motion.section> */}
 
     </div>
   )

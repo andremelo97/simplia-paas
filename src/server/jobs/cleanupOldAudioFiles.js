@@ -34,6 +34,8 @@ async function cleanupOldAudioFiles() {
   let executionId = null;
 
   try {
+    console.log('🧹 [Audio Cleanup Job] Starting audio cleanup job...');
+
     // Log job start
     const startResult = await database.query(`
       INSERT INTO public.job_executions (job_name, status, started_at)
@@ -42,7 +44,8 @@ async function cleanupOldAudioFiles() {
     `, ['audio_cleanup', 'running']);
 
     executionId = startResult.rows[0].id;
-    console.log('[Job] Starting audio cleanup job...');
+    console.log(`📝 [Audio Cleanup Job] Execution ID: ${executionId}`);
+
     // Find all tenant schemas
     const schemasResult = await database.query(`
       SELECT schema_name
@@ -50,8 +53,10 @@ async function cleanupOldAudioFiles() {
       WHERE active = true
     `);
 
+    console.log(`🏢 [Audio Cleanup Job] Found ${schemasResult.rows.length} active tenants`);
+
     if (schemasResult.rows.length === 0) {
-      console.log('[Job] No active tenants found');
+      console.log('⚠️  [Audio Cleanup Job] No active tenants found');
       return;
     }
 
@@ -74,6 +79,7 @@ async function cleanupOldAudioFiles() {
         const tableCheck = await database.query(tableCheckQuery, [schema]);
 
         if (!tableCheck.rows[0].exists) {
+          console.log(`⏭️  [Audio Cleanup Job] Skipping ${schema} (no transcription table)`);
           continue; // Skip schemas without TQ app provisioned
         }
 
@@ -92,10 +98,11 @@ async function cleanupOldAudioFiles() {
         const result = await database.query(query);
 
         if (result.rows.length === 0) {
+          console.log(`✅ [Audio Cleanup Job] ${schema}: No files to cleanup`);
           continue; // No audios to cleanup in this tenant
         }
 
-        console.log(`[Job] Found ${result.rows.length} audio files to delete in ${schema}`);
+        console.log(`🗑️  [Audio Cleanup Job] ${schema}: Found ${result.rows.length} files to delete`);
 
         // Delete each audio file
         for (const row of result.rows) {
@@ -112,24 +119,25 @@ async function cleanupOldAudioFiles() {
               `, [row.id]);
 
               totalDeleted++;
-              // Reduce logging to avoid rate limits
+              console.log(`   ✓ Deleted file from ${schema} (ID: ${row.id})`);
             } else {
               totalFailed++;
+              console.log(`   ✗ Failed to delete file from ${schema} (ID: ${row.id})`);
             }
           } catch (error) {
             totalFailed++;
-            console.error(`[Job] Error deleting audio in ${schema}:`, error.message);
+            console.error(`   ❌ Error deleting audio in ${schema} (ID: ${row.id}):`, error.message);
           }
         }
       } catch (error) {
         // Only log if it's not a "table doesn't exist" error
         if (error.code !== '42P01') {
-          console.error(`[Job] Error processing schema ${schema}:`, error.message);
+          console.error(`❌ [Audio Cleanup Job] Error processing schema ${schema}:`, error.message);
         }
       }
     }
 
-    console.log(`[Job] Audio cleanup complete: ${totalDeleted} deleted, ${totalFailed} failed`);
+    console.log(`✅ [Audio Cleanup Job] Complete: ${totalDeleted} deleted, ${totalFailed} failed (Duration: ${((Date.now() - startTime) / 1000).toFixed(2)}s)`);
 
     // Log job success
     await database.query(`
@@ -138,8 +146,10 @@ async function cleanupOldAudioFiles() {
       WHERE id = $4
     `, ['success', Date.now() - startTime, JSON.stringify({ deleted: totalDeleted, failed: totalFailed }), executionId]);
 
+    console.log(`💾 [Audio Cleanup Job] Execution logged to database (ID: ${executionId})`);
+
   } catch (error) {
-    console.error('[Job] Audio cleanup job failed:', error);
+    console.error('❌ [Audio Cleanup Job] Job failed:', error);
 
     // Log job failure
     if (executionId) {
@@ -148,6 +158,8 @@ async function cleanupOldAudioFiles() {
         SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, error_message = $3
         WHERE id = $4
       `, ['failed', Date.now() - startTime, error.message, executionId]);
+
+      console.log(`💾 [Audio Cleanup Job] Failure logged to database (ID: ${executionId})`);
     }
   }
 }

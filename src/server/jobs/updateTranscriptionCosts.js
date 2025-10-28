@@ -48,6 +48,8 @@ async function updateTranscriptionCosts() {
   let executionId = null;
 
   try {
+    console.log('💰 [Cost Update Job] Starting transcription cost update job...');
+
     // Log job start
     const startResult = await database.query(`
       INSERT INTO public.job_executions (job_name, status, started_at)
@@ -56,10 +58,10 @@ async function updateTranscriptionCosts() {
     `, ['cost_update', 'running']);
 
     executionId = startResult.rows[0].id;
-    console.log('[Job] Starting transcription cost update job...');
+    console.log(`📝 [Cost Update Job] Execution ID: ${executionId}`);
 
     if (!deepgramService.apiKey) {
-      console.warn('[Job] DEEPGRAM_API_KEY not configured - skipping cost update');
+      console.warn('⚠️  [Cost Update Job] DEEPGRAM_API_KEY not configured - skipping cost update');
 
       // Update execution as failed
       await database.query(`
@@ -68,8 +70,10 @@ async function updateTranscriptionCosts() {
         WHERE id = $4
       `, ['failed', Date.now() - startTime, 'DEEPGRAM_API_KEY not configured', executionId]);
 
+      console.log('💾 [Cost Update Job] Failure logged to database (ID: ${executionId})');
       return;
     }
+
     // Find all usage records from last 24 hours with request_id
     const query = `
       SELECT
@@ -86,12 +90,21 @@ async function updateTranscriptionCosts() {
 
     const result = await database.query(query);
 
+    console.log(`📊 [Cost Update Job] Found ${result.rows.length} usage records from last 24 hours`);
+
     if (result.rows.length === 0) {
-      console.log('[Job] No transcription usage records found in last 24 hours');
+      console.log('✅ [Cost Update Job] No records to process');
+
+      // Update execution as success with 0 updates
+      await database.query(`
+        UPDATE public.job_executions
+        SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, stats = $3
+        WHERE id = $4
+      `, ['success', Date.now() - startTime, JSON.stringify({ updated: 0, unchanged: 0, skipped: 0, failed: 0 }), executionId]);
+
+      console.log(`💾 [Cost Update Job] Execution logged to database (ID: ${executionId})`);
       return;
     }
-
-    console.log(`[Job] Found ${result.rows.length} transcription usage records to update`);
 
     let totalUpdated = 0;
     let totalFailed = 0;
@@ -108,7 +121,7 @@ async function updateTranscriptionCosts() {
 
         if (!projectId) {
           totalSkipped++;
-          console.warn(`[Job] ⚠️ Could not extract project ID from request ${requestId} - skipping`);
+          console.warn(`   ⚠️  Could not extract project ID from request ${requestId} - skipping`);
           continue;
         }
 
@@ -128,13 +141,13 @@ async function updateTranscriptionCosts() {
             `, [realCost.toFixed(4), row.id]);
 
             totalUpdated++;
-            console.log(`[Job] ✅ Updated cost for request ${requestId}: $${currentCost.toFixed(4)} → $${realCost.toFixed(4)}`);
+            console.log(`   ✓ Updated cost for request ${requestId}: $${currentCost.toFixed(4)} → $${realCost.toFixed(4)}`);
           } else {
             totalUnchanged++;
           }
         } else {
           totalFailed++;
-          console.warn(`[Job] ⚠️ Cost not available for request ${requestId} - keeping local calculation`);
+          console.warn(`   ✗ Cost not available for request ${requestId} - keeping local calculation`);
         }
 
         // Small delay to avoid rate limits (50ms between requests)
@@ -142,11 +155,11 @@ async function updateTranscriptionCosts() {
 
       } catch (error) {
         totalFailed++;
-        console.error(`[Job] ❌ Error updating cost for record ${row.id}:`, error.message);
+        console.error(`   ❌ Error updating cost for record ${row.id}:`, error.message);
       }
     }
 
-    console.log(`[Job] Cost update complete: ${totalUpdated} updated, ${totalUnchanged} unchanged, ${totalSkipped} skipped, ${totalFailed} failed`);
+    console.log(`✅ [Cost Update Job] Complete: ${totalUpdated} updated, ${totalUnchanged} unchanged, ${totalSkipped} skipped, ${totalFailed} failed (Duration: ${((Date.now() - startTime) / 1000).toFixed(2)}s)`);
 
     // Log job success
     await database.query(`
@@ -155,8 +168,10 @@ async function updateTranscriptionCosts() {
       WHERE id = $4
     `, ['success', Date.now() - startTime, JSON.stringify({ updated: totalUpdated, unchanged: totalUnchanged, skipped: totalSkipped, failed: totalFailed }), executionId]);
 
+    console.log(`💾 [Cost Update Job] Execution logged to database (ID: ${executionId})`);
+
   } catch (error) {
-    console.error('[Job] Cost update job failed:', error);
+    console.error('❌ [Cost Update Job] Job failed:', error);
 
     // Log job failure
     if (executionId) {
@@ -165,6 +180,8 @@ async function updateTranscriptionCosts() {
         SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, error_message = $3
         WHERE id = $4
       `, ['failed', Date.now() - startTime, error.message, executionId]);
+
+      console.log(`💾 [Cost Update Job] Failure logged to database (ID: ${executionId})`);
     }
   }
 }

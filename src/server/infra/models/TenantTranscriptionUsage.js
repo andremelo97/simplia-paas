@@ -26,6 +26,10 @@ class TenantTranscriptionUsage {
    *    - Monolingual (no detectedLanguage): $0.0043/min
    */
   static async create(tenantId, data) {
+    console.log(`[TenantTranscriptionUsage] 🔧 ========== CREATE METHOD CALLED ==========`);
+    console.log(`[TenantTranscriptionUsage] 🔧 tenantId: ${tenantId} (type: ${typeof tenantId})`);
+    console.log(`[TenantTranscriptionUsage] 🔧 data received:`, JSON.stringify(data, null, 2));
+
     const {
       transcriptionId,
       audioDurationSeconds,
@@ -36,13 +40,21 @@ class TenantTranscriptionUsage {
       usageDate = new Date()
     } = data;
 
+    console.log(`[TenantTranscriptionUsage] 🔧 Destructured values:`);
+    console.log(`[TenantTranscriptionUsage] 🔧   transcriptionId: ${transcriptionId}`);
+    console.log(`[TenantTranscriptionUsage] 🔧   audioDurationSeconds: ${audioDurationSeconds}`);
+    console.log(`[TenantTranscriptionUsage] 🔧   sttModel: ${sttModel}`);
+    console.log(`[TenantTranscriptionUsage] 🔧   detectedLanguage: ${detectedLanguage}`);
+    console.log(`[TenantTranscriptionUsage] 🔧   sttProviderRequestId: ${sttProviderRequestId}`);
+    console.log(`[TenantTranscriptionUsage] 🔧   costUsd: ${costUsd}`);
+
     // Use provided cost or calculate locally
     let finalCostUsd;
 
     if (costUsd !== null) {
       // Use real cost from Deepgram Management API
       finalCostUsd = costUsd;
-      console.log(`[TenantTranscriptionUsage] Using real cost from Deepgram: $${finalCostUsd}`);
+      console.log(`[TenantTranscriptionUsage] 💰 Using real cost from Deepgram: $${finalCostUsd}`);
     } else {
       // Fallback: Calculate cost locally based on model pricing and language detection
       const durationMinutes = audioDurationSeconds / 60;
@@ -53,7 +65,10 @@ class TenantTranscriptionUsage {
         : (MODEL_COSTS[sttModel] || DEFAULT_COST_PER_MINUTE); // $0.0043/min for monolingual
 
       finalCostUsd = durationMinutes * costPerMinute;
-      console.log(`[TenantTranscriptionUsage] Using local cost calculation: $${finalCostUsd.toFixed(4)}`);
+      console.log(`[TenantTranscriptionUsage] 💰 Calculating cost locally:`);
+      console.log(`[TenantTranscriptionUsage] 💰   Duration: ${durationMinutes.toFixed(2)} minutes`);
+      console.log(`[TenantTranscriptionUsage] 💰   Cost per minute: $${costPerMinute}`);
+      console.log(`[TenantTranscriptionUsage] 💰   Final cost: $${finalCostUsd.toFixed(4)}`);
     }
 
     const query = `
@@ -71,7 +86,8 @@ class TenantTranscriptionUsage {
       RETURNING *
     `;
 
-    const result = await database.query(query, [
+    console.log(`[TenantTranscriptionUsage] 💾 Executing INSERT query...`);
+    console.log(`[TenantTranscriptionUsage] 💾 Parameters:`, [
       tenantId,
       transcriptionId,
       audioDurationSeconds,
@@ -82,7 +98,27 @@ class TenantTranscriptionUsage {
       usageDate
     ]);
 
-    return new TenantTranscriptionUsage(result.rows[0]);
+    try {
+      const result = await database.query(query, [
+        tenantId,
+        transcriptionId,
+        audioDurationSeconds,
+        sttModel,
+        detectedLanguage,
+        sttProviderRequestId,
+        finalCostUsd.toFixed(4),
+        usageDate
+      ]);
+
+      console.log(`[TenantTranscriptionUsage] ✅ INSERT successful! Rows inserted: ${result.rowCount}`);
+      console.log(`[TenantTranscriptionUsage] ✅ Returned row:`, result.rows[0]);
+
+      return new TenantTranscriptionUsage(result.rows[0]);
+    } catch (error) {
+      console.error(`[TenantTranscriptionUsage] ❌ INSERT FAILED!`);
+      console.error(`[TenantTranscriptionUsage] ❌ Error:`, error);
+      throw error;
+    }
   }
 
   /**

@@ -269,3 +269,79 @@ export function getNowInTimezone(timezone: string = 'America/Sao_Paulo'): Date {
     return new Date()
   }
 }
+
+/**
+ * Convert Date object representing a moment in tenant timezone to ISO string
+ *
+ * IMPORTANT: This function receives a Date object from getNowInTimezone()
+ * which already represents the correct date/time in the tenant's timezone.
+ * We just need to convert it to ISO (UTC) format.
+ *
+ * Example:
+ *   - NOW in Brazil: 2025-10-29 18:25:00 (BRT = UTC-3)
+ *   - Add 1 day: 2025-10-30 18:25:00 (BRT)
+ *   - Convert to UTC: 2025-10-30T21:25:00.000Z
+ *
+ * @param date - Date object from getNowInTimezone() or similar
+ * @returns ISO string in UTC representing the same moment
+ */
+export function convertToDateISO(date: Date): string {
+  // The Date object from getNowInTimezone() is already a Date object
+  // We just return its ISO representation
+  return date.toISOString()
+}
+
+/**
+ * Get timezone offset in minutes for a specific timezone at a given date
+ *
+ * @param timezone - IANA timezone identifier
+ * @param date - Date object to calculate offset for (handles DST)
+ * @returns Offset in minutes (negative for timezones ahead of UTC)
+ */
+export function getTimezoneOffsetMinutes(
+  timezone: string = 'America/Sao_Paulo',
+  date: Date = new Date()
+): number {
+  try {
+    // Get date string in UTC
+    const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
+
+    // Get date string in target timezone
+    const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }))
+
+    // Calculate difference in minutes
+    return (tzDate.getTime() - utcDate.getTime()) / (1000 * 60)
+  } catch (error) {
+    console.warn('Failed to get timezone offset:', error)
+    return 0
+  }
+}
+
+/**
+ * Format date string (YYYY-MM-DD) to locale date string for display
+ * This function does NOT perform timezone conversion - it just formats the date
+ *
+ * @param dateString - Date in YYYY-MM-DD format
+ * @param locale - Locale code for formatting
+ * @returns Formatted date string (e.g., "30/10/2025" for pt-BR)
+ */
+export function formatDateStringForDisplay(
+  dateString: string,
+  locale: string = 'pt-BR'
+): string {
+  if (!dateString) return '-'
+
+  try {
+    const [year, month, day] = dateString.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
+
+    return new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date)
+  } catch (error) {
+    console.warn('Failed to format date string for display:', error)
+    return dateString
+  }
+}

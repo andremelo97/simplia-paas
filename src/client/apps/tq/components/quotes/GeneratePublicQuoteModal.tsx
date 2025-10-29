@@ -75,10 +75,38 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   }
 
   const handleQuickDate = (days: number) => {
-    const date = new Date()
-    date.setDate(date.getDate() + days)
-    setExpiresAt(date.toISOString().split('T')[0])
+    // Add days to current date and set to end of day (23:59:59)
+    const futureDate = new Date()
+    futureDate.setDate(futureDate.getDate() + days)
+    futureDate.setHours(23, 59, 59, 999)
+    setExpiresAt(futureDate.toISOString())
   }
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const dateValue = e.target.value // YYYY-MM-DD
+
+    if (!dateValue) {
+      setExpiresAt('')
+      return
+    }
+
+    // User edited the date manually - set expiration to end of that day (23:59:59) in LOCAL timezone
+    // Using string constructor creates date in LOCAL timezone (e.g., "2025-10-04T23:59:59.999" in BRT)
+    const localEndOfDay = new Date(`${dateValue}T23:59:59.999`)
+
+    setExpiresAt(localEndOfDay.toISOString())
+  }
+
+  // Extract YYYY-MM-DD from expiresAt for the DateInput (use LOCAL date parts, not UTC)
+  const dateInputValue = expiresAt
+    ? (() => {
+        const date = new Date(expiresAt)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      })()
+    : ''
 
   const handleGenerate = async () => {
     if (!selectedTemplateId) {
@@ -103,7 +131,8 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
       }
 
       if (expiresAt) {
-        payload.expiresAt = new Date(expiresAt).toISOString()
+        // expiresAt is already an ISO string from handleQuickDate()
+        payload.expiresAt = expiresAt
       }
 
       // Use api directly to capture meta
@@ -159,8 +188,15 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
     ? `${window.location.origin}/public/${generatedQuote.accessToken}`
     : ''
 
+  // Format expiration date for display (use LOCAL date parts)
   const expirationDate = expiresAt
-    ? formatShortDate(expiresAt)
+    ? (() => {
+        const date = new Date(expiresAt)
+        const day = String(date.getDate()).padStart(2, '0')
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const year = date.getFullYear()
+        return `${day}/${month}/${year}`
+      })()
     : t('common:never') || 'Never'
 
   return (
@@ -192,8 +228,8 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
               <DateInput
                 id="expiresAt"
                 label={t('modals.generate_public_quote.expiration_label')}
-                value={expiresAt}
-                onChange={(e) => setExpiresAt(e.target.value)}
+                value={dateInputValue}
+                onChange={handleDateChange}
                 min={new Date().toISOString().split('T')[0]}
                 helperText={t('modals.generate_public_quote.expiration_helper')}
               />

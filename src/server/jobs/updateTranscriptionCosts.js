@@ -188,15 +188,33 @@ async function updateTranscriptionCosts() {
 
 /**
  * Initialize cron job
- * Runs once daily at 3 AM (0 3 * * *)
+ * TEMPORARY DEBUG: Runs every 10 minutes for testing
+ * PRODUCTION: Should run once daily at 3 AM (0 3 * * *)
  */
 function initTranscriptionCostUpdateJob() {
-  // Schedule: Every day at 3 AM
-  cron.schedule('0 3 * * *', () => {
-    updateTranscriptionCosts();
-  });
+  // TEMPORARY: Every 10 minutes for debugging
+  // PRODUCTION: Change back to '0 3 * * *'
+  const cronExpression = '*/10 * * * *';
 
-  console.log('[Cron] Transcription cost update job scheduled (runs daily at 3 AM)');
+  console.log(`⏰ [Cost Update Job] Attempting to schedule with expression: '${cronExpression}'`);
+
+  try {
+    const task = cron.schedule(cronExpression, () => {
+      console.log('🔔 [Cost Update Job] Cron callback triggered!');
+      updateTranscriptionCosts();
+    }, {
+      scheduled: true,
+      timezone: "UTC"
+    });
+
+    console.log(`✅ [Cost Update Job] Cron task created successfully`);
+    console.log(`📅 [Cost Update Job] Scheduled to run every 10 minutes (DEBUG MODE)`);
+    console.log(`🌍 [Cost Update Job] Timezone: UTC`);
+    console.log(`⚙️  [Cost Update Job] Task object:`, task ? 'EXISTS' : 'NULL');
+
+  } catch (error) {
+    console.error('❌ [Cost Update Job] Failed to schedule cron job:', error);
+  }
 }
 
 module.exports = {

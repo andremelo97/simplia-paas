@@ -255,6 +255,18 @@
     "DUPLICATE_USER": {
       "title": "Usuário Já Existe",
       "message": "Um usuário com este e-mail já existe neste tenant."
+    },
+    "AUDIO_NOT_AVAILABLE": {
+      "title": "Áudio Não Disponível",
+      "message": "Arquivo de áudio não encontrado ou foi deletado após 24 horas."
+    },
+    "AUDIO_DELETED": {
+      "title": "Áudio Deletado",
+      "message": "Arquivo de áudio foi deletado após período de retenção de 24 horas."
+    },
+    "AUDIO_DOWNLOAD_FAILED": {
+      "title": "Falha no Download",
+      "message": "Falha ao baixar arquivo de áudio. Por favor, tente novamente."
     }
   }
 }

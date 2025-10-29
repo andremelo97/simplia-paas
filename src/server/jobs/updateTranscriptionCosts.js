@@ -188,13 +188,10 @@ async function updateTranscriptionCosts() {
 
 /**
  * Initialize cron job
- * TEMPORARY DEBUG: Runs every 10 minutes for testing
- * PRODUCTION: Should run once daily at 3 AM (0 3 * * *)
+ * Runs once daily at 3 AM UTC (0 3 * * *)
  */
 function initTranscriptionCostUpdateJob() {
-  // TEMPORARY: Every 10 minutes for debugging
-  // PRODUCTION: Change back to '0 3 * * *'
-  const cronExpression = '*/10 * * * *';
+  const cronExpression = '0 3 * * *';
 
   console.log(`⏰ [Cost Update Job] Attempting to schedule with expression: '${cronExpression}'`);
 
@@ -208,7 +205,7 @@ function initTranscriptionCostUpdateJob() {
     });
 
     console.log(`✅ [Cost Update Job] Cron task created successfully`);
-    console.log(`📅 [Cost Update Job] Scheduled to run every 10 minutes (DEBUG MODE)`);
+    console.log(`📅 [Cost Update Job] Scheduled to run daily at 3 AM UTC`);
     console.log(`🌍 [Cost Update Job] Timezone: UTC`);
     console.log(`⚙️  [Cost Update Job] Task object:`, task ? 'EXISTS' : 'NULL');
 

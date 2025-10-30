@@ -28,6 +28,7 @@ try {
 class DeepgramService {
   constructor() {
     this.apiKey = process.env.DEEPGRAM_API_KEY;
+    this.adminApiKey = process.env.DEEPGRAM_API_KEY_ADMIN || this.apiKey; // Fallback to regular key if admin key not set
     this.baseUrl = 'https://api.deepgram.com/v1';
 
     if (!this.apiKey) {
@@ -240,7 +241,7 @@ class DeepgramService {
       const response = await fetch(url, {
         method: 'GET',
         headers: {
-          'Authorization': `Token ${this.apiKey}`,
+          'Authorization': `Token ${this.adminApiKey}`, // Use admin key for Management API
           'Content-Type': 'application/json'
         }
       });

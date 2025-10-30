@@ -9,6 +9,7 @@ const { requireAuth } = require('../../../infra/middleware/auth');
 const { requirePlatformRole } = require('../../../infra/middleware/platformRole');
 const router = express.Router();
 const database = require('../../../infra/db/database');
+const { updateTranscriptionCosts } = require('../../../jobs/updateTranscriptionCosts');
 
 // Apply authentication and platform admin role requirement
 router.use(requireAuth, requirePlatformRole('internal_admin'));
@@ -140,6 +141,50 @@ router.get('/history', async (req, res) => {
       error: {
         code: 500,
         message: 'Failed to fetch job history'
+      }
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /jobs/trigger-cost-update:
+ *   post:
+ *     summary: Manually trigger cost update job
+ *     description: Runs the transcription cost update job immediately (for testing)
+ *     tags: [Jobs]
+ *     responses:
+ *       200:
+ *         description: Job triggered successfully
+ */
+router.post('/trigger-cost-update', async (req, res) => {
+  try {
+    console.log('🔧 [Manual Trigger] Cost Update Job triggered via API');
+
+    // Run the job asynchronously
+    updateTranscriptionCosts()
+      .then(() => {
+        console.log('✅ [Manual Trigger] Cost Update Job completed');
+      })
+      .catch(error => {
+        console.error('❌ [Manual Trigger] Cost Update Job failed:', error);
+      });
+
+    res.json({
+      data: {
+        message: 'Cost update job triggered successfully. Check server logs for progress.'
+      },
+      meta: {
+        code: 'JOB_TRIGGERED'
+      }
+    });
+
+  } catch (error) {
+    console.error('Error triggering cost update job:', error);
+    res.status(500).json({
+      error: {
+        code: 500,
+        message: 'Failed to trigger cost update job'
       }
     });
   }

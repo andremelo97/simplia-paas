@@ -116,8 +116,16 @@ async function updateTranscriptionCosts() {
       try {
         const requestId = row.stt_provider_request_id;
 
+        console.log(`\n🔍 [Cost Update Job] Processing record ${row.id}:`);
+        console.log(`   Request ID: ${requestId}`);
+        console.log(`   Current Cost: $${parseFloat(row.current_cost).toFixed(4)}`);
+        console.log(`   Duration: ${row.audio_duration_seconds}s`);
+        console.log(`   Language: ${row.detected_language || 'N/A'}`);
+
         // Extract project ID from request_id
         const projectId = extractProjectIdFromRequestId(requestId);
+
+        console.log(`   Extracted Project ID: ${projectId || 'NULL'}`);
 
         if (!projectId) {
           totalSkipped++;
@@ -126,11 +134,17 @@ async function updateTranscriptionCosts() {
         }
 
         // Fetch real cost from Deepgram Management API
+        console.log(`   📞 Calling Deepgram API: getRequestCost(${projectId}, ${requestId})`);
         const costData = await deepgramService.getRequestCost(projectId, requestId);
+
+        console.log(`   📦 Deepgram API Response:`, JSON.stringify(costData));
 
         if (costData.usd !== null) {
           const realCost = costData.usd;
           const currentCost = parseFloat(row.current_cost);
+
+          console.log(`   💵 Real Cost from API: $${realCost.toFixed(4)}`);
+          console.log(`   🔄 Cost Difference: $${Math.abs(realCost - currentCost).toFixed(4)}`);
 
           // Only update if cost changed significantly (more than $0.0001 difference)
           if (Math.abs(realCost - currentCost) > 0.0001) {
@@ -141,13 +155,14 @@ async function updateTranscriptionCosts() {
             `, [realCost.toFixed(4), row.id]);
 
             totalUpdated++;
-            console.log(`   ✓ Updated cost for request ${requestId}: $${currentCost.toFixed(4)} → $${realCost.toFixed(4)}`);
+            console.log(`   ✅ Updated cost for request ${requestId}: $${currentCost.toFixed(4)} → $${realCost.toFixed(4)}`);
           } else {
             totalUnchanged++;
+            console.log(`   ⏭️  Cost unchanged (difference < $0.0001)`);
           }
         } else {
-          totalFailed++;
-          console.warn(`   ✗ Cost not available for request ${requestId} - keeping local calculation`);
+          totalSkipped++;
+          console.warn(`   ⚠️  Cost not available from API (usd: null) - skipping`);
         }
 
         // Small delay to avoid rate limits (50ms between requests)

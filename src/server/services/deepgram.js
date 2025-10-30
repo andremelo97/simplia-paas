@@ -234,6 +234,9 @@ class DeepgramService {
     try {
       const url = `https://api.deepgram.com/v1/projects/${projectId}/requests/${requestId}`;
 
+      console.log(`[Deepgram] 📊 Fetching cost for request: ${requestId}`);
+      console.log(`[Deepgram] 🔗 URL: ${url}`);
+
       const response = await fetch(url, {
         method: 'GET',
         headers: {

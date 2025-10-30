@@ -26,17 +26,25 @@ const DeepgramService = require('../services/deepgram');
 const deepgramService = new DeepgramService();
 
 /**
- * Extract project ID from Deepgram request ID
- * Request IDs have format: {project_id}.{unique_id}
- * Example: "abc123def-456-789.xyz987-654-321" → "abc123def-456-789"
+ * Get Deepgram Project ID from environment variable
+ * The project ID is a fixed value per Deepgram account, not derived from request_id
+ *
+ * To find your project ID:
+ * 1. Go to https://console.deepgram.com/
+ * 2. Click on your project name
+ * 3. Go to Settings → API Keys
+ * 4. Copy the Project ID (UUID format)
  */
-function extractProjectIdFromRequestId(requestId) {
-  if (!requestId || typeof requestId !== 'string') {
+function getDeepgramProjectId() {
+  const projectId = process.env.DEEPGRAM_PROJECT_ID;
+
+  if (!projectId) {
+    console.warn('⚠️  DEEPGRAM_PROJECT_ID environment variable not set');
+    console.warn('⚠️  Cost updates will be skipped. Please configure DEEPGRAM_PROJECT_ID in your environment.');
     return null;
   }
 
-  const parts = requestId.split('.');
-  return parts.length >= 2 ? parts[0] : null;
+  return projectId;
 }
 
 /**
@@ -111,6 +119,25 @@ async function updateTranscriptionCosts() {
     let totalUnchanged = 0;
     let totalSkipped = 0;
 
+    // Get Deepgram Project ID once (same for all requests)
+    const projectId = getDeepgramProjectId();
+
+    if (!projectId) {
+      console.warn('⚠️  [Cost Update Job] DEEPGRAM_PROJECT_ID not configured - skipping all records');
+
+      // Update execution as success but with 0 updates (all skipped)
+      await database.query(`
+        UPDATE public.job_executions
+        SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, stats = $3
+        WHERE id = $4
+      `, ['success', Date.now() - startTime, JSON.stringify({ updated: 0, unchanged: 0, skipped: result.rows.length, failed: 0 }), executionId]);
+
+      console.log(`💾 [Cost Update Job] Execution logged to database (ID: ${executionId})`);
+      return;
+    }
+
+    console.log(`🔑 [Cost Update Job] Using Deepgram Project ID: ${projectId}`);
+
     // Process each usage record
     for (const row of result.rows) {
       try {
@@ -121,17 +148,7 @@ async function updateTranscriptionCosts() {
         console.log(`   Current Cost: $${parseFloat(row.current_cost).toFixed(4)}`);
         console.log(`   Duration: ${row.audio_duration_seconds}s`);
         console.log(`   Language: ${row.detected_language || 'N/A'}`);
-
-        // Extract project ID from request_id
-        const projectId = extractProjectIdFromRequestId(requestId);
-
-        console.log(`   Extracted Project ID: ${projectId || 'NULL'}`);
-
-        if (!projectId) {
-          totalSkipped++;
-          console.warn(`   ⚠️  Could not extract project ID from request ${requestId} - skipping`);
-          continue;
-        }
+        console.log(`   Project ID: ${projectId}`);
 
         // Fetch real cost from Deepgram Management API
         console.log(`   📞 Calling Deepgram API: getRequestCost(${projectId}, ${requestId})`);

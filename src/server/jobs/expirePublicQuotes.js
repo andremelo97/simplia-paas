@@ -11,9 +11,22 @@ const database = require('../infra/db/database');
  * PostgreSQL compares both timestamps in UTC, so expiration is timezone-agnostic.
  */
 async function expirePublicQuotes() {
-  console.log('🕒 [Expire Public Quotes] Starting expiration check...');
+  const startTime = Date.now();
+  let executionId = null;
 
   try {
+    console.log('🕒 [Expire Public Quotes] Starting expiration check...');
+
+    // Log job start
+    const startResult = await database.query(`
+      INSERT INTO public.job_executions (job_name, status, started_at)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+      RETURNING id
+    `, ['expire_public_quotes', 'running']);
+
+    executionId = startResult.rows[0].id;
+    console.log(`📝 [Expire Public Quotes] Execution ID: ${executionId}`);
+
     // Query all active tenant schemas
     const schemasResult = await database.query(`
       SELECT schema_name, timezone
@@ -25,6 +38,15 @@ async function expirePublicQuotes() {
 
     if (schemas.length === 0) {
       console.log('⚠️  [Expire Public Quotes] No active tenants found');
+
+      // Update execution as success with 0 expirations
+      await database.query(`
+        UPDATE public.job_executions
+        SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, stats = $3
+        WHERE id = $4
+      `, ['success', Date.now() - startTime, JSON.stringify({ expired: 0, schemas_processed: 0 }), executionId]);
+
+      console.log(`💾 [Expire Public Quotes] Execution logged to database (ID: ${executionId})`);
       return;
     }
 
@@ -64,8 +86,29 @@ async function expirePublicQuotes() {
     } else {
       console.log(`🏁 [Expire Public Quotes] Completed. No expired quotes found.`);
     }
+
+    // Log job success
+    await database.query(`
+      UPDATE public.job_executions
+      SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, stats = $3
+      WHERE id = $4
+    `, ['success', Date.now() - startTime, JSON.stringify({ expired: totalExpired, schemas_processed: schemas.length }), executionId]);
+
+    console.log(`💾 [Expire Public Quotes] Execution logged to database (ID: ${executionId})`);
+
   } catch (error) {
     console.error('❌ [Expire Public Quotes] Job failed:', error);
+
+    // Log job failure
+    if (executionId) {
+      await database.query(`
+        UPDATE public.job_executions
+        SET status = $1, completed_at = CURRENT_TIMESTAMP, duration_ms = $2, error_message = $3
+        WHERE id = $4
+      `, ['failed', Date.now() - startTime, error.message, executionId]);
+
+      console.log(`💾 [Expire Public Quotes] Failure logged to database (ID: ${executionId})`);
+    }
   }
 }
 

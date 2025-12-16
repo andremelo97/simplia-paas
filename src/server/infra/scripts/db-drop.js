@@ -7,7 +7,7 @@ const { Client } = require('pg');
     DATABASE_PORT = '5432',
     DATABASE_USER,
     DATABASE_PASSWORD,
-    DATABASE_NAME = 'simplia_paas',
+    DATABASE_NAME = 'livocare',
   } = process.env;
 
   if (!DATABASE_USER) {

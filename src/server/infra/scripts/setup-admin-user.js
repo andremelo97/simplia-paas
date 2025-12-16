@@ -5,8 +5,8 @@ const { Pool } = require('pg');
 async function setupAdminUser() {
   // Use production database by default, test database if specified
   const database = process.env.SETUP_TEST_DB ? 
-    (process.env.TEST_DATABASE_NAME || 'simplia_paas_test') : 
-    (process.env.DATABASE_NAME || 'simplia');
+    (process.env.TEST_DATABASE_NAME || 'livocare_test') :
+    (process.env.DATABASE_NAME || 'livocare');
     
   const pool = new Pool({
     host: process.env.DATABASE_HOST,
@@ -20,7 +20,7 @@ async function setupAdminUser() {
     // Verificar se o usuário admin já existe
     const existingUser = await pool.query(
       'SELECT id, platform_role FROM users WHERE email = $1',
-      ['consultoriasimplia@gmail.com']
+      ['admin@livocare.ai']
     );
     
     if (existingUser.rows.length > 0) {
@@ -39,7 +39,7 @@ async function setupAdminUser() {
       );
       
       console.log('✓ Updated existing user with internal_admin platform role');
-      console.log('  Email: consultoriasimplia@gmail.com');
+      console.log('  Email: admin@livocare.ai');
       return;
     }
     
@@ -81,7 +81,7 @@ async function setupAdminUser() {
         $1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
       )
     `, [
-      'consultoriasimplia@gmail.com',
+      'admin@livocare.ai',
       hashedPassword,
       'Admin',
       'User',
@@ -92,7 +92,7 @@ async function setupAdminUser() {
     ]);
     
     console.log('✓ Admin user created successfully');
-    console.log('  Email: consultoriasimplia@gmail.com');
+    console.log('  Email: admin@livocare.ai');
     console.log('  Password: 1234');
     
   } catch (error) {

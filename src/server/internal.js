@@ -81,7 +81,7 @@ const internalRouter = express.Router();
 // Public routes (no auth required)
 internalRouter.use('/public', tenantLookupRoutes);
 
-// Platform auth routes (no tenant context needed - for Simplia internal team)
+// Platform auth routes (no tenant context needed - for LivoCare internal team)
 internalRouter.use('/platform-auth', platformAuthRoutes);
 
 // Auth routes (tenant-scoped for tenant users)
@@ -121,9 +121,9 @@ if (ENABLE_DOCS) {
     definition: {
       openapi: '3.0.3',
       info: {
-        title: 'Simplia PaaS - Internal Administrative API',
+        title: 'LivoCare - Internal Administrative API',
         version: '1.0.0',
-        description: 'Internal API for Simplia team to manage tenants, licenses, and system administration',
+        description: 'Internal API for LivoCare team to manage tenants, licenses, and system administration',
       },
       tags: [
         {
@@ -214,7 +214,7 @@ if (ENABLE_DOCS) {
       swaggerUi.serve,
       swaggerUi.setup(swaggerSpec, {
         customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Simplia Internal API Docs',
+        customSiteTitle: 'LivoCare Internal API Docs',
         swaggerOptions: {
           docExpansion: 'list',
           filter: true,
@@ -229,7 +229,7 @@ if (ENABLE_DOCS) {
       swaggerUi.serve,
       swaggerUi.setup(swaggerSpec, {
         customCss: '.swagger-ui .topbar { display: none }',
-        customSiteTitle: 'Simplia Internal API Docs',
+        customSiteTitle: 'LivoCare Internal API Docs',
         swaggerOptions: {
           docExpansion: 'list',
           filter: true,

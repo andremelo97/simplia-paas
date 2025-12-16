@@ -40,7 +40,7 @@ class AuthService {
   generateToken(payload) {
     return jwt.sign(payload, this.jwtSecret, {
       expiresIn: this.jwtExpiresIn,
-      issuer: 'simplia-paas'
+      issuer: 'livocare'
     });
   }
 
@@ -165,7 +165,7 @@ class AuthService {
   }
 
   /**
-   * Platform login for Simplia internal team
+   * Platform login for LivoCare internal team
    * Authenticate user without tenant context, verify platform_role = 'internal_admin'
    */
   async platformLogin(credentials) {

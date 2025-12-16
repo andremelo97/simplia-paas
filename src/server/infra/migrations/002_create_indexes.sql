@@ -1,4 +1,4 @@
--- Migration: Create performance indexes for Simplia PaaS
+-- Migration: Create performance indexes for LivoCare
 -- Description: Comprehensive indexing strategy for optimal query performance
 -- Organizes all indexes by purpose: lookups, performance, audit, and business logic
 

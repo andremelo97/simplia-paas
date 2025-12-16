@@ -1,6 +1,6 @@
-# Simplia PaaS - Multi-Tenant Healthcare Platform
+# LivoCare - Multi-Tenant Healthcare Platform
 
-**Plataforma PaaS multi-tenant com sistema de licenciamento enterprise para aplicações médicas**
+**Plataforma PaaS multi-tenant com sistema de licenciamento enterprise para clínicas de estética e beleza**
 
 ## 📋 Visão Geral
 
@@ -14,7 +14,7 @@ Monorepo Node.js fullstack com:
 ## 🏗️ Estrutura de Pastas
 
 ```
-simplia-paas/
+livocare/
 ├── src/
 │   ├── client/
 │   │   ├── apps/
@@ -136,7 +136,7 @@ PM: operations($25), manager($40), admin($60)
 # Database
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_NAME=simplia_paas
+DATABASE_NAME=livocare
 DATABASE_USER=seu_usuario
 DATABASE_PASSWORD=sua_senha
 
@@ -235,8 +235,8 @@ const { formatCurrency } = useCurrencyFormatter()
 
 ## 📄 Licença
 
-Desenvolvimento interno - Simplia Healthcare Solutions
+Desenvolvimento interno - LivoCare
 
 ---
 
-**Desenvolvido com ❤️ para revolucionar a gestão de aplicações médicas multi-tenant**
+**Desenvolvido com ❤️ para revolucionar a gestão de clínicas de estética e beleza**

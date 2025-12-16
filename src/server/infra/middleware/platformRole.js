@@ -1,5 +1,5 @@
 /**
- * Middleware para controlar acesso por platform role (Simplia internal team)
+ * Middleware para controlar acesso por platform role (LivoCare internal team)
  * Diferente de 'admin' que é admin do tenant, platform roles controlam acesso à API interna
  */
 const requirePlatformRole = (...allowedRoles) => {

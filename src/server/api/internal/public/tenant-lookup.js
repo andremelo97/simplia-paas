@@ -11,9 +11,9 @@ const RATE_LIMIT_MAX = 10; // 10 requests per window
 
 // Database connection
 const pool = new Pool({
-  user: process.env.DATABASE_USER || 'simplia',
+  user: process.env.DATABASE_USER || 'livocare',
   host: process.env.DATABASE_HOST || 'localhost',
-  database: process.env.DATABASE_NAME || 'simplia_paas_test',
+  database: process.env.DATABASE_NAME || 'livocare',
   password: process.env.DATABASE_PASSWORD || '1234',
   port: process.env.DATABASE_PORT || 5432,
 });

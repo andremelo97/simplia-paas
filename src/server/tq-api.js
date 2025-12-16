@@ -92,10 +92,10 @@ const swaggerSpec = swaggerJsdoc({
     info: {
       title: 'Transcription & Quote (TQ) API',
       version: '1.0.0',
-      description: 'REST API for the Transcription & Quote application within Simplia PaaS',
+      description: 'REST API for the Transcription & Quote application within LivoCare',
       contact: {
-        name: 'Simplia Team',
-        email: 'dev@simplia.com'
+        name: 'LivoCare Team',
+        email: 'dev@livocare.ai'
       }
     },
     servers: [

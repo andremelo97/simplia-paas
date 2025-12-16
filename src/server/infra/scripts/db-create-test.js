@@ -4,7 +4,7 @@ const { Client } = require('pg');
 /**
  * Automatic database creation script
  *
- * This script creates the main database (simplia_paas) if it doesn't exist.
+ * This script creates the main database (livocare) if it doesn't exist.
  * Used for both development and testing.
  * In CI/CD environments, ensure PostgreSQL is available and credentials are correct.
  */
@@ -15,7 +15,7 @@ const { Client } = require('pg');
     DATABASE_PORT = '5432',
     DATABASE_USER,
     DATABASE_PASSWORD,
-    DATABASE_NAME = 'simplia_paas', // Main database name
+    DATABASE_NAME = 'livocare', // Main database name
   } = process.env;
 
   if (!DATABASE_USER) {

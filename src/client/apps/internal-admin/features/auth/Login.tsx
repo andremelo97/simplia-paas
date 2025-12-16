@@ -125,7 +125,7 @@ export const Login: React.FC = () => {
               Sign in to continue
             </CardTitle>
             <CardDescription className="text-sm text-stone-700">
-              Access your Simplia Admin account
+              Access your LivoCare Admin account
             </CardDescription>
           </CardHeader>
           
@@ -138,7 +138,7 @@ export const Login: React.FC = () => {
                   value={credentials.email}
                   onChange={handleInputChange('email')}
                   error={allFieldErrors.email}
-                  placeholder="your.email@simplia.com"
+                  placeholder="your.email@livocare.ai"
                   autoComplete="email"
                   disabled={isLoading}
                   className="w-full"

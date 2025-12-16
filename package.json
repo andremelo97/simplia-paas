@@ -1,8 +1,8 @@
 {
-  "name": "simplia-paas",
+  "name": "livocare",
   "version": "1.0.0",
   "private": true,
-  "description": "Simplia PaaS - Node.js fullstack monorepo",
+  "description": "LivoCare - Plataforma inteligente para clínicas de estética",
   "scripts": {
     "dev": "concurrently \"npm run dev:internal\" \"npm run dev:admin\"",
     "dev:internal": "cross-env PORT=3001 nodemon src/server/index.js",

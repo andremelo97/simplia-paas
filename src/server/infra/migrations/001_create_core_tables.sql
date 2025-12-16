@@ -1,4 +1,4 @@
--- Migration: Create core tables for Simplia PaaS
+-- Migration: Create core tables for LivoCare
 -- Description: Creates all core tables with proper relationships, audit fields, and structure
 -- Replaces and consolidates: 000_create_users_table.sql + 001_create_licensing_tables.sql + 003_structural_fixes_v2.sql + 004_platform_role.sql
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(50) DEFAULT 'operations', -- operations, manager, admin
     status VARCHAR(20) DEFAULT 'active', -- active, inactive, suspended
     user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id),
-    platform_role VARCHAR(50) NULL, -- internal_admin for Simplia team
+    platform_role VARCHAR(50) NULL, -- internal_admin for LivoCare team
     last_login TIMESTAMPTZ,
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -80,7 +80,7 @@ COMMENT ON TABLE users IS 'Users table with 1:1 tenant relationship - each user 
 COMMENT ON COLUMN users.tenant_id_fk IS 'Numeric FK to tenants.id - all tenant references use this field';
 COMMENT ON COLUMN users.tenant_name IS 'Denormalized tenant name for query performance';
 COMMENT ON COLUMN users.role IS 'Tenant-level role: operations < manager < admin';
-COMMENT ON COLUMN users.platform_role IS 'Platform role for Simplia internal team: internal_admin, support, etc.';
+COMMENT ON COLUMN users.platform_role IS 'Platform role for LivoCare internal team: internal_admin, support, etc.';
 
 -- =============================================
 -- RELATIONSHIP TABLES

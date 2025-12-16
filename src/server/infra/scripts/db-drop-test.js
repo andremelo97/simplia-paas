@@ -4,7 +4,7 @@ const { Client } = require('pg');
 /**
  * Database cleanup script
  *
- * Drops the main database (simplia_paas) completely, including all tenant schemas.
+ * Drops the main database (livocare) completely, including all tenant schemas.
  * Use with caution - this will delete ALL data!
  */
 
@@ -14,7 +14,7 @@ const { Client } = require('pg');
     DATABASE_PORT = '5432',
     DATABASE_USER,
     DATABASE_PASSWORD,
-    DATABASE_NAME = 'simplia_paas',
+    DATABASE_NAME = 'livocare',
   } = process.env;
 
   if (!DATABASE_USER) {

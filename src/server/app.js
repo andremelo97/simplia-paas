@@ -186,8 +186,8 @@ app.use('/api/tq/v1', cors(internalCorsOptions), tqApiRouter);
 const blockDocsOnNonInternalDomain = (req, res, next) => {
   const hostname = req.hostname;
 
-  // Only allow docs on internal.simplialabs.co and localhost
-  const allowedHosts = ['internal.simplialabs.co', 'localhost', '127.0.0.1'];
+  // Only allow docs on admin.livocare.ai and localhost
+  const allowedHosts = ['admin.livocare.ai', 'localhost', '127.0.0.1'];
   const isAllowed = allowedHosts.some(host => hostname === host || hostname.startsWith(host));
 
   if (!isAllowed) {
@@ -207,9 +207,9 @@ if (ENABLE_DOCS) {
     definition: {
       openapi: '3.0.3',
       info: {
-        title: 'Simplia PaaS - Internal Administrative API',
+        title: 'LivoCare - Internal Administrative API',
         version: '1.0.0',
-        description: 'Internal API for Simplia team to manage tenants, licenses, and system administration',
+        description: 'Internal API for LivoCare team to manage tenants, licenses, and system administration',
       },
       tags: [
         {
@@ -303,7 +303,7 @@ if (ENABLE_DOCS) {
   // Swagger UI setup with optional authentication
   const internalSwaggerSetup = swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'Simplia Internal API Docs',
+    customSiteTitle: 'LivoCare Internal API Docs',
     swaggerOptions: {
       docExpansion: 'list',
       filter: true,
@@ -338,10 +338,10 @@ if (ENABLE_DOCS) {
       info: {
         title: 'Transcription & Quote (TQ) API',
         version: '1.0.0',
-        description: 'REST API for the Transcription & Quote application within Simplia PaaS',
+        description: 'REST API for the Transcription & Quote application within LivoCare',
         contact: {
-          name: 'Simplia Team',
-          email: 'dev@simplia.com'
+          name: 'LivoCare Team',
+          email: 'dev@livocare.ai'
         }
       },
       servers: [
@@ -457,7 +457,7 @@ if (isProduction) {
     const hostname = req.hostname;
 
     // Internal Admin subdomain
-    if (hostname === 'internal.simplialabs.co') {
+    if (hostname === 'admin.livocare.ai') {
       // Serve admin at root
       if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
         return express.static(adminPath)(req, res, () => {
@@ -472,7 +472,7 @@ if (isProduction) {
     }
 
     // Hub subdomain
-    if (hostname === 'hub.simplialabs.co') {
+    if (hostname === 'hub.livocare.ai') {
       // Serve hub at root
       if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
         return express.static(hubPath)(req, res, () => {
@@ -487,7 +487,7 @@ if (isProduction) {
     }
 
     // TQ subdomain
-    if (hostname === 'tq.simplialabs.co') {
+    if (hostname === 'tq.livocare.ai') {
       // Serve TQ at root
       if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
         return express.static(tqPath)(req, res, () => {

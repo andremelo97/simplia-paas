@@ -1,4 +1,4 @@
--- Migration: Seed minimal initial data for Simplia PaaS
+-- Migration: Seed minimal initial data for LivoCare
 -- Description: Seeds only essential data for system operation
 -- Includes: user types, applications, default tenant, and admin user
 
@@ -26,12 +26,12 @@ ON CONFLICT (slug) DO NOTHING;
 -- =============================================
 
 -- Create default tenant schema
-CREATE SCHEMA IF NOT EXISTS tenant_default;
-COMMENT ON SCHEMA tenant_default IS 'Default tenant schema for development';
+CREATE SCHEMA IF NOT EXISTS tenant_livocare;
+COMMENT ON SCHEMA tenant_livocare IS 'LivoCare demo tenant schema for development';
 
 -- Insert default tenant only
 INSERT INTO tenants (name, subdomain, schema_name, timezone, status) VALUES
-('Default Clinic', 'default', 'tenant_default', 'America/Sao_Paulo', 'active')
+('LivoCare Demo', 'livocare', 'tenant_livocare', 'America/Sao_Paulo', 'active')
 ON CONFLICT (subdomain) DO NOTHING;
 
 -- =============================================
@@ -79,10 +79,10 @@ INSERT INTO users (
   status
 )
 SELECT
-  'consultoriasimplia@gmail.com',
-  '$2b$12$3UpLycjN/Lsx9rGw0q81V.BLIrXONEE8XO3m7aKMnjQhn9Rq5s6la', -- 1234
+  'admin@livocare.ai',
+  '$2b$12$l26tp49Wuu8h8PuntYj94Oim8YgdacdK2ADMqlggnZMEmHQAg98OW',
   'Admin',
-  'User',
+  'LivoCare',
   t.id, -- Primary numeric FK
   t.name, -- Denormalized tenant name
   'admin',
@@ -90,7 +90,7 @@ SELECT
   'internal_admin',
   'active'
 FROM user_types ut, tenants t
-WHERE ut.slug = 'admin' AND t.subdomain = 'default'
+WHERE ut.slug = 'admin' AND t.subdomain = 'livocare'
 ON CONFLICT (email) DO NOTHING;
 
 -- =============================================

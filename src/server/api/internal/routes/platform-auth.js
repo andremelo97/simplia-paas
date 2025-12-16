@@ -15,9 +15,9 @@ const authRateLimit = createRateLimit(windowMs, maxRequests);
  * /platform-auth/login:
  *   post:
  *     tags: [Auth]
- *     summary: Platform admin login (Simplia team)
+ *     summary: Platform admin login (LivoCare team)
  *     description: |
- *       Login for Simplia internal team members with platform_role = 'internal_admin'.
+ *       Login for LivoCare internal team members with platform_role = 'internal_admin'.
  *       This login doesn't require tenant context as it's for platform administration.
  *
  *       **Rate Limiting:** Configurable via ENV variables:
@@ -43,7 +43,7 @@ const authRateLimit = createRateLimit(windowMs, maxRequests);
  *               email:
  *                 type: string
  *                 format: email
- *                 example: consultoriasimplia@gmail.com
+ *                 example: admin@livocare.ai
  *               password:
  *                 type: string
  *                 format: password

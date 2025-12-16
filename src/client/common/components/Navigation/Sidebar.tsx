@@ -28,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   navigation,
   isOpen,
   onToggle,
-  title = "Simplia",
+  title = "LivoCare",
   subtitle = "Platform",
   className
 }) => {

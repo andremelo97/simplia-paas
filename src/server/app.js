@@ -186,8 +186,8 @@ app.use('/api/tq/v1', cors(internalCorsOptions), tqApiRouter);
 const blockDocsOnNonInternalDomain = (req, res, next) => {
   const hostname = req.hostname;
 
-  // Only allow docs on admin.livocare.ai and localhost
-  const allowedHosts = ['admin.livocare.ai', 'localhost', '127.0.0.1'];
+  // Only allow docs on internal.livocare.ai and localhost
+  const allowedHosts = ['internal.livocare.ai', 'localhost', '127.0.0.1'];
   const isAllowed = allowedHosts.some(host => hostname === host || hostname.startsWith(host));
 
   if (!isAllowed) {
@@ -457,7 +457,7 @@ if (isProduction) {
     const hostname = req.hostname;
 
     // Internal Admin subdomain
-    if (hostname === 'admin.livocare.ai') {
+    if (hostname === 'internal.livocare.ai') {
       // Serve admin at root
       if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
         return express.static(adminPath)(req, res, () => {

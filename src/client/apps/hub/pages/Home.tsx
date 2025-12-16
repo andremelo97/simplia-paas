@@ -47,7 +47,7 @@ export const Home: React.FC = () => {
         // Open TQ with SSO parameters - redirect directly to home after SSO
         // Use localhost in development, production URL otherwise
         const baseUrl = import.meta.env.VITE_TQ_URL ||
-          (import.meta.env.DEV ? 'http://localhost:3005' : 'https://tq.simplialabs.co')
+          (import.meta.env.DEV ? 'http://localhost:3005' : 'https://tq.livocare.ai')
         const tqUrl = `${baseUrl}/?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
         window.open(tqUrl, '_blank', 'noopener,noreferrer')
       } else {

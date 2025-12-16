@@ -838,7 +838,7 @@ Deepgram delivers results via webhook callback. This endpoint is registered **be
 - File: `src/server/api/tq/routes/deepgram-webhook.js`
 - Registered in: `src/server/app.js` (before authenticated routes)
 - Tenant resolution: Queries `public.tenants` table using `tenantId` from payload
-- Callback URL format: `https://api.simplialabs.co/api/tq/v1/webhook/deepgram`
+- Callback URL format: `https://api.livocare.ai/api/tq/v1/webhook/deepgram`
 
 ```http
 POST /api/tq/v1/webhook/deepgram

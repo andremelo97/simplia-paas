@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   root: 'src/client/apps/tq',
   base: '/', // Always root - hostname-based routing handles subdomain
+  publicDir: '../../../../imgs',
   server: {
     port: 3005,
     host: true,

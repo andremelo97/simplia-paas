@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   root: 'src/client',
   base: '/', // Always root - hostname-based routing handles subdomain
+  publicDir: '../../imgs',
   build: {
     outDir: '../../dist/client'
   },

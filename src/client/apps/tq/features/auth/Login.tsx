@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { Building2 } from 'lucide-react'
 import { useAuthStore } from '../../shared/store'
 import {
   Button,
@@ -70,9 +69,11 @@ export const Login: React.FC = () => {
         <Card className="min-h-[360px] flex flex-col justify-between">
           <CardHeader className="text-center space-y-3 p-8 pb-4">
             <div className="flex justify-center mb-2">
-              <div className="p-3 bg-stone-50 rounded-xl">
-                <Building2 className="w-8 h-8 text-stone-600" />
-              </div>
+              <img
+                src="/logo-512x256.png"
+                alt="LivoCare"
+                className="h-12"
+              />
             </div>
 
             <CardTitle className="text-2xl font-semibold text-stone-900">

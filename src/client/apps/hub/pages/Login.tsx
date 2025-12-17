@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, Building2, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../store/auth'
 import { Button, Input, Card, CardHeader, CardContent, CardTitle, CardDescription, Alert, AlertDescription } from '@client/common/ui'
@@ -116,9 +116,11 @@ export const Login: React.FC = () => {
           <CardHeader className="text-center space-y-3 p-8 pb-4">
             {/* Logo */}
             <div className="flex justify-center mb-2">
-              <div className="p-3 bg-stone-50 rounded-xl">
-                <Building2 className="w-8 h-8 text-stone-600" />
-              </div>
+              <img
+                src="/logo-512x256.png"
+                alt="LivoCare"
+                className="h-12"
+              />
             </div>
             
             <CardTitle className="text-2xl font-semibold text-stone-900">

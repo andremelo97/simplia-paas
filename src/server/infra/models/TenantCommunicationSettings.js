@@ -15,6 +15,7 @@ class TenantCommunicationSettings {
     this.smtpUsername = data.smtp_username;
     this.smtpPassword = data.smtp_password;
     this.smtpFromEmail = data.smtp_from_email;
+    this.smtpFromName = data.smtp_from_name;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
@@ -55,7 +56,8 @@ class TenantCommunicationSettings {
       smtpSecure = true,
       smtpUsername,
       smtpPassword,
-      smtpFromEmail
+      smtpFromEmail,
+      smtpFromName = null
     } = data;
 
     // Validate required fields
@@ -82,8 +84,9 @@ class TenantCommunicationSettings {
         smtp_secure,
         smtp_username,
         smtp_password,
-        smtp_from_email
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        smtp_from_email,
+        smtp_from_name
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       ON CONFLICT (tenant_id_fk)
       DO UPDATE SET
         smtp_host = EXCLUDED.smtp_host,
@@ -92,6 +95,7 @@ class TenantCommunicationSettings {
         smtp_username = EXCLUDED.smtp_username,
         smtp_password = EXCLUDED.smtp_password,
         smtp_from_email = EXCLUDED.smtp_from_email,
+        smtp_from_name = EXCLUDED.smtp_from_name,
         updated_at = NOW()
       RETURNING *
     `;
@@ -111,7 +115,8 @@ class TenantCommunicationSettings {
       smtpSecure,
       smtpUsername.trim(),
       encryptedPassword,
-      smtpFromEmail.toLowerCase().trim()
+      smtpFromEmail.toLowerCase().trim(),
+      smtpFromName ? smtpFromName.trim() : null
     ]);
 
     const savedRow = { ...result.rows[0] };
@@ -146,6 +151,7 @@ class TenantCommunicationSettings {
       smtpUsername: this.smtpUsername,
       smtpPassword: this.smtpPassword, // Note: Password is returned decrypted for client usage
       smtpFromEmail: this.smtpFromEmail,
+      smtpFromName: this.smtpFromName,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

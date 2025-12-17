@@ -15,13 +15,11 @@ export const BrandingConfiguration: React.FC = () => {
     secondaryColor: '',
     tertiaryColor: '',
     logoUrl: null,
-    faviconUrl: null,
     backgroundVideoUrl: null,
     companyName: null
   })
   const [loading, setLoading] = useState(true)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  const [uploadType, setUploadType] = useState<'logo' | 'favicon'>('logo')
   const [videoUploadModalOpen, setVideoUploadModalOpen] = useState(false)
 
   useEffect(() => {
@@ -64,18 +62,13 @@ export const BrandingConfiguration: React.FC = () => {
     }
   }
 
-  const handleOpenUploadModal = (type: 'logo' | 'favicon') => {
-    setUploadType(type)
+  const handleOpenUploadModal = () => {
     setUploadModalOpen(true)
   }
 
   const handleUploadComplete = (imageUrl: string) => {
-    // Update local state with new image URL
-    if (uploadType === 'logo') {
-      setBranding(prev => ({ ...prev, logoUrl: imageUrl }))
-    } else {
-      setBranding(prev => ({ ...prev, faviconUrl: imageUrl }))
-    }
+    // Update local state with new logo URL
+    setBranding(prev => ({ ...prev, logoUrl: imageUrl }))
   }
 
   const handleVideoUploadComplete = (videoUrl: string) => {
@@ -184,58 +177,30 @@ export const BrandingConfiguration: React.FC = () => {
         </div>
       </Card>
 
-      {/* Logo & Favicon */}
+      {/* Logo */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('branding.brand_assets')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Logo */}
-          <div>
-            <Label>{t('branding.company_logo')}</Label>
-            <div className="mt-2 space-y-3">
-              {branding.logoUrl && (
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-center h-32">
-                  <img
-                    src={branding.logoUrl}
-                    alt="Logo preview"
-                    className="max-h-24 max-w-full object-contain"
-                  />
-                </div>
-              )}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleOpenUploadModal('logo')}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                {t('branding.upload_logo')}
-              </Button>
-              <p className="text-xs text-gray-500">{t('branding.image_formats')}</p>
-            </div>
-          </div>
-
-          {/* Favicon */}
-          <div>
-            <Label>{t('branding.favicon')}</Label>
-            <div className="mt-2 space-y-3">
-              {branding.faviconUrl && (
-                <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-center h-32">
-                  <img
-                    src={branding.faviconUrl}
-                    alt="Favicon preview"
-                    className="max-h-24 max-w-full object-contain"
-                  />
-                </div>
-              )}
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => handleOpenUploadModal('favicon')}
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                {t('branding.upload_favicon')}
-              </Button>
-              <p className="text-xs text-gray-500">{t('branding.image_formats')}</p>
-            </div>
+        <div>
+          <Label>{t('branding.company_logo')}</Label>
+          <div className="mt-2 space-y-3">
+            {branding.logoUrl && (
+              <div className="border border-gray-200 rounded-lg p-4 bg-gray-50 flex items-center justify-center h-32">
+                <img
+                  src={branding.logoUrl}
+                  alt="Logo preview"
+                  className="max-h-24 max-w-full object-contain"
+                />
+              </div>
+            )}
+            <Button
+              variant="outline"
+              className="w-full md:w-auto"
+              onClick={handleOpenUploadModal}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {t('branding.upload_logo')}
+            </Button>
+            <p className="text-xs text-gray-500">{t('branding.image_formats')}</p>
           </div>
         </div>
       </Card>
@@ -285,7 +250,6 @@ export const BrandingConfiguration: React.FC = () => {
         open={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUploadComplete={handleUploadComplete}
-        type={uploadType}
       />
       <VideoUploadModal
         open={videoUploadModalOpen}

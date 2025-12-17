@@ -30,6 +30,7 @@
   "approved": "Aprovado",
   "rejected": "Rejeitado",
   "expired": "Expirado",
+  "never": "Nunca",
   "total": "Total",
   "showing_results": "Mostrando {{from}} a {{to}} de {{total}} resultados",
   "no_results": "Nenhum resultado encontrado",
@@ -279,6 +280,22 @@
     "UPLOAD_FAILED": {
       "title": "Falha no Upload",
       "message": "Falha ao enviar o arquivo. Por favor, tente novamente."
+    },
+    "BRANDING_UPDATED": {
+      "title": "Marca Atualizada",
+      "message": "Configurações de marca atualizadas com sucesso."
+    },
+    "BRANDING_RESET": {
+      "title": "Marca Redefinida",
+      "message": "Configurações de marca redefinidas para o padrão."
+    },
+    "LOGO_UPLOADED": {
+      "title": "Logotipo Enviado",
+      "message": "Logotipo enviado com sucesso."
+    },
+    "VIDEO_UPLOADED": {
+      "title": "Vídeo Enviado",
+      "message": "Vídeo de fundo enviado com sucesso."
     }
   }
 }

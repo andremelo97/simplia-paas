@@ -309,7 +309,6 @@ CREATE TABLE IF NOT EXISTS tenant_branding (
 
   -- Images (URLs to Supabase storage)
   logo_url TEXT,
-  favicon_url TEXT,
 
   -- Background video (URL to Supabase storage)
   background_video_url TEXT,
@@ -332,7 +331,6 @@ COMMENT ON COLUMN tenant_branding.primary_color IS 'Main brand color in hex form
 COMMENT ON COLUMN tenant_branding.secondary_color IS 'Secondary brand color in hex format (#RRGGBB)';
 COMMENT ON COLUMN tenant_branding.tertiary_color IS 'Tertiary brand color in hex format (#RRGGBB)';
 COMMENT ON COLUMN tenant_branding.logo_url IS 'URL to tenant logo (Supabase storage path)';
-COMMENT ON COLUMN tenant_branding.favicon_url IS 'URL to tenant favicon (Supabase storage path)';
 COMMENT ON COLUMN tenant_branding.background_video_url IS 'URL to background video for Hero sections (Supabase storage, MP4 format, max 20MB)';
 COMMENT ON COLUMN tenant_branding.company_name IS 'Company display name for public pages';
 
@@ -366,6 +364,7 @@ CREATE TABLE IF NOT EXISTS tenant_communication_settings (
 
   -- Sender information
   smtp_from_email VARCHAR(255) NOT NULL,
+  smtp_from_name VARCHAR(255) DEFAULT 'LivoCare.ai',
 
   -- Metadata
   created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -384,6 +383,7 @@ COMMENT ON COLUMN tenant_communication_settings.smtp_secure IS 'Use secure conne
 COMMENT ON COLUMN tenant_communication_settings.smtp_username IS 'SMTP authentication username';
 COMMENT ON COLUMN tenant_communication_settings.smtp_password IS 'SMTP authentication password (stored as plain text for now)';
 COMMENT ON COLUMN tenant_communication_settings.smtp_from_email IS 'Sender email address';
+COMMENT ON COLUMN tenant_communication_settings.smtp_from_name IS 'Sender display name (e.g., "LivoCare.ai")';
 
 -- Email sending log for audit and troubleshooting (generic, used by all apps)
 CREATE TABLE IF NOT EXISTS email_log (

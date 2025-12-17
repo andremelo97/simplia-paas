@@ -112,6 +112,7 @@ class EmailService {
       const TQEmailTemplate = require('../infra/models/TQEmailTemplate');
       const { resolveEmailTemplate } = require('./emailTemplateResolver');
       const Email = require('../infra/models/Email');
+      const { TenantBranding } = require('../infra/models/TenantBranding');
 
       // 1. Fetch email template
       const template = await TQEmailTemplate.find(tenantSchema);
@@ -120,24 +121,28 @@ class EmailService {
         throw new Error(`Email template not found for tenant schema: ${tenantSchema}`);
       }
 
-      // 2. Resolve template variables
+      // 2. Fetch tenant branding for email styling
+      const branding = await TenantBranding.findByTenantId(tenantId);
+
+      // 3. Resolve template variables with branding
       const { subject, html } = resolveEmailTemplate(template, {
         quoteNumber,
         patientName,
         clinicName,
         publicLink,
         password,
-        timezone: tenantTimezone
+        timezone: tenantTimezone,
+        branding: branding ? branding.toJSON() : null
       });
 
-      // 3. Send email
+      // 4. Send email
       await this.sendEmail(tenantId, {
         to: recipientEmail,
         subject,
         html
       });
 
-      // 4. Log success
+      // 5. Log success
       await Email.log({
         tenantId,
         appName: 'tq',

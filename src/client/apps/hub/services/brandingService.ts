@@ -7,7 +7,6 @@ export interface BrandingData {
   secondaryColor: string;
   tertiaryColor: string;
   logoUrl: string | null;
-  faviconUrl: string | null;
   backgroundVideoUrl?: string | null;
   companyName: string | null;
   createdAt?: string;
@@ -40,14 +39,14 @@ export const brandingService = {
   },
 
   /**
-   * Upload image (logo or favicon)
+   * Upload logo image
    */
-  uploadImage: async (file: File, type: 'logo' | 'favicon'): Promise<{ logoUrl?: string; faviconUrl?: string }> => {
+  uploadLogo: async (file: File): Promise<{ logoUrl: string }> => {
     const formData = new FormData();
     formData.append('image', file);
 
     const response = await http.post(
-      `/internal/api/v1/configurations/branding/upload-image?type=${type}`,
+      '/internal/api/v1/configurations/branding/upload-logo',
       formData,
       {
         headers: {
@@ -56,7 +55,8 @@ export const brandingService = {
       }
     );
 
-    return response.data;
+    // Handle nested response structure: { data: { logoUrl, ... }, meta: {...} }
+    return response.data?.data || response.data;
   },
 
   /**

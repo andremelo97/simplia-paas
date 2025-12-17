@@ -6,7 +6,7 @@ const SupabaseStorageService = require('../../../services/supabaseStorage');
 
 const router = express.Router();
 
-// Configure multer for image uploads
+// Configure multer for image uploads (logo only)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -17,15 +17,13 @@ const upload = multer({
       'image/png',
       'image/jpeg',
       'image/jpg',
-      'image/svg+xml',
-      'image/x-icon',
-      'image/vnd.microsoft.icon'
+      'image/svg+xml'
     ];
 
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PNG, JPEG, SVG, and ICO image files are allowed'), false);
+      cb(new Error('Only PNG, JPEG, and SVG image files are allowed'), false);
     }
   }
 });
@@ -168,10 +166,6 @@ router.get('/', requireAdmin, async (req, res) => {
  *                 type: string
  *                 format: uri
  *                 nullable: true
- *               faviconUrl:
- *                 type: string
- *                 format: uri
- *                 nullable: true
  *               companyName:
  *                 type: string
  *                 nullable: true
@@ -197,7 +191,6 @@ router.put('/', requireAdmin, async (req, res) => {
       secondaryColor,
       tertiaryColor,
       logoUrl,
-      faviconUrl,
       backgroundVideoUrl,
       companyName
     } = req.body;
@@ -231,7 +224,6 @@ router.put('/', requireAdmin, async (req, res) => {
       secondaryColor,
       tertiaryColor,
       logoUrl,
-      faviconUrl,
       backgroundVideoUrl,
       companyName
     });
@@ -297,7 +289,6 @@ router.delete('/', requireAdmin, async (req, res) => {
     // Delete files from Supabase Storage
     const filesToDelete = [
       extractStoragePath(existingBranding.logoUrl),
-      extractStoragePath(existingBranding.faviconUrl),
       extractStoragePath(existingBranding.backgroundVideoUrl)
     ].filter(Boolean); // Remove null/undefined values
 
@@ -348,27 +339,19 @@ router.delete('/', requireAdmin, async (req, res) => {
 
 /**
  * @openapi
- * /configurations/branding/upload-image:
+ * /configurations/branding/upload-logo:
  *   post:
  *     tags: [Configurations]
- *     summary: Upload tenant branding image (logo or favicon)
+ *     summary: Upload tenant logo
  *     description: |
  *       **Scope:** Platform (uses authenticated user's tenant)
  *
- *       Upload a branding image (logo or favicon) for the tenant.
- *       Images are stored in a tenant-specific folder: `tenant_{tenantId}/{type}.ext`
- *       Automatically updates the branding configuration with the new image URL.
- *       Supported formats: PNG, JPEG, SVG, ICO (max 5MB)
+ *       Upload the tenant logo.
+ *       Images are stored in a tenant-specific folder: `tenant_{subdomain}/branding/logo.ext`
+ *       Automatically updates the branding configuration with the new logo URL.
+ *       Supported formats: PNG, JPEG, SVG (max 5MB)
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: type
- *         required: true
- *         schema:
- *           type: string
- *           enum: [logo, favicon]
- *         description: Type of image to upload (logo or favicon)
  *     requestBody:
  *       required: true
  *       content:
@@ -379,32 +362,23 @@ router.delete('/', requireAdmin, async (req, res) => {
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: Image file (PNG, JPEG, SVG, or ICO)
+ *                 description: Image file (PNG, JPEG, or SVG)
  *     responses:
  *       200:
- *         description: Image uploaded successfully
+ *         description: Logo uploaded successfully
  *       400:
- *         description: Invalid file format, missing file, or invalid type parameter
+ *         description: Invalid file format or missing file
  *       413:
  *         description: File too large (max 5MB)
  */
-router.post('/upload-image', requireAdmin, upload.single('image'), async (req, res) => {
+router.post('/upload-logo', requireAdmin, upload.single('image'), async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
-    const { type } = req.query;
 
     if (!tenantId) {
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'Authentication required'
-      });
-    }
-
-    // Validate type parameter
-    if (!type || !['logo', 'favicon'].includes(type)) {
-      return res.status(400).json({
-        error: 'Validation Error',
-        message: 'Invalid or missing type parameter. Must be "logo" or "favicon"'
       });
     }
 
@@ -424,17 +398,16 @@ router.post('/upload-image', requireAdmin, upload.single('image'), async (req, r
 
     // Extract file extension from new file
     const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
-    const newPath = `branding/${type}.${fileExtension}`;
+    const newPath = `branding/logo.${fileExtension}`;
 
     // Delete old file ONLY if it's different from the new one
-    const oldUrl = type === 'logo' ? existingBranding.logoUrl : existingBranding.faviconUrl;
-    const oldPath = extractStoragePath(oldUrl);
+    const oldPath = extractStoragePath(existingBranding.logoUrl);
     if (oldPath && oldPath !== newPath) {
       try {
         await brandingStorage.deleteFile(oldPath);
-        console.log(`Deleted old ${type} from storage: ${oldPath}`);
+        console.log(`Deleted old logo from storage: ${oldPath}`);
       } catch (error) {
-        console.warn(`Failed to delete old ${type} from storage:`, error);
+        console.warn('Failed to delete old logo from storage:', error);
         // Continue even if deletion fails
       }
     }
@@ -443,41 +416,37 @@ router.post('/upload-image', requireAdmin, upload.single('image'), async (req, r
     const uploadResult = await brandingStorage.uploadFile(
       req.file.buffer,
       req.file.originalname,
-      type, // Just the type (logo/favicon), service will add extension from originalname
+      'logo',
       'branding', // Folder within tenant bucket
       req.file.mimetype
     );
 
-    // Update branding configuration with new image URL
+    // Update branding configuration with new logo URL
     const updateData = {
       primaryColor: existingBranding.primaryColor,
       secondaryColor: existingBranding.secondaryColor,
       tertiaryColor: existingBranding.tertiaryColor,
-      logoUrl: type === 'logo' ? uploadResult.url : existingBranding.logoUrl,
-      faviconUrl: type === 'favicon' ? uploadResult.url : existingBranding.faviconUrl,
+      logoUrl: uploadResult.url,
       backgroundVideoUrl: existingBranding.backgroundVideoUrl,
       companyName: existingBranding.companyName
     };
 
     const branding = await TenantBranding.upsert(tenantId, updateData);
 
-    const responseKey = type === 'logo' ? 'logoUrl' : 'faviconUrl';
-    const metaCode = type === 'logo' ? 'LOGO_UPLOADED' : 'FAVICON_UPLOADED';
-
     res.json({
       data: {
-        [responseKey]: uploadResult.url,
+        logoUrl: uploadResult.url,
         storagePath: uploadResult.path,
         size: uploadResult.size
       },
       meta: {
-        code: metaCode,
-        message: `${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`
+        code: 'LOGO_UPLOADED',
+        message: 'Logo uploaded successfully'
       }
     });
 
   } catch (error) {
-    console.error('Image upload error:', error);
+    console.error('Logo upload error:', error);
 
     if (error.message.includes('Only PNG, JPEG')) {
       return res.status(400).json({
@@ -488,7 +457,7 @@ router.post('/upload-image', requireAdmin, upload.single('image'), async (req, r
 
     res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Failed to upload image'
+      message: 'Failed to upload logo'
     });
   }
 });
@@ -583,7 +552,6 @@ router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (r
       secondaryColor: existingBranding.secondaryColor,
       tertiaryColor: existingBranding.tertiaryColor,
       logoUrl: existingBranding.logoUrl,
-      faviconUrl: existingBranding.faviconUrl,
       backgroundVideoUrl: uploadResult.url,
       companyName: existingBranding.companyName
     };

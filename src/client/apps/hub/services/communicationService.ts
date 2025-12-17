@@ -7,6 +7,7 @@ export interface CommunicationSettings {
   smtpUsername: string
   smtpPassword: string
   smtpFromEmail: string
+  smtpFromName: string
 }
 
 const RESOURCE = '/internal/api/v1/configurations/communication'

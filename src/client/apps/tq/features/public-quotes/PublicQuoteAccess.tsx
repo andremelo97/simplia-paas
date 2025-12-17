@@ -120,7 +120,6 @@ export const PublicQuoteAccess: React.FC = () => {
       secondaryColor: quoteData.branding.secondaryColor,
       tertiaryColor: quoteData.branding.tertiaryColor,
       logoUrl: quoteData.branding.logo || null,
-      faviconUrl: null,
       backgroundVideoUrl: quoteData.branding.backgroundVideoUrl || null,
       companyName: null
     }

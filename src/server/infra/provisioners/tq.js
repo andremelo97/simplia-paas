@@ -561,13 +561,15 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
     `);
 
     // Create tq_email_template table for email templates (TQ-specific, 1 per tenant)
+    // settings JSONB stores customizable options like greeting, CTA text, footer, toggles
     await client.query(`
       CREATE TABLE IF NOT EXISTS tq_email_template (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         subject TEXT NOT NULL,
-        body TEXT NOT NULL
+        body TEXT NOT NULL,
+        settings JSONB NOT NULL DEFAULT '{}'::jsonb
       )
     `);
 
@@ -626,9 +628,10 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
     // Seed default email template based on tenant locale
     const TQEmailTemplate = require('../models/TQEmailTemplate');
     const defaultEmailTemplate = TQEmailTemplate.getDefaultTemplate(locale);
+    const defaultSettings = TQEmailTemplate.getDefaultSettings(locale);
     await client.query(
-      `INSERT INTO tq_email_template (subject, body) VALUES ($1, $2)`,
-      [defaultEmailTemplate.subject, defaultEmailTemplate.body]
+      `INSERT INTO tq_email_template (subject, body, settings) VALUES ($1, $2, $3::jsonb)`,
+      [defaultEmailTemplate.subject, defaultEmailTemplate.body, JSON.stringify(defaultSettings)]
     );
 
     await client.query('COMMIT');

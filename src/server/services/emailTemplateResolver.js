@@ -1,8 +1,9 @@
 const { getLocaleFromTimezone } = require('../infra/utils/localeMapping');
+const { renderEmail } = require('./emailTemplateRenderer');
 
 /**
- * Resolves email template variables and converts to HTML format
- * @param {Object} template - TQEmailTemplate instance with subject and body
+ * Resolves email template variables and renders full HTML email with branding
+ * @param {Object} template - TQEmailTemplate instance with subject, body, and settings
  * @param {Object} context - Variable context
  * @param {string} context.quoteNumber - Quote number (e.g., 'QUO000001')
  * @param {string} context.patientName - Patient full name
@@ -10,87 +11,104 @@ const { getLocaleFromTimezone } = require('../infra/utils/localeMapping');
  * @param {string} context.publicLink - Full public quote URL
  * @param {string|null} context.password - Password (null if no password)
  * @param {string} context.timezone - Tenant timezone (e.g., 'America/Sao_Paulo')
+ * @param {Object} context.branding - Tenant branding (colors, logo, etc.)
  * @returns {Object} { subject: string, html: string }
  */
 function resolveEmailTemplate(template, context) {
-  const { quoteNumber, patientName, clinicName, publicLink, password, timezone } = context;
+  const { quoteNumber, patientName, clinicName, publicLink, password, timezone, branding } = context;
 
   // Determine locale from timezone
   const locale = getLocaleFromTimezone(timezone);
-  const isPtBr = locale === 'pt-BR';
 
-  // Template has direct subject and body (no locale separation)
-  const subject = template.subject;
-  const body = template.body;
-
-  // Build password block HTML (or empty string if no password)
-  const passwordBlockHtml = password
-    ? `<p style="margin: 1rem 0;"><strong>${isPtBr ? 'Senha de acesso:' : 'Access password:'}</strong> <code style="background: #f4f4f4; padding: 0.25rem 0.5rem; border-radius: 4px; font-family: monospace;">${password}</code></p>`
-    : '';
-
-  const passwordBlockText = password
-    ? `${isPtBr ? 'Senha de acesso:' : 'Access password:'} ${password}\n\n`
-    : '';
-
-  // Build public link HTML (styled anchor)
-  const publicLinkHtml = `<a href="${publicLink}" style="display: inline-block; background: #B725B7; color: white; padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 1rem 0;">${isPtBr ? 'Acessar Cotação' : 'Access Quote'}</a>`;
-  const publicLinkText = `${isPtBr ? 'Link de acesso:' : 'Access link:'} ${publicLink}`;
-
-  // Replace variables in subject
-  let resolvedSubject = subject
-    .replace(/\$quoteNumber\$/g, quoteNumber || '')
-    .replace(/\$patientName\$/g, patientName || '')
-    .replace(/\$clinicName\$/g, clinicName || '');
-
-  // Replace variables in body
-  let resolvedBodyHtml = body
-    .replace(/\$quoteNumber\$/g, quoteNumber || '')
-    .replace(/\$patientName\$/g, patientName || '')
-    .replace(/\$clinicName\$/g, clinicName || '')
-    .replace(/\$PUBLIC_LINK\$/g, publicLinkHtml)
-    .replace(/\$PASSWORD_BLOCK\$/g, passwordBlockHtml);
-
-  // Convert plain text line breaks to HTML paragraphs
-  const htmlBody = convertTextToHtml(resolvedBodyHtml);
-
-  return {
-    subject: resolvedSubject.trim(),
-    html: htmlBody
+  // Use the full email renderer with branding support
+  const variables = {
+    quoteNumber: quoteNumber || '',
+    patientName: patientName || '',
+    clinicName: clinicName || '',
+    publicLink: publicLink || '#',
+    password: password || null
   };
+
+  // If branding is provided, use the full renderer
+  if (branding) {
+    const result = renderEmail({
+      template: {
+        subject: template.subject,
+        body: template.body,
+        settings: template.settings || {}
+      },
+      branding,
+      variables,
+      locale
+    });
+
+    return {
+      subject: result.subject,
+      html: result.html
+    };
+  }
+
+  // Fallback: Simple rendering without branding (for backwards compatibility)
+  return renderSimpleEmail(template, variables, locale);
 }
 
 /**
- * Converts plain text with line breaks to HTML paragraphs
- * Single \n → separate <p> tags
- * Double \n\n → <p></p> empty spacer
- * @param {string} text - Plain text with line breaks
- * @returns {string} HTML string
+ * Simple email rendering fallback (without branding)
+ * Used when branding data is not available
  */
-function convertTextToHtml(text) {
-  if (!text) return '';
+function renderSimpleEmail(template, variables, locale) {
+  const isPtBr = locale === 'pt-BR';
+  const { quoteNumber, patientName, clinicName, publicLink, password } = variables;
 
-  // Split by double line breaks (paragraph boundaries)
-  const paragraphs = text.split(/\n\n+/);
+  // Build password block HTML
+  const passwordBlockHtml = password
+    ? `<div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin: 16px 0; text-align: center;">
+        <p style="margin: 0 0 8px 0; color: #6c757d; font-size: 14px;">
+          ${isPtBr ? '🔒 Senha de Acesso' : '🔒 Access Password'}
+        </p>
+        <p style="margin: 0; font-size: 20px; font-weight: 600; color: #212529; letter-spacing: 2px;">
+          ${password}
+        </p>
+      </div>`
+    : '';
 
-  const htmlParagraphs = paragraphs.map(para => {
-    const trimmed = para.trim();
-    if (!trimmed) {
-      return '<p style="margin: 1rem 0;"></p>'; // Empty spacer
-    }
+  // Build public link HTML
+  const publicLinkHtml = `<div style="text-align: center; margin: 24px 0;">
+    <a href="${publicLink}" style="display: inline-block; background: #B725B7; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+      ${isPtBr ? 'Ver Cotação' : 'View Quote'}
+    </a>
+  </div>`;
 
-    // Split single line breaks within paragraph
-    const lines = trimmed.split(/\n/);
-    const content = lines.map(line => line.trim()).join('</p><p style="margin: 0.5rem 0;">');
+  // Replace variables in subject
+  let resolvedSubject = template.subject
+    .replace(/\$quoteNumber\$/g, quoteNumber)
+    .replace(/\$patientName\$/g, patientName)
+    .replace(/\$clinicName\$/g, clinicName)
+    .replace(/\$greeting\$/g, isPtBr ? 'Olá' : 'Hello')
+    .replace(/\$footerText\$/g, '');
 
-    return `<p style="margin: 0.5rem 0;">${content}</p>`;
-  });
+  // Replace variables in body
+  let resolvedBody = template.body
+    .replace(/\$quoteNumber\$/g, quoteNumber)
+    .replace(/\$patientName\$/g, patientName)
+    .replace(/\$clinicName\$/g, clinicName)
+    .replace(/\$greeting\$/g, isPtBr ? 'Olá' : 'Hello')
+    .replace(/\$footerText\$/g, '')
+    .replace(/\$PUBLIC_LINK\$/g, publicLinkHtml)
+    .replace(/\$PASSWORD_BLOCK\$/g, passwordBlockHtml)
+    .replace(/\n/g, '<br>');
 
-  // Wrap in email container
-  return `
-    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
-      ${htmlParagraphs.join('\n')}
+  // Wrap in simple container
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 16px; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+      ${resolvedBody}
     </div>
   `.trim();
+
+  return {
+    subject: resolvedSubject.trim(),
+    html
+  };
 }
 
 module.exports = {

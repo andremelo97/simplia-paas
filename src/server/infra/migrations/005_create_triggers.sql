@@ -28,7 +28,6 @@ BEGIN
     secondary_color,
     tertiary_color,
     logo_url,
-    favicon_url,
     company_name
   )
   VALUES (
@@ -36,7 +35,6 @@ BEGIN
     '#B725B7',
     '#E91E63',
     '#5ED6CE',
-    NULL,
     NULL,
     NEW.name
   );

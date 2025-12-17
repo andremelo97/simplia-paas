@@ -30,6 +30,7 @@
   "approved": "Approved",
   "rejected": "Rejected",
   "expired": "Expired",
+  "never": "Never",
   "total": "Total",
   "showing_results": "Showing {{from}} to {{to}} of {{total}} results",
   "no_results": "No results found",
@@ -263,6 +264,22 @@
     "UPLOAD_FAILED": {
       "title": "Upload Failed",
       "message": "Failed to upload the file. Please try again."
+    },
+    "BRANDING_UPDATED": {
+      "title": "Branding Updated",
+      "message": "Branding configuration updated successfully."
+    },
+    "BRANDING_RESET": {
+      "title": "Branding Reset",
+      "message": "Branding configuration reset to defaults."
+    },
+    "LOGO_UPLOADED": {
+      "title": "Logo Uploaded",
+      "message": "Logo uploaded successfully."
+    },
+    "VIDEO_UPLOADED": {
+      "title": "Video Uploaded",
+      "message": "Background video uploaded successfully."
     }
   }
 }

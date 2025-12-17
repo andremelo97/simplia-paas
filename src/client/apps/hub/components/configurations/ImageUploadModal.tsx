@@ -1,12 +1,13 @@
 /**
  * Image Upload Modal Component for Hub App
  *
- * Modal component for uploading logo or favicon images with drag & drop support,
+ * Modal component for uploading logo images with drag & drop support,
  * file validation, and upload progress tracking for tenant branding.
  */
 
 import React, { useCallback, useRef, useState, DragEvent } from 'react'
 import { Upload, Image as ImageIcon, X, CheckCircle, AlertCircle, Loader } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Modal, Button, Progress, Alert, AlertDescription } from '@client/common/ui'
 import { brandingService } from '../../services/brandingService'
 
@@ -14,20 +15,19 @@ interface ImageUploadModalProps {
   open: boolean
   onClose: () => void
   onUploadComplete?: (imageUrl: string) => void
-  type: 'logo' | 'favicon'
   className?: string
 }
 
-const ACCEPTED_FORMATS = ['.png', '.jpg', '.jpeg', '.svg', '.ico']
+const ACCEPTED_FORMATS = ['.png', '.jpg', '.jpeg', '.svg']
 const MAX_SIZE_MB = 5
 
 export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
   open,
   onClose,
   onUploadComplete,
-  type,
   className = ''
 }) => {
+  const { t } = useTranslation('hub')
   const [isDragOver, setIsDragOver] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -46,7 +46,7 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
       setError(null)
       setPreviewUrl(null)
     }
-  }, [open, type]) // Add type dependency to reset when switching between logo/favicon
+  }, [open])
 
   // Validate file type and size
   const validateFile = useCallback((file: File): string | null => {
@@ -57,22 +57,22 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
     )
 
     if (!hasValidExtension) {
-      return `Invalid file type. Supported formats: ${ACCEPTED_FORMATS.join(', ')}`
+      return `${t('branding.upload_modal_invalid_type')}: ${ACCEPTED_FORMATS.join(', ')}`
     }
 
     // Check file size
     const fileSizeMB = file.size / (1024 * 1024)
     if (fileSizeMB > MAX_SIZE_MB) {
-      return `File too large. Maximum size is ${MAX_SIZE_MB}MB`
+      return `${t('branding.upload_modal_file_too_large')}: ${MAX_SIZE_MB}MB`
     }
 
     // Check if it's actually an image file (basic MIME type check)
     if (!file.type.startsWith('image/')) {
-      return 'Selected file is not an image'
+      return t('branding.upload_modal_not_image')
     }
 
     return null
-  }, [])
+  }, [t])
 
   // Handle file processing
   const processFile = useCallback(async (file: File) => {
@@ -98,15 +98,14 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
       setUploadProgress(50)
 
       // Upload via service
-      const result = await brandingService.uploadImage(file, type)
+      const result = await brandingService.uploadLogo(file)
 
       setUploadProgress(100)
       setUploadComplete(true)
 
-      // Call callback with image URL
-      const imageUrl = type === 'logo' ? result.logoUrl : result.faviconUrl
-      if (onUploadComplete && imageUrl) {
-        onUploadComplete(imageUrl)
+      // Call callback with logo URL
+      if (onUploadComplete && result.logoUrl) {
+        onUploadComplete(result.logoUrl)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Upload failed')
@@ -114,7 +113,7 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
     } finally {
       setIsUploading(false)
     }
-  }, [validateFile, type, onUploadComplete])
+  }, [validateFile, onUploadComplete])
 
   // Handle file input change
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,9 +144,9 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
     if (imageFile) {
       processFile(imageFile)
     } else if (files.length > 0) {
-      setError('Please drop an image file')
+      setError(t('branding.upload_modal_drop_image'))
     }
-  }, [processFile])
+  }, [processFile, t])
 
   // Handle browse button click
   const handleBrowseClick = useCallback(() => {
@@ -162,17 +161,12 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
     setPreviewUrl(null)
   }, [])
 
-  const title = type === 'logo' ? 'Upload Company Logo' : 'Upload Favicon'
-  const description = type === 'logo'
-    ? 'Select a logo image to represent your organization'
-    : 'Select a favicon image for browser tabs'
-
   return (
     <Modal
       open={open}
       onClose={onClose}
-      title={title}
-      description={description}
+      title={t('branding.upload_modal_title')}
+      description={t('branding.upload_modal_description')}
       size="md"
       showCloseButton={!isUploading}
     >
@@ -204,17 +198,17 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
           >
             <ImageIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {isDragOver ? 'Drop image here' : `Upload ${type}`}
+              {isDragOver ? t('branding.upload_modal_drop_here') : t('branding.upload_modal_upload_logo')}
             </h3>
             <p className="text-gray-600 mb-4">
-              Drag and drop an image file, or click to browse
+              {t('branding.upload_modal_drag_drop')}
             </p>
             <Button variant="primary" className="mb-2">
               <Upload className="w-4 h-4 mr-2" />
-              Choose File
+              {t('branding.upload_modal_choose_file')}
             </Button>
             <p className="text-xs text-gray-500">
-              Supports: {ACCEPTED_FORMATS.join(', ')} • Max size: {MAX_SIZE_MB}MB
+              {t('branding.upload_modal_supported_formats')}: {ACCEPTED_FORMATS.join(', ')} • {t('branding.upload_modal_max_size')}: {MAX_SIZE_MB}MB
             </p>
           </div>
         )}
@@ -235,13 +229,13 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
               <Loader className="h-5 w-5 animate-spin text-[#B725B7]" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
-                  Uploading {type}...
+                  {t('branding.upload_modal_uploading')}
                 </p>
                 <Progress value={uploadProgress} className="h-2 mt-1" />
               </div>
             </div>
             <p className="text-xs text-gray-500">
-              Please wait while we upload your image
+              {t('branding.upload_modal_please_wait')}
             </p>
           </div>
         )}
@@ -260,21 +254,21 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
             )}
             <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
             <div>
-              <h3 className="text-lg font-medium text-gray-900">Upload Complete!</h3>
+              <h3 className="text-lg font-medium text-gray-900">{t('branding.upload_modal_complete')}</h3>
               <p className="text-gray-600 mt-1">
-                {type === 'logo' ? 'Logo' : 'Favicon'} uploaded successfully
+                {t('branding.upload_modal_success')}
               </p>
             </div>
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
-                Your {type} has been saved and will be reflected across your organization.
+                {t('branding.upload_modal_saved')}
               </AlertDescription>
             </Alert>
 
             <div className="flex justify-center pt-4">
               <Button variant="primary" onClick={onClose}>
-                Close
+                {t('branding.upload_modal_close')}
               </Button>
             </div>
           </div>
@@ -292,10 +286,10 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
 
             <div className="flex justify-center space-x-3">
               <Button variant="outline" onClick={handleRetry}>
-                Try Again
+                {t('branding.upload_modal_try_again')}
               </Button>
               <Button variant="ghost" onClick={onClose}>
-                Cancel
+                {t('branding.upload_modal_cancel')}
               </Button>
             </div>
           </div>
@@ -305,7 +299,7 @@ export const ImageUploadModal: React.FC<ImageUploadModalProps> = ({
         {!isUploading && !uploadComplete && !error && (
           <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
             <Button variant="ghost" onClick={onClose}>
-              Cancel
+              {t('branding.upload_modal_cancel')}
             </Button>
           </div>
         )}

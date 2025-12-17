@@ -12,7 +12,8 @@ export const CommunicationConfiguration: React.FC = () => {
     smtpSecure: true,
     smtpUsername: '',
     smtpPassword: '',
-    smtpFromEmail: ''
+    smtpFromEmail: '',
+    smtpFromName: 'LivoCare.ai'
   })
   const [loading, setLoading] = useState(true)
 
@@ -27,7 +28,8 @@ export const CommunicationConfiguration: React.FC = () => {
             smtpSecure: data.smtpSecure ?? true,
             smtpUsername: data.smtpUsername || '',
             smtpPassword: data.smtpPassword || '',
-            smtpFromEmail: data.smtpFromEmail || ''
+            smtpFromEmail: data.smtpFromEmail || '',
+            smtpFromName: data.smtpFromName || 'LivoCare.ai'
           })
         }
       } catch (error) {
@@ -148,20 +150,34 @@ export const CommunicationConfiguration: React.FC = () => {
 
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('communication.sender_info')}</h2>
-        <FormFieldWrapper
-          id="smtpFromEmail"
-          label={t('communication.from_email')}
-          required
-          helperText={t('communication.from_email_hint')}
-        >
-          <Input
+        <div className="space-y-4">
+          <FormFieldWrapper
+            id="smtpFromName"
+            label={t('communication.from_name')}
+            helperText={t('communication.from_name_hint')}
+          >
+            <Input
+              id="smtpFromName"
+              value={settings.smtpFromName}
+              onChange={(e) => setSettings({ ...settings, smtpFromName: e.target.value })}
+              placeholder="LivoCare.ai"
+            />
+          </FormFieldWrapper>
+          <FormFieldWrapper
             id="smtpFromEmail"
-            type="email"
-            value={settings.smtpFromEmail}
-            onChange={(e) => setSettings({ ...settings, smtpFromEmail: e.target.value })}
-            placeholder="noreply@example.com"
-          />
-        </FormFieldWrapper>
+            label={t('communication.from_email')}
+            required
+            helperText={t('communication.from_email_hint')}
+          >
+            <Input
+              id="smtpFromEmail"
+              type="email"
+              value={settings.smtpFromEmail}
+              onChange={(e) => setSettings({ ...settings, smtpFromEmail: e.target.value })}
+              placeholder="noreply@example.com"
+            />
+          </FormFieldWrapper>
+        </div>
       </Card>
 
       <div className="flex gap-3">

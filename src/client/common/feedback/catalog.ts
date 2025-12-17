@@ -350,11 +350,6 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "Logo Uploaded",
     message: "Logo uploaded successfully."
   },
-  FAVICON_UPLOADED: {
-    title: "Favicon Uploaded",
-    message: "Favicon uploaded successfully."
-  },
-
   // SMTP operations
   SMTP_SETTINGS_SAVED: {
     title: "SMTP Settings Saved",

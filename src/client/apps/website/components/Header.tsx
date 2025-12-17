@@ -84,7 +84,7 @@ export function Header() {
 
             {/* Access button */}
             <a
-              href="http://localhost:3003"
+              href="https://hub.livocare.ai"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:block px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"

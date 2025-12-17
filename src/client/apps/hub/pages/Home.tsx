@@ -75,10 +75,16 @@ export const Home: React.FC = () => {
   }
 
   const getAppIcon = (app: UserApp) => {
+    // Special handling for TQ app - show "TQ" text
+    if (app.slug === 'tq') {
+      return (
+        <span className="text-lg font-bold">TQ</span>
+      )
+    }
     if (app.iconUrl) {
       return (
-        <img 
-          src={app.iconUrl} 
+        <img
+          src={app.iconUrl}
           alt={`${app.name} icon`}
           className="w-8 h-8 object-contain"
         />
@@ -87,8 +93,12 @@ export const Home: React.FC = () => {
     return <Grid3x3 className="w-8 h-8" />
   }
 
-  const getAppColor = () => {
-    return '#3B82F6' // Default blue for all apps
+  const getAppColor = (app: UserApp) => {
+    // TQ uses tertiary green color
+    if (app.slug === 'tq') {
+      return '#5ED6CE'
+    }
+    return '#3B82F6' // Default blue for other apps
   }
 
   if (isLoading) {
@@ -140,11 +150,11 @@ export const Home: React.FC = () => {
                 onClick={() => handleAppClick(app)}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <div 
+                  <div
                     className="p-2 rounded-lg"
-                    style={{ backgroundColor: `${getAppColor()}20` }}
+                    style={{ backgroundColor: `${getAppColor(app)}20` }}
                   >
-                    <div style={{ color: getAppColor() }}>
+                    <div style={{ color: getAppColor(app) }}>
                       {getAppIcon(app)}
                     </div>
                   </div>

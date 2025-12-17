@@ -68,7 +68,7 @@ export const Sidebar: React.FC = () => {
       isOpen={sidebarOpen}
       onToggle={toggleSidebar}
       title="TQ"
-      subtitle="Transcription Quote"
+      subtitle="Transcription & Quote"
     />
   )
 }

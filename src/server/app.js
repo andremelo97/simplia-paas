@@ -33,6 +33,9 @@ const deepgramWebhookRoutes = require('./api/tq/routes/deepgram-webhook');
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
 const publicViewRoutes = require('./api/public/routes/view');
 
+// Website routes (public, no auth)
+const websiteContactRoutes = require('./api/website/routes/contact');
+
 // Swagger
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -48,6 +51,7 @@ const ENABLE_HELMET = process.env.ENABLE_HELMET === 'true';
 const ADMIN_PANEL_ORIGIN = process.env.ADMIN_PANEL_ORIGIN;
 const HUB_ORIGIN = process.env.HUB_ORIGIN || 'http://localhost:3003';
 const TQ_ORIGIN = process.env.TQ_ORIGIN || 'http://localhost:3005';
+const WEBSITE_ORIGIN = process.env.WEBSITE_ORIGIN || 'http://localhost:3006';
 
 // Global middlewares
 if (ENABLE_HELMET) {
@@ -84,6 +88,16 @@ const internalCorsOptions = {
 
     // Allow TQ origin
     if (origin === TQ_ORIGIN) {
+      return callback(null, true);
+    }
+
+    // Allow Website origin
+    if (origin === WEBSITE_ORIGIN) {
+      return callback(null, true);
+    }
+
+    // Allow production website domain
+    if (origin === 'https://livocare.ai' || origin === 'https://www.livocare.ai') {
       return callback(null, true);
     }
 
@@ -160,6 +174,9 @@ app.use(INTERNAL_PREFIX, cors(internalCorsOptions), internalRouter);
 
 // Mount public API routes (NO authentication required)
 app.use('/api/public', cors(internalCorsOptions), publicViewRoutes);
+
+// Mount website API routes (NO authentication required, for contact form etc.)
+app.use('/api/website/contact', cors(internalCorsOptions), websiteContactRoutes);
 
 // Mount public quote access route FIRST (NO authentication, NO tenant middleware required)
 // This allows patients to access quotes via /api/tq/v1/pq/:accessToken

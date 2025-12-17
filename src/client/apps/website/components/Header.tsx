@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { useLanguage } from '../i18n/LanguageContext'
 import { Language } from '../i18n/translations'
+import { ChevronDown } from 'lucide-react'
 
 export function Header() {
   const { language, setLanguage, t } = useLanguage()
   const [isScrolled, setIsScrolled] = useState(false)
+  const [isProductsOpen, setIsProductsOpen] = useState(false)
+  const productsRef = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+
+  const isProductPage = location.pathname.startsWith('/products/')
 
   useEffect(() => {
     const handleScroll = () => {
@@ -12,6 +19,16 @@ export function Header() {
     }
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (productsRef.current && !productsRef.current.contains(event.target as Node)) {
+        setIsProductsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const toggleLanguage = () => {
@@ -46,24 +63,90 @@ export function Header() {
 
           {/* Nav Links - Desktop */}
           <div className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => scrollTo('features')}
-              className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
-            >
-              {t.nav.features}
-            </button>
-            <button
-              onClick={() => scrollTo('pricing')}
-              className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
-            >
-              {t.nav.pricing}
-            </button>
-            <button
-              onClick={() => scrollTo('contact')}
-              className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
-            >
-              {t.nav.contact}
-            </button>
+            {isProductPage ? (
+              <>
+                <button
+                  onClick={() => scrollTo('how-it-works')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.howItWorks}
+                </button>
+                <button
+                  onClick={() => scrollTo('features')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.features}
+                </button>
+                <button
+                  onClick={() => scrollTo('for-whom')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.forWhom}
+                </button>
+                <button
+                  onClick={() => scrollTo('pricing')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.pricing}
+                </button>
+                <button
+                  onClick={() => scrollTo('contact')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.contact}
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Products Dropdown */}
+                <div className="relative" ref={productsRef}>
+                  <button
+                    onClick={() => setIsProductsOpen(!isProductsOpen)}
+                    className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                  >
+                    {t.nav.products}
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {isProductsOpen && (
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                      <Link
+                        to="/products/tq"
+                        className="block px-4 py-3 hover:bg-gray-50 transition-colors"
+                        onClick={() => setIsProductsOpen(false)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#5ED6CE] rounded-lg flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">TQ</span>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900 text-sm">TQ - Transcription & Quote</p>
+                            <p className="text-xs text-gray-500">{t.nav.tqDescription}</p>
+                          </div>
+                        </div>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => scrollTo('app')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.app}
+                </button>
+                <button
+                  onClick={() => scrollTo('licenses')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.licenses}
+                </button>
+                <button
+                  onClick={() => scrollTo('contact')}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  {t.nav.contact}
+                </button>
+              </>
+            )}
           </div>
 
           {/* Right side buttons */}

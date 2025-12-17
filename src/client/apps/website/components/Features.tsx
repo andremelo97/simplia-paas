@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext'
 import { Mic, FileText, Receipt, ClipboardList, Users, Shield, Sparkles, ArrowRight } from 'lucide-react'
@@ -73,7 +74,7 @@ export function Features() {
                 {/* Visual representation of apps */}
                 <div className="ml-20 flex flex-wrap gap-3">
                   <div className="px-4 py-2 bg-[#5ED6CE]/20 text-[#0a8a80] rounded-full text-sm font-medium border border-[#5ED6CE]/30">
-                    TQ - Transcription Quote
+                    TQ - Transcription & Quote
                   </div>
                   <div className="px-4 py-2 bg-gray-200/50 text-gray-400 rounded-full text-sm font-medium border border-gray-200">
                     CRM
@@ -92,7 +93,7 @@ export function Features() {
       </section>
 
       {/* TQ App Showcase */}
-      <section className="py-24 bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
+      <section id="app" className="py-24 bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             className="text-center mb-16"
@@ -215,11 +216,28 @@ export function Features() {
               </div>
             </motion.div>
           </div>
+
+          {/* CTA Button */}
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <Link
+              to="/products/tq"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-medium rounded-lg hover:opacity-90 transition-opacity text-lg"
+            >
+              {t.tqApp.learnMore}
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </motion.div>
         </div>
       </section>
 
       {/* License System Section */}
-      <section className="py-24 bg-white">
+      <section id="licenses" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             className="text-center mb-16"
@@ -314,7 +332,7 @@ export function Features() {
       </section>
 
       {/* Coming Soon Section */}
-      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-24 bg-gradient-to-br from-[#B725B7] via-[#a020a0] to-[#E91E63]">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             className="text-center"
@@ -323,13 +341,13 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block px-4 py-1.5 bg-gray-200 text-gray-600 text-sm font-semibold rounded-full mb-4">
+            <span className="inline-block px-4 py-1.5 bg-white/20 text-white text-sm font-semibold rounded-full mb-4">
               {t.comingSoon.badge}
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               {t.comingSoon.title}
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-12">
+            <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12">
               {t.comingSoon.description}
             </p>
 
@@ -338,7 +356,7 @@ export function Features() {
               {t.comingSoon.apps.map((app, i) => (
                 <motion.div
                   key={i}
-                  className="px-6 py-3 bg-white rounded-full border border-gray-200 text-gray-500 font-medium shadow-sm"
+                  className="px-6 py-3 bg-white/10 backdrop-blur rounded-full border border-white/20 text-white font-medium"
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   viewport={{ once: true }}

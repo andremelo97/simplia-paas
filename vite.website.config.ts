@@ -10,7 +10,13 @@ export default defineConfig({
   server: {
     port: 3006,
     host: true,
-    strictPort: true
+    strictPort: true,
+    proxy: {
+      '/api/website': {
+        target: 'http://localhost:3001',
+        changeOrigin: true
+      }
+    }
   },
   build: {
     outDir: '../../../../dist/website',

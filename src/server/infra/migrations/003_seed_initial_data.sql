@@ -122,10 +122,10 @@ VALUES
     false,
     false,
     'nova-3',
-    false,
-    0.0043,
     true,
-    'Standard transcription plan with 2400 minutes (40 hours) monthly quota. Uses Nova-3 Monolingual with language targeting (pt-BR or en-US). Fixed limit, no customization, no overage.'
+    0.0052,
+    true,
+    'Standard transcription plan with 2400 minutes (40 hours) monthly quota. Uses Nova-3 Multilingual with automatic language detection. Fixed limit, no customization, no overage.'
   ),
   (
     'vip',

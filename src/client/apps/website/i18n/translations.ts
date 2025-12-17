@@ -11,6 +11,7 @@ export const translations = {
       products: 'Produtos',
       app: 'App',
       licenses: 'Licenças',
+      automation: 'Automações',
       tqDescription: 'Transcreva consultas e gere cotações com IA',
       access: 'Acessar',
       scheduleDemo: 'Agendar Demonstração'
@@ -44,7 +45,7 @@ export const translations = {
       badge: 'App Disponível',
       title: 'TQ - Transcription & Quote',
       description: 'Primeiro aplicativo do ecossistema LivoCare. Transforme consultas em cotações profissionais usando IA generativa, transcrição de áudio e templates inteligentes.',
-      learnMore: 'Saiba mais sobre o TQ',
+      learnMore: 'Saiba mais',
       mediaPlaceholder: 'Vídeo em breve',
       features: {
         transcription: {
@@ -229,6 +230,28 @@ export const translations = {
       description: 'Estamos expandindo o ecossistema LivoCare com novos aplicativos especializados para atender todas as necessidades da sua clínica.',
       apps: ['CRM Clínico', 'Agendamento', 'Financeiro', 'Marketing Automation']
     },
+    automation: {
+      badge: 'Automação & Integração',
+      title: 'Soluções personalizadas para o seu negócio',
+      description: 'Nossos produtos possuem API própria, facilitando criar integrações personalizadas. Conte com nosso time de desenvolvedores experientes para automações sob medida.',
+      cards: [
+        { title: 'API Própria', description: 'Todos os produtos possuem API REST + Webhooks. Integrações ficam mais simples.' },
+        { title: 'Qualquer Sistema', description: 'Conecte com seu ERP, CRM, agenda ou qualquer ferramenta que você já usa.' },
+        { title: 'Time Experiente', description: 'Desenvolvemos automações e agentes de IA sob medida para sua clínica.' }
+      ],
+      cta: 'Falar com especialista'
+    },
+    tqAutomation: {
+      badge: 'API & Integrações',
+      title: 'Conecte o TQ ao seu ecossistema',
+      description: 'O TQ possui API própria, facilitando criar integrações e automações personalizadas para sua operação.',
+      cards: [
+        { title: 'API Documentada', description: 'API RESTful completa com webhooks em tempo real. Integre quando precisar.' },
+        { title: 'Integre com Tudo', description: 'Sistema de gestão, CRM, agenda ou qualquer ferramenta. Sem limites.' },
+        { title: 'Suporte Dedicado', description: 'Nosso time desenvolve integrações e automações sob medida.' }
+      ],
+      cta: 'Solicitar integração'
+    },
     pricing: {
       title: 'Planos e Preços',
       subtitle: 'Escolha o plano ideal para sua clínica',
@@ -309,6 +332,7 @@ export const translations = {
       products: 'Products',
       app: 'App',
       licenses: 'Licenses',
+      automation: 'Automation',
       tqDescription: 'Transcribe consultations and generate quotes with AI',
       access: 'Sign In',
       scheduleDemo: 'Schedule Demo'
@@ -342,7 +366,7 @@ export const translations = {
       badge: 'Available Now',
       title: 'TQ - Transcription & Quote',
       description: 'First application in the LivoCare ecosystem. Transform consultations into professional quotes using generative AI, audio transcription, and smart templates.',
-      learnMore: 'Learn more about TQ',
+      learnMore: 'Learn more',
       mediaPlaceholder: 'Video coming soon',
       features: {
         transcription: {
@@ -526,6 +550,28 @@ export const translations = {
       title: 'More apps coming soon',
       description: 'We are expanding the LivoCare ecosystem with new specialized applications to meet all your clinic needs.',
       apps: ['Clinical CRM', 'Scheduling', 'Financial', 'Marketing Automation']
+    },
+    automation: {
+      badge: 'Automation & Integration',
+      title: 'Custom solutions for your business',
+      description: 'Our products have their own API, making it easy to create custom integrations. Count on our team of experienced developers for tailored automations.',
+      cards: [
+        { title: 'Built-in API', description: 'All products have REST API + Webhooks. Integrations become simpler.' },
+        { title: 'Any System', description: 'Connect with your ERP, CRM, calendar, or any tool you already use.' },
+        { title: 'Expert Team', description: 'We build custom automations and AI agents tailored to your clinic.' }
+      ],
+      cta: 'Talk to a specialist'
+    },
+    tqAutomation: {
+      badge: 'API & Integrations',
+      title: 'Connect TQ to your ecosystem',
+      description: 'TQ has its own API, making it easy to create custom integrations and automations for your operation.',
+      cards: [
+        { title: 'Documented API', description: 'Complete RESTful API with real-time webhooks. Integrate when you need.' },
+        { title: 'Integrate with Anything', description: 'Management system, CRM, calendar, or any tool. No limits.' },
+        { title: 'Dedicated Support', description: 'Our team builds custom integrations and automations for you.' }
+      ],
+      cta: 'Request integration'
     },
     pricing: {
       title: 'Plans & Pricing',

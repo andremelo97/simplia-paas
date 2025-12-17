@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext'
-import { Mic, FileText, Receipt, ClipboardList, Users, Shield, Sparkles, ArrowRight } from 'lucide-react'
+import { Mic, FileText, Receipt, ClipboardList, Users, Shield, Sparkles, ArrowRight, Code, Globe } from 'lucide-react'
 
 export function Features() {
   const { t } = useLanguage()
@@ -328,6 +328,73 @@ export function Features() {
               </ul>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Automation Section */}
+      <section id="automation" className="py-24 bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-block px-4 py-1.5 bg-[#5ED6CE]/20 text-[#5ED6CE] text-sm font-semibold rounded-full mb-4">
+              {t.automation.badge}
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              {t.automation.title}
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              {t.automation.description}
+            </p>
+          </motion.div>
+
+          {/* 3-Column Cards */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {t.automation.cards.map((card, i) => {
+              const icons = [Code, Globe, Users]
+              const CardIcon = icons[i]
+              return (
+                <motion.div
+                  key={i}
+                  className="text-center p-8 bg-white/5 backdrop-blur border border-white/10 rounded-2xl"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#5ED6CE] to-[#0a8a80] rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <CardIcon className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-3">{card.title}</h3>
+                  <p className="text-gray-400">{card.description}</p>
+                </motion.div>
+              )
+            })}
+          </div>
+
+          {/* CTA Button */}
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <button
+              onClick={() => {
+                const element = document.getElementById('contact')
+                if (element) element.scrollIntoView({ behavior: 'smooth' })
+              }}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#5ED6CE] to-[#0a8a80] text-white font-medium rounded-lg hover:opacity-90 transition-opacity text-lg"
+            >
+              {t.automation.cta}
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          </motion.div>
         </div>
       </section>
 

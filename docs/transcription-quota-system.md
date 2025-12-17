@@ -126,8 +126,8 @@ O sistema **NÃO usa limites hardcoded**. Todos os limites são definidos dinami
 - 20 dias úteis/mês
 
 **Configuração:**
-- Plano: **Basic**
-- Limite mensal: **2.400 minutos** (40 horas)
+- Plano: **Basic** (multilíngue - detecção automática de idioma)
+- Limite mensal: **2.400 minutos** (40 horas) total
 - Overage: **Não permitido**
 
 **Cenário Real:**
@@ -138,12 +138,13 @@ Mês completo:
 - Resultado: 100% do limite utilizado, sem bloqueio
 
 Custo:
-- 2.400 min × $0.0052 = $12.48/mês
+- 2.400 min × $0.0052 (multilingual) = $12.48/mês
 - Uso controlado e previsível
 ```
 
 **Benefício:**
 - Flexibilidade diária (pode fazer 10 consultas num dia, 2 no outro)
+- **Multilíngue**: Detecta automaticamente português, inglês, espanhol e outros idiomas
 - Custo controlado em ~$12.50/mês
 - Sem bloqueios no meio do mês (se usar dentro do limite mensal)
 
@@ -263,15 +264,15 @@ CREATE TABLE public.transcription_plans (
 ```
 
 **Dados iniciais (seed):**
-| id | slug    | name         | monthly_limit | allows_custom | allows_overage | cost_per_min | active |
-|----|---------|--------------|---------------|---------------|----------------|--------------|--------|
-| 1  | starter | Starter Plan | 1200          | false         | false          | 0.0043       | true   |
-| 2  | basic   | Basic Plan   | 2400          | false         | false          | 0.0043       | true   |
-| 3  | vip     | VIP Plan     | 2400          | true          | true           | 0.0043       | true   |
+| id | slug    | name         | monthly_limit | allows_custom | allows_overage | lang_detect | cost_per_min | active |
+|----|---------|--------------|---------------|---------------|----------------|-------------|--------------|--------|
+| 1  | starter | Starter Plan | 1200          | false         | false          | false       | 0.0043       | true   |
+| 2  | basic   | Basic Plan   | 2400          | false         | false          | true        | 0.0052       | true   |
+| 3  | vip     | VIP Plan     | 2400          | true          | true           | false       | 0.0043       | true   |
 
 **Lógica:**
-- **Starter**: Limite fixo (1.200 min/mês ≈ 20h), sem customização, sem overage
-- **Basic**: Limite fixo (2.400 min/mês ≈ 40h), sem customização, sem overage
+- **Starter**: Limite fixo (1.200 min/mês ≈ 20h), monolíngue, sem customização, sem overage
+- **Basic**: Limite fixo (2.400 min/mês ≈ 40h), **multilíngue** (detecção automática), sem customização, sem overage
 - **VIP**: Limite base 2.400 min/mês, permite customização (mínimo 2.400) + overage
 - **CRUD completo**: Internal Admin pode criar/editar/deletar/ativar/desativar planos
 - **Custom Plans**: Admins podem criar planos com apenas custom limits OU apenas overage

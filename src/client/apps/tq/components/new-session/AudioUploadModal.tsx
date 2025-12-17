@@ -31,6 +31,7 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
   const { t } = useTranslation('tq')
   const { state, transcriptionId, actions } = useTranscription()
   const [isDragOver, setIsDragOver] = useState(false)
+  const [validationError, setValidationError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Reset state when modal opens (only on mount or when open changes from false to true)
@@ -40,6 +41,7 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
     if (open && !prevOpenRef.current) {
       actions.reset()
       setIsDragOver(false)
+      setValidationError(null)
     }
     prevOpenRef.current = open
   }, [open]) // Removed 'actions' from dependencies to prevent unnecessary resets
@@ -92,8 +94,12 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
 
   // Handle file processing
   const processFile = useCallback(async (file: File) => {
-    const validationError = validateFile(file)
-    if (validationError) {
+    // Clear any previous validation error
+    setValidationError(null)
+
+    const error = validateFile(file)
+    if (error) {
+      setValidationError(error)
       return
     }
 
@@ -173,38 +179,50 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
 
         {/* Upload Area - Idle State */}
         {state.status === 'created' && !state.isProcessing && (
-          <div
-            className={`
-              border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
-              ${isDragOver
-                ? 'bg-gray-50'
-                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
-              }
-            `}
-            style={isDragOver ? {
-              borderColor: 'var(--brand-tertiary)',
-              backgroundColor: 'var(--brand-tertiary-bg)'
-            } : undefined}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={handleBrowseClick}
-          >
-            <FileAudio className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              {isDragOver ? t('modals.audio_upload.drop_here') : t('modals.audio_upload.title')}
-            </h3>
-            <p className="text-gray-600 mb-4">
-              {t('modals.audio_upload.upload_instruction')}
-            </p>
-            <Button variant="primary" className="mb-2">
-              <Upload className="w-4 h-4 mr-2" />
-              {t('modals.audio_upload.select_file')}
-            </Button>
-            <p className="text-xs text-gray-500">
-              {t('modals.audio_upload.supported_formats')}: {ACCEPTED_FORMATS.join(', ')} • {t('modals.audio_upload.max_size')}: {MAX_SIZE_MB}MB
-            </p>
-          </div>
+          <>
+            <div
+              className={`
+                border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer
+                ${isDragOver
+                  ? 'bg-gray-50'
+                  : validationError
+                    ? 'border-red-300 hover:border-red-400'
+                    : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+                }
+              `}
+              style={isDragOver ? {
+                borderColor: 'var(--brand-tertiary)',
+                backgroundColor: 'var(--brand-tertiary-bg)'
+              } : undefined}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={handleBrowseClick}
+            >
+              <FileAudio className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {isDragOver ? t('modals.audio_upload.drop_here') : t('modals.audio_upload.title')}
+              </h3>
+              <p className="text-gray-600 mb-4">
+                {t('modals.audio_upload.upload_instruction')}
+              </p>
+              <Button variant="primary" className="mb-2">
+                <Upload className="w-4 h-4 mr-2" />
+                {t('modals.audio_upload.select_file')}
+              </Button>
+              <p className="text-xs text-gray-500">
+                {t('modals.audio_upload.supported_formats')}: {ACCEPTED_FORMATS.join(', ')} • {t('modals.audio_upload.max_size')}: {MAX_SIZE_MB}MB
+              </p>
+            </div>
+
+            {/* Validation Error Alert */}
+            {validationError && (
+              <div className="mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                <span className="text-sm text-red-700">{validationError}</span>
+              </div>
+            )}
+          </>
         )}
 
         {/* Upload Progress State */}

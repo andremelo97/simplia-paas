@@ -12,6 +12,7 @@
 const { getDefaultSystemMessage } = require('../utils/aiAgentDefaults');
 const { getDefaultTemplates } = require('../utils/tqTemplateDefaults');
 const { getLocaleFromTimezone } = require('../utils/localeMapping');
+const TenantCommunicationSettings = require('../models/TenantCommunicationSettings');
 
 /**
  * Provisions TQ app-specific tables within a tenant schema
@@ -28,9 +29,10 @@ const { getLocaleFromTimezone } = require('../utils/localeMapping');
  * @param {string} schema - Tenant schema name (e.g., 'tenant_clinic_a')
  * @param {string} timeZone - Tenant timezone (e.g., 'America/Sao_Paulo')
  * @param {string} tenantSlug - Tenant slug for bucket naming (e.g., 'clinic-a')
+ * @param {number} tenantId - Tenant ID for communication settings
  * @throws {Error} If provisioning fails
  */
-async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug = null) {
+async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug = null, tenantId = null) {
   try {
     await client.query('BEGIN');
 
@@ -631,6 +633,33 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
 
     await client.query('COMMIT');
     console.log(`TQ app schema provisioned successfully for tenant schema: ${schema}`);
+
+    // Seed default communication settings (SMTP) if environment variables are configured
+    if (tenantId && process.env.DEFAULT_SMTP_HOST && process.env.DEFAULT_SMTP_PASSWORD) {
+      try {
+        // Check if communication settings already exist for this tenant
+        const existingSettings = await TenantCommunicationSettings.findByTenantId(tenantId);
+
+        if (!existingSettings) {
+          await TenantCommunicationSettings.upsert(tenantId, {
+            smtpHost: process.env.DEFAULT_SMTP_HOST,
+            smtpPort: parseInt(process.env.DEFAULT_SMTP_PORT) || 465,
+            smtpSecure: process.env.DEFAULT_SMTP_SECURE === 'true',
+            smtpUsername: process.env.DEFAULT_SMTP_USERNAME,
+            smtpPassword: process.env.DEFAULT_SMTP_PASSWORD,
+            smtpFromEmail: process.env.DEFAULT_SMTP_FROM_EMAIL
+          });
+          console.log(`✅ Default SMTP settings seeded for tenant ID: ${tenantId}`);
+        } else {
+          console.log(`ℹ️  SMTP settings already exist for tenant ID: ${tenantId}, skipping`);
+        }
+      } catch (smtpError) {
+        // Don't fail provisioning if SMTP seeding fails - just log warning
+        console.warn(`⚠️  Failed to seed default SMTP settings for tenant ${tenantId}:`, smtpError.message);
+      }
+    } else if (tenantId) {
+      console.log(`ℹ️  DEFAULT_SMTP_* environment variables not configured, skipping SMTP seeding`);
+    }
 
   } catch (error) {
     await client.query('ROLLBACK');

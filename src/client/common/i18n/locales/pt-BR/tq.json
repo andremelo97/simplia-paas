@@ -32,9 +32,9 @@
       "transcription_complete": "Seu áudio foi transcrito com sucesso",
       "success_message": "A transcrição foi concluída e está pronta para uso.",
       "errors": {
-        "invalid_type": "Tipo de arquivo inválido. Formatos suportados: {{formats}}",
-        "file_too_large": "Arquivo muito grande. Tamanho máximo é {{maxSize}}MB",
-        "not_audio": "O arquivo selecionado não é um arquivo de áudio"
+        "invalid_type": "Tipo de arquivo inválido. Formatos suportados: {{formats}}.",
+        "file_too_large": "Arquivo muito grande. Tamanho máximo é {{maxSize}}MB.",
+        "not_audio": "O arquivo selecionado não é um arquivo de áudio."
       }
     },
     "template_quote": {

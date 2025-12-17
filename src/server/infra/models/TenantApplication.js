@@ -206,8 +206,8 @@ class TenantApplication {
           if (!isProvisioned) {
             // Get tenant timezone for timestamp defaults
             const tenantTimezone = tenantResult.rows[0].timezone || 'UTC';
-            // Pass tenantSlug for bucket creation
-            await provisionTQAppSchema(client, schemaName, tenantTimezone, tenantSlug);
+            // Pass tenantSlug for bucket creation and tenantId for communication settings
+            await provisionTQAppSchema(client, schemaName, tenantTimezone, tenantSlug, tenantId);
             console.log('✅ [TenantApplication.grantLicense] TQ app schema provisioned successfully');
           } else {
             console.log('ℹ️  [TenantApplication.grantLicense] TQ app schema already provisioned, skipping');

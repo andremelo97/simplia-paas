@@ -4,21 +4,22 @@
 
 -- =============================================
 -- USER TYPES HIERARCHY (Required for system)
+-- License prices: Operations R$10, Manager R$20, Admin R$50
 -- =============================================
 
 INSERT INTO user_types (name, slug, base_price, description, hierarchy_level) VALUES
-('Operations', 'operations', 25.00, 'Basic operational user with limited access to core features', 0),
-('Manager', 'manager', 75.00, 'Management level user with elevated permissions', 1),
-('Administrator', 'admin', 150.00, 'Full system access with administrative capabilities', 2)
+('Operations', 'operations', 10.00, 'Basic operational user with limited access to core features', 0),
+('Manager', 'manager', 20.00, 'Management level user with elevated permissions', 1),
+('Administrator', 'admin', 50.00, 'Full system access with administrative capabilities', 2)
 ON CONFLICT (slug) DO NOTHING;
 
 -- =============================================
 -- APPLICATION CATALOG (Required for system)
+-- Only TQ app for now
 -- =============================================
 
 INSERT INTO applications (name, slug, description, price_per_user, status, version) VALUES
-('Transcription Quote', 'tq', 'Medical transcription quotation system with AI-powered analysis', 50.00, 'active', '1.0.0'),
-('Patient Management', 'pm', 'Comprehensive patient records and appointment scheduling', 30.00, 'active', '1.0.0')
+('Transcription Quote', 'tq', 'Medical transcription quotation system with AI-powered analysis', 50.00, 'active', '1.0.0')
 ON CONFLICT (slug) DO NOTHING;
 
 -- =============================================
@@ -36,28 +37,27 @@ ON CONFLICT (subdomain) DO NOTHING;
 
 -- =============================================
 -- APPLICATION PRICING MATRIX (Required)
+-- TQ License prices: Operations R$10, Manager R$20, Admin R$50
 -- =============================================
 
--- Insert default pricing for each application × user type combination
+-- Insert default pricing for TQ × user type combination
 INSERT INTO application_pricing (application_id_fk, user_type_id_fk, price, currency, billing_cycle, active)
 SELECT
   a.id as application_id_fk,
   ut.id as user_type_id_fk,
   CASE
-    WHEN a.slug = 'tq' AND ut.slug = 'operations' THEN 35.00
-    WHEN a.slug = 'tq' AND ut.slug = 'manager' THEN 55.00
-    WHEN a.slug = 'tq' AND ut.slug = 'admin' THEN 80.00
-    WHEN a.slug = 'pm' AND ut.slug = 'operations' THEN 25.00
-    WHEN a.slug = 'pm' AND ut.slug = 'manager' THEN 40.00
-    WHEN a.slug = 'pm' AND ut.slug = 'admin' THEN 60.00
-    ELSE 30.00
+    WHEN ut.slug = 'operations' THEN 10.00
+    WHEN ut.slug = 'manager' THEN 20.00
+    WHEN ut.slug = 'admin' THEN 50.00
+    ELSE 10.00
   END as price,
   'BRL' as currency,
   'monthly' as billing_cycle,
   TRUE as active
 FROM applications a
 CROSS JOIN user_types ut
-WHERE a.active = TRUE
+WHERE a.slug = 'tq'
+  AND a.active = TRUE
   AND ut.active = TRUE;
 
 -- =============================================
@@ -97,47 +97,87 @@ ON CONFLICT (email) DO NOTHING;
 -- TRANSCRIPTION PLANS (Required for TQ app)
 -- =============================================
 
--- Insert default transcription plans (Starter, Basic, and VIP)
--- Two strategies available:
---   1. Monolingual (language_detection_enabled=false): Nova-3 with language parameter (pt-BR/en-US) - $0.0043/min
+-- TQ Pricing Plans (from docs/tq-pricing.md):
+--   Starter: 40h/mês (R$ 119) - 1 Admin
+--   Solo: 80h/mês (R$ 189) - 1 Admin + 1 Operations
+--   Practice: 240h/mês (R$ 469) - 1 Admin + 1 Manager + 1 Operations, multilingual
+--   VIP: Custom - unlimited licenses, allows overage
+--
+-- Transcription strategies:
+--   1. Monolingual (language_detection_enabled=false): Nova-3 with language parameter - $0.0043/min
 --   2. Multilingual (language_detection_enabled=true): Nova-3 with detect_language=true - $0.0052/min
 INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, language_detection_enabled, cost_per_minute_usd, active, description)
 VALUES
   (
     'starter',
-    'Starter Plan',
-    1200,
+    'Starter',
+    2400,
     false,
     false,
     'nova-3',
     false,
     0.0043,
     true,
-    'Entry-level transcription plan with 1200 minutes (20 hours) monthly quota. Uses Nova-3 Monolingual with language targeting (pt-BR or en-US). Fixed limit, no customization, no overage.'
+    '• 40 horas de transcrição/mês (~2h/dia)
+• 1 licença Admin inclusa
+• Transcrição monolíngue
+• Até 3 templates de landing page
+• Setup inicial incluso
+• Suporte padrão'
   ),
   (
-    'basic',
-    'Basic Plan',
-    2400,
+    'solo',
+    'Solo',
+    4800,
+    false,
+    false,
+    'nova-3',
+    false,
+    0.0043,
+    true,
+    '• 80 horas de transcrição/mês (~4h/dia)
+• 1 Admin + 1 Operations inclusos
+• Transcrição monolíngue
+• Até 3 templates de landing page
+• Setup inicial incluso
+• Suporte para criação de templates
+• Suporte padrão'
+  ),
+  (
+    'practice',
+    'Practice',
+    14400,
     false,
     false,
     'nova-3',
     true,
     0.0052,
     true,
-    'Standard transcription plan with 2400 minutes (40 hours) monthly quota. Uses Nova-3 Multilingual with automatic language detection. Fixed limit, no customization, no overage.'
+    '• 240 horas de transcrição/mês (~12h/dia)
+• 1 Admin + 1 Manager + 1 Ops inclusos
+• Transcrição multilíngue automática
+• Até 3 templates de landing page
+• Setup inicial incluso
+• Suporte para criação de templates
+• Suporte prioritário'
   ),
   (
     'vip',
-    'VIP Plan',
+    'VIP',
     2400,
     true,
     true,
     'nova-3',
-    false,
-    0.0043,
     true,
-    'Premium transcription plan with customizable monthly quota. Uses Nova-3 Monolingual with language targeting (pt-BR or en-US). Allows custom limits and overage.'
+    0.0052,
+    true,
+    '• Horas de transcrição personalizadas
+• Permite exceder limite mensal
+• Sem limite de licenças
+• Templates ilimitados
+• Setup inicial incluso
+• Suporte para criação de templates
+• Suporte prioritário'
   )
 ON CONFLICT (slug) DO NOTHING;
 
@@ -146,6 +186,7 @@ ON CONFLICT (slug) DO NOTHING;
 -- =============================================
 
 COMMENT ON TABLE tenants IS 'Seeded with minimal default tenant for clean testing';
-COMMENT ON TABLE user_types IS 'Seeded with operations/manager/admin hierarchy';
-COMMENT ON TABLE applications IS 'Seeded with tq/pm/billing/reports product catalog';
-COMMENT ON TABLE application_pricing IS 'Seeded with pricing matrix for all app × user_type combinations';
+COMMENT ON TABLE user_types IS 'Seeded with operations (R$10) / manager (R$20) / admin (R$50) hierarchy';
+COMMENT ON TABLE applications IS 'Seeded with TQ app only';
+COMMENT ON TABLE application_pricing IS 'Seeded with TQ pricing matrix for all user_type combinations';
+COMMENT ON TABLE transcription_plans IS 'Seeded with Starter (40h) / Solo (80h) / Practice (240h) / VIP (custom) plans';

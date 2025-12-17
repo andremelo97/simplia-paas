@@ -1,0 +1,32 @@
+LICENÇAS
+Tipo,Preço
+Admin,R$ 50
+Manager,R$ 20
+Operations,R$ 10
+
+PLANOS
+Plano,Público-alvo,Horas/mês,Usuários Inclusos,Custo Transcrição,Custo Licenças,Custo Total,Preço Final
+Starter,Perfeito para começar,40,1 Admin,R$ 64,R$ 50,R$ 114,R$ 119
+Solo,Profissional individual,80,1 Admin + 1 Operations,R$ 128,R$ 60,R$ 188,R$ 189
+Practice,Clínicas em crescimento,240,1 Admin + 1 Manager + 1 Operations,R$ 384,R$ 80,R$ 464,R$ 469
+VIP,Clínicas com equipes maiores,Personalizado,Personalizado,-,-,-,Sob consulta
+
+ANÁLISE DE LUCRO
+Plano,Preço,Lucro Mínimo,% Mínima,Lucro 50% uso,% 50% uso,Lucro 25% uso,% 25% uso
+Starter,R$ 119,R$ 55,46%,R$ 87,73%,R$ 103,87%
+Solo,R$ 189,R$ 61,32%,R$ 125,66%,R$ 157,83%
+Practice,R$ 469,R$ 85,18%,R$ 277,59%,R$ 373,80%
+
+EXCEDENTE
+Preço/hora,Margem
+R$ 2.00,25%
+
+CUSTOS FIXOS MENSAIS
+Serviço,Fornecedor,Valor
+Domínio E-mail,NameCheap,~R$ 7/mês
+Cloud/Hospedagem,Railway,~R$ 100/mês
+Workspace,Google,R$ 98/mês
+Transcrição,Deepgram,~R$ 0.027/min
+Buckets,Supabase,~R$ 175/mês
+Canva Pro,Canva,R$ 17.50/mês
+Total Estimado,-,~R$ 400/mês

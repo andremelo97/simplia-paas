@@ -17,7 +17,7 @@ export const translations = {
       scheduleDemo: 'Agendar Demonstração'
     },
     hero: {
-      tagline: 'Onde o cuidado encontra a conversão',
+      tagline: 'Onde cuidado encontra conversão',
       subtitle: 'Plataforma SaaS para clínicas de estética. Centralize operações, automatize processos e escale seu negócio.',
       cta: 'Agendar Demonstração'
     },
@@ -131,60 +131,85 @@ export const translations = {
         monthly: '/mês',
         popular: 'Mais Popular',
         hours: 'horas',
-        minutes: 'minutos',
-        startingFrom: 'A partir de',
-        perUser: 'por usuário',
-        starter: {
-          name: 'Starter',
-          price: 'R$ 79',
-          description: 'Perfeito para começar',
-          limit: '1.200 min/mês (20 horas)',
-          features: [
-            '1 usuário incluso',
-            '1.200 minutos de transcrição',
-            'Transcrição monolíngue',
-            'Templates básicos',
-            'Cotações com link público',
-            'Suporte por e-mail'
-          ]
-        },
-        basic: {
-          name: 'Basic',
-          price: 'R$ 159',
-          priceNote: 'preço inicial (2 usuários)',
-          description: 'Para clínicas em crescimento',
-          limit: '2.400 min/mês (40 horas)',
-          features: [
-            '2 usuários inclusos (adicione mais)',
-            '2.400 minutos de transcrição',
-            'Transcrição multilíngue automática',
-            'Templates ilimitados',
-            'Cotações com link público',
-            'Relatórios clínicos em PDF',
-            'Suporte prioritário'
-          ],
-          expandable: 'Precisa de mais usuários? Adicione licenças conforme sua necessidade.'
-        },
-        vip: {
-          name: 'VIP',
-          price: 'Sob consulta',
-          description: 'Para clínicas de alto volume',
-          limit: 'Tudo customizável',
-          features: [
-            'Minutos customizáveis',
-            'Permite exceder limite mensal',
-            'Usuários ilimitados',
-            'Configuração de IA personalizada',
-            'Templates de cotação públicos extras',
-            'SLA garantido'
-          ]
-        },
+        hoursSuffix: 'h/mês',
+        exceeding: 'Excedente',
+        exceedingPrice: 'R$ 2/hora',
+        plans: [
+          {
+            name: 'Starter',
+            price: 'R$ 119',
+            description: 'Perfeito para começar',
+            hours: '40',
+            hoursPerDay: '~2h/dia',
+            users: '1 Admin',
+            features: [
+              '40 horas de transcrição/mês (~2h/dia)',
+              '1 licença Admin inclusa',
+              'Transcrição monolíngue',
+              'Até 3 templates de landing page',
+              'Setup inicial incluso',
+              'Suporte padrão'
+            ]
+          },
+          {
+            name: 'Solo',
+            price: 'R$ 189',
+            description: 'Profissional individual',
+            hours: '80',
+            hoursPerDay: '~4h/dia',
+            users: '1 Admin + 1 Ops',
+            featured: 'purple',
+            features: [
+              '80 horas de transcrição/mês (~4h/dia)',
+              '1 Admin + 1 Operations inclusos',
+              'Transcrição monolíngue',
+              'Até 3 templates de landing page',
+              'Setup inicial incluso',
+              'Suporte para criação de templates',
+              'Suporte padrão'
+            ]
+          },
+          {
+            name: 'Practice',
+            price: 'R$ 469',
+            description: 'Clínicas em crescimento',
+            hours: '240',
+            hoursPerDay: '~12h/dia',
+            users: '3 licenças',
+            featured: 'pink',
+            features: [
+              '240 horas de transcrição/mês (~12h/dia)',
+              '1 Admin + 1 Manager + 1 Ops inclusos',
+              'Transcrição multilíngue automática',
+              'Até 3 templates de landing page',
+              'Setup inicial incluso',
+              'Suporte para criação de templates',
+              'Suporte prioritário'
+            ]
+          },
+          {
+            name: 'VIP',
+            price: 'Sob consulta',
+            description: 'Clínicas com equipes maiores',
+            hours: 'Custom',
+            users: 'Ilimitado',
+            features: [
+              'Horas de transcrição personalizadas',
+              'Permite exceder limite mensal',
+              'Sem limite de licenças',
+              'Templates ilimitados',
+              'Setup inicial incluso',
+              'Suporte para criação de templates',
+              'Suporte prioritário'
+            ]
+          }
+        ],
         licenses: {
-          title: 'Licenças de Usuário',
-          subtitle: 'Preço por tipo de acesso (a partir do Basic)',
-          operations: { name: 'Operations', price: 'R$ 35', description: 'Gravação e transcrição' },
-          manager: { name: 'Manager', price: 'R$ 55', description: 'Supervisão e aprovações' },
-          admin: { name: 'Admin', price: 'R$ 80', description: 'Gestão completa' }
+          title: 'Licenças Adicionais',
+          subtitle: 'Adicione mais usuários conforme sua necessidade',
+          operations: { name: 'Operations', price: 'R$ 10', description: 'Gravação e transcrição' },
+          manager: { name: 'Manager', price: 'R$ 20', description: 'Supervisão e aprovações' },
+          admin: { name: 'Admin', price: 'R$ 50', description: 'Gestão completa' }
         },
         cta: 'Começar agora'
       }
@@ -311,7 +336,7 @@ export const translations = {
       errorRequired: 'Todos os campos são obrigatórios'
     },
     footer: {
-      tagline: 'Onde o cuidado encontra a conversão.',
+      tagline: 'Onde cuidado encontra conversão.',
       quickLinks: 'Links Rápidos',
       links: {
         contact: 'Contato',
@@ -452,60 +477,85 @@ export const translations = {
         monthly: '/month',
         popular: 'Most Popular',
         hours: 'hours',
-        minutes: 'minutes',
-        startingFrom: 'Starting from',
-        perUser: 'per user',
-        starter: {
-          name: 'Starter',
-          price: 'R$ 79',
-          description: 'Perfect to get started',
-          limit: '1,200 min/month (20 hours)',
-          features: [
-            '1 user included',
-            '1,200 transcription minutes',
-            'Monolingual transcription',
-            'Basic templates',
-            'Public quote links',
-            'Email support'
-          ]
-        },
-        basic: {
-          name: 'Basic',
-          price: 'R$ 159',
-          priceNote: 'starting price (2 users)',
-          description: 'For growing clinics',
-          limit: '2,400 min/month (40 hours)',
-          features: [
-            '2 users included (add more)',
-            '2,400 transcription minutes',
-            'Automatic multilingual transcription',
-            'Unlimited templates',
-            'Public quote links',
-            'Clinical reports in PDF',
-            'Priority support'
-          ],
-          expandable: 'Need more users? Add licenses as needed.'
-        },
-        vip: {
-          name: 'VIP',
-          price: 'Contact us',
-          description: 'For high-volume clinics',
-          limit: 'Fully customizable',
-          features: [
-            'Custom minutes',
-            'Allows exceeding monthly limit',
-            'Unlimited users',
-            'Custom AI configuration',
-            'Extra public quote templates',
-            'Guaranteed SLA'
-          ]
-        },
+        hoursSuffix: 'h/month',
+        exceeding: 'Exceeding',
+        exceedingPrice: 'R$ 2/hour',
+        plans: [
+          {
+            name: 'Starter',
+            price: 'R$ 119',
+            description: 'Perfect to get started',
+            hours: '40',
+            hoursPerDay: '~2h/day',
+            users: '1 Admin',
+            features: [
+              '40 transcription hours/month (~2h/day)',
+              '1 Admin license included',
+              'Monolingual transcription',
+              'Up to 3 landing page templates',
+              'Initial setup included',
+              'Standard support'
+            ]
+          },
+          {
+            name: 'Solo',
+            price: 'R$ 189',
+            description: 'Individual professional',
+            hours: '80',
+            hoursPerDay: '~4h/day',
+            users: '1 Admin + 1 Ops',
+            featured: 'purple',
+            features: [
+              '80 transcription hours/month (~4h/day)',
+              '1 Admin + 1 Operations included',
+              'Monolingual transcription',
+              'Up to 3 landing page templates',
+              'Initial setup included',
+              'Template creation support',
+              'Standard support'
+            ]
+          },
+          {
+            name: 'Practice',
+            price: 'R$ 469',
+            description: 'Growing clinics',
+            hours: '240',
+            hoursPerDay: '~12h/day',
+            users: '3 licenses',
+            featured: 'pink',
+            features: [
+              '240 transcription hours/month (~12h/day)',
+              '1 Admin + 1 Manager + 1 Ops included',
+              'Automatic multilingual transcription',
+              'Up to 3 landing page templates',
+              'Initial setup included',
+              'Template creation support',
+              'Priority support'
+            ]
+          },
+          {
+            name: 'VIP',
+            price: 'Contact us',
+            description: 'Clinics with larger teams',
+            hours: 'Custom',
+            users: 'Unlimited',
+            features: [
+              'Custom transcription hours',
+              'Allows exceeding monthly limit',
+              'Unlimited licenses',
+              'Unlimited templates',
+              'Initial setup included',
+              'Template creation support',
+              'Priority support'
+            ]
+          }
+        ],
         licenses: {
-          title: 'User Licenses',
-          subtitle: 'Price by access type (from Basic onwards)',
-          operations: { name: 'Operations', price: 'R$ 35', description: 'Recording and transcription' },
-          manager: { name: 'Manager', price: 'R$ 55', description: 'Supervision and approvals' },
-          admin: { name: 'Admin', price: 'R$ 80', description: 'Full management' }
+          title: 'Additional Licenses',
+          subtitle: 'Add more users as needed',
+          operations: { name: 'Operations', price: 'R$ 10', description: 'Recording and transcription' },
+          manager: { name: 'Manager', price: 'R$ 20', description: 'Supervision and approvals' },
+          admin: { name: 'Admin', price: 'R$ 50', description: 'Full management' }
         },
         cta: 'Get started'
       }

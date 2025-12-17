@@ -57,12 +57,6 @@
 | Solo | R$ 189 | R$ 61 (32%) | R$ 125 (66%) | R$ 157 (83%) |
 | Practice | R$ 469 | R$ 85 (18%) | R$ 277 (59%) | R$ 373 (80%) |
 
-## Excedente
-
-| Preço/hora | Margem sobre custo |
-|------------|-------------------|
-| R$ 2,00 | 25% |
-
 ## Funcionalidades por Plano
 
 ### Starter
@@ -70,7 +64,7 @@
 - 40 horas de transcrição/mês
 - Transcrição monolíngue
 - Máximo de 3 templates no Construtor de Landing Pages
-- Templates padrões
+- Setup inicial incluso
 - Suporte padrão
 
 ### Solo
@@ -78,16 +72,19 @@
 - 80 horas de transcrição/mês
 - Transcrição monolíngue
 - Máximo de 3 templates no Construtor de Landing Pages
-- Templates padrões
+- Setup inicial incluso
+- Suporte para criação de templates
 - Suporte padrão
 
 ### Practice
 - 1 Admin + 1 Manager + 1 Operations inclusos
-- Licenças adicionais podem ser contratadas
+- Licenças adicionais disponíveis (veja preços abaixo)
 - 240 horas de transcrição/mês
+- Permite exceder limite mensal
 - Transcrição multilíngue com detecção automática
 - Máximo de 3 templates no Construtor de Landing Pages
-- Templates padrões
+- Setup inicial incluso
+- Suporte para criação de templates
 - Suporte prioritário
 
 ### VIP
@@ -96,8 +93,8 @@
 - Permite exceder limite mensal de transcrição
 - Transcrição multilíngue com detecção automática
 - Sem limites de templates no Construtor de Landing Pages
-- Templates padrões
-- Suporte para criação de novos templates
+- Setup inicial incluso
+- Suporte para criação de templates
 - Suporte prioritário
 
 ## Custos Fixos Mensais (Infraestrutura)

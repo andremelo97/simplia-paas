@@ -148,13 +148,15 @@ VALUES
     'Practice',
     14400,
     false,
-    false,
+    true,
     'nova-3',
     true,
     0.0052,
     true,
     '• 240 horas de transcrição/mês (~12h/dia)
 • 1 Admin + 1 Manager + 1 Ops inclusos
+• Licenças adicionais disponíveis (veja preços abaixo)
+• Permite exceder limite mensal
 • Transcrição multilíngue automática
 • Até 3 templates de landing page
 • Setup inicial incluso

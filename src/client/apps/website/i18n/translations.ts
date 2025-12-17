@@ -180,6 +180,8 @@ export const translations = {
             features: [
               '240 horas de transcrição/mês (~12h/dia)',
               '1 Admin + 1 Manager + 1 Ops inclusos',
+              'Licenças adicionais disponíveis (veja preços abaixo)',
+              'Permite exceder limite mensal',
               'Transcrição multilíngue automática',
               'Até 3 templates de landing page',
               'Setup inicial incluso',
@@ -207,9 +209,9 @@ export const translations = {
         licenses: {
           title: 'Licenças Adicionais',
           subtitle: 'Adicione mais usuários conforme sua necessidade',
-          operations: { name: 'Operations', price: 'R$ 10', description: 'Gravação e transcrição' },
-          manager: { name: 'Manager', price: 'R$ 20', description: 'Supervisão e aprovações' },
-          admin: { name: 'Admin', price: 'R$ 50', description: 'Gestão completa' }
+          operations: { name: 'Operations', price: 'R$ 10', description: 'Acesso de leitura aos registros' },
+          manager: { name: 'Manager', price: 'R$ 20', description: 'Edição de registros e transcrição' },
+          admin: { name: 'Admin', price: 'R$ 50', description: 'Acesso total ao sistema' }
         },
         cta: 'Começar agora'
       }
@@ -220,32 +222,32 @@ export const translations = {
       description: 'Gerencie o acesso da sua equipe com precisão. Cada usuário recebe uma licença com permissões específicas por aplicativo, garantindo segurança e governança.',
       admin: {
         title: 'Admin',
-        description: 'Controle total sobre a organização e seus recursos.',
+        description: 'Acesso total ao sistema e configurações.',
         permissions: [
           'Gerenciar usuários e licenças',
           'Configurar branding e comunicação',
-          'Acessar relatórios de uso',
+          'Acesso completo a transcrições',
           'Todas as permissões de Manager'
         ]
       },
       manager: {
         title: 'Manager',
-        description: 'Supervisão de equipe e gestão operacional.',
+        description: 'Edição de registros e acesso a transcrições.',
         permissions: [
-          'Visualizar todos os pacientes',
-          'Aprovar e editar cotações',
-          'Gerenciar templates',
-          'Todas as permissões de Operations'
+          'Editar pacientes e sessões',
+          'Criar e editar cotações',
+          'Gravar e transcrever áudios',
+          'Gerenciar templates'
         ]
       },
       operations: {
         title: 'Operations',
-        description: 'Execução das atividades do dia a dia.',
+        description: 'Acesso de leitura aos registros.',
         permissions: [
-          'Criar e gravar sessões',
-          'Gerar transcrições',
-          'Criar cotações e relatórios',
-          'Gerenciar seus pacientes'
+          'Visualizar pacientes e sessões',
+          'Visualizar cotações e relatórios',
+          'Sem acesso a transcrição',
+          'Sem acesso a configurações'
         ]
       }
     },
@@ -526,6 +528,8 @@ export const translations = {
             features: [
               '240 transcription hours/month (~12h/day)',
               '1 Admin + 1 Manager + 1 Ops included',
+              'Additional licenses available (see prices below)',
+              'Allows exceeding monthly limit',
               'Automatic multilingual transcription',
               'Up to 3 landing page templates',
               'Initial setup included',
@@ -553,9 +557,9 @@ export const translations = {
         licenses: {
           title: 'Additional Licenses',
           subtitle: 'Add more users as needed',
-          operations: { name: 'Operations', price: 'R$ 10', description: 'Recording and transcription' },
-          manager: { name: 'Manager', price: 'R$ 20', description: 'Supervision and approvals' },
-          admin: { name: 'Admin', price: 'R$ 50', description: 'Full management' }
+          operations: { name: 'Operations', price: 'R$ 10', description: 'Read-only access to records' },
+          manager: { name: 'Manager', price: 'R$ 20', description: 'Record editing and transcription' },
+          admin: { name: 'Admin', price: 'R$ 50', description: 'Full system access' }
         },
         cta: 'Get started'
       }
@@ -566,32 +570,32 @@ export const translations = {
       description: 'Manage your team access with precision. Each user receives a license with specific permissions per application, ensuring security and governance.',
       admin: {
         title: 'Admin',
-        description: 'Full control over the organization and its resources.',
+        description: 'Full system and configuration access.',
         permissions: [
           'Manage users and licenses',
           'Configure branding and communication',
-          'Access usage reports',
+          'Full transcription access',
           'All Manager permissions'
         ]
       },
       manager: {
         title: 'Manager',
-        description: 'Team supervision and operational management.',
+        description: 'Record editing and transcription access.',
         permissions: [
-          'View all patients',
-          'Approve and edit quotes',
-          'Manage templates',
-          'All Operations permissions'
+          'Edit patients and sessions',
+          'Create and edit quotes',
+          'Record and transcribe audio',
+          'Manage templates'
         ]
       },
       operations: {
         title: 'Operations',
-        description: 'Day-to-day activity execution.',
+        description: 'Read-only access to records.',
         permissions: [
-          'Create and record sessions',
-          'Generate transcriptions',
-          'Create quotes and reports',
-          'Manage own patients'
+          'View patients and sessions',
+          'View quotes and reports',
+          'No transcription access',
+          'No configuration access'
         ]
       }
     },

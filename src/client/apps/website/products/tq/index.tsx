@@ -408,7 +408,7 @@ export function TQPage() {
                       return (
                         <div
                           key={i}
-                          className={`relative p-8 rounded-2xl ${bgClass}`}
+                          className={`relative p-8 rounded-2xl min-h-[520px] ${bgClass}`}
                         >
                           {isFeatured && (
                             <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5ED6CE] text-[#0a8a80] text-sm font-bold rounded-full whitespace-nowrap">
@@ -472,7 +472,7 @@ export function TQPage() {
                       return (
                         <div
                           key={i}
-                          className={`relative p-8 rounded-2xl ${bgClass}`}
+                          className={`relative p-8 rounded-2xl min-h-[520px] ${bgClass}`}
                         >
                           {isFeatured && (
                             <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5ED6CE] text-[#0a8a80] text-sm font-bold rounded-full whitespace-nowrap">

@@ -195,6 +195,20 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Monthly transcription quota exceeded. Transcription cannot be started."
   },
 
+  // File upload errors
+  FILE_TOO_LARGE: {
+    title: "File Too Large",
+    message: "The file exceeds the maximum allowed size of 100MB."
+  },
+  FILE_TOO_LARGE_STORAGE: {
+    title: "File Too Large",
+    message: "The file exceeds the storage limit of 100MB."
+  },
+  UPLOAD_FAILED: {
+    title: "Upload Failed",
+    message: "Failed to upload the file. Please try again."
+  },
+
   // Authentication operations
   LOGIN_SUCCESS: {
     title: "Welcome Back",

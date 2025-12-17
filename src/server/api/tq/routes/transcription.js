@@ -397,13 +397,31 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     await client.query('ROLLBACK');
     console.error('Audio upload error:', error);
 
+    // Multer file size limit
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File too large. Maximum size is 100MB' });
+      return res.status(413).json({
+        error: {
+          code: 'FILE_TOO_LARGE',
+          message: 'File too large. Maximum size is 100MB'
+        }
+      });
+    }
+
+    // Supabase storage size limit
+    if (error.message?.includes('exceeded maximum') || error.message?.includes('maximum allowed size')) {
+      return res.status(413).json({
+        error: {
+          code: 'FILE_TOO_LARGE_STORAGE',
+          message: 'File exceeds storage limit. Maximum size is 100MB'
+        }
+      });
     }
 
     res.status(500).json({
-      error: 'Failed to upload audio file',
-      details: error.message
+      error: {
+        code: 'UPLOAD_FAILED',
+        message: 'Failed to upload audio file'
+      }
     });
   } finally {
     client.release();

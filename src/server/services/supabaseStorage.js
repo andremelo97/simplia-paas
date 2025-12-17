@@ -166,8 +166,9 @@ class SupabaseStorageService {
 
       if (!bucketExists) {
         const { error: createError } = await this.supabase.storage.createBucket(this.bucketName, {
-          public: true,
-          allowedMimeTypes: ['audio/webm', 'audio/mpeg', 'audio/mp4', 'video/mp4', 'audio/wav', 'audio/wave', 'audio/x-wav']
+          public: true
+          // Note: fileSizeLimit and allowedMimeTypes removed - causes "object exceeded maximum size" error
+          // File size limit and MIME validation are done at application level during upload
         });
 
         if (createError) {

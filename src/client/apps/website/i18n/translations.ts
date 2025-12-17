@@ -242,15 +242,15 @@ export const translations = {
       cta: 'Falar com especialista'
     },
     tqAutomation: {
-      badge: 'API & Integrações',
+      badge: 'Integrações Sob Medida',
       title: 'Conecte o TQ ao seu ecossistema',
-      description: 'O TQ possui API própria, facilitando criar integrações e automações personalizadas para sua operação.',
+      description: 'O TQ possui API própria, o que nos permite criar integrações personalizadas para sua operação. Nosso time desenvolve a solução ideal para você.',
       cards: [
-        { title: 'API Documentada', description: 'API RESTful completa com webhooks em tempo real. Integre quando precisar.' },
-        { title: 'Integre com Tudo', description: 'Sistema de gestão, CRM, agenda ou qualquer ferramenta. Sem limites.' },
-        { title: 'Suporte Dedicado', description: 'Nosso time desenvolve integrações e automações sob medida.' }
+        { title: 'API RESTful', description: 'Infraestrutura robusta com webhooks prontos para integrações.' },
+        { title: 'Qualquer Sistema', description: 'Conectamos o TQ ao seu ERP, CRM, agenda ou qualquer ferramenta que você usa.' },
+        { title: 'Nós Desenvolvemos', description: 'Nosso time cria automações e integrações sob medida. Serviço especializado.' }
       ],
-      cta: 'Solicitar integração'
+      cta: 'Falar com especialista'
     },
     pricing: {
       title: 'Planos e Preços',
@@ -563,15 +563,15 @@ export const translations = {
       cta: 'Talk to a specialist'
     },
     tqAutomation: {
-      badge: 'API & Integrations',
+      badge: 'Custom Integrations',
       title: 'Connect TQ to your ecosystem',
-      description: 'TQ has its own API, making it easy to create custom integrations and automations for your operation.',
+      description: 'TQ has its own API, which allows us to create custom integrations for your operation. Our team develops the ideal solution for you.',
       cards: [
-        { title: 'Documented API', description: 'Complete RESTful API with real-time webhooks. Integrate when you need.' },
-        { title: 'Integrate with Anything', description: 'Management system, CRM, calendar, or any tool. No limits.' },
-        { title: 'Dedicated Support', description: 'Our team builds custom integrations and automations for you.' }
+        { title: 'RESTful API', description: 'Robust infrastructure with webhooks ready for integrations.' },
+        { title: 'Any System', description: 'We connect TQ to your ERP, CRM, calendar, or any tool you use.' },
+        { title: 'We Develop It', description: 'Our team creates custom automations and integrations. Specialized service.' }
       ],
-      cta: 'Request integration'
+      cta: 'Talk to a specialist'
     },
     pricing: {
       title: 'Plans & Pricing',

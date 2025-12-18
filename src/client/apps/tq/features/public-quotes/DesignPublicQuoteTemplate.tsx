@@ -8,11 +8,14 @@ import { Maximize2, Minimize2, Eye, Save } from 'lucide-react'
 import { publicQuotesService } from '../../services/publicQuotes'
 import { brandingService, BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
+import { useAuthStore } from '../../shared/store'
 
 export const DesignPublicQuoteTemplate: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
   const [template, setTemplate] = useState<any>(null)
   const [data, setData] = useState<any>({ content: [], root: {} })
   const [isSaving, setIsSaving] = useState(false)
@@ -133,17 +136,19 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
           overrides={{
             headerActions: () => (
               <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="default"
-                  onClick={handleSave}
-                  isLoading={isSaving}
-                  disabled={isSaving}
-                  className="flex items-center gap-2"
-                >
-                  <Save size={16} />
-                  {isSaving ? t('public_quotes.saving_layout') : t('public_quotes.save_layout')}
-                </Button>
+                {canEdit && (
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleSave}
+                    isLoading={isSaving}
+                    disabled={isSaving}
+                    className="flex items-center gap-2"
+                  >
+                    <Save size={16} />
+                    {isSaving ? t('public_quotes.saving_layout') : t('public_quotes.save_layout')}
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="secondary"

@@ -6,6 +6,7 @@ import { Session } from '../../services/sessions'
 import { formatSessionStatus } from '../../hooks/useSessions'
 import { getSessionStatusColor } from '../../types/sessionStatus'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useAuthStore } from '../../shared/store'
 
 interface SessionRowProps {
   session: Session
@@ -21,6 +22,8 @@ export const SessionRow: React.FC<SessionRowProps> = ({
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const handleEdit = () => {
     onEdit?.(session)
@@ -86,17 +89,19 @@ export const SessionRow: React.FC<SessionRowProps> = ({
           </Button>
         </Tooltip>
 
-        <Tooltip content={deleteLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            aria-label={deleteLabel}
-          >
-            <Trash2 className="w-4 h-4 text-red-600" />
-          </Button>
-        </Tooltip>
+        {canEdit && (
+          <Tooltip content={deleteLabel}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="h-8 w-8 p-0 hover:bg-red-100"
+              aria-label={deleteLabel}
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
+          </Tooltip>
+        )}
       </div>
     </div>
   )

@@ -7,6 +7,7 @@ import { publicQuotesService, PublicQuoteTemplate } from '../../../services/publ
 import { brandingService, BrandingData } from '../../../services/branding'
 import { TemplatesEmpty } from '../../../components/public-quotes/TemplatesEmpty'
 import { TemplateCard } from '../../../components/public-quotes/TemplateCard'
+import { useAuthStore } from '../../../shared/store'
 
 export const TemplatesTab: React.FC = () => {
   const { t } = useTranslation('tq')
@@ -14,6 +15,8 @@ export const TemplatesTab: React.FC = () => {
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   useEffect(() => {
     loadData()
@@ -46,14 +49,16 @@ export const TemplatesTab: React.FC = () => {
           <CardTitle className="text-base">
             {t('public_quotes.pages.templates_list')} ({templates?.length || 0} {t('common.of')} 3)
           </CardTitle>
-          <Button
-            variant="primary"
-            disabled={(templates?.length || 0) >= 3}
-            onClick={() => navigate('/public-quotes/templates/create')}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t('public_quotes.pages.create_template')}
-          </Button>
+          {canEdit && (
+            <Button
+              variant="primary"
+              disabled={(templates?.length || 0) >= 3}
+              onClick={() => navigate('/public-quotes/templates/create')}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {t('public_quotes.pages.create_template')}
+            </Button>
+          )}
         </div>
       </CardHeader>
       <CardContent className="px-6 pb-6">

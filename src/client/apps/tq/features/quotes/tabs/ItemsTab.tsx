@@ -17,12 +17,15 @@ import { ItemRow } from '../../../components/items/ItemRow'
 import { ItemsEmpty } from '../../../components/items/ItemsEmpty'
 import { ItemFilters } from '../../../components/items/ItemFilters'
 import { Item } from '../../../services/items'
+import { useAuthStore } from '../../../shared/store'
 
 export const ItemsTab: React.FC = () => {
   const { t } = useTranslation('tq')
   const [searchQuery, setSearchQuery] = useState('')
   const [includeInactive, setIncludeInactive] = useState(false)
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const {
     data: items,
@@ -81,13 +84,15 @@ export const ItemsTab: React.FC = () => {
             <CardTitle className="text-base">
               {t('quote_items.pages.list_title')} ({items?.length || 0} {t('common.of')} {total} {t('quote_items.pages.items')})
             </CardTitle>
-            <Button
-              onClick={handleCreateItem}
-              variant="primary"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t('quote_items.pages.create_item')}
-            </Button>
+            {canEdit && (
+              <Button
+                onClick={handleCreateItem}
+                variant="primary"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('quote_items.pages.create_item')}
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="px-6 pb-6">

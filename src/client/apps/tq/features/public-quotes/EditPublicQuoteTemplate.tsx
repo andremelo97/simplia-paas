@@ -3,11 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea, Checkbox, ConfirmDialog } from '@client/common/ui'
 import { publicQuotesService, UpdateTemplateRequest } from '../../services/publicQuotes'
+import { useAuthStore } from '../../shared/store'
 
 export const EditPublicQuoteTemplate: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const [formData, setFormData] = useState<UpdateTemplateRequest>({
     name: '',
@@ -211,33 +214,35 @@ export const EditPublicQuoteTemplate: React.FC = () => {
             {t('public_quotes.edit_template_subtitle')}
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Button
-            type="button"
-            variant="tertiary"
-            onClick={handleDesignLayout}
-            disabled={isSubmitting || isDuplicating || isDeleting}
-          >
-            {t('public_quotes.design_layout')}
-          </Button>
-          <Button
-            type="button"
-            variant="primary"
-            onClick={handleDuplicate}
-            isLoading={isDuplicating}
-            disabled={isSubmitting || isDuplicating || isDeleting}
-          >
-            {isDuplicating ? t('public_quotes.duplicating') : t('public_quotes.duplicate')}
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() => setShowDeleteDialog(true)}
-            disabled={isSubmitting || isDuplicating || isDeleting}
-          >
-            {t('common.delete')}
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex items-center space-x-4">
+            <Button
+              type="button"
+              variant="tertiary"
+              onClick={handleDesignLayout}
+              disabled={isSubmitting || isDuplicating || isDeleting}
+            >
+              {t('public_quotes.design_layout')}
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              onClick={handleDuplicate}
+              isLoading={isDuplicating}
+              disabled={isSubmitting || isDuplicating || isDeleting}
+            >
+              {isDuplicating ? t('public_quotes.duplicating') : t('public_quotes.duplicate')}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setShowDeleteDialog(true)}
+              disabled={isSubmitting || isDuplicating || isDeleting}
+            >
+              {t('common.delete')}
+            </Button>
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -258,7 +263,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
                   placeholder={t('public_quotes.placeholders.template_name')}
                   helperText={t('public_quotes.helper.template_name')}
                   required
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
               </div>
 
@@ -271,7 +276,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
                   placeholder={t('public_quotes.placeholders.template_description')}
                   helperText={t('public_quotes.helper.description')}
                   rows={3}
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
               </div>
 
@@ -281,7 +286,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
                   description={t('public_quotes.set_as_default_description')}
                   checked={formData.isDefault}
                   onChange={handleCheckboxChange('isDefault')}
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
 
                 <Checkbox
@@ -289,33 +294,35 @@ export const EditPublicQuoteTemplate: React.FC = () => {
                   description={t('public_quotes.active_description')}
                   checked={formData.active}
                   onChange={handleCheckboxChange('active')}
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
-          <Button
-            type="submit"
-            variant="default"
-            isLoading={isSubmitting}
-            disabled={isSubmitting || isDuplicating}
-          >
-            {isSubmitting ? t('common.saving') : t('common.save_changes')}
-          </Button>
+        {canEdit && (
+          <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
+            <Button
+              type="submit"
+              variant="default"
+              isLoading={isSubmitting}
+              disabled={isSubmitting || isDuplicating}
+            >
+              {isSubmitting ? t('common.saving') : t('common.save_changes')}
+            </Button>
 
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isSubmitting || isDuplicating}
-            style={{ height: '32px', minHeight: '32px' }}
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCancel}
+              disabled={isSubmitting || isDuplicating}
+              style={{ height: '32px', minHeight: '32px' }}
+            >
+              {t('common.cancel')}
+            </Button>
+          </div>
+        )}
       </form>
 
       {/* Delete Confirmation Dialog */}

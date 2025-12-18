@@ -127,12 +127,17 @@ export const AppRoutes: React.FC = () => {
         } />
         <Route path="sessions" element={<Sessions />} />
         <Route path="sessions/:id/edit" element={<EditSession />} />
+        {/* Patients - Operations can create and edit */}
         <Route path="patients" element={<Patients />} />
         <Route path="patients/create" element={<CreatePatient />} />
         <Route path="patients/:id/edit" element={<EditPatient />} />
         <Route path="patients/:id/history" element={<PatientHistory />} />
         <Route path="templates" element={<Templates />} />
-        <Route path="templates/create" element={<CreateTemplate />} />
+        <Route path="templates/create" element={
+          <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
+            <CreateTemplate />
+          </RouteGuard>
+        } />
         <Route path="templates/:id/edit" element={<EditTemplate />} />
 
         {/* Clinical Reports */}
@@ -145,7 +150,11 @@ export const AppRoutes: React.FC = () => {
           <Route index element={<QuotesRedirect />} />
           <Route path="overview" element={<QuotesTab />} />
           <Route path="items" element={<ItemsTab />} />
-          <Route path="items/create" element={<CreateItem />} />
+          <Route path="items/create" element={
+            <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
+              <CreateItem />
+            </RouteGuard>
+          } />
           <Route path="items/:id/edit" element={<EditItem />} />
         </Route>
 
@@ -160,7 +169,11 @@ export const AppRoutes: React.FC = () => {
         </Route>
 
         {/* Create Public Quote Template - Outside layout for full page */}
-        <Route path="public-quotes/templates/create" element={<CreatePublicQuoteTemplate />} />
+        <Route path="public-quotes/templates/create" element={
+          <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
+            <CreatePublicQuoteTemplate />
+          </RouteGuard>
+        } />
 
         {/* Edit Public Quote Template - Outside layout for full page */}
         <Route path="public-quotes/templates/:id/edit" element={<EditPublicQuoteTemplate />} />

@@ -22,11 +22,14 @@ import { getSessionStatusColor, getSessionStatusLabel, getSessionStatusOptions, 
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentService'
 import { clinicalReportsService, CreateClinicalReportRequest } from '../../services/clinicalReports'
+import { useAuthStore } from '../../shared/store'
 
 export const EditSession: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const [session, setSession] = useState<Session | null>(null)
   const [patient, setPatient] = useState<Patient | null>(null)
@@ -316,8 +319,8 @@ export const EditSession: React.FC = () => {
             </Tooltip>
           )}
 
-          {/* Create Documents Button - Show if has any transcription text */}
-          {hasTranscription && (
+          {/* Create Documents Button - Show if has any transcription text and user can edit */}
+          {canEdit && hasTranscription && (
             <Button
               variant="primary"
               onClick={() => setShowTemplateModal(true)}
@@ -353,7 +356,7 @@ export const EditSession: React.FC = () => {
                     value={status}
                     onChange={(e) => handleStatusChange(e.target.value as SessionStatus)}
                     options={getSessionStatusOptions()}
-                    disabled={isSubmitting}
+                    disabled={!canEdit || isSubmitting}
                     helperText={t('sessions.helper.current_status')}
                   />
                 </div>
@@ -404,7 +407,7 @@ export const EditSession: React.FC = () => {
                 }}
                 className="min-h-96 resize-none font-mono"
                 helperText={t('sessions.helper_text.edit_transcription')}
-                disabled={isSubmitting}
+                disabled={!canEdit || isSubmitting}
                 required
                 error={transcriptionError}
               />
@@ -412,26 +415,28 @@ export const EditSession: React.FC = () => {
           </Card>
         </div>
 
-        <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
-          <Button
-            type="submit"
-            variant="default"
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? t('sessions.saving_changes') : t('common.save_changes')}
-          </Button>
+        {canEdit && (
+          <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
+            <Button
+              type="submit"
+              variant="default"
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? t('sessions.saving_changes') : t('common.save_changes')}
+            </Button>
 
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            style={{ height: '32px', minHeight: '32px' }}
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              style={{ height: '32px', minHeight: '32px' }}
+            >
+              {t('common.cancel')}
+            </Button>
+          </div>
+        )}
       </form>
 
       {/* Template Quote Modal */}

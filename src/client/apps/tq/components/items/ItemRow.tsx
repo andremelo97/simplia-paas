@@ -5,6 +5,7 @@ import { Button, Badge, Tooltip } from '@client/common/ui'
 import { Item } from '../../services/items'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
+import { useAuthStore } from '../../shared/store'
 
 interface ItemRowProps {
   item: Item
@@ -21,6 +22,8 @@ export const ItemRow: React.FC<ItemRowProps> = ({
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
   const { formatCurrency } = useCurrencyFormatter()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const handleEdit = () => {
     onEdit?.(item)
@@ -91,17 +94,19 @@ export const ItemRow: React.FC<ItemRowProps> = ({
           </Button>
         </Tooltip>
 
-        <Tooltip content={t('common:delete')}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            aria-label={t('common:delete')}
-          >
-            <Trash2 className="w-4 h-4 text-red-600" />
-          </Button>
-        </Tooltip>
+        {canEdit && (
+          <Tooltip content={t('common:delete')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="h-8 w-8 p-0 hover:bg-red-100"
+              aria-label={t('common:delete')}
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
+          </Tooltip>
+        )}
       </div>
     </div>
   )

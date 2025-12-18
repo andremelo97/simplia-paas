@@ -40,6 +40,7 @@ const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
       case 'create': return t('breadcrumbs.create')
       case 'edit': return t('breadcrumbs.edit')
       case 'design': return t('breadcrumbs.design')
+      case 'history': return t('breadcrumbs.history')
       case 'ai-agent': return t('breadcrumbs.ai_agent')
       case 'email-template': return t('breadcrumbs.email_template')
       default: return segment.charAt(0).toUpperCase() + segment.slice(1)

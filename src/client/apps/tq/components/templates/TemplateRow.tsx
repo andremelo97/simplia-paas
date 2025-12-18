@@ -4,6 +4,7 @@ import { Edit, Trash2 } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { Template } from '../../services/templates'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useAuthStore } from '../../shared/store'
 
 interface TemplateRowProps {
   template: Template
@@ -19,6 +20,8 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const handleEdit = () => {
     onEdit(template)
@@ -84,17 +87,19 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
           </Button>
         </Tooltip>
 
-        <Tooltip content={t('common:delete')}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            aria-label={t('common:delete')}
-          >
-            <Trash2 className="w-4 h-4 text-red-600" />
-          </Button>
-        </Tooltip>
+        {canEdit && (
+          <Tooltip content={t('common:delete')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="h-8 w-8 p-0 hover:bg-red-100"
+              aria-label={t('common:delete')}
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
+          </Tooltip>
+        )}
       </div>
     </div>
   )

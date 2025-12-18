@@ -18,12 +18,15 @@ import { TemplateRow } from '../../components/templates/TemplateRow'
 import { TemplatesEmpty } from '../../components/templates/TemplatesEmpty'
 import { TemplateFilters } from '../../components/templates/TemplateFilters'
 import { Template, templatesService } from '../../services/templates'
+import { useAuthStore } from '../../shared/store'
 
 export const Templates: React.FC = () => {
   const { t } = useTranslation('tq')
   const [searchQuery, setSearchQuery] = useState('')
   const [includeInactive, setIncludeInactive] = useState(false)
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   // ConfirmDialog state for delete
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -97,14 +100,16 @@ export const Templates: React.FC = () => {
             {t('templates.pages.management_subtitle')}
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => navigate('/templates/create')}
-          className="flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          {t('templates.pages.add_template')}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="primary"
+            onClick={() => navigate('/templates/create')}
+            className="flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            {t('templates.pages.add_template')}
+          </Button>
+        )}
       </div>
 
       {/* Filters */}

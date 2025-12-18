@@ -19,12 +19,15 @@ import { QuoteItemsManager } from './QuoteItemsManager'
 import { GeneratePublicQuoteModal } from '../../components/quotes/GeneratePublicQuoteModal'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { getQuoteStatusOptions } from '../../types/quoteStatus'
+import { useAuthStore } from '../../shared/store'
 
 export const EditQuote: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const [quote, setQuote] = useState<Quote | null>(null)
   const [content, setContent] = useState('')
@@ -371,12 +374,14 @@ export const EditQuote: React.FC = () => {
             {t('quotes.quote')} {quote.number} • {quote.patient_first_name || quote.patient_last_name ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim() : ''}
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={handleViewPublicLink}
-        >
-          {t('quotes.view_public_link')}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="primary"
+            onClick={handleViewPublicLink}
+          >
+            {t('quotes.view_public_link')}
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -403,7 +408,7 @@ export const EditQuote: React.FC = () => {
                     value={status}
                     onChange={handleStatusChange}
                     options={getQuoteStatusOptions()}
-                    disabled={isSaving}
+                    disabled={!canEdit || isSaving}
                   />
                 </div>
 
@@ -439,7 +444,7 @@ export const EditQuote: React.FC = () => {
                   content={content}
                   onChange={handleContentChange}
                   placeholder={t('quotes.placeholders.content')}
-                  readonly={isSaving}
+                  readonly={!canEdit || isSaving}
                   minHeight="500px"
                   required
                   error={contentError}
@@ -449,25 +454,27 @@ export const EditQuote: React.FC = () => {
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex items-center space-x-4 pt-6 border-t border-gray-200">
-              <Button
-                variant="default"
-                onClick={handleSave}
-                isLoading={isSaving}
-                disabled={isSaving}
-              >
-                {isSaving ? t('common.saving') : t('common.save_changes')}
-              </Button>
+            {canEdit && (
+              <div className="flex items-center space-x-4 pt-6 border-t border-gray-200">
+                <Button
+                  variant="default"
+                  onClick={handleSave}
+                  isLoading={isSaving}
+                  disabled={isSaving}
+                >
+                  {isSaving ? t('common.saving') : t('common.save_changes')}
+                </Button>
 
-              <Button
-                variant="secondary"
-                onClick={handleCancel}
-                disabled={isSaving}
-                style={{ height: '32px', minHeight: '32px' }}
-              >
-                {t('common.cancel')}
-              </Button>
-            </div>
+                <Button
+                  variant="secondary"
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  style={{ height: '32px', minHeight: '32px' }}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -497,7 +504,7 @@ export const EditQuote: React.FC = () => {
                               setPatientErrors(prev => ({ ...prev, firstName: '' }))
                             }
                           }}
-                          disabled={isSaving}
+                          disabled={!canEdit || isSaving}
                           required
                           error={patientErrors.firstName}
                         />
@@ -512,7 +519,7 @@ export const EditQuote: React.FC = () => {
                               setPatientErrors(prev => ({ ...prev, lastName: '' }))
                             }
                           }}
-                          disabled={isSaving}
+                          disabled={!canEdit || isSaving}
                           required
                           error={patientErrors.lastName}
                         />
@@ -532,7 +539,7 @@ export const EditQuote: React.FC = () => {
                               }
                             }
                           }}
-                          disabled={isSaving}
+                          disabled={!canEdit || isSaving}
                           required
                           error={patientErrors.email}
                         />
@@ -541,7 +548,7 @@ export const EditQuote: React.FC = () => {
                           label={t('patients.phone')}
                           value={patientPhone}
                           onChange={(e) => setPatientPhone(e.target.value)}
-                          disabled={isSaving}
+                          disabled={!canEdit || isSaving}
                         />
                       </div>
                     ) : (
@@ -583,49 +590,52 @@ export const EditQuote: React.FC = () => {
               quoteId={id!}
               initialItems={quoteItems}
               onItemsChange={setQuoteItems}
+              readonly={!canEdit}
             />
 
-            {/* Public Quote Template Selection */}
-            <Card>
-              <CardHeader className="p-6 pb-4">
-                <h2 className="text-lg font-semibold text-gray-900">{t('quotes.public_quote')}</h2>
-              </CardHeader>
+            {/* Public Quote Template Selection - Only show for users who can edit */}
+            {canEdit && (
+              <Card>
+                <CardHeader className="p-6 pb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">{t('quotes.public_quote')}</h2>
+                </CardHeader>
 
-              <CardContent className="space-y-4 px-6 pb-6">
-                <Select
-                  label={t('quotes.template')}
-                  value={selectedTemplateId}
-                  onChange={(e) => setSelectedTemplateId(e.target.value)}
-                  options={[
-                    { value: '', label: t('quotes.select_template') },
-                    ...templates.map(t => ({ value: t.id, label: t.name }))
-                  ]}
-                  disabled={isLoadingTemplates}
-                  helperText={t('quotes.select_template_helper')}
-                />
+                <CardContent className="space-y-4 px-6 pb-6">
+                  <Select
+                    label={t('quotes.template')}
+                    value={selectedTemplateId}
+                    onChange={(e) => setSelectedTemplateId(e.target.value)}
+                    options={[
+                      { value: '', label: t('quotes.select_template') },
+                      ...templates.map(t => ({ value: t.id, label: t.name }))
+                    ]}
+                    disabled={isLoadingTemplates}
+                    helperText={t('quotes.select_template_helper')}
+                  />
 
-                {selectedTemplateId && (
-                  <div className="flex items-center space-x-3">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() => window.open(`/quotes/${id}/preview-public-quote/${selectedTemplateId}`, '_blank')}
-                      disabled={!selectedTemplateId}
-                    >
-                      {t('quotes.preview_template')}
-                    </Button>
+                  {selectedTemplateId && (
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => window.open(`/quotes/${id}/preview-public-quote/${selectedTemplateId}`, '_blank')}
+                        disabled={!selectedTemplateId}
+                      >
+                        {t('quotes.preview_template')}
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant="primary"
-                      onClick={() => setShowGenerateModal(true)}
-                    >
-                      {t('quotes.generate_public_quote')}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      <Button
+                        type="button"
+                        variant="primary"
+                        onClick={() => setShowGenerateModal(true)}
+                      >
+                        {t('quotes.generate_public_quote')}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
           </div>
         </div>

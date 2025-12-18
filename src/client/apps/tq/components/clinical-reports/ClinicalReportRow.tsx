@@ -4,6 +4,7 @@ import { Edit, FileText } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { ClinicalReport } from '../../services/clinicalReports'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useAuthStore } from '../../shared/store'
 
 interface ClinicalReportRowProps {
   report: ClinicalReport
@@ -19,6 +20,8 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const handleEdit = () => {
     onEdit?.(report)
@@ -84,17 +87,19 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
           </Button>
         </Tooltip>
 
-        <Tooltip content={editLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleEdit}
-            className="h-8 w-8 p-0 hover:bg-gray-100"
-            aria-label={editLabel}
-          >
-            <Edit className="w-4 h-4 text-gray-600" />
-          </Button>
-        </Tooltip>
+        {canEdit && (
+          <Tooltip content={editLabel}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleEdit}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              aria-label={editLabel}
+            >
+              <Edit className="w-4 h-4 text-gray-600" />
+            </Button>
+          </Tooltip>
+        )}
       </div>
     </div>
   )

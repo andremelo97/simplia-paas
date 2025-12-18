@@ -12,6 +12,7 @@ import {
   Checkbox
 } from '@client/common/ui'
 import { templatesService, UpdateTemplateRequest } from '../../services/templates'
+import { useAuthStore } from '../../shared/store'
 
 interface TemplateFormData {
   title: string
@@ -24,6 +25,8 @@ export const EditTemplate: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const [formData, setFormData] = useState<TemplateFormData>({
     title: '',
@@ -279,7 +282,7 @@ export const EditTemplate: React.FC = () => {
                       placeholder={t('templates.placeholders.title')}
                       helperText={t('templates.helper.title')}
                       required
-                      disabled={isSubmitting}
+                      disabled={!canEdit || isSubmitting}
                     />
 
                     <Input
@@ -288,7 +291,7 @@ export const EditTemplate: React.FC = () => {
                       onChange={handleInputChange('description')}
                       placeholder={t('templates.placeholders.description')}
                       helperText={t('templates.helper.description')}
-                      disabled={isSubmitting}
+                      disabled={!canEdit || isSubmitting}
                     />
                   </div>
 
@@ -298,7 +301,7 @@ export const EditTemplate: React.FC = () => {
                       content={formData.content}
                       onChange={handleContentChange}
                       placeholder={t('templates.placeholders.content')}
-                      readonly={isSubmitting}
+                      readonly={!canEdit || isSubmitting}
                       minHeight="500px"
                       required
                       error={validationErrors.content}
@@ -311,33 +314,35 @@ export const EditTemplate: React.FC = () => {
                       label={t('templates.active_checkbox')}
                       checked={formData.active}
                       onChange={(e) => setFormData(prev => ({ ...prev, active: e.target.checked }))}
-                      disabled={isSubmitting}
+                      disabled={!canEdit || isSubmitting}
                     />
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
-              <Button
-                type="submit"
-                variant="default"
-                isLoading={isSubmitting}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? t('templates.updating_template') : t('templates.update')}
-              </Button>
+            {canEdit && (
+              <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
+                <Button
+                  type="submit"
+                  variant="default"
+                  isLoading={isSubmitting}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? t('templates.updating_template') : t('templates.update')}
+                </Button>
 
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                style={{ height: '32px', minHeight: '32px' }}
-              >
-                {t('common.cancel')}
-              </Button>
-            </div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleCancel}
+                  disabled={isSubmitting}
+                  style={{ height: '32px', minHeight: '32px' }}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            )}
           </form>
         </div>
 

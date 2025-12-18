@@ -5,6 +5,7 @@ import { Button, Tooltip } from '@client/common/ui'
 import { Patient } from '../../services/patients'
 import { formatPatientName } from '../../hooks/usePatients'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useAuthStore } from '../../shared/store'
 
 interface PatientRowProps {
   patient: Patient
@@ -22,6 +23,8 @@ export const PatientRow: React.FC<PatientRowProps> = ({
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
+  const { user } = useAuthStore()
+  const canDelete = user?.role !== 'operations'
 
   const historyLabel = t('patients.view_history')
   const editLabel = t('common:edit')
@@ -103,17 +106,19 @@ export const PatientRow: React.FC<PatientRowProps> = ({
           </Button>
         </Tooltip>
 
-        <Tooltip content={deleteLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            aria-label={deleteLabel}
-          >
-            <Trash2 className="w-4 h-4 text-red-600" />
-          </Button>
-        </Tooltip>
+        {canDelete && (
+          <Tooltip content={deleteLabel}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              className="h-8 w-8 p-0 hover:bg-red-100"
+              aria-label={deleteLabel}
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
+          </Tooltip>
+        )}
       </div>
     </div>
   )

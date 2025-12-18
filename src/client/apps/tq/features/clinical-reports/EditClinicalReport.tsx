@@ -14,12 +14,15 @@ import {
 import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
 import { patientsService } from '../../services/patients'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useAuthStore } from '../../shared/store'
 
 export const EditClinicalReport: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const [report, setReport] = useState<ClinicalReport | null>(null)
   const [content, setContent] = useState('')
@@ -269,7 +272,7 @@ export const EditClinicalReport: React.FC = () => {
                   content={content}
                   onChange={handleContentChange}
                   placeholder={t('clinical_reports.placeholders.content')}
-                  readonly={isSaving}
+                  readonly={!canEdit || isSaving}
                   minHeight="500px"
                   required
                   error={contentError}
@@ -279,25 +282,27 @@ export const EditClinicalReport: React.FC = () => {
             </Card>
 
             {/* Action Buttons */}
-            <div className="flex items-center space-x-4 pt-6 border-t border-gray-200">
-              <Button
-                variant="default"
-                onClick={handleSave}
-                isLoading={isSaving}
-                disabled={isSaving}
-              >
-                {isSaving ? t('common.saving') : t('common.save_changes')}
-              </Button>
+            {canEdit && (
+              <div className="flex items-center space-x-4 pt-6 border-t border-gray-200">
+                <Button
+                  variant="default"
+                  onClick={handleSave}
+                  isLoading={isSaving}
+                  disabled={isSaving}
+                >
+                  {isSaving ? t('common.saving') : t('common.save_changes')}
+                </Button>
 
-              <Button
-                variant="secondary"
-                onClick={handleCancel}
-                disabled={isSaving}
-                style={{ height: '32px', minHeight: '32px' }}
-              >
-                {t('common.cancel')}
-              </Button>
-            </div>
+                <Button
+                  variant="secondary"
+                  onClick={handleCancel}
+                  disabled={isSaving}
+                  style={{ height: '32px', minHeight: '32px' }}
+                >
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -325,7 +330,7 @@ export const EditClinicalReport: React.FC = () => {
                             type="text"
                             value={patientFirstName}
                             onChange={(e) => setPatientFirstName(e.target.value)}
-                            disabled={isSaving}
+                            disabled={!canEdit || isSaving}
                             className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
                           />
                         </div>
@@ -338,7 +343,7 @@ export const EditClinicalReport: React.FC = () => {
                             type="text"
                             value={patientLastName}
                             onChange={(e) => setPatientLastName(e.target.value)}
-                            disabled={isSaving}
+                            disabled={!canEdit || isSaving}
                             className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
                           />
                         </div>
@@ -351,7 +356,7 @@ export const EditClinicalReport: React.FC = () => {
                             type="email"
                             value={patientEmail}
                             onChange={(e) => setPatientEmail(e.target.value)}
-                            disabled={isSaving}
+                            disabled={!canEdit || isSaving}
                             className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
                           />
                         </div>
@@ -364,7 +369,7 @@ export const EditClinicalReport: React.FC = () => {
                             type="text"
                             value={patientPhone}
                             onChange={(e) => setPatientPhone(e.target.value)}
-                            disabled={isSaving}
+                            disabled={!canEdit || isSaving}
                             className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
                           />
                         </div>

@@ -7,8 +7,19 @@ import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronL
 export function TQPage() {
   const { t } = useLanguage()
   const [activeStep, setActiveStep] = useState(0)
-  const [pricingSlide, setPricingSlide] = useState(0) // 0 = Starter+Solo, 1 = Duo+Practice, 2 = VIP
-  const totalSlides = 3 // 5 plans: 2+2+1 per slide
+  const [pricingSlide, setPricingSlide] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Mobile: 5 slides (1 card each), Desktop: 3 slides (2+2+1)
+  const totalSlides = isMobile ? 5 : 3
 
   // Auto-scroll pricing carousel every 10 seconds
   useEffect(() => {
@@ -16,7 +27,7 @@ export function TQPage() {
       setPricingSlide((prev) => (prev + 1) % totalSlides)
     }, 10000)
     return () => clearInterval(interval)
-  }, [])
+  }, [totalSlides])
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -372,7 +383,7 @@ export function TQPage() {
           </motion.div>
 
           {/* Pricing Cards Carousel */}
-          <div className="relative mb-16">
+          <div className="relative mb-8 md:mb-16">
             {/* Navigation Arrows */}
             <button
               onClick={() => setPricingSlide((prev) => (prev === 0 ? totalSlides - 1 : prev - 1))}
@@ -395,32 +406,38 @@ export function TQPage() {
                 className="flex transition-transform duration-500 ease-in-out pt-6"
                 style={{ transform: `translateX(-${pricingSlide * 100}%)` }}
               >
-                {/* Slide 1: Starter + Solo */}
-                <div className="w-full flex-shrink-0 px-2">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {t.tqPage.pricing.plans.slice(0, 2).map((plan, i) => {
-                      const isPopular = plan.featured === 'purple' || plan.featured === 'black'
-                      const isBestValue = plan.featured === 'bestValue'
-                      const hasBadge = isPopular || isBestValue
-                      const isWhiteText = plan.featured === 'purple' || plan.featured === 'black' || plan.featured === 'bestValue'
-                      const bgClass = plan.featured === 'purple'
-                        ? 'bg-[#B725B7] text-white'
-                        : plan.featured === 'black'
-                          ? 'bg-[#0a0a0f] text-white'
-                          : plan.featured === 'bestValue'
-                            ? 'bg-[#E91E63] text-white'
+                {isMobile ? (
+                  /* Mobile: 1 card per slide (5 slides) */
+                  t.tqPage.pricing.plans.map((plan, i) => {
+                    const isVIP = i === 4
+                    const isPopular = plan.featured === 'purple' || plan.featured === 'black'
+                    const isBestValue = plan.featured === 'bestValue'
+                    const hasBadge = isPopular || isBestValue
+                    const isWhiteText = plan.featured === 'purple' || plan.featured === 'black' || plan.featured === 'bestValue'
+                    const bgClass = plan.featured === 'purple'
+                      ? 'bg-[#B725B7] text-white'
+                      : plan.featured === 'black'
+                        ? 'bg-[#0a0a0f] text-white'
+                        : plan.featured === 'bestValue'
+                          ? 'bg-[#E91E63] text-white'
+                          : isVIP
+                            ? 'bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-[#B725B7]/20'
                             : 'bg-gray-50'
-                      return (
-                        <div
-                          key={i}
-                          className={`relative p-8 rounded-2xl min-h-[620px] ${bgClass}`}
-                        >
-                          {hasBadge && (
+                    return (
+                      <div key={i} className="w-full flex-shrink-0 px-2">
+                        <div className={`relative p-6 rounded-2xl ${bgClass}`}>
+                          {isVIP ? (
+                            <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                              <div className="w-10 h-10 bg-gradient-to-br from-[#B725B7] to-[#E91E63] rounded-full flex items-center justify-center shadow-lg">
+                                <Star className="w-5 h-5 text-white fill-white" />
+                              </div>
+                            </div>
+                          ) : hasBadge && (
                             <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5ED6CE] text-[#0a8a80] text-sm font-bold rounded-full whitespace-nowrap">
                               {isBestValue ? t.tqPage.pricing.bestValue : t.tqPage.pricing.popular}
                             </span>
                           )}
-                          <div className="text-center mb-6">
+                          <div className={`text-center mb-6 ${isVIP ? 'mt-2' : ''}`}>
                             <h3 className={`text-2xl font-bold mb-2 ${isWhiteText ? 'text-white' : 'text-gray-900'}`}>
                               {plan.name}
                             </h3>
@@ -459,164 +476,255 @@ export function TQPage() {
                             ))}
                           </ul>
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  /* Desktop: 2+2+1 layout (3 slides) */
+                  <>
+                    {/* Slide 1: Starter + Solo */}
+                    <div className="w-full flex-shrink-0 px-2">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {t.tqPage.pricing.plans.slice(0, 2).map((plan, i) => {
+                          const isPopular = plan.featured === 'purple' || plan.featured === 'black'
+                          const isBestValue = plan.featured === 'bestValue'
+                          const hasBadge = isPopular || isBestValue
+                          const isWhiteText = plan.featured === 'purple' || plan.featured === 'black' || plan.featured === 'bestValue'
+                          const bgClass = plan.featured === 'purple'
+                            ? 'bg-[#B725B7] text-white'
+                            : plan.featured === 'black'
+                              ? 'bg-[#0a0a0f] text-white'
+                              : plan.featured === 'bestValue'
+                                ? 'bg-[#E91E63] text-white'
+                                : 'bg-gray-50'
+                          return (
+                            <div
+                              key={i}
+                              className={`relative p-8 rounded-2xl min-h-[620px] ${bgClass}`}
+                            >
+                              {hasBadge && (
+                                <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5ED6CE] text-[#0a8a80] text-sm font-bold rounded-full whitespace-nowrap">
+                                  {isBestValue ? t.tqPage.pricing.bestValue : t.tqPage.pricing.popular}
+                                </span>
+                              )}
+                              <div className="text-center mb-6">
+                                <h3 className={`text-2xl font-bold mb-2 ${isWhiteText ? 'text-white' : 'text-gray-900'}`}>
+                                  {plan.name}
+                                </h3>
+                                <p className={isWhiteText ? 'text-white/80' : 'text-gray-600'}>
+                                  {plan.description}
+                                </p>
+                              </div>
+                              <div className="text-center mb-6">
+                                <span className={`text-4xl font-bold ${isWhiteText ? 'text-white' : 'text-gray-900'}`}>
+                                  {plan.price}
+                                </span>
+                                {plan.price !== 'Sob consulta' && plan.price !== 'Contact us' && (
+                                  <span className={isWhiteText ? 'text-white/80' : 'text-gray-500'}>
+                                    {t.tqPage.pricing.monthly}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex justify-center gap-4 mb-6">
+                                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  isWhiteText ? 'bg-white/20 text-white' : 'bg-[#5ED6CE]/20 text-[#0a8a80]'
+                                }`}>
+                                  {plan.hours}{plan.hours !== 'Custom' && t.tqPage.pricing.hoursSuffix}
+                                </div>
+                                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  isWhiteText ? 'bg-white/20 text-white' : 'bg-[#B725B7]/10 text-[#B725B7]'
+                                }`}>
+                                  {plan.users}
+                                </div>
+                              </div>
+                              <ul className="space-y-3">
+                                {plan.features.map((feature, j) => (
+                                  <li key={j} className={`flex items-start gap-3 ${isWhiteText ? 'text-white/90' : 'text-gray-600'}`}>
+                                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isWhiteText ? 'text-white' : 'text-[#5ED6CE]'}`} />
+                                    {feature}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
 
-                {/* Slide 2: Duo + Practice */}
-                <div className="w-full flex-shrink-0 px-2">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {t.tqPage.pricing.plans.slice(2, 4).map((plan, i) => {
-                      const isPopular = plan.featured === 'purple' || plan.featured === 'black'
-                      const isBestValue = plan.featured === 'bestValue'
-                      const hasBadge = isPopular || isBestValue
-                      const isWhiteText = plan.featured === 'purple' || plan.featured === 'black' || plan.featured === 'bestValue'
-                      const bgClass = plan.featured === 'purple'
-                        ? 'bg-[#B725B7] text-white'
-                        : plan.featured === 'black'
-                          ? 'bg-[#0a0a0f] text-white'
-                          : plan.featured === 'bestValue'
-                            ? 'bg-[#E91E63] text-white'
-                            : 'bg-gray-50'
-                      return (
-                        <div
-                          key={i}
-                          className={`relative p-8 rounded-2xl min-h-[620px] ${bgClass}`}
-                        >
-                          {hasBadge && (
-                            <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5ED6CE] text-[#0a8a80] text-sm font-bold rounded-full whitespace-nowrap">
-                              {isBestValue ? t.tqPage.pricing.bestValue : t.tqPage.pricing.popular}
-                            </span>
-                          )}
-                          <div className="text-center mb-6">
-                            <h3 className={`text-2xl font-bold mb-2 ${isWhiteText ? 'text-white' : 'text-gray-900'}`}>
-                              {plan.name}
-                            </h3>
-                            <p className={isWhiteText ? 'text-white/80' : 'text-gray-600'}>
-                              {plan.description}
-                            </p>
-                          </div>
-                          <div className="text-center mb-6">
-                            <span className={`text-4xl font-bold ${isWhiteText ? 'text-white' : 'text-gray-900'}`}>
-                              {plan.price}
-                            </span>
-                            {plan.price !== 'Sob consulta' && plan.price !== 'Contact us' && (
-                              <span className={isWhiteText ? 'text-white/80' : 'text-gray-500'}>
-                                {t.tqPage.pricing.monthly}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex justify-center gap-4 mb-6">
-                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              isWhiteText ? 'bg-white/20 text-white' : 'bg-[#5ED6CE]/20 text-[#0a8a80]'
-                            }`}>
-                              {plan.hours}{plan.hours !== 'Custom' && t.tqPage.pricing.hoursSuffix}
+                    {/* Slide 2: Duo + Practice */}
+                    <div className="w-full flex-shrink-0 px-2">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {t.tqPage.pricing.plans.slice(2, 4).map((plan, i) => {
+                          const isPopular = plan.featured === 'purple' || plan.featured === 'black'
+                          const isBestValue = plan.featured === 'bestValue'
+                          const hasBadge = isPopular || isBestValue
+                          const isWhiteText = plan.featured === 'purple' || plan.featured === 'black' || plan.featured === 'bestValue'
+                          const bgClass = plan.featured === 'purple'
+                            ? 'bg-[#B725B7] text-white'
+                            : plan.featured === 'black'
+                              ? 'bg-[#0a0a0f] text-white'
+                              : plan.featured === 'bestValue'
+                                ? 'bg-[#E91E63] text-white'
+                                : 'bg-gray-50'
+                          return (
+                            <div
+                              key={i}
+                              className={`relative p-8 rounded-2xl min-h-[620px] ${bgClass}`}
+                            >
+                              {hasBadge && (
+                                <span className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#5ED6CE] text-[#0a8a80] text-sm font-bold rounded-full whitespace-nowrap">
+                                  {isBestValue ? t.tqPage.pricing.bestValue : t.tqPage.pricing.popular}
+                                </span>
+                              )}
+                              <div className="text-center mb-6">
+                                <h3 className={`text-2xl font-bold mb-2 ${isWhiteText ? 'text-white' : 'text-gray-900'}`}>
+                                  {plan.name}
+                                </h3>
+                                <p className={isWhiteText ? 'text-white/80' : 'text-gray-600'}>
+                                  {plan.description}
+                                </p>
+                              </div>
+                              <div className="text-center mb-6">
+                                <span className={`text-4xl font-bold ${isWhiteText ? 'text-white' : 'text-gray-900'}`}>
+                                  {plan.price}
+                                </span>
+                                {plan.price !== 'Sob consulta' && plan.price !== 'Contact us' && (
+                                  <span className={isWhiteText ? 'text-white/80' : 'text-gray-500'}>
+                                    {t.tqPage.pricing.monthly}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex justify-center gap-4 mb-6">
+                                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  isWhiteText ? 'bg-white/20 text-white' : 'bg-[#5ED6CE]/20 text-[#0a8a80]'
+                                }`}>
+                                  {plan.hours}{plan.hours !== 'Custom' && t.tqPage.pricing.hoursSuffix}
+                                </div>
+                                <div className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  isWhiteText ? 'bg-white/20 text-white' : 'bg-[#B725B7]/10 text-[#B725B7]'
+                                }`}>
+                                  {plan.users}
+                                </div>
+                              </div>
+                              <ul className="space-y-3">
+                                {plan.features.map((feature, j) => (
+                                  <li key={j} className={`flex items-start gap-3 ${isWhiteText ? 'text-white/90' : 'text-gray-600'}`}>
+                                    <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isWhiteText ? 'text-white' : 'text-[#5ED6CE]'}`} />
+                                    {feature}
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              isWhiteText ? 'bg-white/20 text-white' : 'bg-[#B725B7]/10 text-[#B725B7]'
-                            }`}>
-                              {plan.users}
-                            </div>
-                          </div>
-                          <ul className="space-y-3">
-                            {plan.features.map((feature, j) => (
-                              <li key={j} className={`flex items-start gap-3 ${isWhiteText ? 'text-white/90' : 'text-gray-600'}`}>
-                                <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isWhiteText ? 'text-white' : 'text-[#5ED6CE]'}`} />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
+                          )
+                        })}
+                      </div>
+                    </div>
 
-                {/* Slide 3: VIP alone */}
-                <div className="w-full flex-shrink-0 px-2">
-                  <div className="grid md:grid-cols-2 gap-6 justify-items-center">
-                    {t.tqPage.pricing.plans.slice(4, 5).map((plan, i) => {
-                      return (
-                        <div
-                          key={i}
-                          className="relative p-8 rounded-2xl min-h-[620px] bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-[#B725B7]/20 w-full md:col-span-2 md:max-w-[580px]"
-                        >
-                          {/* Star icon at top */}
-                          <div className="absolute -top-5 left-1/2 -translate-x-1/2">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#B725B7] to-[#E91E63] rounded-full flex items-center justify-center shadow-lg">
-                              <Star className="w-5 h-5 text-white fill-white" />
+                    {/* Slide 3: VIP alone */}
+                    <div className="w-full flex-shrink-0 px-2">
+                      <div className="grid md:grid-cols-2 gap-6 justify-items-center">
+                        {t.tqPage.pricing.plans.slice(4, 5).map((plan, i) => {
+                          return (
+                            <div
+                              key={i}
+                              className="relative p-8 rounded-2xl min-h-[620px] bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-[#B725B7]/20 w-full md:col-span-2 md:max-w-[580px]"
+                            >
+                              {/* Star icon at top */}
+                              <div className="absolute -top-5 left-1/2 -translate-x-1/2">
+                                <div className="w-10 h-10 bg-gradient-to-br from-[#B725B7] to-[#E91E63] rounded-full flex items-center justify-center shadow-lg">
+                                  <Star className="w-5 h-5 text-white fill-white" />
+                                </div>
+                              </div>
+                              <div className="text-center mb-6 mt-2">
+                                <h3 className="text-2xl font-bold mb-2 text-gray-900">
+                                  {plan.name}
+                                </h3>
+                                <p className="text-gray-600">
+                                  {plan.description}
+                                </p>
+                              </div>
+                              <div className="text-center mb-6">
+                                <span className="text-4xl font-bold text-gray-900">
+                                  {plan.price}
+                                </span>
+                              </div>
+                              <div className="flex justify-center gap-4 mb-6">
+                                <div className="px-3 py-1 rounded-full text-sm font-medium bg-[#5ED6CE]/20 text-[#0a8a80]">
+                                  {plan.hours}{plan.hours !== 'Custom' && t.tqPage.pricing.hoursSuffix}
+                                </div>
+                                <div className="px-3 py-1 rounded-full text-sm font-medium bg-[#B725B7]/10 text-[#B725B7]">
+                                  {plan.users}
+                                </div>
+                              </div>
+                              <ul className="space-y-3">
+                                {plan.features.map((feature, j) => (
+                                  <li key={j} className="flex items-start gap-3 text-gray-600">
+                                    <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#5ED6CE]" />
+                                    {feature}
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
-                          </div>
-                          <div className="text-center mb-6 mt-2">
-                            <h3 className="text-2xl font-bold mb-2 text-gray-900">
-                              {plan.name}
-                            </h3>
-                            <p className="text-gray-600">
-                              {plan.description}
-                            </p>
-                          </div>
-                          <div className="text-center mb-6">
-                            <span className="text-4xl font-bold text-gray-900">
-                              {plan.price}
-                            </span>
-                          </div>
-                          <div className="flex justify-center gap-4 mb-6">
-                            <div className="px-3 py-1 rounded-full text-sm font-medium bg-[#5ED6CE]/20 text-[#0a8a80]">
-                              {plan.hours}{plan.hours !== 'Custom' && t.tqPage.pricing.hoursSuffix}
-                            </div>
-                            <div className="px-3 py-1 rounded-full text-sm font-medium bg-[#B725B7]/10 text-[#B725B7]">
-                              {plan.users}
-                            </div>
-                          </div>
-                          <ul className="space-y-3">
-                            {plan.features.map((feature, j) => (
-                              <li key={j} className="flex items-start gap-3 text-gray-600">
-                                <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#5ED6CE]" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             {/* Slide Indicators */}
-            <div className="flex justify-center gap-3 mt-6">
-              <button
-                onClick={() => setPricingSlide(0)}
-                className={`px-4 py-2 rounded-full transition-all duration-300 text-sm font-medium ${
-                  pricingSlide === 0
-                    ? 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}
-              >
-                Starter • Solo
-              </button>
-              <button
-                onClick={() => setPricingSlide(1)}
-                className={`px-4 py-2 rounded-full transition-all duration-300 text-sm font-medium ${
-                  pricingSlide === 1
-                    ? 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}
-              >
-                Duo • Practice
-              </button>
-              <button
-                onClick={() => setPricingSlide(2)}
-                className={`px-4 py-2 rounded-full transition-all duration-300 text-sm font-medium ${
-                  pricingSlide === 2
-                    ? 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                }`}
-              >
-                VIP
-              </button>
+            <div className="flex justify-center gap-2 md:gap-3 mt-3 md:mt-6 flex-wrap">
+              {isMobile ? (
+                /* Mobile: show plan names as individual dots/buttons */
+                t.tqPage.pricing.plans.map((plan, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setPricingSlide(i)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      pricingSlide === i
+                        ? 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] scale-125'
+                        : 'bg-gray-300 hover:bg-gray-400'
+                    }`}
+                    aria-label={plan.name}
+                  />
+                ))
+              ) : (
+                /* Desktop: grouped buttons */
+                <>
+                  <button
+                    onClick={() => setPricingSlide(0)}
+                    className={`px-4 py-2 rounded-full transition-all duration-300 text-sm font-medium ${
+                      pricingSlide === 0
+                        ? 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    Starter • Solo
+                  </button>
+                  <button
+                    onClick={() => setPricingSlide(1)}
+                    className={`px-4 py-2 rounded-full transition-all duration-300 text-sm font-medium ${
+                      pricingSlide === 1
+                        ? 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    Duo • Practice
+                  </button>
+                  <button
+                    onClick={() => setPricingSlide(2)}
+                    className={`px-4 py-2 rounded-full transition-all duration-300 text-sm font-medium ${
+                      pricingSlide === 2
+                        ? 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    VIP
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

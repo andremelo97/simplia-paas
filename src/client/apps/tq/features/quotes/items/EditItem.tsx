@@ -4,9 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardContent, Button, Input, Textarea, PriceInput, Checkbox } from '@client/common/ui'
 import { itemsService, CreateItemRequest, Item } from '../../../services/items'
 import { formatDate } from '@client/common/utils/dateUtils'
+import { useAuthStore } from '../../../shared/store'
 
 export const EditItem: React.FC = () => {
   const { t } = useTranslation('tq')
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
   const [formData, setFormData] = useState<CreateItemRequest>({
     name: '',
     description: '',
@@ -200,7 +203,7 @@ export const EditItem: React.FC = () => {
                   placeholder={t('quote_items.placeholders.name')}
                   helperText={t('quote_items.helper.name')}
                   required
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
 
                 <PriceInput
@@ -209,7 +212,7 @@ export const EditItem: React.FC = () => {
                   onChange={handlePriceChange}
                   error={validationErrors.basePrice}
                   helperText={t('quote_items.helper.base_price')}
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
               </div>
 
@@ -222,7 +225,7 @@ export const EditItem: React.FC = () => {
                   placeholder={t('quote_items.placeholders.description')}
                   helperText={t('quote_items.helper.description')}
                   rows={4}
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
               </div>
 
@@ -232,7 +235,7 @@ export const EditItem: React.FC = () => {
                   description={t('quote_items.active_checkbox')}
                   checked={formData.active}
                   onChange={(e) => handleActiveChange(e.target.checked)}
-                  disabled={isSubmitting}
+                  disabled={!canEdit || isSubmitting}
                 />
               </div>
             </CardContent>
@@ -266,26 +269,28 @@ export const EditItem: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
-          <Button
-            type="submit"
-            variant="default"
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? t('quote_items.updating_item') : t('quote_items.update')}
-          </Button>
+        {canEdit && (
+          <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
+            <Button
+              type="submit"
+              variant="default"
+              isLoading={isSubmitting}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? t('quote_items.updating_item') : t('quote_items.update')}
+            </Button>
 
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            style={{ height: '32px', minHeight: '32px' }}
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+              style={{ height: '32px', minHeight: '32px' }}
+            >
+              {t('common.cancel')}
+            </Button>
+          </div>
+        )}
       </form>
     </div>
   )

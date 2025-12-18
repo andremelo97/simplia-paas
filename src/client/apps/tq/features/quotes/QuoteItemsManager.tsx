@@ -17,12 +17,14 @@ interface QuoteItemsManagerProps {
   quoteId: string
   initialItems?: LocalQuoteItem[]
   onItemsChange: (items: LocalQuoteItem[]) => void
+  readonly?: boolean
 }
 
 export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
   quoteId,
   initialItems = [],
-  onItemsChange
+  onItemsChange,
+  readonly = false
 }) => {
   const { t } = useTranslation('tq')
   const { formatCurrency } = useCurrencyFormatter()
@@ -160,13 +162,15 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">{t('quotes.quote_items')}</h2>
         </div>
-        <button
-          onClick={handleAddRow}
-          className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors mt-3"
-        >
-          <Plus className="w-4 h-4" />
-          <span>{t('quotes.add_item')}</span>
-        </button>
+        {!readonly && (
+          <button
+            onClick={handleAddRow}
+            className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-md transition-colors mt-3"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{t('quotes.add_item')}</span>
+          </button>
+        )}
       </CardHeader>
 
       <CardContent className="px-6 pb-6">
@@ -257,6 +261,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                           min={1}
                           value={item.quantity || 1}
                           onChange={(e) => handleUpdateQuantity(item.localId, parseInt(e.target.value) || 1)}
+                          disabled={readonly}
                         />
                       </div>
 
@@ -266,6 +271,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                           label={t('quotes.discount')}
                           value={item.discountAmount || 0}
                           onChange={(value) => handleUpdateDiscount(item.localId, value)}
+                          disabled={readonly}
                         />
                       </div>
 
@@ -281,16 +287,18 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
                     </div>
 
                     {/* Delete Button - Separate row below */}
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => handleRemoveRow(item.localId)}
-                        className="flex items-center space-x-1 px-2 py-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                        title={t('quotes.remove_item')}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                        <span>{t('quotes.remove')}</span>
-                      </button>
-                    </div>
+                    {!readonly && (
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => handleRemoveRow(item.localId)}
+                          className="flex items-center space-x-1 px-2 py-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+                          title={t('quotes.remove_item')}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>{t('quotes.remove')}</span>
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>

@@ -5,6 +5,7 @@ import { Button, StatusBadge } from '@client/common/ui'
 import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key } from 'lucide-react'
 import { PublicQuote } from '../../services/publicQuotes'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useAuthStore } from '../../shared/store'
 
 interface PublicQuoteLinkRowProps {
   publicQuote: PublicQuote
@@ -23,6 +24,8 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
   const [copied, setCopied] = React.useState(false)
   const { formatShortDate, formatDateTime } = useDateFormatter()
   const { t } = useTranslation('tq')
+  const { user } = useAuthStore()
+  const canEdit = user?.role !== 'operations'
 
   const handleCopy = () => {
     if (publicQuote.publicUrl) {
@@ -156,28 +159,32 @@ export const PublicQuoteLinkRow: React.FC<PublicQuoteLinkRowProps> = ({
           {t('public_quotes.links.card.open_quote')}
         </Button>
 
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={onNewPassword}
-          disabled={!publicQuote.active}
-          isLoading={isNewPasswordLoading}
-          className="flex items-center gap-1.5"
-        >
-          <Key size={14} />
-          {t('public_quotes.links.card.new_password')}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={onNewPassword}
+            disabled={!publicQuote.active}
+            isLoading={isNewPasswordLoading}
+            className="flex items-center gap-1.5"
+          >
+            <Key size={14} />
+            {t('public_quotes.links.card.new_password')}
+          </Button>
+        )}
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRevoke}
-          disabled={!publicQuote.active}
-          className="flex items-center gap-1.5 text-red-600 hover:bg-red-50 ml-auto"
-        >
-          <Trash2 size={14} />
-          {t('public_quotes.links.card.revoke')}
-        </Button>
+        {canEdit && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRevoke}
+            disabled={!publicQuote.active}
+            className="flex items-center gap-1.5 text-red-600 hover:bg-red-50 ml-auto"
+          >
+            <Trash2 size={14} />
+            {t('public_quotes.links.card.revoke')}
+          </Button>
+        )}
       </div>
     </div>
   )

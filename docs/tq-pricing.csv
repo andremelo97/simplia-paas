@@ -5,16 +5,18 @@ Manager,R$ 20,Edição de registros e transcrição
 Operations,R$ 10,Acesso de leitura aos registros
 
 PLANOS
-Plano,Público-alvo,Horas/mês,Usuários Inclusos,Custo Transcrição,Custo Licenças,Custo Total,Preço Final
-Starter,Perfeito para começar,40,1 Admin,R$ 64,R$ 50,R$ 114,R$ 119
-Solo,Profissional individual,80,1 Admin + 1 Operations,R$ 128,R$ 60,R$ 188,R$ 189
-Practice,Clínicas em crescimento,240,1 Admin + 1 Manager + 1 Operations,R$ 384,R$ 80,R$ 464,R$ 469
-VIP,Clínicas com equipes maiores,Personalizado,Personalizado,-,-,-,Sob consulta
+Plano,Público-alvo,Horas/mês,Usuários Inclusos,Custo Transcrição,Custo Licenças,Custo Total,Preço Final,Destaque
+Starter,Perfeito para começar,40,1 Admin,R$ 64,R$ 50,R$ 114,R$ 119,-
+Solo,Profissional individual,80,1 Admin + 1 Operations,R$ 128,R$ 60,R$ 188,R$ 189,Mais Popular
+Duo,Pequenas clínicas,160,1 Admin + 1 Manager,R$ 256,R$ 70,R$ 326,R$ 349,Mais Popular
+Practice,Clínicas em crescimento,240,1 Admin + 1 Manager + 1 Operations,R$ 384,R$ 80,R$ 464,R$ 469,Melhor Custo-Benefício
+VIP,Clínicas com equipes maiores,Personalizado,Personalizado,-,-,-,Sob consulta,-
 
 ANÁLISE DE LUCRO
 Plano,Preço,Lucro Mínimo,% Mínima,Lucro 50% uso,% 50% uso,Lucro 25% uso,% 25% uso
 Starter,R$ 119,R$ 5,4%,R$ 37,31%,R$ 53,45%
 Solo,R$ 189,R$ 1,1%,R$ 65,34%,R$ 97,51%
+Duo,R$ 349,R$ 23,7%,R$ 151,43%,R$ 215,62%
 Practice,R$ 469,R$ 5,1%,R$ 197,42%,R$ 293,62%
 
 CUSTOS FIXOS MENSAIS
@@ -45,37 +47,40 @@ Horas de áudio/mês,35.200 × 0.5h,17.600 horas
 
 SIMULAÇÃO FATURAMENTO - CENÁRIO 1 (FASE INICIAL)
 Plano,Qtd Tenants,Horas Contratadas,Receita Mensal
-Starter,100,4.000h,R$ 11.900
-Solo,50,4.000h,R$ 9.450
+Starter,50,2.000h,R$ 5.950
+Solo,100,8.000h,R$ 18.900
+Duo,50,8.000h,R$ 17.450
 Practice,10,2.400h,R$ 4.690
-Total,160,10.400h,R$ 26.040
-Uso real (50%),-,5.200h,✅ Dentro da capacidade
-Custo Deepgram,-,-,R$ 8.320
+Total,210,20.400h,R$ 46.990
+Uso real (50%),-,10.200h,✅ Dentro da capacidade
+Custo Deepgram,-,-,R$ 16.320
 Custos fixos,-,-,R$ 400
-Lucro líquido,-,-,R$ 17.320/mês
+Lucro líquido,-,-,R$ 30.270/mês
 
 SIMULAÇÃO FATURAMENTO - CENÁRIO 2 (CRESCIMENTO)
 Plano,Qtd Tenants,Horas Contratadas,Receita Mensal
-Starter,200,8.000h,R$ 23.800
-Solo,100,8.000h,R$ 18.900
+Starter,100,4.000h,R$ 11.900
+Solo,200,16.000h,R$ 37.800
+Duo,100,16.000h,R$ 34.900
 Practice,50,12.000h,R$ 23.450
-Total,350,28.000h,R$ 66.150
-Uso real (50%),-,14.000h,✅ Dentro da capacidade
-Custo Deepgram,-,-,R$ 22.400
+Total,450,48.000h,R$ 108.050
+Uso real (50%),-,24.000h,⚠️ Acima da capacidade
+Custo Deepgram,-,-,R$ 38.400
 Custos fixos,-,-,R$ 400
-Lucro líquido,-,-,R$ 43.350/mês
+Lucro líquido,-,-,R$ 69.250/mês
 
 SIMULAÇÃO FATURAMENTO - CENÁRIO 3 (ESCALA)
 Plano,Qtd Tenants,Horas Contratadas,Receita Mensal
-Starter,500,20.000h,R$ 59.500
-Solo,200,16.000h,R$ 37.800
+Starter,200,8.000h,R$ 23.800
+Solo,400,32.000h,R$ 75.600
+Duo,200,32.000h,R$ 69.800
 Practice,100,24.000h,R$ 46.900
 VIP,20,10.000h,R$ 20.000 (est.)
-Total,820,70.000h,R$ 164.200
-Uso real (30%),-,21.000h,⚠️ Próximo do limite
-Custo Deepgram,-,-,R$ 33.600
+Total,920,106.000h,R$ 236.100
+Uso real (30%),-,31.800h,🔴 Muito acima da capacidade
+Custo Deepgram,-,-,R$ 50.880
 Custos fixos,-,-,R$ 400
-Lucro líquido,-,-,R$ 130.200/mês
+Lucro líquido,-,-,R$ 184.820/mês
 
 ALERTAS DE CAPACIDADE
 Uso Real Mensal,Status,Ação

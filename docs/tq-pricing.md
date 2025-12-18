@@ -19,9 +19,12 @@
 | Plano | Público-alvo | Horas/mês | Usuários Inclusos | Preço |
 |-------|--------------|-----------|-------------------|-------|
 | **Starter** | Perfeito para começar | 40h | 1 Admin | R$ 119 |
-| **Solo** | Profissional individual | 80h | 1 Admin + 1 Operations | R$ 189 |
+| **Solo** ⭐ | Profissional individual | 80h | 1 Admin + 1 Operations | R$ 189 |
+| **Duo** ⭐ | Pequenas clínicas | 160h | 1 Admin + 1 Manager | R$ 349 |
 | **Practice** | Clínicas em crescimento | 240h | 1 Admin + 1 Manager + 1 Operations | R$ 469 |
 | **VIP** | Clínicas com equipes maiores | Personalizado | Personalizado | Sob consulta |
+
+> ⭐ = Mais Popular
 
 ## Composição de Custos por Plano
 
@@ -33,13 +36,21 @@
 | **Custo Total** | R$ 114 |
 | **Preço Final** | R$ 119 |
 
-### Solo (80h/mês)
+### Solo (80h/mês) ⭐
 | Item | Valor |
 |------|-------|
 | Transcrição (80h × R$ 1,60) | R$ 128 |
 | Licenças (1 Admin + 1 Operations) | R$ 60 |
 | **Custo Total** | R$ 188 |
 | **Preço Final** | R$ 189 |
+
+### Duo (160h/mês) ⭐
+| Item | Valor |
+|------|-------|
+| Transcrição (160h × R$ 1,60) | R$ 256 |
+| Licenças (1 Admin + 1 Manager) | R$ 70 |
+| **Custo Total** | R$ 326 |
+| **Preço Final** | R$ 349 |
 
 ### Practice (240h/mês)
 | Item | Valor |
@@ -55,6 +66,7 @@
 |-------|-------|--------------|-------------------|-------------------|
 | Starter | R$ 119 | R$ 5 (4%) | R$ 37 (31%) | R$ 53 (45%) |
 | Solo | R$ 189 | R$ 1 (1%) | R$ 65 (34%) | R$ 97 (51%) |
+| Duo | R$ 349 | R$ 23 (7%) | R$ 151 (43%) | R$ 215 (62%) |
 | Practice | R$ 469 | R$ 5 (1%) | R$ 197 (42%) | R$ 293 (62%) |
 
 > **Nota:** O lucro real depende do uso efetivo. Clientes raramente usam 100% da cota.
@@ -69,7 +81,7 @@
 - Setup inicial incluso
 - Suporte padrão
 
-### Solo
+### Solo ⭐
 - 1 licença Admin + 1 Operations inclusa
 - 80 horas de transcrição/mês
 - Transcrição monolíngue
@@ -77,6 +89,15 @@
 - Setup inicial incluso
 - Suporte para criação de templates
 - Suporte padrão
+
+### Duo ⭐
+- 1 Admin + 1 Manager inclusos
+- 160 horas de transcrição/mês
+- Transcrição multilíngue com detecção automática
+- Máximo de 3 templates no Construtor de Landing Pages
+- Setup inicial incluso
+- Suporte para criação de templates
+- Suporte prioritário
 
 ### Practice
 - 1 Admin + 1 Manager + 1 Operations inclusos
@@ -131,45 +152,49 @@
 
 | Plano | Qtd Tenants | Horas Contratadas | Receita Mensal |
 |-------|-------------|-------------------|----------------|
-| Starter | 100 | 4.000h | R$ 11.900 |
-| Solo | 50 | 4.000h | R$ 9.450 |
+| Starter | 50 | 2.000h | R$ 5.950 |
+| Solo | 100 | 8.000h | R$ 18.900 |
+| Duo | 50 | 8.000h | R$ 17.450 |
 | Practice | 10 | 2.400h | R$ 4.690 |
-| **Total** | **160** | **10.400h** | **R$ 26.040** |
+| **Total** | **210** | **20.400h** | **R$ 46.990** |
 
-- Uso real estimado (50%): **5.200h** ✅ Bem dentro da capacidade
-- Custo Deepgram (50% uso): R$ 8.320
+- Uso real estimado (50%): **10.200h** ✅ Bem dentro da capacidade
+- Custo Deepgram (50% uso): R$ 16.320
 - Custos fixos: R$ 400
-- **Lucro líquido estimado:** R$ 17.320/mês
+- **Lucro líquido estimado:** R$ 30.270/mês
 
 #### Cenário 2: Crescimento (Mix Balanceado)
 
 | Plano | Qtd Tenants | Horas Contratadas | Receita Mensal |
 |-------|-------------|-------------------|----------------|
-| Starter | 200 | 8.000h | R$ 23.800 |
-| Solo | 100 | 8.000h | R$ 18.900 |
+| Starter | 100 | 4.000h | R$ 11.900 |
+| Solo | 200 | 16.000h | R$ 37.800 |
+| Duo | 100 | 16.000h | R$ 34.900 |
 | Practice | 50 | 12.000h | R$ 23.450 |
-| **Total** | **350** | **28.000h** | **R$ 66.150** |
+| **Total** | **450** | **48.000h** | **R$ 108.050** |
 
-- Uso real estimado (50%): **14.000h** ✅ Dentro da capacidade
-- Custo Deepgram (50% uso): R$ 22.400
+- Uso real estimado (50%): **24.000h** ⚠️ Acima da capacidade
+- **Ação necessária:** Solicitar aumento de concorrência ao Deepgram
+- Custo Deepgram (50% uso): R$ 38.400
 - Custos fixos: R$ 400
-- **Lucro líquido estimado:** R$ 43.350/mês
+- **Lucro líquido estimado:** R$ 69.250/mês
 
 #### Cenário 3: Escala (Operação Madura)
 
 | Plano | Qtd Tenants | Horas Contratadas | Receita Mensal |
 |-------|-------------|-------------------|----------------|
-| Starter | 500 | 20.000h | R$ 59.500 |
-| Solo | 200 | 16.000h | R$ 37.800 |
+| Starter | 200 | 8.000h | R$ 23.800 |
+| Solo | 400 | 32.000h | R$ 75.600 |
+| Duo | 200 | 32.000h | R$ 69.800 |
 | Practice | 100 | 24.000h | R$ 46.900 |
 | VIP | 20 | 10.000h | R$ 20.000 (est.) |
-| **Total** | **820** | **70.000h** | **R$ 164.200** |
+| **Total** | **920** | **106.000h** | **R$ 236.100** |
 
-- Uso real estimado (30%): **21.000h** ⚠️ Próximo do limite (17.600h)
-- **Ação necessária:** Solicitar aumento de concorrência ao Deepgram
-- Custo Deepgram (30% uso): R$ 33.600
+- Uso real estimado (30%): **31.800h** 🔴 Muito acima da capacidade
+- **Ação necessária:** Plano enterprise Deepgram com concorrência aumentada
+- Custo Deepgram (30% uso): R$ 50.880
 - Custos fixos: R$ 400
-- **Lucro líquido estimado:** R$ 130.200/mês
+- **Lucro líquido estimado:** R$ 184.820/mês
 
 ### Alertas de Capacidade
 

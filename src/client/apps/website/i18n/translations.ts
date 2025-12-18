@@ -130,6 +130,7 @@ export const translations = {
         subtitle: 'Pacotes de transcrição + licenças de usuário. Comece pequeno e escale conforme cresce.',
         monthly: '/mês',
         popular: 'Mais Popular',
+        bestValue: 'Melhor Custo-Benefício',
         hours: 'horas',
         hoursSuffix: 'h/mês',
         exceeding: 'Excedente',
@@ -170,13 +171,32 @@ export const translations = {
             ]
           },
           {
+            name: 'Duo',
+            price: 'R$ 349',
+            description: 'Pequenas clínicas',
+            hours: '160',
+            hoursPerDay: '~8h/dia',
+            users: '1 Admin + 1 Manager',
+            featured: 'black',
+            features: [
+              '160 horas de transcrição/mês (~8h/dia)',
+              '1 Admin + 1 Manager inclusos',
+              'Licenças adicionais disponíveis (veja preços abaixo)',
+              'Transcrição multilíngue automática',
+              'Até 3 templates de landing page',
+              'Setup inicial incluso',
+              'Suporte para criação de templates',
+              'Suporte prioritário'
+            ]
+          },
+          {
             name: 'Practice',
             price: 'R$ 469',
             description: 'Clínicas em crescimento',
             hours: '240',
             hoursPerDay: '~12h/dia',
             users: '3 licenças',
-            featured: 'pink',
+            featured: 'bestValue',
             features: [
               '240 horas de transcrição/mês (~12h/dia)',
               '1 Admin + 1 Manager + 1 Ops inclusos',
@@ -196,13 +216,11 @@ export const translations = {
             hours: 'Custom',
             users: 'Ilimitado',
             features: [
+              'Tudo que o Practice inclui',
               'Horas de transcrição personalizadas',
               'Permite exceder limite mensal',
               'Sem limite de licenças',
-              'Templates ilimitados',
-              'Setup inicial incluso',
-              'Suporte para criação de templates',
-              'Suporte prioritário'
+              'Templates ilimitados'
             ]
           }
         ],
@@ -478,6 +496,7 @@ export const translations = {
         subtitle: 'Transcription packages + user licenses. Start small and scale as you grow.',
         monthly: '/month',
         popular: 'Most Popular',
+        bestValue: 'Best Value',
         hours: 'hours',
         hoursSuffix: 'h/month',
         exceeding: 'Exceeding',
@@ -518,13 +537,32 @@ export const translations = {
             ]
           },
           {
+            name: 'Duo',
+            price: 'R$ 349',
+            description: 'Clinical partners',
+            hours: '160',
+            hoursPerDay: '~8h/day',
+            users: '1 Admin + 1 Manager',
+            featured: 'black',
+            features: [
+              '160 transcription hours/month (~8h/day)',
+              '1 Admin + 1 Manager included',
+              'Additional licenses available (see prices below)',
+              'Automatic multilingual transcription',
+              'Up to 3 landing page templates',
+              'Initial setup included',
+              'Template creation support',
+              'Priority support'
+            ]
+          },
+          {
             name: 'Practice',
             price: 'R$ 469',
             description: 'Growing clinics',
             hours: '240',
             hoursPerDay: '~12h/day',
             users: '3 licenses',
-            featured: 'pink',
+            featured: 'bestValue',
             features: [
               '240 transcription hours/month (~12h/day)',
               '1 Admin + 1 Manager + 1 Ops included',
@@ -544,13 +582,11 @@ export const translations = {
             hours: 'Custom',
             users: 'Unlimited',
             features: [
+              'Everything Practice includes',
               'Custom transcription hours',
               'Allows exceeding monthly limit',
               'Unlimited licenses',
-              'Unlimited templates',
-              'Initial setup included',
-              'Template creation support',
-              'Priority support'
+              'Unlimited templates'
             ]
           }
         ],

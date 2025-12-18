@@ -99,8 +99,9 @@ ON CONFLICT (email) DO NOTHING;
 
 -- TQ Pricing Plans (from docs/tq-pricing.md):
 --   Starter: 40h/mês (R$ 119) - 1 Admin
---   Solo: 80h/mês (R$ 189) - 1 Admin + 1 Operations
---   Practice: 240h/mês (R$ 469) - 1 Admin + 1 Manager + 1 Operations, multilingual
+--   Solo: 80h/mês (R$ 189) - 1 Admin + 1 Operations [Popular]
+--   Duo: 160h/mês (R$ 349) - 1 Admin + 1 Manager, multilingual [Popular]
+--   Practice: 240h/mês (R$ 469) - 1 Admin + 1 Manager + 1 Operations, multilingual, allows overage
 --   VIP: Custom - unlimited licenses, allows overage
 --
 -- Transcription strategies:
@@ -142,6 +143,24 @@ VALUES
 • Setup inicial incluso
 • Suporte para criação de templates
 • Suporte padrão'
+  ),
+  (
+    'duo',
+    'Duo',
+    9600,
+    false,
+    false,
+    'nova-3',
+    true,
+    0.0052,
+    true,
+    '• 160 horas de transcrição/mês (~8h/dia)
+• 1 Admin + 1 Manager inclusos
+• Transcrição multilíngue automática
+• Até 3 templates de landing page
+• Setup inicial incluso
+• Suporte para criação de templates
+• Suporte prioritário'
   ),
   (
     'practice',

@@ -30,12 +30,14 @@ src/client/apps/tq/features/public-quotes/
 ├── PreviewPublicQuoteTemplate.tsx         # Preview isolado
 └── puck-config/
     ├── index.ts                           # Config principal do Puck
-    ├── layout-components.tsx              # Grid, Flex, Space
+    ├── layout-components.tsx              # Grid, Flex, Space, Divider
     ├── typography-components.tsx          # Heading, Text
     ├── action-components.tsx              # Button
-    ├── quote-components.tsx               # QuoteNumber, QuoteTotal, ItemsTable
-    ├── header-component.tsx               # Header fixo
-    ├── other-components.tsx               # Hero, CardWithIcon, Logos, Stats
+    ├── quote-components.tsx               # QuoteNumber, QuoteTotal, QuoteItems, QuoteContent
+    ├── header-component.tsx               # Header, Footer
+    ├── media-components.tsx               # Image, Video, ImageCarousel
+    ├── other-components.tsx               # Hero, CardContainer, CardWithIcon, Logos, Stats, TextColumns, TextRows
+    ├── color-options.ts                   # Opções de cores e resolveColor helper
     └── icons.ts                           # Re-exports de lucide-react
 ```
 
@@ -100,10 +102,36 @@ src/client/apps/tq/features/public-quotes/
   - Padding vertical
   - Autoplay, Loop, Muted
   - Mostrar controles
+- **ImageCarousel**: Carrossel de imagens com:
+  - Array de imagens (máx. 6), cada uma com URL e alt text
+  - Tempo de transição configurável (3s, 5s, 7s, 10s, 15s)
+  - Auto-play (liga/desliga)
+  - Indicadores de slide (bolinhas)
+  - Setas de navegação funcionais (clicáveis)
+  - Altura configurável (Small 200px, Medium 300px, Large 400px, X-Large 500px)
+  - Border radius, max width, alinhamento, padding
+  - Pausa automática ao passar o mouse
 
 ### Other
 - **CardContainer**: Card com título, descrição e drop zone interna
 - **CardWithIcon**: Card com ícone selecionável (100+ ícones médicos e de negócios), modo compacto ou largo
+- **TextColumns**: Colunas de texto lado a lado com:
+  - Array de colunas (máx. 3), cada uma com título e texto
+  - Grid responsivo: colunas exibidas lado a lado
+  - Alinhamento de texto (left/center)
+  - Tamanho do título (Small 16px, Medium 20px, Large 24px)
+  - Gap entre colunas (Small 16px, Medium 24px, Large 32px, X-Large 48px)
+  - Cores customizáveis para título e texto
+  - Background color, vertical padding
+- **TextRows**: Blocos de texto empilhados verticalmente com:
+  - Array de blocos (máx. 6), cada um com título e texto
+  - Layout vertical (flexDirection: column)
+  - Max width configurável (480px a 1152px)
+  - Alinhamento de texto (left/center)
+  - Tamanho do título (Small 16px, Medium 20px, Large 24px)
+  - Gap entre blocos (Small 16px, Medium 24px, Large 32px, X-Large 48px)
+  - Cores customizáveis para título e texto
+  - Background color, vertical padding
 - **Hero**: Seção hero com:
   - **Título e descrição** com tamanhos de fonte customizáveis (placeholders: 48px e 18px)
   - **Botões de ação** (múltiplos, cores do branding, tamanhos: Small/Medium/Large, cor de texto customizável)

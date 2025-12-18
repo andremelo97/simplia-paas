@@ -19,7 +19,7 @@ const PUBLIC_QUOTE_TEMPLATE_BASE = {
       type: 'Hero',
       props: {
         id: 'Hero-e64f1edb-e0c1-40f2-8a8d-6a55d65da418',
-        align: 'left',
+        align: 'center',
         title: '',
         buttons: [],
         padding: '220px',

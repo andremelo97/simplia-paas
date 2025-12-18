@@ -36,7 +36,7 @@ export const createConfig = (branding: BrandingData) => ({
     },
     media: {
       title: 'Media',
-      components: ['Image', 'Video'],
+      components: ['Image', 'Video', 'ImageCarousel'],
     },
     headerFooter: {
       title: 'Header & Footer',
@@ -44,7 +44,7 @@ export const createConfig = (branding: BrandingData) => ({
     },
     other: {
       title: 'Other',
-      components: ['CardContainer', 'CardWithIcon', 'Hero', 'Logos', 'Stats'],
+      components: ['CardContainer', 'CardWithIcon', 'Hero', 'Logos', 'Stats', 'TextColumns', 'TextRows'],
     },
   },
 })

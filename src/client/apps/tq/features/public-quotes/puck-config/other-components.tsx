@@ -1475,4 +1475,407 @@ export const createOtherComponents = (branding: BrandingData) => ({
       )
     },
   },
+  TextColumns: {
+    fields: {
+      columns: {
+        type: 'array' as const,
+        label: 'Columns (max 3)',
+        max: 3,
+        arrayFields: {
+          title: {
+            type: 'text' as const,
+            label: 'Title',
+          },
+          text: {
+            type: 'textarea' as const,
+            label: 'Text',
+          },
+        },
+        defaultItemProps: {
+          title: 'Column Title',
+          text: 'Add your text content here.',
+        },
+      },
+      alignment: {
+        type: 'radio' as const,
+        label: 'Text Alignment',
+        options: [
+          { label: 'Left', value: 'left' },
+          { label: 'Center', value: 'center' },
+        ],
+      },
+      titleSize: {
+        type: 'select' as const,
+        label: 'Title Size',
+        options: [
+          { label: 'Small (16px)', value: 'sm' },
+          { label: 'Medium (20px)', value: 'md' },
+          { label: 'Large (24px)', value: 'lg' },
+        ],
+      },
+      gap: {
+        type: 'select' as const,
+        label: 'Gap Between Columns',
+        options: [
+          { label: 'Small (16px)', value: 'sm' },
+          { label: 'Medium (24px)', value: 'md' },
+          { label: 'Large (32px)', value: 'lg' },
+          { label: 'X-Large (48px)', value: 'xl' },
+        ],
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      titleColor: {
+        type: 'select' as const,
+        label: 'Title Color',
+        options: textColorOptions,
+      },
+      textColor: {
+        type: 'select' as const,
+        label: 'Text Color',
+        options: textColorOptions,
+      },
+    },
+    defaultProps: {
+      columns: [
+        { title: 'First Column', text: 'Content for column 1.' },
+        { title: 'Second Column', text: 'Content for column 2.' },
+      ],
+      alignment: 'left',
+      titleSize: 'md',
+      gap: 'md',
+      verticalPadding: 32,
+      backgroundColor: 'none',
+      titleColor: '#111827',
+      textColor: '#4b5563',
+    },
+    render: ({ columns, alignment, titleSize, gap, verticalPadding, backgroundColor, titleColor, textColor }: any) => {
+      const titleSizeMap: Record<string, string> = {
+        sm: '16px',
+        md: '20px',
+        lg: '24px',
+      }
+
+      const gapMap: Record<string, string> = {
+        sm: '16px',
+        md: '24px',
+        lg: '32px',
+        xl: '48px',
+      }
+
+      const validColumns = Array.isArray(columns) ? columns.filter((col: any) => col && (col.title || col.text)) : []
+      const columnCount = Math.min(validColumns.length, 3)
+
+      if (validColumns.length === 0) {
+        return (
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div
+              style={{
+                maxWidth: '1152px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                height: '100px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                fontSize: '14px',
+              }}
+            >
+              Add columns to display side by side (max 3)
+            </div>
+          </div>
+        )
+      }
+
+      return (
+        <div
+          style={{
+            width: '100%',
+            paddingTop: `${verticalPadding}px`,
+            paddingBottom: `${verticalPadding}px`,
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            backgroundColor: resolveColor(backgroundColor, branding),
+          }}
+        >
+          <div
+            style={{
+              maxWidth: '1152px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              display: 'grid',
+              gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
+              gap: gapMap[gap] || '24px',
+            }}
+          >
+            {validColumns.map((column: any, index: number) => (
+              <div
+                key={index}
+                style={{
+                  textAlign: alignment,
+                }}
+              >
+                {column.title && (
+                  <h3
+                    style={{
+                      fontSize: titleSizeMap[titleSize] || '20px',
+                      fontWeight: '600',
+                      marginBottom: '12px',
+                      wordBreak: 'break-word',
+                      color: resolveColor(titleColor, branding),
+                    }}
+                  >
+                    {column.title}
+                  </h3>
+                )}
+                {column.text && (
+                  <p
+                    style={{
+                      fontSize: '16px',
+                      lineHeight: '1.625',
+                      wordBreak: 'break-word',
+                      whiteSpace: 'pre-wrap',
+                      color: resolveColor(textColor, branding),
+                    }}
+                  >
+                    {column.text}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    },
+  },
+  TextRows: {
+    fields: {
+      rows: {
+        type: 'array' as const,
+        label: 'Text Blocks',
+        max: 6,
+        arrayFields: {
+          title: {
+            type: 'text' as const,
+            label: 'Title',
+          },
+          text: {
+            type: 'textarea' as const,
+            label: 'Text',
+          },
+        },
+        defaultItemProps: {
+          title: 'Block Title',
+          text: 'Add your text content here. You can write a description, explanation, or any other information.',
+        },
+      },
+      alignment: {
+        type: 'radio' as const,
+        label: 'Text Alignment',
+        options: [
+          { label: 'Left', value: 'left' },
+          { label: 'Center', value: 'center' },
+        ],
+      },
+      titleSize: {
+        type: 'select' as const,
+        label: 'Title Size',
+        options: [
+          { label: 'Small (16px)', value: 'sm' },
+          { label: 'Medium (20px)', value: 'md' },
+          { label: 'Large (24px)', value: 'lg' },
+        ],
+      },
+      gap: {
+        type: 'select' as const,
+        label: 'Gap Between Rows',
+        options: [
+          { label: 'Small (16px)', value: 'sm' },
+          { label: 'Medium (24px)', value: 'md' },
+          { label: 'Large (32px)', value: 'lg' },
+          { label: 'X-Large (48px)', value: 'xl' },
+        ],
+      },
+      maxWidth: {
+        type: 'select' as const,
+        label: 'Max Width',
+        options: [
+          { label: 'Small (480px)', value: '480px' },
+          { label: 'Medium (640px)', value: '640px' },
+          { label: 'Large (768px)', value: '768px' },
+          { label: 'X-Large (896px)', value: '896px' },
+          { label: 'Full (1152px)', value: '1152px' },
+        ],
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      titleColor: {
+        type: 'select' as const,
+        label: 'Title Color',
+        options: textColorOptions,
+      },
+      textColor: {
+        type: 'select' as const,
+        label: 'Text Color',
+        options: textColorOptions,
+      },
+    },
+    defaultProps: {
+      rows: [
+        {
+          title: 'First Block',
+          text: 'Add your content here. This is a text block that can be used to display information in a clean, organized way.',
+        },
+        {
+          title: 'Second Block',
+          text: 'Each block has a title and a text area below. You can customize the styling and layout as needed.',
+        },
+      ],
+      alignment: 'left',
+      titleSize: 'md',
+      gap: 'md',
+      maxWidth: '768px',
+      verticalPadding: 32,
+      backgroundColor: 'none',
+      titleColor: '#111827',
+      textColor: '#4b5563',
+    },
+    render: ({ rows, alignment, titleSize, gap, maxWidth, verticalPadding, backgroundColor, titleColor, textColor }: any) => {
+      const titleSizeMap: Record<string, string> = {
+        sm: '16px',
+        md: '20px',
+        lg: '24px',
+      }
+
+      const gapMap: Record<string, string> = {
+        sm: '16px',
+        md: '24px',
+        lg: '32px',
+        xl: '48px',
+      }
+
+      const validRows = Array.isArray(rows) ? rows.filter((row: any) => row && (row.title || row.text)) : []
+
+      if (validRows.length === 0) {
+        return (
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div
+              style={{
+                maxWidth: maxWidth,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                height: '100px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                fontSize: '14px',
+              }}
+            >
+              Add text blocks (stacked vertically)
+            </div>
+          </div>
+        )
+      }
+
+      return (
+        <div
+          style={{
+            width: '100%',
+            paddingTop: `${verticalPadding}px`,
+            paddingBottom: `${verticalPadding}px`,
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            backgroundColor: resolveColor(backgroundColor, branding),
+          }}
+        >
+          <div
+            style={{
+              maxWidth: maxWidth,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: gapMap[gap] || '24px',
+            }}
+          >
+            {validRows.map((row: any, index: number) => (
+              <div
+                key={index}
+                style={{
+                  textAlign: alignment,
+                }}
+              >
+                {row.title && (
+                  <h3
+                    style={{
+                      fontSize: titleSizeMap[titleSize] || '20px',
+                      fontWeight: '600',
+                      marginBottom: '12px',
+                      wordBreak: 'break-word',
+                      color: resolveColor(titleColor, branding),
+                    }}
+                  >
+                    {row.title}
+                  </h3>
+                )}
+                {row.text && (
+                  <p
+                    style={{
+                      fontSize: '16px',
+                      lineHeight: '1.625',
+                      wordBreak: 'break-word',
+                      whiteSpace: 'pre-wrap',
+                      color: resolveColor(textColor, branding),
+                    }}
+                  >
+                    {row.text}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    },
+  },
 })

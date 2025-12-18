@@ -650,7 +650,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
             smtpSecure: process.env.DEFAULT_SMTP_SECURE === 'true',
             smtpUsername: process.env.DEFAULT_SMTP_USERNAME,
             smtpPassword: process.env.DEFAULT_SMTP_PASSWORD,
-            smtpFromEmail: process.env.DEFAULT_SMTP_FROM_EMAIL
+            smtpFromEmail: process.env.DEFAULT_SMTP_FROM_EMAIL,
+            smtpFromName: 'LivoCare.ai'
           });
           console.log(`✅ Default SMTP settings seeded for tenant ID: ${tenantId}`);
         } else {

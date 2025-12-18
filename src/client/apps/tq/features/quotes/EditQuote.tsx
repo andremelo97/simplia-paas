@@ -190,8 +190,6 @@ export const EditQuote: React.FC = () => {
     setIsSaving(true)
 
     try {
-      let itemsChanged = false
-
       // 1. Update patient data if changed
       if (patientId) {
         const patientChanged =
@@ -222,8 +220,7 @@ export const EditQuote: React.FC = () => {
         })
       }
 
-      // 3. Check if items changed
-      const currentItems = quote.items || []
+      // 3. Prepare items to save
       const itemsToSave = quoteItems
         .filter(item => item.itemId && !item.isSearchMode)
         .map(item => ({
@@ -232,27 +229,12 @@ export const EditQuote: React.FC = () => {
           discountAmount: item.discountAmount || 0
         }))
 
-      // Compare items: different length or different content
-      if (currentItems.length !== itemsToSave.length) {
-        itemsChanged = true
-      } else {
-        // Compare each item
-        for (let i = 0; i < currentItems.length; i++) {
-          const current = currentItems[i]
-          const toSave = itemsToSave[i]
-          if (
-            current.itemId !== toSave.itemId ||
-            current.quantity !== toSave.quantity ||
-            current.discountAmount !== toSave.discountAmount
-          ) {
-            itemsChanged = true
-            break
-          }
-        }
-      }
+      // 4. Always update quote items if there are any items OR if items were cleared
+      // This ensures the quote total is always recalculated with fresh item prices
+      const currentItems = quote.items || []
+      const hasItemChanges = itemsToSave.length > 0 || currentItems.length > 0
 
-      // 4. Update quote items only if changed
-      if (itemsChanged) {
+      if (hasItemChanges) {
         const { items: updatedItems } = await quotesService.replaceQuoteItems(id, {
           items: itemsToSave
         })
@@ -284,8 +266,8 @@ export const EditQuote: React.FC = () => {
       setPatientEmail(freshQuote.patient_email || '')
       setPatientPhone(freshQuote.patient_phone || '')
 
-      // Update items if not already updated
-      if (!itemsChanged && freshQuote.items) {
+      // Update items if not already updated by hasItemChanges
+      if (!hasItemChanges && freshQuote.items) {
         const itemsWithLocalId = freshQuote.items.map((item: any) => ({
           localId: item.id,
           itemId: item.itemId,

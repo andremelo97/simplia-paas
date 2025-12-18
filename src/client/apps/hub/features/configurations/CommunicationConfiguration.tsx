@@ -13,7 +13,7 @@ export const CommunicationConfiguration: React.FC = () => {
     smtpUsername: '',
     smtpPassword: '',
     smtpFromEmail: '',
-    smtpFromName: 'LivoCare.ai'
+    smtpFromName: ''
   })
   const [loading, setLoading] = useState(true)
 
@@ -29,7 +29,7 @@ export const CommunicationConfiguration: React.FC = () => {
             smtpUsername: data.smtpUsername || '',
             smtpPassword: data.smtpPassword || '',
             smtpFromEmail: data.smtpFromEmail || '',
-            smtpFromName: data.smtpFromName || 'LivoCare.ai'
+            smtpFromName: data.smtpFromName || ''
           })
         }
       } catch (error) {
@@ -160,7 +160,7 @@ export const CommunicationConfiguration: React.FC = () => {
               id="smtpFromName"
               value={settings.smtpFromName}
               onChange={(e) => setSettings({ ...settings, smtpFromName: e.target.value })}
-              placeholder="LivoCare.ai"
+              placeholder=""
             />
           </FormFieldWrapper>
           <FormFieldWrapper

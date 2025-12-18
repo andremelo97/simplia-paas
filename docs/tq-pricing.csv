@@ -1,8 +1,8 @@
 LICENÇAS
-Tipo,Preço
-Admin,R$ 50
-Manager,R$ 20
-Operations,R$ 10
+Tipo,Preço,Descrição
+Admin,R$ 50,Acesso total ao sistema e configurações
+Manager,R$ 20,Edição de registros e transcrição
+Operations,R$ 10,Acesso de leitura aos registros
 
 PLANOS
 Plano,Público-alvo,Horas/mês,Usuários Inclusos,Custo Transcrição,Custo Licenças,Custo Total,Preço Final
@@ -13,13 +13,9 @@ VIP,Clínicas com equipes maiores,Personalizado,Personalizado,-,-,-,Sob consulta
 
 ANÁLISE DE LUCRO
 Plano,Preço,Lucro Mínimo,% Mínima,Lucro 50% uso,% 50% uso,Lucro 25% uso,% 25% uso
-Starter,R$ 119,R$ 55,46%,R$ 87,73%,R$ 103,87%
-Solo,R$ 189,R$ 61,32%,R$ 125,66%,R$ 157,83%
-Practice,R$ 469,R$ 85,18%,R$ 277,59%,R$ 373,80%
-
-EXCEDENTE
-Preço/hora,Margem
-R$ 2.00,25%
+Starter,R$ 119,R$ 5,4%,R$ 37,31%,R$ 53,45%
+Solo,R$ 189,R$ 1,1%,R$ 65,34%,R$ 97,51%
+Practice,R$ 469,R$ 5,1%,R$ 197,42%,R$ 293,62%
 
 CUSTOS FIXOS MENSAIS
 Serviço,Fornecedor,Valor
@@ -30,3 +26,60 @@ Transcrição,Deepgram,~R$ 0.027/min
 Buckets,Supabase,~R$ 175/mês
 Canva Pro,Canva,R$ 17.50/mês
 Total Estimado,-,~R$ 400/mês
+
+LIMITES DEEPGRAM
+Parâmetro,Valor
+Concorrência máxima (REST API),100 conexões simultâneas
+Processamento,Tempo real (1 min áudio = ~1 min processo)
+
+CAPACIDADE MÁXIMA MENSAL
+Métrica,Cálculo,Resultado
+Duração média consulta,-,30 minutos
+Horas operação pico,-,8h/dia
+Dias úteis/mês,-,22
+Transcrições simultâneas,100 conexões,100
+Transcrições/hora,100 × 2 (30min cada),200/hora
+Transcrições/dia,200 × 8h,1.600/dia
+Transcrições/mês,1.600 × 22 dias,35.200/mês
+Horas de áudio/mês,35.200 × 0.5h,17.600 horas
+
+SIMULAÇÃO FATURAMENTO - CENÁRIO 1 (FASE INICIAL)
+Plano,Qtd Tenants,Horas Contratadas,Receita Mensal
+Starter,100,4.000h,R$ 11.900
+Solo,50,4.000h,R$ 9.450
+Practice,10,2.400h,R$ 4.690
+Total,160,10.400h,R$ 26.040
+Uso real (50%),-,5.200h,✅ Dentro da capacidade
+Custo Deepgram,-,-,R$ 8.320
+Custos fixos,-,-,R$ 400
+Lucro líquido,-,-,R$ 17.320/mês
+
+SIMULAÇÃO FATURAMENTO - CENÁRIO 2 (CRESCIMENTO)
+Plano,Qtd Tenants,Horas Contratadas,Receita Mensal
+Starter,200,8.000h,R$ 23.800
+Solo,100,8.000h,R$ 18.900
+Practice,50,12.000h,R$ 23.450
+Total,350,28.000h,R$ 66.150
+Uso real (50%),-,14.000h,✅ Dentro da capacidade
+Custo Deepgram,-,-,R$ 22.400
+Custos fixos,-,-,R$ 400
+Lucro líquido,-,-,R$ 43.350/mês
+
+SIMULAÇÃO FATURAMENTO - CENÁRIO 3 (ESCALA)
+Plano,Qtd Tenants,Horas Contratadas,Receita Mensal
+Starter,500,20.000h,R$ 59.500
+Solo,200,16.000h,R$ 37.800
+Practice,100,24.000h,R$ 46.900
+VIP,20,10.000h,R$ 20.000 (est.)
+Total,820,70.000h,R$ 164.200
+Uso real (30%),-,21.000h,⚠️ Próximo do limite
+Custo Deepgram,-,-,R$ 33.600
+Custos fixos,-,-,R$ 400
+Lucro líquido,-,-,R$ 130.200/mês
+
+ALERTAS DE CAPACIDADE
+Uso Real Mensal,Status,Ação
+< 10.000h,🟢 Normal,Operação tranquila
+10.000h - 15.000h,🟡 Atenção,Monitorar picos de horário
+15.000h - 17.000h,🟠 Alerta,Planejar aumento de capacidade
+> 17.000h,🔴 Crítico,Solicitar aumento de concorrência

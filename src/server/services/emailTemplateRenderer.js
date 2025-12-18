@@ -258,8 +258,8 @@ function generateHtmlEmail({ bodyText, branding, settings, variables, locale }) 
               ${footerContactInfo}
               <p style="margin: ${footerContactInfo ? '16px' : '0'} 0 0 0; color: #9ca3af; font-size: 12px;">
                 ${locale === 'pt-BR'
-                  ? `Este e-mail foi enviado por ${companyName} | <a href="https://livocare.ai" style="color: #B725B7; text-decoration: none;">livocare.ai</a>`
-                  : `This email was sent by ${companyName} | <a href="https://livocare.ai" style="color: #B725B7; text-decoration: none;">livocare.ai</a>`}
+                  ? `Este e-mail foi enviado por ${companyName} | <a href="https://www.livocare.ai" style="color: #B725B7; text-decoration: none;">www.livocare.ai</a>`
+                  : `This email was sent by ${companyName} | <a href="https://www.livocare.ai" style="color: #B725B7; text-decoration: none;">www.livocare.ai</a>`}
               </p>
             </td>
           </tr>

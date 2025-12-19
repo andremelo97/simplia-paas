@@ -272,6 +272,49 @@ Renovar token JWT.
 ### POST `/platform-auth/logout`
 Logout da plataforma.
 
+### POST `/platform-auth/forgot-password`
+Recuperação de senha para usuários Hub/TQ.
+
+**Headers:**
+- `Content-Type: application/json`
+
+**Body**:
+```json
+{
+  "email": "user@company.com"
+}
+```
+
+**Resposta de Sucesso** (sempre 200 por segurança):
+```json
+{
+  "success": true,
+  "meta": {
+    "code": "PASSWORD_RESET_SENT",
+    "message": "If an account exists with this email, a new password has been sent."
+  }
+}
+```
+
+**Comportamento**:
+- Gera nova senha aleatória de 12 caracteres
+- Atualiza senha do usuário no banco de dados
+- Envia email bilíngue (PT-BR + EN-US) com a nova senha
+- **Segurança**: Sempre retorna sucesso para prevenir enumeração de emails
+- **SMTP**: Usa configuração LivoCare.ai (`DEFAULT_SMTP_*` env vars)
+
+**Email enviado**:
+- **From**: `"LivoCare.ai" <noreply@livocare.ai>`
+- **Subject**: `Sua nova senha / Your new password - LivoCare`
+- **Conteúdo**: Bilíngue com instruções para trocar senha após login
+- **Footer**: Slogan "Where care meets conversion | Onde cuidado encontra conversão" + link www.livocare.ai
+
+**Códigos de Erro**:
+| Status | Código | Descrição |
+|--------|--------|-----------|
+| 400 | `EMAIL_REQUIRED` | Email não informado |
+| 429 | `RATE_LIMITED` | Excedeu limite de tentativas |
+
 ### Auditoria de Platform Login
 Todos os acessos (sucessos e falhas) são registrados em `platform_login_audit` com:
 - `user_id_fk` (se usuário válido), `email`, `ip_address`, `user_agent`
@@ -1356,6 +1399,7 @@ npm run db:drop:test
 - `GET /platform-auth/me` - Get platform admin profile
 - `POST /platform-auth/refresh` - Refresh platform token
 - `POST /platform-auth/logout` - Platform admin logout
+- `POST /platform-auth/forgot-password` - Password reset for Hub/TQ users (bilingual email)
 - `GET /platform-auth/audit` - Platform login audit logs
 
 #### Applications Management (`/applications`)

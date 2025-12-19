@@ -5,6 +5,7 @@ import { UserRoleSelect } from './UserRoleSelect'
 import { usersService } from '../../services/users'
 import { tenantsService } from '../../services/tenants'
 import { CreateUserDto, UserRole } from './types'
+import { generateRandomPassword } from '@client/common/utils/passwordGenerator'
 
 interface UserFormData extends CreateUserDto {
   // All fields are inherited from CreateUserDto
@@ -95,13 +96,8 @@ export const CreateUser: React.FC = () => {
     }))
   }
 
-  const generatePassword = () => {
-    // Generate a temporary password - in production this would be handled by backend
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
-    let password = ''
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
+  const handleGeneratePassword = () => {
+    const password = generateRandomPassword(12)
     setFormData(prev => ({ ...prev, password }))
   }
 
@@ -285,7 +281,7 @@ export const CreateUser: React.FC = () => {
                   type="button"
                   variant="secondary"
                   size="sm"
-                  onClick={generatePassword}
+                  onClick={handleGeneratePassword}
                   disabled={isSubmitting}
                 >
                   Generate Password

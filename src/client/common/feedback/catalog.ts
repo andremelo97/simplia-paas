@@ -218,6 +218,7 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "Authentication Failed",
     message: "Incorrect email or password."
   },
+  // TENANT_NOT_FOUND is handled inline in Login page, not as toast
   AUTH_RATE_LIMITED: {
     title: "Too Many Attempts",
     message: "Too many attempts. Please wait and try again."
@@ -447,6 +448,7 @@ export const ERROR_MESSAGES = {
   USER_DISABLED: "Your account is disabled. Please contact support.",
   PASSWORD_EXPIRED: "Your password has expired. Please reset it.",
   FORBIDDEN: "You don't have permission to access this resource.",
+  TENANT_NOT_FOUND: "Email not registered. Visit livocare.ai to learn more.",
   
   // Validation errors  
   VALIDATION: "Please check the highlighted fields.",
@@ -521,6 +523,10 @@ export function mapStatusToErrorCode(
       return { kind: 'auth', code: 'FORBIDDEN' }
     
     case 404:
+      if (path?.includes('/tenant-lookup')) {
+        // Email not found in system
+        return { kind: 'auth', code: 'TENANT_NOT_FOUND' }
+      }
       if (path?.includes('/auth/login')) {
         // Login endpoint not found suggests server issues
         return { kind: 'server', code: 'SERVER' }
@@ -554,6 +560,7 @@ function getKindForCode(code: ErrorCode): AppErrorKind {
     case 'USER_DISABLED':
     case 'PASSWORD_EXPIRED':
     case 'FORBIDDEN':
+    case 'TENANT_NOT_FOUND':
       return 'auth'
     
     case 'VALIDATION':

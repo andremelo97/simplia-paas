@@ -13,6 +13,7 @@
   },
   "login": {
     "title": "Sign in to continue",
+    "welcome_back": "Welcome back",
     "subtitle": "Access your applications portal",
     "email": "Email",
     "email_placeholder": "your.email@company.com",
@@ -24,7 +25,17 @@
     "show_password": "Show password",
     "hide_password": "Hide password",
     "sign_in": "Sign in",
-    "signing_in": "Signing in..."
+    "signing_in": "Signing in...",
+    "remember_email": "Remember email",
+    "forgot_password": "Forgot my password",
+    "forgot_password_email_required": "Please fill in the email first",
+    "forgot_password_sending": "Sending...",
+    "forgot_password_sent": "If an account exists with this email, a new password has been sent.",
+    "slogan": "Where care meets conversion",
+    "slogan_description": "SaaS platform for aesthetic clinics. Centralize operations, automate processes, and scale your business.",
+    "need_help": "Need help?",
+    "visit_website": "Discover LivoCare",
+    "email_not_registered": "Email not registered. Learn more at"
   },
   "home": {
     "welcome_back": "Welcome back",

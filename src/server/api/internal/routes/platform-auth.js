@@ -1,7 +1,11 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
+const nodemailer = require('nodemailer');
 const authService = require('../../../infra/authService');
 const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth');
 const PlatformLoginAudit = require('../../../infra/models/PlatformLoginAudit');
+const User = require('../../../infra/models/User');
+const { generateRandomPassword } = require('../../../../shared/utils/passwordGenerator');
 
 const router = express.Router();
 
@@ -570,6 +574,186 @@ router.get('/audit', requireAuth, async (req, res) => {
       error: 'Internal Server Error',
       message: 'Failed to get audit logs'
     });
+  }
+});
+
+/**
+ * @openapi
+ * /platform-auth/forgot-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Request password reset
+ *     description: |
+ *       Request a password reset for any user (Hub/TQ users).
+ *       A new random password will be generated and sent to the user's email.
+ *       Uses LivoCare SMTP configuration (not tenant-specific).
+ *
+ *       **Security:** Always returns success to prevent email enumeration attacks.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: user@company.com
+ *     responses:
+ *       200:
+ *         description: Password reset email sent (or user not found - same response for security)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     code: { type: string, example: "PASSWORD_RESET_SENT" }
+ *                     message: { type: string, example: "If an account exists with this email, a new password has been sent." }
+ *       400:
+ *         description: Email is required
+ *       429:
+ *         description: Rate limit exceeded
+ */
+router.post('/forgot-password', authRateLimit, async (req, res) => {
+  const { email } = req.body;
+
+  // Always return success to prevent email enumeration
+  const successResponse = {
+    success: true,
+    meta: {
+      code: 'PASSWORD_RESET_SENT',
+      message: 'If an account exists with this email, a new password has been sent.'
+    }
+  };
+
+  try {
+    // Basic validation
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Validation Error',
+        message: 'Email is required',
+        meta: { code: 'EMAIL_REQUIRED' }
+      });
+    }
+
+    // Try to find user by email globally
+    let user;
+    try {
+      user = await User.findByEmailGlobal(email);
+    } catch (error) {
+      // User not found - return success anyway (security)
+      console.log(`Forgot password: User not found for email ${email}`);
+      return res.json(successResponse);
+    }
+
+    // Generate new random password
+    const newPassword = generateRandomPassword(12);
+
+    // Hash the new password
+    const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
+    const passwordHash = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update user password using dedicated method
+    await user.updatePassword(passwordHash);
+
+    // Send email using LivoCare SMTP (DEFAULT_SMTP_* env vars)
+    const transporter = nodemailer.createTransport({
+      host: process.env.DEFAULT_SMTP_HOST,
+      port: parseInt(process.env.DEFAULT_SMTP_PORT) || 465,
+      secure: process.env.DEFAULT_SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.DEFAULT_SMTP_USERNAME,
+        pass: process.env.DEFAULT_SMTP_PASSWORD
+      }
+    });
+
+    const mailOptions = {
+      from: `"LivoCare.ai" <${process.env.DEFAULT_SMTP_FROM_EMAIL}>`,
+      to: user.email,
+      subject: 'Sua nova senha / Your new password - LivoCare',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <!-- Portuguese Version -->
+          <div style="margin-bottom: 40px;">
+            <h2 style="color: #B725B7;">🇧🇷 Nova Senha</h2>
+            <p>Olá ${user.firstName || 'Usuário'},</p>
+            <p>Uma nova senha foi gerada para sua conta:</p>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <code style="font-size: 18px; color: #333;">${newPassword}</code>
+            </div>
+            <p><strong>Importante:</strong> Recomendamos que você altere esta senha após fazer login.</p>
+            <p>Para alterar sua senha:</p>
+            <ol>
+              <li>Faça login no Hub com a senha acima</li>
+              <li>Clique no ícone do usuário no canto superior direito</li>
+              <li>Escolha uma nova senha de sua preferência</li>
+            </ol>
+            <p style="color: #666; font-size: 12px; margin-top: 20px;">
+              Se você não solicitou esta alteração, entre em contato conosco imediatamente.
+            </p>
+          </div>
+
+          <hr style="border: none; border-top: 2px solid #B725B7; margin: 30px 0;">
+
+          <!-- English Version -->
+          <div>
+            <h2 style="color: #B725B7;">🇺🇸 New Password</h2>
+            <p>Hello ${user.firstName || 'User'},</p>
+            <p>A new password has been generated for your account:</p>
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+              <code style="font-size: 18px; color: #333;">${newPassword}</code>
+            </div>
+            <p><strong>Important:</strong> We recommend that you change this password after logging in.</p>
+            <p>To change your password:</p>
+            <ol>
+              <li>Log in to Hub with the password above</li>
+              <li>Click on the user icon in the top right corner</li>
+              <li>Choose a new password of your preference</li>
+            </ol>
+            <p style="color: #666; font-size: 12px; margin-top: 20px;">
+              If you did not request this change, please contact us immediately.
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+          <div style="text-align: center;">
+            <p style="color: #B725B7; font-size: 14px; font-weight: bold; margin-bottom: 5px;">
+              LivoCare.ai
+            </p>
+            <p style="color: #666; font-size: 12px; margin: 5px 0;">
+              Where care meets conversion | Onde cuidado encontra conversão
+            </p>
+            <p style="margin: 15px 0;">
+              <a href="https://www.livocare.ai" style="color: #B725B7; text-decoration: none; font-size: 12px;">
+                www.livocare.ai
+              </a>
+            </p>
+            <p style="color: #999; font-size: 11px;">
+              This is an automated email, please do not reply.<br>
+              Este é um email automático, não responda.
+            </p>
+          </div>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Password reset email sent to ${user.email}`);
+
+    res.json(successResponse);
+  } catch (error) {
+    console.error('Forgot password error:', error);
+
+    // Still return success to prevent email enumeration
+    res.json(successResponse);
   }
 });
 

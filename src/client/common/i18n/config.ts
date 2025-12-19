@@ -10,34 +10,49 @@ import tqEnUS from './locales/en-US/tq.json'
 import hubPtBR from './locales/pt-BR/hub.json'
 import hubEnUS from './locales/en-US/hub.json'
 
-// Language detection based on locale from auth store
-// pt-BR → Brazilian Portuguese
-// Anything else → English (en-US)
+// Language detection priority:
+// 1. Hub login page language selector (hub-language key)
+// 2. Tenant locale from auth store (after login)
+// 3. Browser language
+// 4. Default to pt-BR (main market)
 const languageDetector = new LanguageDetector()
 languageDetector.addDetector({
   name: 'customDetector',
   lookup() {
-    // Try to get locale from localStorage (persisted from auth store)
     try {
+      // Priority 1: Check for manual language selection from login page
+      const hubLanguage = localStorage.getItem('hub-language')
+      if (hubLanguage && (hubLanguage === 'pt-BR' || hubLanguage === 'en-US')) {
+        return hubLanguage
+      }
+
+      // Priority 2: Check tenant locale from auth store (after login)
       const authData = localStorage.getItem('auth-storage')
       if (authData) {
         const parsed = JSON.parse(authData)
         const locale = parsed?.state?.tenantLocale
-
-        // Map locale to language: pt-BR stays pt-BR, everything else becomes en-US
         if (locale === 'pt-BR') {
           return 'pt-BR'
         }
+        if (locale) {
+          return 'en-US' // Any other locale → English
+        }
+      }
+
+      // Priority 3: Check browser language
+      const browserLang = navigator.language || (navigator as any).userLanguage
+      if (browserLang?.startsWith('pt')) {
+        return 'pt-BR'
       }
     } catch (error) {
-      console.warn('Failed to detect language from auth store:', error)
+      console.warn('Failed to detect language:', error)
     }
 
-    // Default to English for any non-Brazilian locale
-    return 'en-US'
+    // Default to Portuguese (main market is Brazil)
+    return 'pt-BR'
   },
   cacheUserLanguage(lng: string) {
-    // Language is managed via auth store, no need to cache separately
+    // Language is managed via login selector or auth store
   }
 })
 
@@ -57,7 +72,7 @@ i18n
         hub: hubEnUS
       }
     },
-    fallbackLng: 'en-US',
+    fallbackLng: 'pt-BR',
     defaultNS: 'common',
     ns: ['common', 'tq', 'hub'],
     detection: {

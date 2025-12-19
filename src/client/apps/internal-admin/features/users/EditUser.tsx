@@ -5,6 +5,7 @@ import { UserRoleSelect } from './UserRoleSelect'
 import { usersService } from '../../services/users'
 import { tenantsService } from '../../services/tenants'
 import { UpdateUserDto, UserDto, UserRole, UserStatus } from './types'
+import { generateRandomPassword } from '@client/common/utils/passwordGenerator'
 
 interface UserFormData extends UpdateUserDto {
   // All fields are inherited from UpdateUserDto
@@ -145,12 +146,8 @@ export const EditUser: React.FC = () => {
 
   // Removed handleDeactivate and handleActivate - status is now managed via checkbox only
 
-  const generatePassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*'
-    let password = ''
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
+  const handleGeneratePassword = () => {
+    const password = generateRandomPassword(12)
     setNewPassword(password)
   }
 
@@ -348,7 +345,7 @@ export const EditUser: React.FC = () => {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={generatePassword}
+                        onClick={handleGeneratePassword}
                         disabled={isSubmitting}
                       >
                         Generate Password

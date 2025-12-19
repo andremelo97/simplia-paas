@@ -156,6 +156,12 @@ class HubService {
 
     return response.data
   }
+
+  async forgotPassword(email: string) {
+    // Uses platform-auth route (no tenant context required)
+    const response = await api.post('/internal/api/v1/platform-auth/forgot-password', { email })
+    return response.data
+  }
 }
 
 export const hubService = new HubService()

@@ -156,8 +156,8 @@ class HttpClient {
 
   private createAppErrorFromResponse(response: Response, endpoint: string, errorData?: any): AppError {
     const status = response.status
-    const backendCode = errorData?.error?.code || errorData?.code
-    const backendMessage = errorData?.error?.message || errorData?.message
+    const backendCode = errorData?.meta?.code || errorData?.error?.code || errorData?.code
+    const backendMessage = errorData?.meta?.message || errorData?.error?.message || errorData?.message
     const fieldErrors = errorData?.error?.details || errorData?.details
 
     // Auto-publish feedback for known error codes

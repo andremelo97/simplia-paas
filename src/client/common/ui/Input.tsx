@@ -70,15 +70,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     onBlur?.(event)
   }
 
-  // Se tem erro e o campo esta vazio, mostra o erro como placeholder
-  const displayPlaceholder = hasError && !hasValue ? error : placeholder
+  // Se tem erro e o campo esta vazio, mostra o erro como placeholder (não duplicar abaixo)
+  const showErrorAsPlaceholder = hasError && !hasValue
+  const displayPlaceholder = showErrorAsPlaceholder ? error : placeholder
 
   return (
     <FormFieldWrapper
       id={inputId}
       label={label}
       required={required}
-      error={error}
+      error={showErrorAsPlaceholder ? undefined : error}
       helperText={helperText}
       requiredHint={requiredMessage}
       showRequiredHint={displayRequiredHint}

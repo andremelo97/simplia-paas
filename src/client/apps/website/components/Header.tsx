@@ -72,8 +72,8 @@ export function Header() {
             />
           </a>
 
-          {/* Nav Links - Desktop */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Nav Links - Desktop (lg and up) */}
+          <div className="hidden lg:flex items-center gap-8">
             {isProductPage ? (
               <>
                 <button
@@ -188,25 +188,25 @@ export function Header() {
               </span>
             </button>
 
-            {/* Access button - Desktop only */}
+            {/* Access button - Desktop only (lg and up) */}
             <a
               href="https://hub.livocare.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden md:block px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+              className="hidden lg:block px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
             >
               {t.nav.access}
             </a>
 
-            {/* Schedule Demo button - Desktop only */}
-            <button className="hidden md:block px-4 py-2 rounded-lg bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white text-sm font-medium hover:opacity-90 transition-opacity">
+            {/* Schedule Demo button - Desktop only (lg and up) */}
+            <button className="hidden lg:block px-4 py-2 rounded-lg bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white text-sm font-medium hover:opacity-90 transition-opacity">
               {t.nav.scheduleDemo}
             </button>
 
-            {/* Hamburger Menu - Mobile only */}
+            {/* Hamburger Menu - Mobile and Tablet (below lg) */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
               aria-label="Menu"
             >
               {isMobileMenuOpen ? (
@@ -218,9 +218,9 @@ export function Header() {
           </div>
         </nav>
 
-        {/* Mobile Menu */}
+        {/* Mobile & Tablet Menu */}
         {isMobileMenuOpen && (
-          <div ref={mobileMenuRef} className="md:hidden mt-4 pb-4 border-t border-gray-100 pt-4">
+          <div ref={mobileMenuRef} className="lg:hidden mt-4 pb-4 border-t border-gray-100 pt-4">
             <div className="flex flex-col gap-2">
               {isProductPage ? (
                 <>

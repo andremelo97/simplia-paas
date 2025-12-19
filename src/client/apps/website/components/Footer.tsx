@@ -1,6 +1,6 @@
 import React from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
-import { Instagram, Linkedin } from 'lucide-react'
+import { Instagram } from 'lucide-react'
 
 export function Footer() {
   const { t } = useLanguage()
@@ -21,18 +21,13 @@ export function Footer() {
             {/* Social Links */}
             <div className="flex items-center gap-4">
               <a
-                href="#"
+                href="https://www.instagram.com/livocare.ai/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-lg flex items-center justify-center transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5 text-gray-400" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-lg flex items-center justify-center transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5 text-gray-400" />
               </a>
             </div>
           </div>
@@ -51,7 +46,8 @@ export function Footer() {
                   {t.footer.links.app}
                 </a>
               </li>
-              <li>
+              {/* Access link - hidden on mobile */}
+              <li className="hidden md:block">
                 <a
                   href="https://hub.livocare.ai"
                   target="_blank"

@@ -15,7 +15,7 @@ import {
 } from '@client/common/ui'
 import { consumeSso, hasSsoParams } from '../../lib/consumeSso'
 
-const HUB_LOGIN_URL = import.meta.env.VITE_HUB_LOGIN_URL || 'http://localhost:3003/login'
+const HUB_LOGIN_URL = `${import.meta.env.VITE_HUB_ORIGIN || 'http://localhost:3003'}/login`
 
 export const Login: React.FC = () => {
   const { t } = useTranslation('tq')

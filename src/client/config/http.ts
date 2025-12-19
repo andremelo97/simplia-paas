@@ -148,14 +148,25 @@ class HttpClient {
       })
     }
     
-    // Handle expired token - automatic logout
-    if (status === 401 && (
-      backendMessage?.includes('expired') || 
-      backendMessage?.includes('Token expired') ||
-      errorData?.error === 'Token expired'
-    )) {
-      // Clear auth storage and redirect to login
-      this.handleExpiredToken()
+    // Handle 401 Unauthorized - automatic logout and redirect
+    // For TQ app, any 401 should redirect to Hub login (SSO)
+    // For Hub/Internal-Admin, only handle explicit token expiration
+    if (status === 401) {
+      const port = window.location.port
+      const hostname = window.location.hostname
+      const isTQ = port === '3005' || hostname.startsWith('tq.')
+
+      const isTokenExpired = backendMessage?.toLowerCase().includes('expired') ||
+        backendMessage?.toLowerCase().includes('invalid') ||
+        backendMessage?.toLowerCase().includes('jwt') ||
+        errorData?.error === 'Token expired'
+
+      // TQ: Always redirect on 401 (needs SSO from Hub)
+      // Others: Only redirect on explicit token issues
+      if (isTQ || isTokenExpired) {
+        this.handleExpiredToken()
+        return createAppError.auth('SESSION_EXPIRED', status, endpoint)
+      }
     }
     
     // Map status to kind and code
@@ -193,20 +204,28 @@ class HttpClient {
   private handleExpiredToken() {
     // Clear localStorage auth data
     localStorage.removeItem('auth-storage')
-    
-    // Show a notification about the expired session
-    publishFeedback({
-      kind: 'info',
-      code: 'SESSION_EXPIRED',
-      title: 'Session expired',
-      message: 'Your session has expired. Please sign in again.',
-      path: window.location.pathname
-    })
-    
-    // Redirect to login after a short delay
-    setTimeout(() => {
+
+    // Determine which app is running and redirect appropriately
+    const port = window.location.port
+    const hostname = window.location.hostname
+
+    // TQ app detection: port 3005 (dev) or tq subdomain (prod)
+    const isTQ = port === '3005' || hostname.startsWith('tq.')
+
+    // Hub app detection: port 3003 (dev) or hub subdomain (prod)
+    const isHub = port === '3003' || hostname.startsWith('hub.')
+
+    if (isTQ) {
+      // TQ uses SSO from Hub - redirect to Hub login
+      const hubOrigin = (import.meta as any).env?.VITE_HUB_ORIGIN || 'http://localhost:3003'
+      window.location.href = `${hubOrigin}/login`
+    } else if (isHub) {
+      // Hub has its own login page
+      window.location.href = '/login'
+    } else {
+      // Internal-Admin or other apps
       window.location.href = '/auth/login'
-    }, 1000)
+    }
   }
 
   async get(endpoint: string, options?: { headers?: Record<string, string>, params?: Record<string, any> }) {

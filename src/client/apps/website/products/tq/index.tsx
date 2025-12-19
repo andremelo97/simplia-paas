@@ -71,11 +71,12 @@ export function TQPage() {
                 >
                   {t.tqPage.hero.cta1}
                 </a>
+                {/* Access button - hidden on mobile */}
                 <a
                   href="https://hub.livocare.ai"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  className="hidden md:flex px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors items-center gap-2"
                 >
                   {t.tqPage.hero.cta2}
                   <span>→</span>

@@ -406,9 +406,32 @@ export const Login: React.FC = () => {
 
       {/* Right Side - Branding (Brand Gradient) */}
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-[#B725B7] via-[#a020a0] to-[#E91E63] items-center justify-center px-12 relative overflow-hidden">
-        {/* Decorative circles */}
-        <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-white/5" />
-        <div className="absolute bottom-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white/5" />
+        {/* Decorative circles with float + breathing animation */}
+        <motion.div
+          className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-white/5"
+          animate={{
+            y: [0, -40, 0],
+            scale: [1, 1.12, 1],
+          }}
+          transition={{
+            duration: 5,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white/5"
+          animate={{
+            y: [0, 35, 0],
+            scale: [1, 0.9, 1],
+          }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 0.5,
+          }}
+        />
 
         <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -448,12 +471,15 @@ export const Login: React.FC = () => {
         {/* Help Link - Bottom */}
         <div className="absolute bottom-8 left-0 right-0 text-center z-10">
           <a
-            href="mailto:suporte@livocare.ai"
+            href="mailto:admin@livocare.ai"
             className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm"
           >
             <HelpCircle className="w-4 h-4" />
             {t('login.need_help')}
           </a>
+          <p className="text-white/50 text-xs mt-1">
+            {t('login.contact_email', { email: 'admin@livocare.ai' })}
+          </p>
         </div>
       </div>
     </div>

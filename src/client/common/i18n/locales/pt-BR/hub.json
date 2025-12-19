@@ -34,6 +34,7 @@
     "slogan": "Onde cuidado encontra conversão",
     "slogan_description": "Plataforma SaaS para clínicas de estética. Centralize operações, automatize processos e escale seu negócio.",
     "need_help": "Precisa de ajuda?",
+    "contact_email": "Envie um e-mail para {{email}}",
     "visit_website": "Conheça a LivoCare.ai",
     "email_not_registered": "E-mail não cadastrado. Conheça mais em"
   },

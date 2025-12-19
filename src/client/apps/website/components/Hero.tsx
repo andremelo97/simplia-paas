@@ -1,53 +1,49 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext'
 
 export function Hero() {
   const { t } = useLanguage()
-  const [showDot, setShowDot] = useState(false)
-
-  useEffect(() => {
-    // Small delay before showing the dot animation
-    const timer = setTimeout(() => setShowDot(true), 300)
-    return () => clearTimeout(timer)
-  }, [])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
       {/* Background gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50 to-gray-100" />
 
-      {/* Rolling Dot - appears from left and rolls to the right */}
-      {showDot && (
-        <motion.div
-          className="absolute"
-          style={{
-            top: '30%',
-            width: '500px',
-            height: '500px',
-          }}
-          initial={{
-            opacity: 0,
-            left: '-550px',
-            rotate: 0,
-          }}
-          animate={{
-            opacity: 0.7,
-            left: 'calc(100% - 200px)',
-            rotate: 1080,
-          }}
-          transition={{
-            duration: 5,
-            ease: [0.25, 0.1, 0.25, 1],
-          }}
-        >
-          <img
-            src="/dot.png"
-            alt=""
-            className="w-full h-full object-contain"
-          />
-        </motion.div>
-      )}
+      {/* Decorative circles with float + breathing animation */}
+      {/* Top-right circle - responsive sizes */}
+      <motion.div
+        className="absolute top-[-10%] right-[-15%] w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[600px] lg:h-[600px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(183,37,183,0.4) 0%, rgba(233,30,99,0.3) 50%, rgba(94,214,206,0.2) 100%)',
+        }}
+        animate={{
+          y: [0, -50, 0],
+          scale: [1, 1.15, 1],
+        }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+      {/* Bottom-left circle - responsive sizes */}
+      <motion.div
+        className="absolute bottom-[-15%] left-[-20%] w-[350px] h-[350px] md:w-[450px] md:h-[450px] lg:w-[700px] lg:h-[700px] rounded-full"
+        style={{
+          background: 'radial-gradient(circle, rgba(233,30,99,0.35) 0%, rgba(183,37,183,0.25) 50%, rgba(94,214,206,0.15) 100%)',
+        }}
+        animate={{
+          y: [0, 40, 0],
+          scale: [1, 0.88, 1],
+        }}
+        transition={{
+          duration: 7,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 0.5,
+        }}
+      />
 
       {/* Content */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">

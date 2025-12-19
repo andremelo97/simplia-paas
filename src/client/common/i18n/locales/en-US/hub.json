@@ -34,6 +34,7 @@
     "slogan": "Where care meets conversion",
     "slogan_description": "SaaS platform for aesthetic clinics. Centralize operations, automate processes, and scale your business.",
     "need_help": "Need help?",
+    "contact_email": "Send an email to {{email}}",
     "visit_website": "Discover LivoCare",
     "email_not_registered": "Email not registered. Learn more at"
   },

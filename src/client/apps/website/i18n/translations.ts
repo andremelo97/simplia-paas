@@ -24,16 +24,15 @@ export const translations = {
     platform: {
       badge: 'Plataforma Multi-App',
       title: 'Tudo que sua clínica precisa em um só lugar',
-      description: 'Esqueça planilhas, papéis e sistemas desconectados. A LivoCare.ai centraliza toda a gestão da sua clínica em uma plataforma inteligente que cresce junto com o seu negócio.',
+      description: 'Acesse todos os aplicativos com login único, personalize sua marca e acompanhe o uso dos recursos. Uma plataforma que cresce junto com o seu negócio.',
       hub: {
         title: 'Hub Central',
-        description: 'Seu ponto de partida para todas as ferramentas',
+        description: 'Seu ponto de partida para todas as ferramentas. Acesse seus apps, configure sua marca e acompanhe métricas.',
         items: [
           'Login único para todos os aplicativos',
-          'Gerencie sua equipe e permissões',
-          'Personalize com a sua marca',
-          'Controle quem acessa o quê',
-          'Painel de métricas e uso'
+          'Personalize logo, cores e identidade visual',
+          'Acompanhe uso de transcrição e cotas',
+          'Configure comunicação e notificações'
         ]
       },
       ecosystem: {
@@ -390,16 +389,15 @@ export const translations = {
     platform: {
       badge: 'Multi-App Platform',
       title: 'Everything your clinic needs in one place',
-      description: 'Forget spreadsheets, paperwork, and disconnected systems. LivoCare.ai centralizes your entire clinic management in one smart platform that grows with your business.',
+      description: 'Access all applications with single sign-on, customize your brand, and track resource usage. A platform that grows with your business.',
       hub: {
         title: 'Central Hub',
-        description: 'Your starting point for all tools',
+        description: 'Your starting point for all tools. Access your apps, configure your brand, and track metrics.',
         items: [
           'Single login for all applications',
-          'Manage your team and permissions',
-          'Customize with your brand',
-          'Control who accesses what',
-          'Metrics and usage dashboard'
+          'Customize logo, colors, and visual identity',
+          'Track transcription usage and quotas',
+          'Configure communication and notifications'
         ]
       },
       ecosystem: {

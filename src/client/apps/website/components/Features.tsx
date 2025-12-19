@@ -77,22 +77,18 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="grid md:grid-cols-2 gap-12">
+            <div className="grid md:grid-cols-2 gap-8">
               {/* Hub Central */}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#B725B7] to-[#E91E63] rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                    <Shield className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">{t.platform.hub.title}</h3>
-                    <p className="text-gray-600">{t.platform.hub.description}</p>
-                  </div>
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[#B725B7] to-[#E91E63] rounded-xl shadow-lg mb-4">
+                  <Shield className="w-6 h-6 text-white" />
                 </div>
-                <ul className="space-y-3 ml-20">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{t.platform.hub.title}</h3>
+                <p className="text-gray-600 text-sm mb-4">{t.platform.hub.description}</p>
+                <ul className="space-y-2 text-left">
                   {t.platform.hub.items.map((item, i) => (
-                    <li key={i} className="flex items-center gap-3 text-gray-700">
-                      <div className="w-2 h-2 bg-[#B725B7] rounded-full flex-shrink-0" />
+                    <li key={i} className="flex items-center gap-3 text-gray-700 text-sm">
+                      <div className="w-1.5 h-1.5 bg-[#B725B7] rounded-full flex-shrink-0" />
                       {item}
                     </li>
                   ))}
@@ -100,28 +96,24 @@ export function Features() {
               </div>
 
               {/* Apps Ecosystem */}
-              <div className="flex flex-col">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-[#5ED6CE] to-[#B725B7] rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
-                    <Sparkles className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">{t.platform.ecosystem.title}</h3>
-                    <p className="text-gray-600">{t.platform.ecosystem.description}</p>
-                  </div>
+              <div className="text-center md:text-left">
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[#5ED6CE] to-[#B725B7] rounded-xl shadow-lg mb-4">
+                  <Sparkles className="w-6 h-6 text-white" />
                 </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{t.platform.ecosystem.title}</h3>
+                <p className="text-gray-600 text-sm mb-4">{t.platform.ecosystem.description}</p>
                 {/* Visual representation of apps */}
-                <div className="ml-20 flex flex-wrap gap-3">
-                  <div className="px-4 py-2 bg-[#5ED6CE]/20 text-[#0a8a80] rounded-full text-sm font-medium border border-[#5ED6CE]/30">
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                  <div className="px-3 py-1.5 bg-[#5ED6CE]/20 text-[#0a8a80] rounded-full text-sm font-medium border border-[#5ED6CE]/30">
                     TQ - Transcription & Quote
                   </div>
-                  <div className="px-4 py-2 bg-gray-200/50 text-gray-400 rounded-full text-sm font-medium border border-gray-200">
+                  <div className="px-3 py-1.5 bg-gray-200/50 text-gray-400 rounded-full text-sm font-medium border border-gray-200">
                     CRM
                   </div>
-                  <div className="px-4 py-2 bg-gray-200/50 text-gray-400 rounded-full text-sm font-medium border border-gray-200">
+                  <div className="px-3 py-1.5 bg-gray-200/50 text-gray-400 rounded-full text-sm font-medium border border-gray-200">
                     Agenda
                   </div>
-                  <div className="px-4 py-2 bg-gray-200/50 text-gray-400 rounded-full text-sm font-medium border border-gray-200">
+                  <div className="px-3 py-1.5 bg-gray-200/50 text-gray-400 rounded-full text-sm font-medium border border-gray-200">
                     + mais
                   </div>
                 </div>

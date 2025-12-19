@@ -12,7 +12,7 @@ export const translations = {
       app: 'App',
       licenses: 'Licenças',
       automation: 'Automações',
-      tqDescription: 'Transcreva consultas e gere cotações com IA',
+      tqDescription: 'Transcreva consultas e gere cotações automaticamente',
       access: 'Acessar',
       scheduleDemo: 'Agendar Demonstração'
     },
@@ -44,13 +44,13 @@ export const translations = {
     tqApp: {
       badge: 'App Disponível',
       title: 'TQ - Transcription & Quote',
-      description: 'Primeiro aplicativo do ecossistema LivoCare. Transforme consultas em cotações profissionais usando IA generativa, transcrição de áudio e templates inteligentes.',
+      description: 'Primeiro aplicativo do ecossistema LivoCare. Transforme consultas em cotações profissionais usando transcrição de áudio, templates inteligentes e IA generativa.',
       learnMore: 'Saiba mais',
       mediaPlaceholder: 'Vídeo em breve',
       features: {
         transcription: {
-          title: 'Transcrição por IA',
-          description: 'Grave consultas diretamente no navegador ou faça upload de arquivos de áudio. Nossa tecnologia de transcrição converte áudio em texto com precisão médica.'
+          title: 'Transcrição Automática',
+          description: 'Grave consultas diretamente no navegador ou faça upload de arquivos de áudio. Nossa tecnologia converte áudio em texto com precisão médica em segundos.'
         },
         templates: {
           title: 'Templates com IA Generativa',
@@ -70,7 +70,7 @@ export const translations = {
       hero: {
         badge: 'App LivoCare',
         title: 'TQ - Transcription & Quote',
-        description: 'Transforme consultas em cotações profissionais com IA. Grave áudios diretamente no navegador, transcreva com precisão médica usando nossa tecnologia de IA e deixe nosso Agente de IA preencher automaticamente seus templates. Envie cotações personalizadas com link seguro, senha e rastreamento de visualizações.',
+        description: 'Transforme consultas em cotações profissionais. Grave áudios diretamente no navegador, transcreva com precisão médica e deixe nosso Agente de IA preencher automaticamente seus templates. Envie cotações personalizadas com link seguro, senha e rastreamento de visualizações.',
         cta1: 'Agendar Demonstração',
         cta2: 'Acessar TQ',
         videoPlaceholder: 'Vídeo em breve'
@@ -78,11 +78,11 @@ export const translations = {
       howItWorks: {
         badge: 'Como Funciona',
         title: 'Do áudio à cotação em 4 passos',
-        subtitle: 'Um fluxo simples e intuitivo que economiza horas do seu dia. Grave consultas, transcreva com IA e envie cotações profissionais em minutos.',
+        subtitle: 'Um fluxo simples e intuitivo que economiza horas do seu dia. Grave consultas, transcreva automaticamente e envie cotações profissionais em minutos.',
         videoPlaceholder: 'Vídeo demonstrativo em breve',
         steps: [
           { title: 'Grave a consulta', description: 'Grave diretamente no navegador ou faça upload de arquivos de áudio. Suporta diversos formatos e funciona em qualquer dispositivo com microfone.' },
-          { title: 'Transcrição automática', description: 'Nossa tecnologia de IA converte o áudio em texto com precisão médica em segundos. Detecta automaticamente o idioma.' },
+          { title: 'Transcrição automática', description: 'Nossa tecnologia converte o áudio em texto com precisão médica em segundos. Detecta automaticamente o idioma.' },
           { title: 'IA preenche o template', description: 'Nosso Agente de IA analisa a transcrição e preenche automaticamente seu template de cotação ou relatório clínico com as informações relevantes.' },
           { title: 'Envie ao paciente', description: 'A cotação vira um mini-site com sua marca: logo, cores e layout personalizados. Envie o link por e-mail e acompanhe visualizações para converter mais pacientes.' }
         ]
@@ -92,7 +92,7 @@ export const translations = {
         title: 'Tudo que você precisa para criar cotações profissionais',
         subtitle: 'Ferramentas poderosas para otimizar seu fluxo de trabalho clínico.',
         items: [
-          { title: 'Transcrição por IA', description: 'Nossa tecnologia de transcrição com precisão médica. Grave no navegador ou faça upload de arquivos.' },
+          { title: 'Transcrição Automática', description: 'Nossa tecnologia de transcrição com precisão médica. Grave no navegador ou faça upload de arquivos.' },
           { title: 'Templates Inteligentes', description: 'Crie templates com placeholders. Nosso Agente de IA preenche usando o contexto da transcrição.' },
           { title: 'Cotação vira Site', description: 'Cada cotação se torna um mini-site com sua identidade visual: logo, cores e layout personalizados. Seu paciente acessa um link exclusivo e profissional - você ganha um site grátis para cada tratamento.' },
           { title: 'Relatórios Clínicos', description: 'Gere documentação clínica padronizada. Exporte em PDF ou imprima diretamente.' },
@@ -378,7 +378,7 @@ export const translations = {
       app: 'App',
       licenses: 'Licenses',
       automation: 'Automation',
-      tqDescription: 'Transcribe consultations and generate quotes with AI',
+      tqDescription: 'Transcribe consultations and generate quotes automatically',
       access: 'Sign In',
       scheduleDemo: 'Schedule Demo'
     },
@@ -410,13 +410,13 @@ export const translations = {
     tqApp: {
       badge: 'Available Now',
       title: 'TQ - Transcription & Quote',
-      description: 'First application in the LivoCare ecosystem. Transform consultations into professional quotes using generative AI, audio transcription, and smart templates.',
+      description: 'First application in the LivoCare ecosystem. Transform consultations into professional quotes using audio transcription, smart templates, and generative AI.',
       learnMore: 'Learn more',
       mediaPlaceholder: 'Video coming soon',
       features: {
         transcription: {
-          title: 'AI Transcription',
-          description: 'Record consultations directly in the browser or upload audio files. Our transcription technology converts audio to text with medical-grade accuracy.'
+          title: 'Automatic Transcription',
+          description: 'Record consultations directly in the browser or upload audio files. Our technology converts audio to text with medical-grade accuracy in seconds.'
         },
         templates: {
           title: 'Templates with Generative AI',
@@ -436,7 +436,7 @@ export const translations = {
       hero: {
         badge: 'LivoCare App',
         title: 'TQ - Transcription & Quote',
-        description: 'Transform consultations into professional quotes with AI. Record audio directly in the browser, transcribe with medical-grade accuracy using our AI technology, and let our AI Agent automatically fill your templates. Send personalized quotes with secure links, passwords, and view tracking.',
+        description: 'Transform consultations into professional quotes. Record audio directly in the browser, transcribe with medical-grade accuracy, and let our AI Agent automatically fill your templates. Send personalized quotes with secure links, passwords, and view tracking.',
         cta1: 'Schedule Demo',
         cta2: 'Access TQ',
         videoPlaceholder: 'Video coming soon'
@@ -444,11 +444,11 @@ export const translations = {
       howItWorks: {
         badge: 'How It Works',
         title: 'From audio to quote in 4 steps',
-        subtitle: 'A simple and intuitive workflow that saves hours of your day. Record consultations, transcribe with AI, and send professional quotes in minutes.',
+        subtitle: 'A simple and intuitive workflow that saves hours of your day. Record consultations, transcribe automatically, and send professional quotes in minutes.',
         videoPlaceholder: 'Demo video coming soon',
         steps: [
           { title: 'Record the consultation', description: 'Record directly in the browser or upload audio files. Supports multiple formats and works on any device with a microphone.' },
-          { title: 'Automatic transcription', description: 'Our AI technology converts audio to text with medical-grade accuracy in seconds. Automatically detects language.' },
+          { title: 'Automatic transcription', description: 'Our technology converts audio to text with medical-grade accuracy in seconds. Automatically detects language.' },
           { title: 'AI fills the template', description: 'Our AI Agent analyzes the transcription and automatically fills your quote or clinical report template with relevant information.' },
           { title: 'Send to patient', description: 'The quote becomes a mini-site with your brand: logo, colors, and personalized layout. Send the link via email and track views to convert more patients.' }
         ]
@@ -458,7 +458,7 @@ export const translations = {
         title: 'Everything you need to create professional quotes',
         subtitle: 'Powerful tools to optimize your clinical workflow.',
         items: [
-          { title: 'AI Transcription', description: 'Our transcription technology with medical-grade accuracy. Record in browser or upload files.' },
+          { title: 'Automatic Transcription', description: 'Our transcription technology with medical-grade accuracy. Record in browser or upload files.' },
           { title: 'Smart Templates', description: 'Create templates with placeholders. Our AI Agent fills them using transcription context.' },
           { title: 'Quote becomes a Website', description: 'Each quote becomes a mini-site with your visual identity: logo, colors, and personalized layout. Your patient accesses an exclusive, professional link - you get a free website for each treatment.' },
           { title: 'Clinical Reports', description: 'Generate standardized clinical documentation. Export to PDF or print directly.' },

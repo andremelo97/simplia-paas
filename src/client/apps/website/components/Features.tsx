@@ -1,14 +1,53 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext'
-import { Mic, FileText, Receipt, ClipboardList, Users, Shield, Sparkles, ArrowRight, Code, Globe } from 'lucide-react'
+import { Mic, FileText, Receipt, ClipboardList, Users, Shield, Sparkles, ArrowRight, Code, Globe, X, Maximize2 } from 'lucide-react'
 
 export function Features() {
   const { t } = useLanguage()
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null)
 
   return (
     <>
+      {/* Video Modal */}
+      <AnimatePresence>
+        {expandedVideo && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setExpandedVideo(null)}
+          >
+            <motion.div
+              className="relative w-full max-w-5xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setExpandedVideo(null)}
+                className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors"
+              >
+                <X className="w-8 h-8" />
+              </button>
+              <video
+                className="w-full rounded-lg"
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls
+              >
+                <source src={expandedVideo} type="video/mp4" />
+              </video>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Platform Overview Section */}
       <section id="features" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6">
@@ -123,11 +162,22 @@ export function Features() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              {/* Media Placeholder */}
-              <div className="aspect-video bg-gradient-to-br from-[#B725B7]/20 to-[#E91E63]/20 flex items-center justify-center">
-                <div className="text-center">
-                  <Mic className="w-16 h-16 text-[#B725B7] mx-auto mb-3 opacity-50" />
-                  <span className="text-gray-500 text-sm">{t.tqApp.mediaPlaceholder}</span>
+              {/* Video Demo */}
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative group cursor-pointer"
+                onClick={() => setExpandedVideo('/video-home-01.mp4')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-01.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
               <div className="p-6">
@@ -149,10 +199,21 @@ export function Features() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="aspect-video bg-gradient-to-br from-[#E91E63]/20 to-[#B725B7]/20 flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="w-16 h-16 text-[#E91E63] mx-auto mb-3 opacity-50" />
-                  <span className="text-gray-500 text-sm">{t.tqApp.mediaPlaceholder}</span>
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative group cursor-pointer"
+                onClick={() => setExpandedVideo('/video-home-02.mp4')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-02.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
               <div className="p-6">
@@ -174,10 +235,21 @@ export function Features() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="aspect-video bg-gradient-to-br from-[#5ED6CE]/20 to-[#B725B7]/20 flex items-center justify-center">
-                <div className="text-center">
-                  <Receipt className="w-16 h-16 text-[#5ED6CE] mx-auto mb-3 opacity-50" />
-                  <span className="text-gray-500 text-sm">{t.tqApp.mediaPlaceholder}</span>
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative group cursor-pointer"
+                onClick={() => setExpandedVideo('/video-home-03.mp4')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-03.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
               <div className="p-6">
@@ -199,10 +271,21 @@ export function Features() {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <div className="aspect-video bg-gradient-to-br from-[#B725B7]/20 to-[#5ED6CE]/20 flex items-center justify-center">
-                <div className="text-center">
-                  <ClipboardList className="w-16 h-16 text-[#B725B7] mx-auto mb-3 opacity-50" />
-                  <span className="text-gray-500 text-sm">{t.tqApp.mediaPlaceholder}</span>
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative group cursor-pointer"
+                onClick={() => setExpandedVideo('/video-home-04.MP4')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-04.MP4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
               <div className="p-6">

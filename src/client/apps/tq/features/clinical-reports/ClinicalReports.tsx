@@ -50,7 +50,6 @@ export const ClinicalReports: React.FC = () => {
 
   const handleDeleteReport = (report: ClinicalReport) => {
     // Placeholder: Will be implemented later
-    console.log('Delete report:', report)
   }
 
   return (

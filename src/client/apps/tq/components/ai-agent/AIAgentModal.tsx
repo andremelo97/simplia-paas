@@ -125,7 +125,6 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
       setMessages(updatedMessages)
       setHasInitialized(true)
     } catch (error) {
-      console.error('Failed to initialize AI conversation:', error)
       setError(error instanceof Error ? error.message : t('modals.ai_agent.failed_to_generate'))
     } finally {
       setIsLoading(false)
@@ -150,7 +149,6 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
       const finalMessages = aiAgentService.addAIResponse(messagesWithUser, result.response)
       setMessages(finalMessages)
     } catch (error) {
-      console.error('Failed to send message:', error)
       setError(error instanceof Error ? error.message : t('modals.ai_agent.failed_to_send'))
     } finally {
       setIsLoading(false)
@@ -251,10 +249,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                         {/* Action buttons for every AI response */}
                         <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
                           <Button
-                            onClick={() => {
-                              console.log('🟣 [AIAgentModal] Create Quote button clicked')
-                              handleCreateSessionAndQuote(message.content)
-                            }}
+                            onClick={() => handleCreateSessionAndQuote(message.content)}
                             variant="primary"
                             className="flex items-center gap-2"
                           >
@@ -262,10 +257,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                             {t('modals.ai_agent.create_quote')}
                           </Button>
                           <Button
-                            onClick={() => {
-                              console.log('🟣 [AIAgentModal] Create Clinical Report button clicked')
-                              handleCreateClinicalReport(message.content)
-                            }}
+                            onClick={() => handleCreateClinicalReport(message.content)}
                             variant="outline"
                             className="flex items-center gap-2"
                           >

@@ -59,7 +59,6 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
   }, [initialItems, isInitialized])
 
   useEffect(() => {
-    console.log('🔍 [QuoteItemsManager] Items changed, calling onItemsChange with:', items)
     onItemsChange(items)
   }, [items])
 
@@ -71,7 +70,6 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
       discountAmount: 0,
       isSearchMode: true // Start in search mode
     }
-    console.log('🔍 [QuoteItemsManager] Adding new item:', newItem)
     setItems([...items, newItem])
   }
 
@@ -113,7 +111,7 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
         setSearchResults({ ...searchResults, [localId]: response.data })
         setShowDropdown({ ...showDropdown, [localId]: true })
       } catch (error) {
-        console.error('Failed to search items:', error)
+        // Failed to search items
       }
     }, 300)
   }
@@ -181,7 +179,6 @@ export const QuoteItemsManager: React.FC<QuoteItemsManagerProps> = ({
         ) : (
           <div className="space-y-4">
             {items.map((item) => {
-              console.log('🔍 [QuoteItemsManager] Rendering item:', item.localId, 'isSearchMode:', item.isSearchMode, 'itemName:', item.itemName, 'itemBasePrice:', item.itemBasePrice)
               return (
                 <div
                   key={item.localId}

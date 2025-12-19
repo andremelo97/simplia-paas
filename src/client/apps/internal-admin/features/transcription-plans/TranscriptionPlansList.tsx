@@ -20,7 +20,7 @@ export const TranscriptionPlansList: React.FC = () => {
       const response = await transcriptionPlansService.getPlans()
       setPlans(response.plans)
     } catch (err: any) {
-      console.error('[TranscriptionPlans] Failed to load plans:', err)
+      // Error handled silently
     } finally {
       setLoading(false)
     }
@@ -48,7 +48,6 @@ export const TranscriptionPlansList: React.FC = () => {
       // Reload list
       await fetchPlans()
     } catch (error) {
-      console.error('Failed to deactivate plan:', error)
       // Error feedback is also handled by HTTP interceptor
     } finally {
       setIsDeactivating(false)

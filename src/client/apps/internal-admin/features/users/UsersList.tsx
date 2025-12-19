@@ -47,9 +47,8 @@ export const UsersList: React.FC = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      console.log('👥 [UsersList] Starting fetch users...')
       setLoading(true)
-      
+
       const params = {
         tenantId,
         page: currentPage,
@@ -57,28 +56,14 @@ export const UsersList: React.FC = () => {
         search: debouncedSearchTerm || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined
       }
-      console.log('📋 [UsersList] Request params:', params)
-      
+
       const response = await usersService.list(params)
       const data = response.data // Backend returns { success, data: { users, pagination } }
-      
-      console.log('✅ [UsersList] Users fetched successfully:', {
-        usersCount: data.users?.length || 0,
-        total: data.pagination?.total,
-        tenantFiltered: !!tenantId
-      })
-      
+
       setUsers(data.users || [])
       setTotalUsers(data.pagination?.total || 0)
       setTotalPages(Math.ceil((data.pagination?.total || 0) / usersPerPage))
     } catch (error) {
-      console.error('❌ [UsersList] Failed to fetch users:', error)
-      console.error('🔍 [UsersList] Error details:', {
-        name: (error as any)?.name,
-        message: (error as any)?.message,
-        status: (error as any)?.status
-      })
-
       // Show empty state when API fails
       setUsers([])
       setTotalUsers(0)

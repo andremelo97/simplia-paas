@@ -45,15 +45,15 @@ export const CreateUser: React.FC = () => {
           value: tenant.id.toString(),
           label: `${tenant.name} (${tenant.subdomain})`
         }))
-        
+
         setTenants(tenantOptions)
-        
+
         // Pre-select tenant if provided via URL parameter
         if (preSelectedTenantId) {
           setSelectedTenantId(preSelectedTenantId)
         }
       } catch (error) {
-        console.error('Failed to fetch tenants:', error)
+        // Error handled silently
       } finally {
         setLoadingTenants(false)
       }
@@ -144,8 +144,6 @@ export const CreateUser: React.FC = () => {
       // Navigate back to users list with tenant filter
       navigate(`/users?tenantId=${selectedTenantId}`)
     } catch (error: any) {
-      console.error('Failed to create user:', error)
-      
       // Handle validation errors from backend
       if (error.status === 422 && error.details?.validationErrors) {
         setValidationErrors(error.details.validationErrors)

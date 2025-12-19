@@ -34,7 +34,6 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
         const users = response.data?.users || []
         setAssignedUsers(users)
       } catch (error) {
-        console.error('Failed to load assigned users:', error)
         setAssignedUsers([])
       } finally {
         setLoadingUsers(false)

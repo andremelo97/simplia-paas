@@ -143,7 +143,7 @@ export const EditClinicalReport: React.FC = () => {
 
       // Success feedback is handled automatically by HTTP interceptor
     } catch (error) {
-      console.error('Failed to update clinical report:', error)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSaving(false)
     }

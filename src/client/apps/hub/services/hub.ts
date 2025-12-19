@@ -120,7 +120,7 @@ class HubService {
       // Call backend logout endpoint
       await api.post('/internal/api/v1/auth/logout', {})
     } catch (error) {
-      console.warn('Backend logout failed:', error)
+      // Backend logout failed - clear frontend state anyway
     } finally {
       // Clear frontend state regardless of backend response
       logout()

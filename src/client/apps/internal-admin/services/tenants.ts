@@ -269,25 +269,12 @@ export class TenantsService {
       status: tenantData.status || 'active'
     }
 
-    console.log('🏢 [TenantsService] Creating tenant:', {
-      name: payload.name,
-      subdomain: payload.subdomain,
-      timezone: payload.timezone,
-      status: payload.status
-    })
-
     try {
       // Note: This endpoint does NOT require x-tenant-id header (platform-scoped)
       const response = await api.post(this.baseEndpoint, payload)
-      
-      console.log('✅ [TenantsService] Tenant created successfully:', {
-        tenantId: response.data?.tenant?.id,
-        subdomain: response.data?.tenant?.subdomain
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to create tenant:', error)
       throw error // Let the error handling be done by the caller with AppError
     }
   }
@@ -315,19 +302,11 @@ export class TenantsService {
     const queryString = searchParams.toString()
     const endpoint = queryString ? `${this.baseEndpoint}?${queryString}` : this.baseEndpoint
 
-    console.log('🏢 [TenantsService] Fetching tenants list:', { params, endpoint })
-
     try {
       const response = await api.get(endpoint)
-      
-      console.log('✅ [TenantsService] Tenants list fetched:', {
-        count: response.data?.tenants?.length,
-        total: response.data?.pagination?.total
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to fetch tenants:', error)
       throw error
     }
   }
@@ -338,19 +317,11 @@ export class TenantsService {
    * @returns Promise with tenant data
    */
   async getTenant(id: number): Promise<TenantDetailsResponse> {
-    console.log('🏢 [TenantsService] Fetching tenant by Id:', id)
-
     try {
       const response = await api.get(`${this.baseEndpoint}/${id}`)
-      
-      console.log('✅ [TenantsService] Tenant fetched:', {
-        tenantId: response.data?.id,
-        name: response.data?.name
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to fetch tenant:', error)
       throw error
     }
   }
@@ -363,19 +334,11 @@ export class TenantsService {
    * @returns Promise with updated tenant data
    */
   async updateTenant(id: number, tenantData: UpdateTenantRequest): Promise<{ success: boolean; data: TenantResponse }> {
-    console.log('🏢 [TenantsService] Updating tenant:', { id, ...tenantData })
-
     try {
       const response = await api.put(`${this.baseEndpoint}/${id}`, tenantData)
-      
-      console.log('✅ [TenantsService] Tenant updated:', {
-        tenantId: response.data?.id,
-        name: response.data?.name
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to update tenant:', error)
       throw error
     }
   }
@@ -388,16 +351,16 @@ export class TenantsService {
    * @returns Promise with activated license data
    */
   async activateLicense(
-    tenantId: number, 
-    appSlug: string, 
+    tenantId: number,
+    appSlug: string,
     licenseData?: {
       userLimit?: number
       expiryDate?: string
       status?: 'active' | 'trial'
     }
-  ): Promise<{ 
-    success: boolean; 
-    data: { 
+  ): Promise<{
+    success: boolean;
+    data: {
       license: {
         id: number
         tenantId: number
@@ -409,25 +372,16 @@ export class TenantsService {
         expiryDate: string | null
         activatedAt: string
       }
-    } 
+    }
   }> {
-    console.log('🏢 [TenantsService] Activating license:', { tenantId, appSlug, licenseData })
-
     try {
       const response = await api.post(
-        `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/activate`, 
+        `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/activate`,
         licenseData || {}
       )
-      
-      console.log('✅ [TenantsService] License activated:', {
-        tenantId,
-        appSlug,
-        licenseId: response.data?.license?.id
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to activate license:', error)
       throw error
     }
   }
@@ -440,12 +394,12 @@ export class TenantsService {
    * @returns Promise with adjusted license data
    */
   async adjustLicense(
-    tenantId: number, 
-    appSlug: string, 
+    tenantId: number,
+    appSlug: string,
     adjustmentData: { userLimit: number }
-  ): Promise<{ 
-    success: boolean; 
-    data: { 
+  ): Promise<{
+    success: boolean;
+    data: {
       license: {
         id: number
         tenantId: number
@@ -458,26 +412,16 @@ export class TenantsService {
         expiryDate: string | null
         updatedAt: string
       }
-    } 
+    }
   }> {
-    console.log('🏢 [TenantsService] Adjusting license seats:', { tenantId, appSlug, adjustmentData })
-
     try {
       const response = await api.put(
-        `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/adjust`, 
+        `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/adjust`,
         adjustmentData
       )
-      
-      console.log('✅ [TenantsService] License seats adjusted:', {
-        tenantId,
-        appSlug,
-        userLimit: response.data?.license?.userLimit,
-        seatsUsed: response.data?.license?.seatsUsed
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to adjust license seats:', error)
       throw error
     }
   }
@@ -490,12 +434,12 @@ export class TenantsService {
    * @returns Promise with grant result
    */
   async grantUserAccess(
-    tenantId: number, 
-    userId: number, 
+    tenantId: number,
+    userId: number,
     appSlug: string
-  ): Promise<{ 
-    success: boolean; 
-    data: { 
+  ): Promise<{
+    success: boolean;
+    data: {
       access: {
         id: number
         userId: number
@@ -504,25 +448,15 @@ export class TenantsService {
         grantedAt: string
         isActive: boolean
       }
-    } 
+    }
   }> {
-    console.log('🏢 [TenantsService] Granting user access:', { tenantId, userId, appSlug })
-
     try {
       const response = await api.post(
         `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/grant`
       )
-      
-      console.log('✅ [TenantsService] User access granted:', {
-        tenantId,
-        userId,
-        appSlug,
-        accessId: response.data?.access?.id
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to grant user access:', error)
       throw error
     }
   }
@@ -535,12 +469,12 @@ export class TenantsService {
    * @returns Promise with revoke result
    */
   async revokeUserAccess(
-    tenantId: number, 
-    userId: number, 
+    tenantId: number,
+    userId: number,
     appSlug: string
-  ): Promise<{ 
-    success: boolean; 
-    data: { 
+  ): Promise<{
+    success: boolean;
+    data: {
       access: {
         id: number
         userId: number
@@ -549,24 +483,15 @@ export class TenantsService {
         revokedAt: string
         isActive: boolean
       }
-    } 
+    }
   }> {
-    console.log('🏢 [TenantsService] Revoking user access:', { tenantId, userId, appSlug })
-
     try {
       const response = await api.post(
         `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/revoke`
       )
-      
-      console.log('✅ [TenantsService] User access revoked:', {
-        tenantId,
-        userId,
-        appSlug
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to revoke user access:', error)
       throw error
     }
   }
@@ -579,12 +504,12 @@ export class TenantsService {
    * @returns Promise with reactivate result
    */
   async reactivateUserAccess(
-    tenantId: number, 
-    userId: number, 
+    tenantId: number,
+    userId: number,
     appSlug: string
-  ): Promise<{ 
-    success: boolean; 
-    data: { 
+  ): Promise<{
+    success: boolean;
+    data: {
       access: {
         id: number
         userId: number
@@ -593,24 +518,15 @@ export class TenantsService {
         grantedAt: string
         isActive: boolean
       }
-    } 
+    }
   }> {
-    console.log('🏢 [TenantsService] Reactivating user access:', { tenantId, userId, appSlug })
-
     try {
       const response = await api.put(
         `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/reactivate`
       )
-      
-      console.log('✅ [TenantsService] User access reactivated:', {
-        tenantId,
-        userId,
-        appSlug
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to reactivate user access:', error)
       throw error
     }
   }
@@ -665,21 +581,11 @@ export class TenantsService {
     const queryString = searchParams.toString()
     const endpoint = `${this.baseEndpoint}/${tenantId}/applications/${appSlug}/users${queryString ? `?${queryString}` : ''}`
 
-    console.log('🏢 [TenantsService] Fetching app users:', { tenantId, appSlug, params })
-
     try {
       const response = await api.get(endpoint)
-      
-      console.log('✅ [TenantsService] App users fetched:', {
-        tenantId,
-        appSlug,
-        count: response.data?.users?.length,
-        usage: response.data?.usage
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to fetch app users:', error)
       throw error
     }
   }
@@ -706,20 +612,11 @@ export class TenantsService {
     const queryString = searchParams.toString()
     const endpoint = `${this.baseEndpoint}/${tenantId}/addresses${queryString ? `?${queryString}` : ''}`
 
-    console.log('🏢 [TenantsService] Fetching tenant addresses:', { tenantId, params })
-
     try {
       const response = await api.get(endpoint)
-      
-      console.log('✅ [TenantsService] Tenant addresses fetched:', {
-        tenantId,
-        count: response.data?.addresses?.length,
-        total: response.data?.pagination?.total
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to fetch tenant addresses:', error)
       throw error
     }
   }
@@ -746,20 +643,11 @@ export class TenantsService {
     const queryString = searchParams.toString()
     const endpoint = `${this.baseEndpoint}/${tenantId}/contacts${queryString ? `?${queryString}` : ''}`
 
-    console.log('🏢 [TenantsService] Fetching tenant contacts:', { tenantId, params })
-
     try {
       const response = await api.get(endpoint)
-      
-      console.log('✅ [TenantsService] Tenant contacts fetched:', {
-        tenantId,
-        count: response.data?.contacts?.length,
-        total: response.data?.pagination?.total
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to fetch tenant contacts:', error)
       throw error
     }
   }
@@ -771,19 +659,11 @@ export class TenantsService {
    * @returns Promise with created address
    */
   async createAddress(tenantId: number, addressData: CreateAddressRequest): Promise<AddressCRUDResponse> {
-    console.log('🏠 [TenantsService] Creating address for tenant:', tenantId, addressData)
-
     try {
       const response = await api.post(`${this.baseEndpoint}/${tenantId}/addresses`, addressData)
-      
-      console.log('✅ [TenantsService] Address created successfully:', {
-        tenantId,
-        addressId: response.data?.address?.id
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to create address:', error)
       throw error
     }
   }
@@ -796,19 +676,11 @@ export class TenantsService {
    * @returns Promise with updated address
    */
   async updateAddress(tenantId: number, addressId: number, addressData: UpdateAddressRequest): Promise<AddressCRUDResponse> {
-    console.log('🏠 [TenantsService] Updating address:', { tenantId, addressId, ...addressData })
-
     try {
       const response = await api.put(`${this.baseEndpoint}/${tenantId}/addresses/${addressId}`, addressData)
-      
-      console.log('✅ [TenantsService] Address updated successfully:', {
-        tenantId,
-        addressId: response.data?.address?.id
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to update address:', error)
       throw error
     }
   }
@@ -820,16 +692,11 @@ export class TenantsService {
    * @returns Promise with delete result
    */
   async deleteAddress(tenantId: number, addressId: number): Promise<DeleteResponse> {
-    console.log('🏠 [TenantsService] Deleting address:', { tenantId, addressId })
-
     try {
       const response = await api.delete(`${this.baseEndpoint}/${tenantId}/addresses/${addressId}`)
-      
-      console.log('✅ [TenantsService] Address deleted successfully:', { tenantId, addressId })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to delete address:', error)
       throw error
     }
   }
@@ -841,19 +708,11 @@ export class TenantsService {
    * @returns Promise with created contact
    */
   async createContact(tenantId: number, contactData: CreateContactRequest): Promise<ContactCRUDResponse> {
-    console.log('👥 [TenantsService] Creating contact for tenant:', tenantId, contactData)
-
     try {
       const response = await api.post(`${this.baseEndpoint}/${tenantId}/contacts`, contactData)
-      
-      console.log('✅ [TenantsService] Contact created successfully:', {
-        tenantId,
-        contactId: response.data?.contact?.id
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to create contact:', error)
       throw error
     }
   }
@@ -866,19 +725,11 @@ export class TenantsService {
    * @returns Promise with updated contact
    */
   async updateContact(tenantId: number, contactId: number, contactData: UpdateContactRequest): Promise<ContactCRUDResponse> {
-    console.log('👥 [TenantsService] Updating contact:', { tenantId, contactId, ...contactData })
-
     try {
       const response = await api.put(`${this.baseEndpoint}/${tenantId}/contacts/${contactId}`, contactData)
-      
-      console.log('✅ [TenantsService] Contact updated successfully:', {
-        tenantId,
-        contactId: response.data?.contact?.id
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to update contact:', error)
       throw error
     }
   }
@@ -890,16 +741,11 @@ export class TenantsService {
    * @returns Promise with delete result
    */
   async deleteContact(tenantId: number, contactId: number): Promise<DeleteResponse> {
-    console.log('👥 [TenantsService] Deleting contact:', { tenantId, contactId })
-
     try {
       const response = await api.delete(`${this.baseEndpoint}/${tenantId}/contacts/${contactId}`)
-      
-      console.log('✅ [TenantsService] Contact deleted successfully:', { tenantId, contactId })
 
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to delete contact:', error)
       throw error
     }
   }
@@ -931,24 +777,14 @@ export class TenantsService {
       updatedAt: string
     }
   }> {
-    console.log('🔄 [TenantsService] Updating user role in app:', { tenantId, userId, appSlug, roleInApp })
-
     try {
       const response = await api.put(
         `${this.baseEndpoint}/${tenantId}/users/${userId}/applications/${appSlug}/role`,
         { roleInApp }
       )
 
-      console.log('✅ [TenantsService] User role updated successfully:', {
-        tenantId,
-        userId,
-        appSlug,
-        newRole: roleInApp
-      })
-
       return response
     } catch (error) {
-      console.error('❌ [TenantsService] Failed to update user role in app:', error)
       throw error
     }
   }

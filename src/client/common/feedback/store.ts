@@ -24,7 +24,6 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
 
     // Skip if this code is currently suppressed
     if (suppressedCodes.has(feedback.code)) {
-      console.log(`[FeedbackStore] Skipping suppressed feedback: ${feedback.code}`)
       return
     }
 
@@ -37,7 +36,6 @@ export const useFeedbackStore = create<FeedbackState>((set, get) => ({
 
     // Skip if duplicate found within window
     if (existingFeedback) {
-      console.log(`[FeedbackStore] Skipping duplicate feedback: ${feedback.code}`)
       return
     }
 

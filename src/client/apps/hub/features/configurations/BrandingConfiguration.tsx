@@ -33,7 +33,6 @@ export const BrandingConfiguration: React.FC = () => {
         setBranding(data)
       }
     } catch (error) {
-      console.error('Failed to load branding:', error)
       // Keep empty values if loading fails
     } finally {
       setLoading(false)
@@ -47,7 +46,7 @@ export const BrandingConfiguration: React.FC = () => {
       await brandingService.updateBranding(branding)
       // Feedback handled by HTTP interceptor
     } catch (error) {
-      console.error('Failed to update branding:', error)
+      // Error updating branding
     }
   }
 
@@ -58,7 +57,7 @@ export const BrandingConfiguration: React.FC = () => {
       await brandingService.resetBranding()
       await loadBranding()
     } catch (error) {
-      console.error('Failed to reset branding:', error)
+      // Error resetting branding
     }
   }
 

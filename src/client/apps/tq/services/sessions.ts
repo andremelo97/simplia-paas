@@ -65,9 +65,6 @@ export const sessionsService = {
     // Always include patient data
     queryParams.append('includePatient', 'true')
 
-    console.log('🔍 [Sessions Service] Search params:', params)
-    console.log('🔍 [Sessions Service] Query URL:', `/api/tq/v1/sessions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`)
-
     const url = `/api/tq/v1/sessions${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     const response = await api.get(url)
 
@@ -81,7 +78,6 @@ export const sessionsService = {
       sessionsData = apiResponse
       total = apiResponse.length
     } else {
-      console.error('❌ [Sessions Service] Invalid API response structure:', apiResponse)
       throw new Error('Invalid API response structure')
     }
 
@@ -110,9 +106,7 @@ export const sessionsService = {
   },
 
   async getSession(id: string): Promise<Session> {
-    console.log('🔍 [Sessions Service] Fetching session:', id)
     const response = await api.get(`/api/tq/v1/sessions/${id}?includePatient=true`)
-    console.log('🔍 [Sessions Service] API Response:', response.data)
 
     if (!response.data) {
       throw new Error('No data received from API')
@@ -142,7 +136,6 @@ export const sessionsService = {
       transcription_confidence: apiSession.transcription_confidence
     }
 
-    console.log('✅ [Sessions Service] Mapped session:', mappedSession)
     return mappedSession
   },
 
@@ -154,9 +147,7 @@ export const sessionsService = {
       status: data.status
     }
 
-    console.log('🔄 [Sessions Service] Sending data to API:', apiData)
     const response = await api.post('/api/tq/v1/sessions', apiData)
-    console.log('✅ [Sessions Service] API Response:', response.data)
 
     if (!response.data) {
       throw new Error('Invalid API response structure for create session')
@@ -183,7 +174,6 @@ export const sessionsService = {
       transcription_confidence: apiSession.transcription_confidence
     }
 
-    console.log('✅ [Sessions Service] Mapped created session:', mappedSession)
     return mappedSession
   },
 
@@ -194,9 +184,7 @@ export const sessionsService = {
     if (data.transcription_id !== undefined) apiData.transcriptionId = data.transcription_id
     if (data.transcription_text !== undefined) apiData.transcriptionText = data.transcription_text
 
-    console.log('🔄 [Sessions Service] Updating session:', apiData)
     const response = await api.put(`/api/tq/v1/sessions/${id}`, apiData)
-    console.log('✅ [Sessions Service] Update response:', response.data)
 
     if (!response.data) {
       throw new Error('Invalid API response structure for update session')
@@ -223,7 +211,6 @@ export const sessionsService = {
       transcription_confidence: apiSession.transcription_confidence
     }
 
-    console.log('✅ [Sessions Service] Mapped updated session:', mappedSession)
     return mappedSession
   },
 

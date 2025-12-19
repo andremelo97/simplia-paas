@@ -90,31 +90,13 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      console.log('🔍 [CreateTemplate] Sending data:', formData)
       await publicQuotesService.createTemplate(formData)
-      console.log('✅ [CreateTemplate] Template created successfully')
 
       // Navigate back to templates list
       navigate('/public-quotes/templates')
 
     } catch (error: any) {
-      console.error('❌ [CreateTemplate] Failed to create template:', error)
-
-      let errorMessage = t('public_quotes.errors.create_failed')
-
-      if (error.message?.includes('Maximum of 3 templates')) {
-        errorMessage = t('public_quotes.errors.max_templates')
-      } else if (error.message?.includes('Validation Error')) {
-        errorMessage = t('public_quotes.errors.check_input')
-      } else if (error.status === 403) {
-        errorMessage = t('public_quotes.errors.no_permission')
-      } else if (error.status === 401) {
-        errorMessage = t('public_quotes.errors.session_expired')
-      } else if (error.status >= 500) {
-        errorMessage = t('public_quotes.errors.server_error')
-      }
-
-      console.error('❌ [CreateTemplate] Error:', errorMessage)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }

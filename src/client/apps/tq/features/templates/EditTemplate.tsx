@@ -42,19 +42,14 @@ export const EditTemplate: React.FC = () => {
 
   // Load existing template data
   useEffect(() => {
-    console.log('🔍 [EditTemplate] useEffect triggered with id:', id)
-
     // Skip if already loaded or loading
     if (!id || (!isLoading && formData.title)) {
-      console.log('🔍 [EditTemplate] Skipping useEffect - already loaded or no ID')
       return
     }
 
     let isCancelled = false
 
     const loadTemplateData = async () => {
-      console.log('🔍 [EditTemplate] Starting loadTemplateData')
-
       try {
         if (!isCancelled) {
           setIsLoading(true)
@@ -63,7 +58,6 @@ export const EditTemplate: React.FC = () => {
         const template = await templatesService.getById(id)
 
         if (!isCancelled) {
-          console.log('🔍 [EditTemplate] Setting form data from template')
           // Initialize form data
           setFormData({
             title: template.title,
@@ -147,23 +141,18 @@ export const EditTemplate: React.FC = () => {
     e.preventDefault()
     e.stopPropagation()
 
-    console.log('🔍 [EditTemplate] handleSubmit called by:', e.target, 'Type:', e.type, 'nativeEvent:', e.nativeEvent)
-
     // Check if this is triggered by the dark mode toggle
     if (e.target && (e.target as any).className?.includes('theme') ||
         (e.target as any).getAttribute?.('aria-label')?.includes('theme') ||
         (e.target as any).getAttribute?.('aria-label')?.includes('dark')) {
-      console.log('🚫 [EditTemplate] Submit triggered by theme toggle, ignoring')
       return
     }
 
     if (!validateForm() || !id) {
-      console.log('🔍 [EditTemplate] Validation failed or no ID')
       return
     }
 
     if (isSubmitting) {
-      console.log('🔍 [EditTemplate] Already submitting, ignoring')
       return
     }
 
@@ -177,13 +166,9 @@ export const EditTemplate: React.FC = () => {
         active: formData.active
       }
 
-      console.log('🔍 [EditTemplate] Submitting update request')
       await templatesService.update(id, requestData)
-      console.log('✅ [EditTemplate] Update successful, navigating')
       navigate('/templates')
     } catch (error: any) {
-      console.error('❌ [EditTemplate] Update failed:', error)
-
       // Error handling is now managed by HTTP interceptor
       let errorMessage = 'Failed to update template. Please try again.'
 
@@ -198,15 +183,12 @@ export const EditTemplate: React.FC = () => {
       } else if (error.status >= 500) {
         errorMessage = 'Server error occurred. Please try again later.'
       }
-
-      console.error('❌ [EditTemplate] Update error:', errorMessage)
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleCancel = () => {
-    console.log('🔍 [EditTemplate] handleCancel called')
     navigate('/templates')
   }
 

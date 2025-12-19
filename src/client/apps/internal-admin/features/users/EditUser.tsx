@@ -43,15 +43,10 @@ export const EditUser: React.FC = () => {
 
       try {
         setIsLoading(true)
-        console.log('🔄 [EditUser] Loading user data for ID:', numericUserId)
-        console.log('🔍 [EditUser] URL params:', { tenantId, userId, numericTenantId, numericUserId })
-        console.log('🔍 [EditUser] Route location:', window.location.pathname)
 
         // Load user data
         const userResponse = await usersService.getUser(numericUserId, numericTenantId)
         const userData = userResponse.data
-        
-        console.log('✅ [EditUser] User loaded:', userData.email)
 
         // Load tenant name for display
         const tenantResponse = await tenantsService.getTenant(numericTenantId)
@@ -65,7 +60,6 @@ export const EditUser: React.FC = () => {
           status: userData.status
         })
       } catch (error: any) {
-        console.error('❌ [EditUser] Failed to load user data:', error)
         setLoadError(error.message || 'Failed to load user data')
       } finally {
         setIsLoading(false)
@@ -115,9 +109,8 @@ export const EditUser: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!numericTenantId || !numericUserId) {
-      console.error('Missing tenant ID or user ID')
       return
     }
 
@@ -126,15 +119,13 @@ export const EditUser: React.FC = () => {
     }
 
     setIsSubmitting(true)
-    
+
     try {
       await usersService.update(numericTenantId, numericUserId, formData)
-      
+
       // Navigate back to users list with tenant filter
       navigate(`/users?tenantId=${numericTenantId}`)
     } catch (error: any) {
-      console.error('Failed to update user:', error)
-      
       // Handle validation errors from backend
       if (error.status === 422 && error.details?.validationErrors) {
         setValidationErrors(error.details.validationErrors)
@@ -166,7 +157,7 @@ export const EditUser: React.FC = () => {
       setShowPasswordReset(false)
       setNewPassword('')
     } catch (error) {
-      console.error('Failed to reset password:', error)
+      // Error handled by HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }

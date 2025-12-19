@@ -78,36 +78,15 @@ export const CreateItem: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      console.log('🔍 [CreateItem] Sending data:', formData)
       await itemsService.create(formData)
-      console.log('✅ [CreateItem] Item created successfully')
 
-      // Success feedback is now handled automatically by the HTTP interceptor
-      // based on the meta.code from the backend response
+      // Success feedback is handled automatically by the HTTP interceptor
 
       // Navigate immediately - toast will show on the items list page
       navigate('/quotes/items')
 
     } catch (error: any) {
-      console.error('❌ [CreateItem] Failed to create item:', error)
-
-      // Map backend errors to user-friendly messages
-      let errorMessage = t('quote_items.errors.create_failed')
-
-      // Handle specific error cases based on backend responses
-      if (error.message?.includes('Validation Error')) {
-        errorMessage = t('quote_items.errors.check_input')
-      } else if (error.status === 409) {
-        errorMessage = t('quote_items.errors.already_exists')
-      } else if (error.status === 403) {
-        errorMessage = t('quote_items.errors.no_permission')
-      } else if (error.status === 401) {
-        errorMessage = t('quote_items.errors.session_expired')
-      } else if (error.status >= 500) {
-        errorMessage = t('quote_items.errors.server_error')
-      }
-
-      console.error('❌ [CreateItem] Create error:', errorMessage)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }

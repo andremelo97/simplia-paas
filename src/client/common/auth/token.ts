@@ -26,7 +26,7 @@ export function saveSession(session: AuthSession): void {
   try {
     localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
   } catch (error) {
-    console.error('Failed to save session:', error)
+    // Failed to save session
   }
 }
 
@@ -40,17 +40,15 @@ export function readSession(): AuthSession | null {
     if (!raw) return null
     
     const session = JSON.parse(raw)
-    
+
     // Validate session structure
     if (!session.token || !session.tenantId || !session.user) {
-      console.warn('Invalid session structure, clearing...')
       clearSession()
       return null
     }
-    
+
     return session
   } catch (error) {
-    console.error('Failed to read session:', error)
     clearSession()
     return null
   }
@@ -63,7 +61,7 @@ export function clearSession(): void {
   try {
     localStorage.removeItem(SESSION_STORAGE_KEY)
   } catch (error) {
-    console.error('Failed to clear session:', error)
+    // Failed to clear session
   }
 }
 

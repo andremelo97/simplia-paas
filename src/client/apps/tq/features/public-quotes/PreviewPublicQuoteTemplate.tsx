@@ -51,7 +51,7 @@ export const PreviewPublicQuoteTemplate: React.FC = () => {
       const fetchedTemplate = await publicQuotesService.getTemplate(id)
       setTemplate(fetchedTemplate)
     } catch (error) {
-      console.error('Failed to load template:', error)
+      // Failed to load template
     } finally {
       setLoading(false)
     }

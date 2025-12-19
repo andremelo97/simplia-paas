@@ -215,7 +215,6 @@ export const NewSession: React.FC = () => {
         const quotaData = await transcriptionService.getQuota()
         setQuota(quotaData)
       } catch (error) {
-        console.error('[NewSession] Failed to load quota:', error)
         // Don't show error feedback - just fail silently and don't block UI
       } finally {
         setIsLoadingQuota(false)
@@ -256,7 +255,6 @@ export const NewSession: React.FC = () => {
     setIsSaving(true)
     const timeout = setTimeout(() => {
       setIsSaving(false)
-      console.log('Mock: Transcription saved locally')
     }, 500)
 
     return () => clearTimeout(timeout)
@@ -301,7 +299,6 @@ export const NewSession: React.FC = () => {
         setSearchResults(sortedResults)
         setShowSearchResults(sortedResults.length > 0)
       } catch (error) {
-        console.error('Failed to search patients:', error)
         setSearchResults([])
         setShowSearchResults(false)
       } finally {
@@ -336,7 +333,6 @@ export const NewSession: React.FC = () => {
 
     // Check if patient changed
     if (sessionContext.patientId !== currentPatientId && currentPatientId !== null) {
-      console.log('🔄 [NewSession] Patient changed - resetting session')
       setSession(null)
       setSessionContext({ patientId: null, transcriptionId: null })
       setCreatedTranscriptionId(null)
@@ -345,7 +341,6 @@ export const NewSession: React.FC = () => {
 
     // Check if transcription changed significantly (only if we have a transcription ID)
     if (currentTranscriptionId && sessionContext.transcriptionId !== currentTranscriptionId) {
-      console.log('🔄 [NewSession] Transcription changed - resetting session')
       setSession(null)
       setSessionContext({ patientId: null, transcriptionId: null })
     }
@@ -390,9 +385,7 @@ export const NewSession: React.FC = () => {
 
   // Handlers (mocked for now)
   const handleStatusChange = async (newStatus: 'draft' | 'active' | 'completed') => {
-    // Mock status change
-    console.log('Mock: Status changed to', newStatus)
-    // In real implementation, this would call API
+    // Mock status change - in real implementation, this would call API
   }
 
   // Create session for patient
@@ -406,7 +399,6 @@ export const NewSession: React.FC = () => {
       setSession(newSession)
       return newSession
     } catch (error) {
-      console.error('❌ [CreateSession] Failed to create session:', error)
       // Error feedback is handled automatically by HTTP interceptor
       throw error
     } finally {
@@ -426,7 +418,6 @@ export const NewSession: React.FC = () => {
       setSession(newSession)
       return newSession
     } catch (error) {
-      console.error('❌ [CreateSession] Failed to create session with transcription:', error)
       // Error feedback is handled automatically by HTTP interceptor
       throw error
     } finally {
@@ -445,7 +436,6 @@ export const NewSession: React.FC = () => {
     let currentTranscriptionId = createdTranscriptionId
 
     if (!currentTranscriptionId && transcription.trim()) {
-      console.log('📝 [ensureSession] Creating transcription...')
       const newTranscription = await transcriptionService.createTextTranscription(transcription)
       currentTranscriptionId = newTranscription.transcriptionId
       setCreatedTranscriptionId(currentTranscriptionId)
@@ -462,10 +452,6 @@ export const NewSession: React.FC = () => {
       sessionContext.transcriptionId !== currentTranscriptionId
 
     if (contextChanged) {
-      console.log('🔄 [ensureSession] Context changed, creating new session...')
-      console.log('  Patient:', patient.id, '(previous:', sessionContext.patientId, ')')
-      console.log('  Transcription:', currentTranscriptionId, '(previous:', sessionContext.transcriptionId, ')')
-
       // Create new session
       const newSession = await createSessionWithTranscription(patient.id, currentTranscriptionId)
 
@@ -475,12 +461,10 @@ export const NewSession: React.FC = () => {
         transcriptionId: currentTranscriptionId
       })
 
-      console.log('✅ [ensureSession] New session created:', newSession.number)
       return newSession
     }
 
     // Reuse existing session
-    console.log('♻️  [ensureSession] Reusing existing session:', session.number)
     return session
   }
 
@@ -504,7 +488,6 @@ export const NewSession: React.FC = () => {
     setIsCreatingSession(true)
     try {
       const newSession = await ensureSession()
-      console.log('✅ [NewSession] Session created successfully:', newSession.number)
       // Success feedback is handled automatically by HTTP interceptor
 
       // Show session link toast
@@ -516,7 +499,6 @@ export const NewSession: React.FC = () => {
       setShowLinkToast(true)
 
     } catch (error) {
-      console.error('❌ [NewSession] Failed to create session:', error)
       // Error feedback is handled automatically by HTTP interceptor
     } finally {
       setIsCreatingSession(false)
@@ -525,20 +507,14 @@ export const NewSession: React.FC = () => {
 
   // Handle New Session & Quote button click
   const handleNewSessionAndQuote = async (aiSummary?: string) => {
-    console.log('🟢 [NewSession] handleNewSessionAndQuote called')
-    console.log('  - transcription:', transcription.substring(0, 50))
-    console.log('  - aiSummary:', aiSummary ? aiSummary.substring(0, 50) : 'none')
-
     // If called from AI Agent, aiSummary will be provided and we should use it
     // If called from button, transcription should exist
     if (!transcription.trim() && !aiSummary) {
-      console.log('⚠️ [NewSession] No transcription or AI summary available')
       return
     }
 
     const patient = selectedPatient || createdPatient
     if (!patient) {
-      console.log('⚠️ [NewSession] No patient selected')
       publishFeedback({
         kind: 'error',
         code: 'PATIENT_REQUIRED',
@@ -550,13 +526,10 @@ export const NewSession: React.FC = () => {
     try {
       // Ensure session exists (reuse or create)
       const currentSession = await ensureSession()
-      console.log('✅ [NewSession] Using session:', currentSession.number)
 
       // Create the quote using the session ID
-      console.log('💰 [NewSession] Creating quote for session:', currentSession.id)
       const rawContent = aiSummary || transcription // Use AI summary if provided, otherwise fallback to transcription
-      console.log('📄 [NewSession] Quote content source:', aiSummary ? 'AI Summary' : 'Transcription')
-      
+
       // Convert plain text to HTML for TipTap editor (preserves line breaks and paragraphs)
       const htmlContent = plainTextToHtml(rawContent)
 
@@ -566,7 +539,6 @@ export const NewSession: React.FC = () => {
         status: 'draft'
       }
       const newQuote = await quotesService.createQuote(quoteData)
-      console.log('✅ [NewSession] Quote created successfully:', newQuote.number)
 
       // Show quote link toast (redirects to /quotes)
       setToastData({
@@ -577,27 +549,20 @@ export const NewSession: React.FC = () => {
       setShowLinkToast(true)
 
     } catch (error) {
-      console.error('❌ [NewSession] Failed to create quote:', error)
       // Error feedback is handled automatically by HTTP interceptor
     }
   }
 
   // Handle Clinical Report creation from AI Agent
   const handleNewClinicalReport = async (aiSummary: string) => {
-    console.log('🟢 [NewSession] handleNewClinicalReport called')
-    console.log('  - transcription:', transcription.substring(0, 50))
-    console.log('  - aiSummary:', aiSummary ? aiSummary.substring(0, 50) : 'none')
-
     // If called from AI Agent, aiSummary will be provided and we should use it
     // If called from button, transcription should exist
     if (!transcription.trim() && !aiSummary) {
-      console.log('⚠️ [NewSession] No transcription or AI summary available')
       return
     }
 
     const patient = selectedPatient || createdPatient
     if (!patient) {
-      console.log('⚠️ [NewSession] No patient selected')
       publishFeedback({
         kind: 'error',
         code: 'PATIENT_REQUIRED',
@@ -609,13 +574,10 @@ export const NewSession: React.FC = () => {
     try {
       // Ensure session exists (reuse or create)
       const currentSession = await ensureSession()
-      console.log('✅ [NewSession] Using session:', currentSession.number)
 
       // Create the clinical report using the session ID
-      console.log('📋 [NewSession] Creating clinical report for session:', currentSession.id)
       const rawContent = aiSummary || transcription
-      console.log('📄 [NewSession] Clinical report content source:', aiSummary ? 'AI Summary' : 'Transcription')
-      
+
       // Convert plain text to HTML for TipTap editor (preserves line breaks and paragraphs)
       const htmlContent = plainTextToHtml(rawContent)
 
@@ -624,11 +586,9 @@ export const NewSession: React.FC = () => {
         content: htmlContent
       }
       const newReport = await clinicalReportsService.create(reportData)
-      console.log('✅ [NewSession] Clinical report created successfully:', newReport)
 
       // Defensive: check if report has required fields
       if (!newReport || !newReport.id || !newReport.number) {
-        console.error('⚠️ [NewSession] Invalid report response:', newReport)
         throw new Error('Invalid clinical report response from API')
       }
 
@@ -641,7 +601,6 @@ export const NewSession: React.FC = () => {
       setShowLinkToast(true)
 
     } catch (error) {
-      console.error('❌ [NewSession] Failed to create clinical report:', error)
       // Error feedback is handled automatically by HTTP interceptor
     }
   }
@@ -661,7 +620,6 @@ export const NewSession: React.FC = () => {
 
   // Handle Template Quote Modal actions
   const handleTemplateCreateQuote = async (templateId: string) => {
-    console.log('💰 [NewSession] Creating quote with template:', templateId)
     // TODO: Implement template-based quote creation
     // This will use the AI Template Filler endpoint to fill the template
     // and then create a quote with the filled content
@@ -669,7 +627,6 @@ export const NewSession: React.FC = () => {
 
   // Handle Template Quote creation callback
   const handleTemplateQuoteCreated = (quoteId: string, quoteNumber: string) => {
-    console.log('✅ [NewSession] Template quote created:', quoteNumber)
     // Show quote link toast (redirects to /quotes)
     setToastData({
       itemId: quoteId,
@@ -680,8 +637,6 @@ export const NewSession: React.FC = () => {
   }
 
   const handleTemplateCreateClinicalReport = async (templateId: string) => {
-    console.log('📄 [NewSession] Creating clinical report with template:', templateId)
-
     const patient = selectedPatient || createdPatient
     if (!patient) {
       publishFeedback({
@@ -709,9 +664,7 @@ export const NewSession: React.FC = () => {
         patientId: patient.id
       }
 
-      console.log('🔮 [NewSession] Filling template with AI for clinical report:', fillTemplateRequest)
       const filledTemplateResponse = await aiAgentService.fillTemplate(fillTemplateRequest)
-      console.log('✅ [NewSession] Template filled successfully')
 
       // Create clinical report with filled template content
       const reportData = {
@@ -719,13 +672,10 @@ export const NewSession: React.FC = () => {
         content: filledTemplateResponse.filledTemplate
       }
 
-      console.log('📋 [NewSession] Creating clinical report with filled template')
       const newReport = await clinicalReportsService.create(reportData)
-      console.log('✅ [NewSession] Clinical report created successfully:', newReport)
 
       // Defensive: check if report has required fields
       if (!newReport || !newReport.id || !newReport.number) {
-        console.error('⚠️ [NewSession] Invalid report response:', newReport)
         throw new Error('Invalid clinical report response from API')
       }
 
@@ -738,16 +688,12 @@ export const NewSession: React.FC = () => {
       setShowLinkToast(true)
 
     } catch (error) {
-      console.error('❌ [NewSession] Failed to create clinical report with template:', error)
       // Error feedback is handled automatically by HTTP interceptor
     }
   }
 
   // Handle transcription completion callback from the modal
   const handleTranscriptionComplete = useCallback((transcript: string, transcriptionId: string) => {
-    console.log('✅ [Transcription] Completed with ID:', transcriptionId)
-    console.log('📝 [Transcription] Text length:', transcript.length, 'characters')
-
     // Update the transcription field with the result
     setTranscription(transcript)
 
@@ -760,7 +706,6 @@ export const NewSession: React.FC = () => {
   // New handlers for simplified UI
   const handleTranscribeModeSelect = (mode: 'start' | 'upload') => {
     setTranscribeMode(mode)
-    console.log('Mock: Transcribe mode changed to:', mode)
   }
 
   const handlePatientModeToggle = async () => {
@@ -804,12 +749,7 @@ export const NewSession: React.FC = () => {
         // Don't reset patientName - keep it showing the created patient
         // Don't change back to search mode - stay in create mode but disabled
 
-
-        console.log('Patient created successfully:', newPatient)
-
       } catch (error) {
-        console.error('Failed to create patient:', error)
-
         publishFeedback({
           kind: 'error',
           code: 'PATIENT_CREATION_FAILED',
@@ -869,7 +809,6 @@ export const NewSession: React.FC = () => {
         }
 
       } catch (error) {
-        console.error('❌ [Recording] Failed to start:', error)
         publishFeedback({
           kind: 'error',
           code: 'RECORDING_FAILED',
@@ -896,7 +835,6 @@ export const NewSession: React.FC = () => {
 
   const stopTranscribing = async () => {
     if (!mediaRecorderRef.current) {
-      console.warn('⚠️ [Recording] No active recording to stop')
       setIsTranscribing(false)
       setIsPaused(false)
       timer.pause()
@@ -916,23 +854,12 @@ export const NewSession: React.FC = () => {
 
         // Create audio blob from chunks
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-        const audioSizeKB = (audioBlob.size / 1024).toFixed(2)
         const durationSeconds = timer.time
         const durationMin = Math.floor(durationSeconds / 60)
         const durationSec = durationSeconds % 60
 
-        console.log('📊 [Recording] Audio created:', {
-          size: `${audioSizeKB} KB`,
-          sizeBytes: audioBlob.size,
-          duration: `${durationMin}:${durationSec.toString().padStart(2, '0')}`,
-          chunks: audioChunksRef.current.length,
-          chunkSizes: audioChunksRef.current.map(c => c.size),
-          mimeType: audioBlob.type
-        })
-
         // Validate audio has content
         if (audioBlob.size === 0) {
-          console.error('❌ [Recording] Audio blob is empty! No data captured.')
           publishFeedback({
             kind: 'error',
             code: 'RECORDING_EMPTY',
@@ -956,7 +883,6 @@ export const NewSession: React.FC = () => {
         // Validate minimum duration (1 minute = 60 seconds)
         if (durationSeconds < 60) {
           const recordingDuration = `${durationMin}:${durationSec.toString().padStart(2, '0')}`
-          console.warn('⚠️ [Recording] Audio too short:', durationSeconds, 'seconds')
           publishFeedback({
             kind: 'error',
             code: 'RECORDING_TOO_SHORT',
@@ -1009,8 +935,6 @@ export const NewSession: React.FC = () => {
             }
           })
 
-          console.log('✅ [Recording] Transcription completed:', result.transcriptionId)
-
           // Check for empty transcript (language mismatch) and show inline error
           if (result.status === 'failed_empty_transcript') {
             shouldKeepAlertVisible = true // Use local variable - React state won't update in time for finally block
@@ -1028,7 +952,6 @@ export const NewSession: React.FC = () => {
           // Success feedback is automatic via HTTP interceptor (TRANSCRIPTION_COMPLETED)
 
         } catch (error) {
-          console.error('❌ [Recording] Failed to process audio:', error)
           publishFeedback({
             kind: 'error',
             code: 'TRANSCRIPTION_UPLOAD_FAILED',
@@ -1061,7 +984,6 @@ export const NewSession: React.FC = () => {
       if (mediaRecorder.state === 'recording' || mediaRecorder.state === 'paused') {
         mediaRecorder.stop()
       } else {
-        console.warn('⚠️ [Recording] MediaRecorder not in recordable state:', mediaRecorder.state)
         resolve()
       }
     })
@@ -1428,10 +1350,7 @@ export const NewSession: React.FC = () => {
             <Button
               variant="primary"
               disabled={!isQuoteOrReportEnabled()}
-              onClick={() => {
-                console.log('🔵 [NewSession] Opening Template Quote Modal')
-                setShowTemplateQuoteModal(true)
-              }}
+              onClick={() => setShowTemplateQuoteModal(true)}
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
@@ -1442,10 +1361,7 @@ export const NewSession: React.FC = () => {
             <Button
               variant="primary"
               disabled={!isQuoteOrReportEnabled()}
-              onClick={() => {
-                console.log('🔵 [NewSession] Opening AI Agent Modal')
-                setShowAIAgentModal(true)
-              }}
+              onClick={() => setShowAIAgentModal(true)}
               className="flex items-center gap-2"
             >
               <Bot className="w-4 h-4" />

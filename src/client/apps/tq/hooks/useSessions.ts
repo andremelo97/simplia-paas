@@ -83,7 +83,6 @@ export const useSessionsList = (initialParams?: Partial<UseSessionsListParams>):
         error: null
       })
     } catch (error) {
-      console.error('Error fetching sessions:', error)
       setState({
         data: [],
         total: 0,

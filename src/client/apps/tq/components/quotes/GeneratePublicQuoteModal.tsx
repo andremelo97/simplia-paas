@@ -68,7 +68,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
         setSelectedTemplateId(defaultTemplate.id)
       }
     } catch (error) {
-      console.error('Failed to load templates:', error)
+      // Failed to load templates
     } finally {
       setIsLoading(false)
     }
@@ -117,9 +117,8 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
     try {
       // Get tenantId from auth store
       const { tenantId } = await import('../../shared/store/auth').then(m => m.useAuthStore.getState())
-      
+
       if (!tenantId) {
-        console.error('No tenantId found in auth store')
         return
       }
 
@@ -173,7 +172,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
       setCopiedField(field)
       setTimeout(() => setCopiedField(null), 2000)
     } catch (error) {
-      console.error('Failed to copy:', error)
+      // Failed to copy
     }
   }
 

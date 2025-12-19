@@ -14,13 +14,9 @@ let interceptorInstalled = false
  */
 export function installTenantInterceptor() {
   if (interceptorInstalled) {
-    console.warn('Tenant interceptor already installed')
     return
   }
 
-  // Note: This assumes the HTTP client will handle the header injection
-  // The actual implementation depends on the HTTP client being used
-  console.log('🔧 [Auth] Tenant interceptor installed')
   interceptorInstalled = true
 }
 
@@ -32,7 +28,6 @@ export function getCurrentTenantId(): number | null {
   // First try the manual session storage
   const session = readSession()
   if (session?.tenantId) {
-    console.log('🔍 [Tenant] Found tenant ID from session:', session.tenantId)
     return session.tenantId
   }
 
@@ -44,15 +39,13 @@ export function getCurrentTenantId(): number | null {
       // Try tenantId directly (Hub/TQ format) or user.tenantId (internal-admin format)
       const tenantId = parsed.state?.tenantId || parsed.state?.user?.tenantId
       if (tenantId) {
-        console.log('🔍 [Tenant] Found tenant ID from auth storage:', tenantId)
         return tenantId
       }
     }
-  } catch (e) {
-    console.warn('Failed to read auth storage:', e)
+  } catch {
+    // Ignore parse errors
   }
 
-  console.warn('🚨 [Tenant] No tenant ID found!')
   return null
 }
 

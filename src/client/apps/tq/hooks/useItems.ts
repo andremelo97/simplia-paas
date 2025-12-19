@@ -59,7 +59,6 @@ export const useItemsList = (initialParams?: Partial<UseItemsListParams>): UseIt
         error: null
       })
     } catch (error) {
-      console.error('Error fetching items:', error)
       setState({
         data: [],
         total: 0,

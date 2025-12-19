@@ -16,17 +16,14 @@ export const TenantContactsTab: React.FC = () => {
     const fetchContacts = async () => {
       try {
         setLoading(true)
-        console.log('👥 [TenantContactsTab] Fetching contacts for tenant:', numericTenantId)
-        
+
         const response = await tenantsService.listContacts(numericTenantId, {
           active: true,
           limit: 50
         })
-        
-        console.log('✅ [TenantContactsTab] Contacts loaded:', response.data.contacts.length)
+
         setContacts(response.data.contacts)
       } catch (error) {
-        console.error('❌ [TenantContactsTab] Failed to load contacts:', error)
         publishFeedback({
           kind: 'error',
           message: 'Failed to load contacts. Please try again.'

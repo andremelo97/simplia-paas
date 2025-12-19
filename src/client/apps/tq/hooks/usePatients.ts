@@ -60,7 +60,6 @@ export const usePatientsList = (initialParams?: Partial<UsePatientsListParams>):
         error: null
       })
     } catch (error) {
-      console.error('Error fetching patients:', error)
       setState({
         data: [],
         total: 0,

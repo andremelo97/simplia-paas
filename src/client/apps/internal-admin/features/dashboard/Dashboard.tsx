@@ -89,14 +89,11 @@ export const Dashboard: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      console.log('🔄 [Dashboard] Fetching platform metrics...')
 
       const data = await metricsService.getPlatformOverview()
       setMetrics(data)
-      console.log('✅ [Dashboard] Metrics loaded:', data)
 
     } catch (err: any) {
-      console.error('❌ [Dashboard] Failed to load metrics:', err)
       setError(err.message || 'Failed to load metrics')
     } finally {
       setLoading(false)
@@ -110,7 +107,7 @@ export const Dashboard: React.FC = () => {
   //     const data = await jobsService.getStatus()
   //     setJobs(data)
   //   } catch (err: any) {
-  //     console.error('❌ [Dashboard] Failed to load jobs:', err)
+  //     // Failed to load jobs
   //   } finally {
   //     setJobsLoading(false)
   //   }

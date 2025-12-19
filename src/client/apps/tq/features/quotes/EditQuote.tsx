@@ -73,7 +73,7 @@ export const EditQuote: React.FC = () => {
           setSelectedTemplateId(defaultTemplate.id)
         }
       } catch (error) {
-        console.error('Failed to load templates:', error)
+        // Failed to load templates
       } finally {
         setIsLoadingTemplates(false)
       }
@@ -285,7 +285,7 @@ export const EditQuote: React.FC = () => {
 
       // Success feedback is handled automatically by HTTP interceptor
     } catch (error) {
-      console.error('Failed to update quote:', error)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSaving(false)
     }
@@ -309,7 +309,7 @@ export const EditQuote: React.FC = () => {
       // Navigate to public quotes links tab
       navigate('/public-quotes/links')
     } catch (error) {
-      console.error('Failed to generate public quote:', error)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsGeneratingPublicQuote(false)
     }
@@ -652,7 +652,6 @@ export const EditQuote: React.FC = () => {
           patientEmail={patientEmail}
           patientPhone={patientPhone}
           onSuccess={(publicQuote) => {
-            console.log('Public quote generated:', publicQuote)
             setShowGenerateModal(false)
           }}
           onShowToast={(data) => {

@@ -19,7 +19,6 @@ export const brandingService = {
    */
   getBranding: async (): Promise<BrandingData> => {
     const response = await http.get('/internal/api/v1/configurations/branding');
-    console.log('[BrandingService] Response:', response);
     return response.data;
   },
 

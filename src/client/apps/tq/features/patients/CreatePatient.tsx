@@ -85,13 +85,6 @@ export const CreatePatient: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      console.log('👤 [CreatePatient] Submitting patient creation:', {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim() || undefined,
-        email: formData.email.trim() || undefined,
-        phone: formData.phone.trim() || undefined
-      })
-
       // Create patient with proper API payload
       const patientData = {
         first_name: formData.first_name.trim(),
@@ -102,36 +95,14 @@ export const CreatePatient: React.FC = () => {
       }
 
       await patientsService.createPatient(patientData)
-      console.log('✅ [CreatePatient] Patient created successfully')
 
-      // Success feedback is now handled automatically by the HTTP interceptor
-      // based on the meta.code from the backend response
+      // Success feedback is handled automatically by the HTTP interceptor
 
       // Navigate immediately - toast will show on the patients list page
       navigate('/patients')
 
     } catch (error: any) {
-      console.error('❌ [CreatePatient] Failed to create patient:', error)
-
-      // Map backend errors to user-friendly messages
-      let errorMessage = 'Failed to create patient. Please try again.'
-
-      // Handle specific error cases based on backend responses
-      if (error.message?.includes('already exists') || error.message?.includes('duplicate')) {
-        errorMessage = 'A patient with this email already exists. Please use a different email.'
-      } else if (error.message?.includes('Validation Error')) {
-        errorMessage = 'Please check your input and try again.'
-      } else if (error.status === 409) {
-        errorMessage = 'Patient already exists. Please check the information.'
-      } else if (error.status === 403) {
-        errorMessage = 'You do not have permission to create patients.'
-      } else if (error.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
-      } else if (error.status >= 500) {
-        errorMessage = 'Server error occurred. Please try again later.'
-      }
-
-      console.error('❌ [CreatePatient] Create error:', errorMessage)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }

@@ -68,7 +68,6 @@ export const useTemplatesList = (initialParams?: Partial<UseTemplatesListParams>
         error: null
       })
     } catch (error) {
-      console.error('Error fetching templates:', error)
       setState(prev => ({
         ...prev,
         loading: false,
@@ -151,7 +150,6 @@ export const useTemplate = (id: string): UseTemplateReturn => {
         error: null
       })
     } catch (error) {
-      console.error('Error fetching template:', error)
       setState(prev => ({
         ...prev,
         loading: false,
@@ -207,7 +205,6 @@ export const useMostUsedTemplates = (limit: number = 10): UseMostUsedTemplatesRe
         error: null
       })
     } catch (error) {
-      console.error('Error fetching most used templates:', error)
       setState(prev => ({
         ...prev,
         loading: false,

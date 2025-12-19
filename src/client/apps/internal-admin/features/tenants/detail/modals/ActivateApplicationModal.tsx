@@ -53,25 +53,17 @@ export const ActivateApplicationModal: React.FC<ActivateApplicationModalProps> =
     try {
       setLoading(true)
       setError(null)
-      console.log('🔄 [ActivateApplicationModal] Fetching active applications')
 
       const applications = await ApplicationsService.getApplications()
-      
+
       // Filter out already licensed applications
       const availableApps = applications.filter(
         app => !licensedSlugs.includes(app.slug)
       )
-      
-      console.log('✅ [ActivateApplicationModal] Applications fetched:', { 
-        total: applications.length,
-        available: availableApps.length,
-        licensedSlugs 
-      })
 
       setApplications(availableApps)
       setFilteredApplications(availableApps)
     } catch (err) {
-      console.error('❌ [ActivateApplicationModal] Failed to fetch applications:', err)
       setError('Failed to load applications. Please try again.')
       setApplications([])
       setFilteredApplications([])
@@ -84,14 +76,11 @@ export const ActivateApplicationModal: React.FC<ActivateApplicationModalProps> =
     try {
       setActivating(appSlug)
       setError(null)
-      console.log('🔄 [ActivateApplicationModal] Activating license:', { tenantId, appSlug })
 
       const response = await tenantsService.activateLicense(tenantId, appSlug, {
         userLimit: 50, // Default user limit
         status: 'active'
       })
-      
-      console.log('✅ [ActivateApplicationModal] License activated successfully:', response.data)
 
       // Close modal first
       onClose()
@@ -114,9 +103,8 @@ export const ActivateApplicationModal: React.FC<ActivateApplicationModalProps> =
           }, 3000)
         }
       }, 100)
-      
+
     } catch (err: any) {
-      console.error('❌ [ActivateApplicationModal] Failed to activate license:', err)
       
       // Check if it's a known error type with details
       if (err.response?.data?.error?.details?.reason) {

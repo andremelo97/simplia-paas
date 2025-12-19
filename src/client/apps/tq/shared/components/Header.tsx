@@ -138,7 +138,7 @@ export const Header: React.FC = () => {
         setTemplates(templatesRes.templates || [])
         setPublicQuoteTemplates(publicQuoteTemplatesRes.data || [])
       } catch (error) {
-        console.error('Failed to load search data:', error)
+        // Failed to load search data
       }
     }
 

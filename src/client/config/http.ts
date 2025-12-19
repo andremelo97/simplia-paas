@@ -40,8 +40,8 @@ class HttpClient {
       try {
         const parsed = JSON.parse(authStorage)
         token = parsed.state?.token || null
-      } catch (e) {
-        console.warn('Failed to parse auth storage:', e)
+      } catch {
+        // Ignore parse errors - will continue without token
       }
     }
     
@@ -75,16 +75,6 @@ class HttpClient {
           // Response might not be JSON, that's ok
         }
         
-        // Log error for telemetry (dev only)
-        if ((import.meta as any).env?.DEV) {
-          console.error('[HTTP Error]', {
-            status: response.status,
-            path: endpoint,
-            statusText: response.statusText,
-            errorData
-          })
-        }
-        
         // Create AppError based on status and context
         throw this.createAppErrorFromResponse(response, endpoint, errorData)
       }
@@ -93,26 +83,11 @@ class HttpClient {
       
       // Intercept successful mutations with meta.code
       if (this.isMutativeMethod(options.method || 'GET') && responseData?.meta?.code) {
-        console.log('[HTTP] Intercepting feedback:', {
-          method: options.method,
-          path: endpoint,
-          code: responseData.meta.code,
-          message: responseData.meta.message
-        })
-
         const feedbackMessage = resolveFeedbackMessage(
           responseData.meta.code,
           responseData.meta.message,
           { method: options.method || 'GET', path: endpoint }
         )
-
-        console.log('[HTTP] Publishing feedback:', {
-          kind: 'success',
-          code: responseData.meta.code,
-          title: feedbackMessage.title,
-          message: feedbackMessage.message,
-          path: endpoint
-        })
 
         publishFeedback({
           kind: 'success',
@@ -129,10 +104,6 @@ class HttpClient {
       if (error instanceof TypeError && error.message.includes('fetch')) {
         const networkError = createAppError.network()
         networkError.message = getErrorMessage(networkError)
-        
-        if ((import.meta as any).env?.DEV) {
-          console.error('[Network Error]', { path: endpoint, originalError: error })
-        }
         
         throw networkError
       }

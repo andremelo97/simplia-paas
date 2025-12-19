@@ -78,8 +78,7 @@ export const Sessions: React.FC = () => {
       // Reload list
       await refresh()
     } catch (error) {
-      console.error('Failed to delete session:', error)
-      // Error feedback is also handled by HTTP interceptor
+      // Error feedback is handled by HTTP interceptor
     } finally {
       setIsDeleting(false)
       setShowDeleteDialog(false)

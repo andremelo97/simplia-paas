@@ -192,17 +192,11 @@ class TranscriptionService {
 
         // Check if transcription is complete (including empty/short transcripts)
         if (status.status === TranscriptStatus.COMPLETED || status.status === TranscriptStatus.FAILED_EMPTY_TRANSCRIPT) {
-          if (status.status === TranscriptStatus.FAILED_EMPTY_TRANSCRIPT) {
-            console.log('[Transcription] Completed with empty/short transcript (no charge)')
-          } else {
-            console.log('[Transcription] Completed')
-          }
           return status
         }
 
         // Check if transcription failed
         if (status.status === TranscriptStatus.FAILED) {
-          console.error('[Transcription] Failed')
           throw new Error('Transcription failed')
         }
 
@@ -214,7 +208,6 @@ class TranscriptionService {
         }
 
         // Unexpected status
-        console.error(`[Transcription] Unexpected status: ${status.status}`)
         throw new Error(`Unexpected transcription status: ${status.status}`)
 
       } catch (error) {
@@ -228,7 +221,6 @@ class TranscriptionService {
       }
     }
 
-    console.error('[Transcription] Polling timeout')
     throw new Error('Transcription polling timed out')
   }
 
@@ -269,13 +261,12 @@ class TranscriptionService {
       return result
 
     } catch (error) {
-      console.error('[Transcription] Workflow failed:', error)
       // Mark transcription as failed on any error
       if (transcriptionId) {
         try {
           await this.markAsFailed(transcriptionId, error instanceof Error ? error.message : 'Unknown error')
-        } catch (markFailedError) {
-          console.error('Failed to mark transcription as failed:', markFailedError)
+        } catch {
+          // Ignore error when marking as failed
         }
       }
 
@@ -291,8 +282,7 @@ class TranscriptionService {
       await api.post(`${this.baseUrl}/${transcriptionId}/mark-failed`, {
         error_message: errorMessage
       })
-    } catch (error) {
-      console.error('Error marking transcription as failed:', error)
+    } catch {
       // Don't throw here to avoid masking the original error
     }
   }

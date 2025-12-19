@@ -143,7 +143,6 @@ export const AudioUploadModal: React.FC<AudioUploadModalProps> = ({
       processFile(audioFile)
     } else if (files.length > 0) {
       // File dropped but not audio - this should be handled by validation
-      console.log('Non-audio file dropped, ignoring')
     }
   }, [processFile])
 

@@ -175,13 +175,9 @@ export const Home: React.FC = () => {
   useEffect(() => {
     const handleSso = async () => {
       try {
-        console.log('🔄 [TQ Home] Checking for SSO params...')
-        const ssoAttempted = await consumeSso()
-        if (!ssoAttempted) {
-          console.log('ℹ️ [TQ Home] No SSO params found, using persisted session')
-        }
+        await consumeSso()
       } catch (error) {
-        console.error('❌ [TQ Home] SSO failed on home page:', error)
+        // SSO failed on home page
       }
     }
 
@@ -239,7 +235,7 @@ export const Home: React.FC = () => {
         setPublicQuoteTemplates(sortedPublicQuoteTemplates)
         setTemplates(sortedTemplates)
       } catch (error) {
-        console.error('Failed to load home data:', error)
+        // Failed to load home data
       } finally {
         setIsLoadingQuotes(false)
         setIsLoadingPatients(false)

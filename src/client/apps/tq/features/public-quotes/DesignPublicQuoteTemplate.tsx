@@ -40,7 +40,7 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
       // Then load template
       await loadTemplate()
     } catch (error) {
-      console.error('Failed to load branding:', error)
+      // Failed to load branding
     }
   }
 
@@ -57,7 +57,7 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
         setData({ content: [], root: {} })
       }
     } catch (error) {
-      console.error('Failed to load template:', error)
+      // Failed to load template
     }
   }
 
@@ -68,11 +68,10 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
       const updatedTemplate = await publicQuotesService.updateTemplate(id, {
         content: data
       })
-      console.log('✅ Template layout saved:', data)
       // Update template state to reflect saved changes
       setTemplate(updatedTemplate)
     } catch (error) {
-      console.error('❌ Failed to save template layout:', error)
+      // Failed to save template layout
     } finally {
       setIsSaving(false)
     }

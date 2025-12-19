@@ -71,7 +71,6 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
         setSelectedTemplateId(response.templates[0].id)
       }
     } catch (error) {
-      console.error('Failed to load templates:', error)
       setError('Failed to load templates. Please try again.')
     } finally {
       setIsLoading(false)
@@ -79,13 +78,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   }
 
   const handleCreateQuote = async () => {
-    console.log('🟣 [TemplateQuoteModal] Create Quote button clicked')
-    console.log('  - templateId:', selectedTemplateId)
-    console.log('  - transcription:', transcription ? transcription.substring(0, 50) : 'none')
-    console.log('  - patient:', patient?.id)
-
     if (!selectedTemplateId || !transcription.trim() || !patient) {
-      console.log('⚠️ [TemplateQuoteModal] Validation failed - missing required data')
       return
     }
 
@@ -98,22 +91,17 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
       // If sessionId is provided (from EditSession), use it directly
       if (sessionId) {
         targetSessionId = sessionId
-        console.log('📄 [TemplateQuoteModal] Using existing session:', sessionId)
       } else {
         // Otherwise, create new transcription and session (NewSession flow)
         // Step 1: Create transcription from text
-        console.log('📝 [TemplateQuoteModal] Creating transcription with text:', transcription)
         const createdTranscription = await transcriptionService.createTextTranscription(transcription)
-        console.log('✅ [TemplateQuoteModal] Transcription created:', createdTranscription.transcriptionId)
 
         // Step 2: Create session with the transcription
-        console.log('📄 [TemplateQuoteModal] Creating session for patient:', patient.id)
         const sessionData = {
           patient_id: patient.id,
           transcription_id: createdTranscription.transcriptionId
         }
         const newSession = await sessionsService.createSession(sessionData)
-        console.log('✅ [TemplateQuoteModal] Session created successfully:', newSession.number)
         targetSessionId = newSession.id
       }
 
@@ -124,9 +112,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
         patientId: patient.id
       }
 
-      console.log('🔮 [TemplateQuoteModal] Filling template with AI:', fillTemplateRequest)
       const filledTemplateResponse = await aiAgentService.fillTemplate(fillTemplateRequest)
-      console.log('✅ [TemplateQuoteModal] Template filled successfully')
 
       // Step 4: Create quote with filled template content
       const quoteData: CreateQuoteRequest = {
@@ -135,9 +121,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
         status: 'draft'
       }
 
-      console.log('💰 [TemplateQuoteModal] Creating quote with filled template')
       const newQuote = await quotesService.createQuote(quoteData)
-      console.log('✅ [TemplateQuoteModal] Quote created successfully:', newQuote.number)
 
       // Call the callback to show toast in NewSession
       if (onQuoteCreated) {
@@ -148,7 +132,6 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
       onClose()
 
     } catch (error) {
-      console.error('❌ [TemplateQuoteModal] Failed to create quote with template:', error)
       setError(error instanceof Error ? error.message : 'Failed to create quote from template')
     } finally {
       setIsCreatingQuote(false)
@@ -156,12 +139,7 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   }
 
   const handleCreateClinicalReport = async () => {
-    console.log('🟣 [TemplateQuoteModal] Create Clinical Report button clicked')
-    console.log('  - templateId:', selectedTemplateId)
-    console.log('  - onCreateClinicalReport callback:', onCreateClinicalReport ? 'exists' : 'missing')
-
     if (!selectedTemplateId || !onCreateClinicalReport) {
-      console.log('⚠️ [TemplateQuoteModal] Cannot create - missing template or callback')
       return
     }
 
@@ -175,7 +153,6 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
       // Close modal after successful creation
       onClose()
     } catch (error) {
-      console.error('❌ [TemplateQuoteModal] Failed to create clinical report:', error)
       setError(error instanceof Error ? error.message : 'Failed to create clinical report')
     } finally {
       setIsCreatingClinicalReport(false)

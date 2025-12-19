@@ -33,7 +33,6 @@ export const ViewClinicalReport: React.FC = () => {
         setReport(reportData)
         setLoadError(null)
       } catch (error) {
-        console.error('Failed to load clinical report:', error)
         setLoadError(error instanceof Error ? error.message : 'Failed to load clinical report')
       } finally {
         setIsLoading(false)

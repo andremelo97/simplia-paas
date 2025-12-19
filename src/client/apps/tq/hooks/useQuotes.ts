@@ -84,7 +84,6 @@ export const useQuotesList = (initialParams?: Partial<UseQuotesListParams>): Use
         error: null
       })
     } catch (error) {
-      console.error('Error fetching quotes:', error)
       setState({
         data: [],
         total: 0,

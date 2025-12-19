@@ -71,7 +71,7 @@ export const LinksTab: React.FC = () => {
       const quotes = await publicQuotesService.listAllPublicQuotes(filters)
       setPublicQuotes(quotes)
     } catch (error) {
-      console.error('Failed to load public quotes:', error)
+      // Failed to load public quotes
     } finally {
       setIsLoading(false)
     }
@@ -95,8 +95,7 @@ export const LinksTab: React.FC = () => {
       // Reload list
       await loadPublicQuotes()
     } catch (error) {
-      console.error('Failed to revoke public quote:', error)
-      // Error feedback is also handled by HTTP interceptor
+      // Error feedback is handled by HTTP interceptor
     } finally {
       setIsRevoking(false)
       setShowRevokeDialog(false)
@@ -118,7 +117,7 @@ export const LinksTab: React.FC = () => {
       })
       setShowLinkToast(true)
     } catch (error) {
-      console.error('Failed to generate new password:', error)
+      // Failed to generate new password
     } finally {
       setPasswordLoadingId(null)
     }

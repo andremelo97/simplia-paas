@@ -149,7 +149,6 @@ export function useTranscription(): UseTranscriptionResult {
       return result.transcriptionId
 
     } catch (error) {
-      console.error('[Transcription] Upload failed:', error)
       // Extract error message from AppError or generic Error
       const errorMessage = (error as any)?.message || 'Transcription failed'
       updateState({

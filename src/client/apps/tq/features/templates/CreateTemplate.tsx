@@ -107,24 +107,7 @@ export const CreateTemplate: React.FC = () => {
       await templatesService.create(requestData)
       navigate('/templates')
     } catch (error: any) {
-      console.error('❌ [CreateTemplate] Failed to create template:', error)
-
-      // Error handling is now managed by HTTP interceptor
-      let errorMessage = 'Failed to create template. Please try again.'
-
-      if (error.message?.includes('Validation Error')) {
-        errorMessage = 'Please check your input and try again.'
-      } else if (error.status === 409) {
-        errorMessage = 'Template already exists. Please check the information.'
-      } else if (error.status === 403) {
-        errorMessage = 'You do not have permission to create templates.'
-      } else if (error.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
-      } else if (error.status >= 500) {
-        errorMessage = 'Server error occurred. Please try again later.'
-      }
-
-      console.error('❌ [CreateTemplate] Create error:', errorMessage)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }

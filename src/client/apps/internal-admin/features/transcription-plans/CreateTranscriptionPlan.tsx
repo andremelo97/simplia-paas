@@ -104,7 +104,7 @@ export const CreateTranscriptionPlan: React.FC = () => {
       await transcriptionPlansService.createPlan(formData)
       navigate('/transcription-plans')
     } catch (err: any) {
-      console.error('[CreateTranscriptionPlan] Failed to create plan:', err)
+      // Error handled by HTTP interceptor
     } finally {
       setLoading(false)
     }

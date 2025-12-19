@@ -81,8 +81,7 @@ export const Templates: React.FC = () => {
       // Reload list
       await refetch()
     } catch (error) {
-      console.error('Failed to delete template:', error)
-      // Error feedback is also handled by HTTP interceptor
+      // Error feedback is handled by HTTP interceptor
     } finally {
       setIsDeleting(false)
       setShowDeleteDialog(false)

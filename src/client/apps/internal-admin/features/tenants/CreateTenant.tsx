@@ -161,13 +161,6 @@ export const CreateTenant: React.FC = () => {
         .replace(/\s+/g, '-') // Replace spaces with hyphens
         .replace(/-+/g, '-') // Replace multiple hyphens with single
         .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
-      
-      console.log('🏢 [CreateTenant] Submitting tenant creation:', {
-        name: formData.name.trim(),
-        subdomain,
-        addressCount: addresses.length,
-        contactCount: contacts.length
-      })
 
       // Create tenant with addresses and contacts, suppressing individual feedback messages
       await withSuppressedFeedback(['ADDRESS_CREATED', 'CONTACT_CREATED'], async () => {
@@ -177,13 +170,11 @@ export const CreateTenant: React.FC = () => {
           subdomain,
           timezone: formData.timezone
         })
-        
+
         const tenant = tenantResponse.data.tenant
-        console.log('✅ [CreateTenant] Tenant created successfully, ID:', tenant.id)
-        
+
         // Step 2: Create addresses for the tenant
         if (addresses.length > 0) {
-          console.log('📍 [CreateTenant] Creating addresses...')
           for (const address of addresses) {
             await addressService.createAddress(tenant.id, {
               type: address.type,
@@ -197,12 +188,10 @@ export const CreateTenant: React.FC = () => {
               isPrimary: address.is_primary
             })
           }
-          console.log('✅ [CreateTenant] Addresses created successfully')
         }
-        
+
         // Step 3: Create contacts for the tenant
         if (contacts.length > 0) {
-          console.log('👥 [CreateTenant] Creating contacts...')
           for (const contact of contacts) {
             await contactService.createContact(tenant.id, {
               type: contact.type,
@@ -215,19 +204,16 @@ export const CreateTenant: React.FC = () => {
               isPrimary: contact.is_primary
             })
           }
-          console.log('✅ [CreateTenant] Contacts created successfully')
         }
       })
-      
+
       // Success feedback is now handled automatically by the HTTP interceptor
       // based on the meta.code from the backend response
       
       // Navigate immediately - toast will show on the tenants list page
       navigate('/tenants')
-      
+
     } catch (error: any) {
-      console.error('❌ [CreateTenant] Failed to create tenant:', error)
-      
       // Map backend errors to user-friendly messages
       let errorMessage = 'Failed to create tenant. Please try again.'
       

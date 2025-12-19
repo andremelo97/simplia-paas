@@ -32,7 +32,7 @@ export const TemplatesTab: React.FC = () => {
       setTemplates(templatesResponse.data || templatesResponse)
       setBranding(brandingData)
     } catch (error) {
-      console.error('Failed to load data:', error)
+      // Failed to load data
     } finally {
       setLoading(false)
     }

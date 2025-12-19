@@ -54,7 +54,6 @@ export const PreviewPublicQuoteLink: React.FC = () => {
       const brandingData = await brandingService.getBranding()
       setBranding(brandingData)
     } catch (err) {
-      console.error('Failed to load preview data:', err)
       setError('Failed to load preview')
     } finally {
       setIsLoading(false)

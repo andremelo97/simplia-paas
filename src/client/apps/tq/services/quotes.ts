@@ -118,7 +118,6 @@ export const quotesService = {
       quotesData = apiResponse
       total = apiResponse.length
     } else {
-      console.error('❌ [Quotes Service] Invalid API response structure:', apiResponse)
       throw new Error('Invalid API response structure')
     }
 
@@ -152,9 +151,7 @@ export const quotesService = {
   },
 
   async getQuote(id: string): Promise<Quote> {
-    console.log('🔍 [Quotes Service] Fetching quote:', id)
     const response = await api.get(`/api/tq/v1/quotes/${id}?includeSession=true&includeItems=true`)
-    console.log('🔍 [Quotes Service] API Response:', response)
 
     if (!response.data) {
       throw new Error('No data received from API')
@@ -163,7 +160,6 @@ export const quotesService = {
     const apiQuote = response.data
 
     if (!apiQuote || !apiQuote.id) {
-      console.error('❌ [Quotes Service] Invalid response:', apiQuote)
       throw new Error('Quote data is invalid in API response')
     }
 
@@ -190,7 +186,6 @@ export const quotesService = {
       items: apiQuote.items
     }
 
-    console.log('✅ [Quotes Service] Mapped quote:', mappedQuote)
     return mappedQuote
   },
 
@@ -202,12 +197,9 @@ export const quotesService = {
       status: data.status
     }
 
-    console.log('🔄 [Quotes Service] Sending data to API:', apiData)
     const response = await api.post('/api/tq/v1/quotes', apiData)
-    console.log('✅ [Quotes Service] API Response:', response)
 
     if (!response) {
-      console.error('❌ [Quotes Service] Invalid response structure:', { response })
       throw new Error('Invalid API response structure for create quote')
     }
 
@@ -234,7 +226,6 @@ export const quotesService = {
       patient_email: apiQuote.patient_email
     }
 
-    console.log('✅ [Quotes Service] Mapped created quote:', mappedQuote)
     return mappedQuote
   },
 
@@ -245,9 +236,7 @@ export const quotesService = {
     if (data.total !== undefined) apiData.total = data.total
     if (data.status !== undefined) apiData.status = data.status
 
-    console.log('🔄 [Quotes Service] Updating quote:', apiData)
     const response = await api.put(`/api/tq/v1/quotes/${id}`, apiData)
-    console.log('✅ [Quotes Service] Update response:', response.data)
 
     if (!response.data) {
       throw new Error('Invalid API response structure for update quote')
@@ -276,7 +265,6 @@ export const quotesService = {
       patient_email: apiQuote.patient_email
     }
 
-    console.log('✅ [Quotes Service] Mapped updated quote:', mappedQuote)
     return mappedQuote
   },
 

@@ -63,7 +63,6 @@ export const ItemsTab: React.FC = () => {
 
   const handleDeleteItem = (item: Item) => {
     // Placeholder: Will be implemented later
-    console.log('Delete item:', item)
   }
 
 

@@ -67,20 +67,11 @@ export class UsersService {
     const queryString = searchParams.toString()
     const endpoint = queryString ? `${this.globalEndpoint}?${queryString}` : this.globalEndpoint
 
-    console.log('👥 [UsersService] Fetching users list:', { params, endpoint })
-
     try {
       const response = await api.get(endpoint)
-      
-      console.log('✅ [UsersService] Users list fetched:', {
-        count: response.data?.users?.length,
-        total: response.data?.pagination?.total,
-        tenantFiltered: !!params.tenantId
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [UsersService] Failed to fetch users:', error)
       throw error
     }
   }
@@ -111,27 +102,11 @@ export class UsersService {
       endpoint = `${this.globalEndpoint}/${userId}`
     }
 
-    console.log('👥 [UsersService] Fetching user by ID:', { userId, tenantId, endpoint })
-    console.log('🔗 [UsersService] Full URL will be:', `${window.location.origin}${endpoint}`)
-    console.log('🔍 [UsersService] URL components:', {
-      tenantEndpoint: this.tenantEndpoint,
-      tenantId: tenantId,
-      userId: userId,
-      constructedEndpoint: tenantId ? `${this.tenantEndpoint}/${tenantId}/users/${userId}` : `${this.globalEndpoint}/${userId}`
-    })
-
     try {
       const response = await api.get(endpoint)
-      
-      console.log('✅ [UsersService] User fetched:', {
-        userId: response.data?.id,
-        email: response.data?.email,
-        tenantId: response.data?.tenantId
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [UsersService] Failed to fetch user:', error)
       throw error
     }
   }
@@ -166,26 +141,11 @@ export class UsersService {
 
     const endpoint = `${this.tenantEndpoint}/${tenantId}/users`
 
-    console.log('👥 [UsersService] Creating user:', { 
-      tenantId,
-      email: payload.email, 
-      firstName: payload.firstName,
-      role: payload.role,
-      status: payload.status
-    })
-
     try {
       const response = await api.post(endpoint, payload)
-      
-      console.log('✅ [UsersService] User created successfully:', {
-        userId: response.data?.user?.id,
-        email: response.data?.user?.email,
-        tenantId
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [UsersService] Failed to create user:', error)
       throw error // Let the error handling be done by the caller with AppError
     }
   }
@@ -200,20 +160,11 @@ export class UsersService {
   async update(tenantId: number, userId: number, userData: UpdateUserRequest): Promise<{ success: boolean; data: UserResponse; meta: { code: string; message: string } }> {
     const endpoint = `${this.tenantEndpoint}/${tenantId}/users/${userId}`
 
-    console.log('👥 [UsersService] Updating user:', { tenantId, userId, ...userData })
-
     try {
       const response = await api.put(endpoint, userData)
-      
-      console.log('✅ [UsersService] User updated:', {
-        userId: response.data?.id,
-        email: response.data?.email,
-        tenantId
-      })
 
       return response
     } catch (error) {
-      console.error('❌ [UsersService] Failed to update user:', error)
       throw error
     }
   }
@@ -227,16 +178,11 @@ export class UsersService {
   async deactivate(tenantId: number, userId: number): Promise<{ success: boolean; meta: { code: string; message: string } }> {
     const endpoint = `${this.tenantEndpoint}/${tenantId}/users/${userId}`
 
-    console.log('👥 [UsersService] Deactivating user:', { tenantId, userId })
-
     try {
       const response = await api.delete(endpoint)
-      
-      console.log('✅ [UsersService] User deactivated:', { userId, tenantId })
 
       return response
     } catch (error) {
-      console.error('❌ [UsersService] Failed to deactivate user:', error)
       throw error
     }
   }
@@ -261,16 +207,11 @@ export class UsersService {
   async resetPassword(tenantId: number, userId: number, newPassword: string): Promise<{ success: boolean; meta: { code: string; message: string } }> {
     const endpoint = `${this.tenantEndpoint}/${tenantId}/users/${userId}/reset-password`
 
-    console.log('👥 [UsersService] Resetting user password:', { tenantId, userId })
-
     try {
       const response = await api.post(endpoint, { password: newPassword })
-      
-      console.log('✅ [UsersService] User password reset:', { userId, tenantId })
 
       return response
     } catch (error) {
-      console.error('❌ [UsersService] Failed to reset user password:', error)
       throw error
     }
   }

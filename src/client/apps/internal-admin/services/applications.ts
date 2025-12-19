@@ -100,9 +100,7 @@ export const ApplicationsService = {
    * Get all applications
    */
   async getApplications(): Promise<Application[]> {
-    console.log('🔍 [ApplicationsService] Making API call to /internal/api/v1/applications');
     const response = await api.get('/internal/api/v1/applications');
-    console.log('📡 [ApplicationsService] API Response:', response);
     
     // Defensive check for response structure
     if (!response || !response.data) {
@@ -120,7 +118,6 @@ export const ApplicationsService = {
       // Array directly: { data: [...] }
       return response.data;
     } else {
-      console.error('❌ [ApplicationsService] Unexpected response structure:', response);
       throw new Error('Applications data not found in response');
     }
   },
@@ -129,9 +126,7 @@ export const ApplicationsService = {
    * Get application by ID
    */
   async getApplication(id: number): Promise<Application> {
-    console.log('🔍 [ApplicationsService] Getting application:', id);
     const response = await api.get(`/internal/api/v1/applications/${id}`);
-    console.log('📡 [ApplicationsService] Application API Response:', response);
     
     // Defensive check for response structure
     if (!response || !response.data) {
@@ -145,7 +140,6 @@ export const ApplicationsService = {
       // Direct application object
       return response.data;
     } else {
-      console.error('❌ [ApplicationsService] Unexpected application response structure:', response);
       throw new Error('Application data not found in response');
     }
   },
@@ -155,11 +149,9 @@ export const ApplicationsService = {
    */
   async getPricing(applicationId: number, current?: boolean): Promise<ApplicationPricing[]> {
     const params = current === false ? '?current=false' : current === true ? '?current=true' : '';
-    console.log('🔍 [ApplicationsService] Making pricing API call:', `/internal/api/v1/applications/${applicationId}/pricing${params}`);
     const response = await api.get<PricingResponse>(
       `/internal/api/v1/applications/${applicationId}/pricing${params}`
     );
-    console.log('📡 [ApplicationsService] Pricing API Response:', response);
     
     // Defensive check for response structure
     if (!response || !response.data) {
@@ -177,7 +169,6 @@ export const ApplicationsService = {
       // Array directly: { data: [...] }
       return response.data;
     } else {
-      console.error('❌ [ApplicationsService] Unexpected pricing response structure:', response);
       throw new Error('Pricing data not found in response');
     }
   },
@@ -186,12 +177,10 @@ export const ApplicationsService = {
    * Create new pricing entry
    */
   async createPricing(applicationId: number, payload: CreatePricingPayload): Promise<ApplicationPricing> {
-    console.log('🔍 [ApplicationsService] Creating pricing:', { applicationId, payload });
     const response = await api.post<CreatePricingResponse>(
       `/internal/api/v1/applications/${applicationId}/pricing`,
       payload
     );
-    console.log('📡 [ApplicationsService] Create pricing API Response:', response);
     
     // Defensive check for response structure
     if (!response || !response.data) {
@@ -206,7 +195,6 @@ export const ApplicationsService = {
       // Nested structure: { data: { data: { pricing: {...} } } }
       return response.data.data.pricing;
     } else {
-      console.error('❌ [ApplicationsService] Unexpected create pricing response structure:', response);
       throw new Error('Pricing data not found in create response');
     }
   },
@@ -215,16 +203,14 @@ export const ApplicationsService = {
    * Update pricing entry
    */
   async updatePricing(
-    applicationId: number, 
-    pricingId: string, 
+    applicationId: number,
+    pricingId: string,
     payload: UpdatePricingPayload
   ): Promise<ApplicationPricing> {
-    console.log('🔍 [ApplicationsService] Updating pricing:', { applicationId, pricingId, payload });
     const response = await api.put<CreatePricingResponse>(
       `/internal/api/v1/applications/${applicationId}/pricing/${pricingId}`,
       payload
     );
-    console.log('📡 [ApplicationsService] Update pricing API Response:', response);
     
     // Defensive check for response structure
     if (!response || !response.data) {
@@ -239,7 +225,6 @@ export const ApplicationsService = {
       // Nested structure: { data: { data: { pricing: {...} } } }
       return response.data.data.pricing;
     } else {
-      console.error('❌ [ApplicationsService] Unexpected update pricing response structure:', response);
       throw new Error('Pricing data not found in update response');
     }
   },

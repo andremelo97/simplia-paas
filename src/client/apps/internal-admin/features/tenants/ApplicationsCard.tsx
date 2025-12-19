@@ -53,9 +53,8 @@ export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) 
       ].filter(ta => ta.application)
 
       setTenantApps(mockTenantApps)
-      
+
     } catch (error) {
-      console.error('❌ [ApplicationsCard] Failed to load tenant applications:', error)
       publishFeedback({
         kind: 'error',
         message: 'Failed to load tenant applications'

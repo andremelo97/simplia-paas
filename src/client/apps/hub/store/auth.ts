@@ -69,21 +69,16 @@ export const useAuthStore = create<AuthState>()(persist(
     
     login: async (credentials) => {
       set({ isLoading: true, error: null })
-      
+
       try {
-        console.log('🔄 [Hub Auth] Starting two-step login...', credentials.email)
-        
         // Step 1: Lookup tenant by email
-        console.log('🔍 [Hub Auth] Looking up tenant for user...')
         const tenant = await tenantLookupByEmail(credentials.email)
-        console.log('🏢 [Hub Auth] Found tenant:', { id: tenant.id, name: tenant.name })
-        
+
         // Step 2: Login with x-tenant-id header
-        console.log('🔑 [Hub Auth] Authenticating with tenant context...')
         const response = await api.post('/internal/api/v1/auth/login', credentials, {
           'x-tenant-id': String(tenant.id)
         })
-        
+
         const { user, token } = response.data
 
         // Extract timezone and locale from JWT
@@ -95,9 +90,8 @@ export const useAuthStore = create<AuthState>()(persist(
           const payload = JSON.parse(atob(paddedBase64))
           tenantTimezone = payload.timezone || 'America/Sao_Paulo'
           tenantLocale = payload.locale || 'pt-BR'
-          console.log('🌍 [Hub Auth] Extracted timezone/locale from JWT:', { tenantTimezone, tenantLocale })
-        } catch (error) {
-          console.warn('⚠️ [Hub Auth] Failed to extract timezone/locale from JWT, using defaults:', error)
+        } catch {
+          // Use defaults if JWT parsing fails
         }
 
         // Step 3: Save session with tenant info
@@ -110,12 +104,6 @@ export const useAuthStore = create<AuthState>()(persist(
           }
         }
         saveSession(session)
-
-        console.log('✅ [Hub Auth] Login successful', {
-          user: user?.email,
-          tenant: tenant.name,
-          tenantId: tenant.id
-        })
 
         set({
           isAuthenticated: true,
@@ -152,22 +140,14 @@ export const useAuthStore = create<AuthState>()(persist(
       const { token, tenantId } = get()
 
       if (!token || !tenantId) {
-        console.warn('🔄 [Hub Auth] Cannot load profile: missing token or tenant context')
         return
       }
 
       try {
         set({ isLoading: true })
-        console.log('🔄 [Hub Auth] Loading user profile...')
 
         const response = await api.get('/internal/api/v1/auth/me')
         const { data } = response
-
-        console.log('✅ [Hub Auth] Profile loaded:', {
-          email: data.email,
-          apps: data.allowedApps?.length || 0,
-          tenant: data.tenant?.name
-        })
 
         set((state) => ({
           user: {
@@ -187,15 +167,12 @@ export const useAuthStore = create<AuthState>()(persist(
           currentState.loadEntitlements()
         }
       } catch (error: any) {
-        console.error('❌ [Hub Auth] Failed to load profile:', error)
-
         // Check if this is an authentication error (401/403)
         const isAuthError = error?.status === 401 || error?.status === 403 ||
                            error?.response?.status === 401 || error?.response?.status === 403 ||
                            error?.httpStatus === 401 || error?.httpStatus === 403
 
         if (isAuthError) {
-          console.log('🔓 [Hub Auth] Authentication expired, clearing session')
           // Clear the stuck session
           const { logout } = get()
           logout()
@@ -224,7 +201,6 @@ export const useAuthStore = create<AuthState>()(persist(
     },
 
     logout: () => {
-      console.log('🔄 [Hub Auth] Logging out...')
       clearSession()
 
       // Clear state - persist middleware will sync to localStorage

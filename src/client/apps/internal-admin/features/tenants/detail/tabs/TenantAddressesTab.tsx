@@ -16,17 +16,14 @@ export const TenantAddressesTab: React.FC = () => {
     const fetchAddresses = async () => {
       try {
         setLoading(true)
-        console.log('🏠 [TenantAddressesTab] Fetching addresses for tenant:', numericTenantId)
-        
+
         const response = await tenantsService.listAddresses(numericTenantId, {
           active: true,
           limit: 50
         })
-        
-        console.log('✅ [TenantAddressesTab] Addresses loaded:', response.data.addresses.length)
+
         setAddresses(response.data.addresses)
       } catch (error) {
-        console.error('❌ [TenantAddressesTab] Failed to load addresses:', error)
         publishFeedback({
           kind: 'error',
           message: 'Failed to load addresses. Please try again.'

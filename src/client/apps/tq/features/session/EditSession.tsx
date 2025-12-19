@@ -54,9 +54,7 @@ export const EditSession: React.FC = () => {
 
       try {
         setIsLoading(true)
-        console.log('📄 [EditSession] Loading session data for ID:', id)
         const sessionData = await sessionsService.getSession(id)
-        console.log('✅ [EditSession] Session data loaded:', sessionData)
 
         setSession(sessionData)
         // Load transcription text if available
@@ -70,11 +68,10 @@ export const EditSession: React.FC = () => {
             const patientData = await patientsService.getPatient(sessionData.patient_id)
             setPatient(patientData)
           } catch (error) {
-            console.warn('Failed to load patient data:', error)
+            // Failed to load patient data
           }
         }
       } catch (err: any) {
-        console.error('❌ [EditSession] Failed to load session:', err)
 
         if (err.status === 404) {
           setLoadError('Session not found')
@@ -106,8 +103,6 @@ export const EditSession: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      console.log('📄 [EditSession] Saving session:', session.id)
-
       // Update session with new status and transcription text
       const updatedSession = await sessionsService.updateSession(session.id, {
         status: status,
@@ -119,10 +114,9 @@ export const EditSession: React.FC = () => {
       // Update transcription state to reflect saved changes
       setTranscription(updatedSession.transcription_text || '')
 
-      console.log('✅ [EditSession] Session updated successfully')
       // Success feedback is handled automatically by HTTP interceptor
     } catch (err: any) {
-      console.error('❌ [EditSession] Failed to save session:', err)
+      // Error handling is automatic via HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }
@@ -145,13 +139,7 @@ export const EditSession: React.FC = () => {
   }
 
   const handleCreateClinicalReport = async (templateId: string) => {
-    console.log('🟣 [EditSession] Create Clinical Report handler called')
-    console.log('  - templateId:', templateId)
-    console.log('  - sessionId:', session?.id)
-    console.log('  - patientId:', patient?.id)
-
     if (!templateId || !session || !patient) {
-      console.log('⚠️ [EditSession] Missing required data for clinical report')
       return
     }
 
@@ -163,9 +151,7 @@ export const EditSession: React.FC = () => {
         patientId: patient.id
       }
 
-      console.log('🔮 [EditSession] Filling template with AI:', fillTemplateRequest)
       const filledTemplateResponse = await aiAgentService.fillTemplate(fillTemplateRequest)
-      console.log('✅ [EditSession] Template filled successfully')
 
       // Step 2: Create clinical report with filled template content
       const reportData: CreateClinicalReportRequest = {
@@ -173,9 +159,7 @@ export const EditSession: React.FC = () => {
         content: filledTemplateResponse.filledTemplate
       }
 
-      console.log('📋 [EditSession] Creating clinical report with filled template')
       const newReport = await clinicalReportsService.create(reportData)
-      console.log('✅ [EditSession] Clinical report created successfully:', newReport.number)
 
       // Show report link toast
       setToastData({
@@ -187,7 +171,6 @@ export const EditSession: React.FC = () => {
 
       // Success feedback is handled automatically by HTTP interceptor
     } catch (error) {
-      console.error('❌ [EditSession] Failed to create clinical report:', error)
       throw error // Re-throw so TemplateQuoteModal can handle it
     }
   }
@@ -219,7 +202,6 @@ export const EditSession: React.FC = () => {
       URL.revokeObjectURL(blobUrl)
     } catch (error) {
       // Error feedback handled by HTTP interceptor
-      console.error('Download audio failed:', error)
     } finally {
       setIsDownloadingAudio(false)
     }

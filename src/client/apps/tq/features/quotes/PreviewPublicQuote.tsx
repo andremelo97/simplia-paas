@@ -40,7 +40,7 @@ export const PreviewPublicQuote: React.FC = () => {
       setBranding(brandingData)
 
     } catch (error) {
-      console.error('Failed to load preview data:', error)
+      // Failed to load preview data
     } finally {
       setIsLoading(false)
     }

@@ -96,7 +96,7 @@ export function ApplicationPricing() {
       setApplication(appData);
       setPricing(pricingData);
     } catch (error) {
-      console.error('Failed to load pricing data:', error);
+      // Error handled by HTTP interceptor
       publishFeedback({
         kind: 'error',
         message: 'Failed to load application pricing data'
@@ -119,18 +119,15 @@ export function ApplicationPricing() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('🔧 [ApplicationPricing] Form submitted with data:', formData);
-    
+
     if (!validateForm()) {
-      console.log('❌ [ApplicationPricing] Form validation failed');
       return;
     }
     
     // Clear any previous overlap errors
     setOverlapError(null);
-    
+
     try {
-      console.log('⚡ [ApplicationPricing] Starting pricing creation...');
       setSubmitting(true);
       
       await ApplicationsService.createPricing(Number(applicationId), {
@@ -154,12 +151,10 @@ export function ApplicationPricing() {
       
       // Reload pricing data
       await loadData();
-      
-      // Note: success feedback will be handled automatically by HTTP interceptor
-      
-    } catch (error: any) {
-      console.error('Failed to create pricing:', error);
 
+      // Note: success feedback will be handled automatically by HTTP interceptor
+
+    } catch (error: any) {
       // Handle 422 duplicate errors - keep modal open with inline feedback
       if (error.code === 'PRICING_DUPLICATE' && error.httpStatus === 422) {
         setOverlapError('Pricing already exists for this combination. Please choose different values.');
@@ -174,7 +169,6 @@ export function ApplicationPricing() {
       });
       setIsModalOpen(false);
     } finally {
-      console.log('🏁 [ApplicationPricing] Pricing creation finished, setting submitting to false');
       setSubmitting(false);
     }
   };
@@ -189,7 +183,7 @@ export function ApplicationPricing() {
       // Note: success feedback will be handled automatically by HTTP interceptor
 
     } catch (error) {
-      console.error('Failed to update pricing status:', error);
+      // Error handled by HTTP interceptor
       publishFeedback({
         kind: 'error',
         message: 'Failed to update pricing status'

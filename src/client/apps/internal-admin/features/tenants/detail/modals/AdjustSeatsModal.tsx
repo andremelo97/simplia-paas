@@ -49,18 +49,10 @@ export const AdjustSeatsModal: React.FC<AdjustSeatsModalProps> = ({
     try {
       setIsSubmitting(true)
       setError(null)
-      
-      console.log('🔄 [AdjustSeatsModal] Adjusting seats:', { 
-        tenantId, 
-        appSlug: license.application.slug, 
-        userLimit 
-      })
 
       const response = await tenantsService.adjustLicense(tenantId, license.application.slug, {
         userLimit
       })
-
-      console.log('✅ [AdjustSeatsModal] Seats adjusted successfully:', response.data.license)
 
       // Convert response to TenantLicense format
       const updatedLicense: TenantLicense = {
@@ -87,9 +79,8 @@ export const AdjustSeatsModal: React.FC<AdjustSeatsModalProps> = ({
           }, 3000)
         }
       }, 100)
-      
+
     } catch (err: any) {
-      console.error('❌ [AdjustSeatsModal] Failed to adjust seats:', err)
       
       // Handle specific validation errors
       if (err.response?.data?.details?.reason === 'TOTAL_LT_USED') {

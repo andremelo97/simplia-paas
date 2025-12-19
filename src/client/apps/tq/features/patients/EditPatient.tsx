@@ -44,9 +44,7 @@ export const EditPatient: React.FC = () => {
       try {
         setIsLoading(true)
 
-        console.log('👤 [EditPatient] Loading patient data for ID:', id)
         const patient = await patientsService.getPatient(id)
-        console.log('✅ [EditPatient] Patient data loaded:', patient)
 
         // Initialize form data
         setFormData({
@@ -60,7 +58,6 @@ export const EditPatient: React.FC = () => {
         setPatientData(patient)
 
       } catch (error: any) {
-        console.error('❌ [EditPatient] Failed to load patient:', error)
 
         if (error.status === 404) {
           setLoadError(t('patients.error_not_found'))
@@ -136,14 +133,6 @@ export const EditPatient: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      console.log('👤 [EditPatient] Submitting patient update:', {
-        id,
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim() || undefined,
-        email: formData.email.trim() || undefined,
-        phone: formData.phone.trim() || undefined
-      })
-
       // Update patient with proper API payload
       const updateData = {
         first_name: formData.first_name.trim(),
@@ -154,7 +143,6 @@ export const EditPatient: React.FC = () => {
       }
 
       const updatedPatient = await patientsService.updatePatient(id, updateData)
-      console.log('✅ [EditPatient] Patient updated successfully:', updatedPatient)
 
       // Update local patient data to reflect changes
       setPatientData(updatedPatient)
@@ -164,7 +152,6 @@ export const EditPatient: React.FC = () => {
       // Stay on edit page (don't navigate away like tenant edit)
 
     } catch (error: any) {
-      console.error('❌ [EditPatient] Failed to update patient:', error)
 
       // Map backend errors to user-friendly messages
       let errorMessage = 'Failed to update patient. Please try again.'
@@ -185,8 +172,6 @@ export const EditPatient: React.FC = () => {
       } else if (error.status >= 500) {
         errorMessage = 'Server error occurred. Please try again later.'
       }
-
-      console.error('❌ [EditPatient] Update error:', errorMessage)
     } finally {
       setIsSubmitting(false)
     }

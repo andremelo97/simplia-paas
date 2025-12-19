@@ -24,14 +24,12 @@ export const ApplicationsList: React.FC = () => {
 
   const fetchApplications = async () => {
     try {
-      console.log('📱 [ApplicationsList] Starting fetch applications...')
       setLoading(true)
-      
+
       const applicationsData = await ApplicationsService.getApplications()
-      
+
       // Ensure applicationsData is an array
       if (!Array.isArray(applicationsData)) {
-        console.error('❌ [ApplicationsList] Invalid data format received:', applicationsData)
         throw new Error('Invalid applications data format')
       }
       
@@ -55,16 +53,9 @@ export const ApplicationsList: React.FC = () => {
       const endIndex = startIndex + applicationsPerPage
       const paginatedApps = filteredApps.slice(startIndex, endIndex)
 
-      console.log('✅ [ApplicationsList] Applications fetched successfully:', {
-        total: applicationsData.length,
-        filtered: filteredApps.length,
-        displayed: paginatedApps.length
-      })
-      
       setApplications(paginatedApps)
       setTotalPages(Math.ceil(filteredApps.length / applicationsPerPage))
     } catch (error) {
-      console.error('❌ [ApplicationsList] Failed to fetch applications:', error)
       publishFeedback({
         kind: 'error',
         message: 'Failed to load applications. Please try again.'

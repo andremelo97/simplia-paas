@@ -124,7 +124,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       setOverageAllowed(initOverage)
       setOriginalOverage(initOverage)
     } catch (error) {
-      console.error('Failed to load transcription usage:', error)
+      // Error loading transcription usage
     } finally {
       setLoading(false)
     }
@@ -136,14 +136,9 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       const offset = (page - 1) * RECORDS_PER_PAGE
       const response = await transcriptionUsageService.getUsageDetails(RECORDS_PER_PAGE, offset)
 
-      console.log('[TranscriptionUsage] Details response:', response)
-      console.log('[TranscriptionUsage] Details response.data:', response.data)
-      console.log('[TranscriptionUsage] Details response.meta:', response.meta)
-
       setDetailRecords(response.data || [])
       setTotalRecords(response.meta?.total || 0)
     } catch (error) {
-      console.error('Failed to load transcription usage details:', error)
       setDetailRecords([])
     } finally {
       setDetailsLoading(false)
@@ -189,7 +184,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       await transcriptionUsageService.updateConfig(updates)
       await loadUsage() // Reload to get updated data
     } catch (error) {
-      console.error('Failed to update configuration:', error)
+      // Error updating configuration
     } finally {
       setSaving(false)
     }

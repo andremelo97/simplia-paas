@@ -82,13 +82,7 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
     try {
       setLoading(true)
       setError(null)
-      
-      console.log('🔄 [ManageApplicationsModal] Fetching users for tenant:', {
-        tenantId,
-        appSlug: license.application.slug,
-        search: searchTerm
-      })
-      
+
       const response = await tenantsService.listAppUsers(
         tenantId,
         license.application.slug,
@@ -97,22 +91,15 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
           limit: 50
         }
       )
-      
+
       setUsers(response.data.users)
-      
+
       // Set usage info from API response if available, otherwise fallback to license data
       if (response.data.usage) {
         setUsage(response.data.usage)
       }
-      
-      console.log('✅ [ManageApplicationsModal] Users fetched:', {
-        count: response.data.users.length,
-        users: response.data.users,
-        usage: response.data.usage
-      })
-      
+
     } catch (err: any) {
-      console.error('❌ [ManageApplicationsModal] Failed to fetch users:', err)
       
       if (err.response?.data?.details?.reason === 'LICENSE_NOT_FOUND') {
         setError('Application license not found for this tenant.')
@@ -142,19 +129,10 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
     try {
       setProcessingUserId(userId)
       setError(null)
-      
-      console.log(`🔄 [ManageApplicationsModal] ${hasExistingAccess ? 'Reactivating' : 'Granting'} access:`, { 
-        tenantId, 
-        userId, 
-        appSlug: license.application?.slug,
-        hasExistingAccess
-      })
-      
-      const response = hasExistingAccess 
+
+      const response = hasExistingAccess
         ? await tenantsService.reactivateUserAccess(tenantId, userId, license.application.slug)
         : await tenantsService.grantUserAccess(tenantId, userId, license.application.slug)
-      
-      console.log(`✅ [ManageApplicationsModal] Access ${hasExistingAccess ? 'reactivated' : 'granted'} successfully`)
 
       // Update user list - mark user as having access
       setUsers(prev => prev.map(user => 
@@ -177,9 +155,8 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
       }
 
       onUsersUpdated(updatedLicense)
-      
+
     } catch (err: any) {
-      console.error(`❌ [ManageApplicationsModal] Failed to ${hasExistingAccess ? 'reactivate' : 'grant'} access:`, err)
       
       if (err.response?.data?.details?.reason === 'NO_SEATS_AVAILABLE') {
         const adjustSeatsUrl = `/tenants/${tenantId}/licenses?app=${license.application.slug}&action=adjust-seats`
@@ -220,16 +197,8 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
     try {
       setProcessingUserId(userId)
       setError(null)
-      
-      console.log('🔄 [ManageApplicationsModal] Revoking access:', { 
-        tenantId, 
-        userId, 
-        appSlug: license.application?.slug 
-      })
 
       const response = await tenantsService.revokeUserAccess(tenantId, userId, license.application.slug)
-      
-      console.log('✅ [ManageApplicationsModal] Access revoked successfully')
 
       // Update user list - mark user as not having access
       setUsers(prev => prev.map(user => 
@@ -252,9 +221,8 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
       }
 
       onUsersUpdated(updatedLicense)
-      
+
     } catch (err: any) {
-      console.error('❌ [ManageApplicationsModal] Failed to revoke access:', err)
       
       if (err.response?.data?.details?.reason === 'ACCESS_NOT_FOUND') {
         setError('User access not found. It may have already been revoked.')
@@ -288,15 +256,12 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
     })
 
     if (hasInvalidChanges) {
-      console.warn('🚫 [ManageApplicationsModal] Attempted to update role for users without access')
       return
     }
 
     try {
       setUpdatingRole(true)
       setError(null)
-
-      console.log('🔄 [ManageApplicationsModal] Updating roles:', roleChanges)
 
       // Update roles for all changed users
       for (const [userIdStr, newRole] of Object.entries(roleChanges)) {
@@ -305,7 +270,6 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
 
         // Double-check user has access before making API call
         if (!user?.granted) {
-          console.warn(`🚫 [ManageApplicationsModal] Skipping role update for user ${userId} - no access`)
           continue
         }
 
@@ -316,8 +280,6 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
           newRole as 'user' | 'operations' | 'manager' | 'admin'
         )
       }
-
-      console.log('✅ [ManageApplicationsModal] All roles updated successfully')
 
       // Update local user state
       setUsers(prev => prev.map(user => {
@@ -332,7 +294,6 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
       setRoleChanges({})
 
     } catch (err: any) {
-      console.error('❌ [ManageApplicationsModal] Failed to update roles:', err)
 
       if (err.response?.data?.message) {
         setError(err.response.data.message)

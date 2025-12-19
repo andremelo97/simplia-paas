@@ -26,7 +26,6 @@ export const AIAgentConfiguration: React.FC = () => {
       setSystemMessage(data.systemMessage);
       setSystemMessageError('');
     } catch (err) {
-      console.error('Failed to load AI Agent configuration:', err);
       setError(t('configurations.ai_agent.failed_to_load'));
     } finally {
       setLoading(false);
@@ -54,7 +53,6 @@ export const AIAgentConfiguration: React.FC = () => {
       setSystemMessage(updatedConfig.systemMessage);
       setSystemMessageError('');
     } catch (err) {
-      console.error('Failed to update AI Agent configuration:', err);
       setError(t('configurations.ai_agent.failed_to_save'));
     } finally {
       setSaving(false);
@@ -72,7 +70,6 @@ export const AIAgentConfiguration: React.FC = () => {
       setSystemMessage(resetConfig.systemMessage);
       setSystemMessageError('');
     } catch (err) {
-      console.error('Failed to reset AI Agent configuration:', err);
       setError(t('configurations.ai_agent.failed_to_reset'));
     } finally {
       setSaving(false);

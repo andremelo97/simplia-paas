@@ -40,7 +40,6 @@ export function formatShortDate(
       timeZone: timezone
     }).format(dateObj)
   } catch (error) {
-    console.warn('Failed to format date:', error)
     return '-'
   }
 }
@@ -74,7 +73,6 @@ export function formatLongDate(
       timeZone: timezone
     }).format(dateObj)
   } catch (error) {
-    console.warn('Failed to format date:', error)
     return '-'
   }
 }
@@ -108,7 +106,6 @@ export function formatTime(
       timeZone: timezone
     }).format(dateObj)
   } catch (error) {
-    console.warn('Failed to format time:', error)
     return '-'
   }
 }
@@ -145,7 +142,6 @@ export function formatDateTime(
       timeZone: timezone
     }).format(dateObj)
   } catch (error) {
-    console.warn('Failed to format date-time:', error)
     return '-'
   }
 }
@@ -194,7 +190,6 @@ export function formatRelativeTime(
       return formatShortDate(dateObj, timezone, locale)
     }
   } catch (error) {
-    console.warn('Failed to format relative time:', error)
     return '-'
   }
 }
@@ -227,7 +222,6 @@ export function formatMonthYear(
       timeZone: timezone
     }).format(dateObj)
   } catch (error) {
-    console.warn('Failed to format month-year:', error)
     return '-'
   }
 }
@@ -265,7 +259,6 @@ export function getNowInTimezone(timezone: string = 'America/Sao_Paulo'): Date {
 
     return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`)
   } catch (error) {
-    console.warn('Failed to get date in timezone:', error)
     return new Date()
   }
 }
@@ -312,7 +305,6 @@ export function getTimezoneOffsetMinutes(
     // Calculate difference in minutes
     return (tzDate.getTime() - utcDate.getTime()) / (1000 * 60)
   } catch (error) {
-    console.warn('Failed to get timezone offset:', error)
     return 0
   }
 }
@@ -341,7 +333,6 @@ export function formatDateStringForDisplay(
       year: 'numeric'
     }).format(date)
   } catch (error) {
-    console.warn('Failed to format date string for display:', error)
     return dateString
   }
 }

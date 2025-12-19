@@ -45,7 +45,7 @@ languageDetector.addDetector({
         return 'pt-BR'
       }
     } catch (error) {
-      console.warn('Failed to detect language:', error)
+      // Failed to detect language, will use default
     }
 
     // Default to Portuguese (main market is Brazil)

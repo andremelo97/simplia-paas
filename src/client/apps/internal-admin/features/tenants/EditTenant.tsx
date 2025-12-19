@@ -81,7 +81,6 @@ export const EditTenantPage: React.FC = () => {
           setSelectedPlan(plan || null)
         } catch (err) {
           // No config yet, that's fine
-          console.log('[EditTenant] No transcription config found for tenant')
         }
 
         // Load addresses

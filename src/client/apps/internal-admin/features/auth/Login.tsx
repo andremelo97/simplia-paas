@@ -74,7 +74,7 @@ export const Login: React.FC = () => {
     try {
       await login(credentials)
     } catch (error) {
-      console.error('Login failed:', error)
+      // Error handled by auth store
     }
   }
 

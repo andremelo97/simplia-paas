@@ -45,7 +45,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
         active: template.active
       })
     } catch (error) {
-      console.error('Failed to load data:', error)
+      // Failed to load data
     } finally {
       setIsLoading(false)
     }
@@ -63,7 +63,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
         active: template.active
       })
     } catch (error) {
-      console.error('Failed to load template:', error)
+      // Failed to load template
     }
   }
 
@@ -113,29 +113,13 @@ export const EditPublicQuoteTemplate: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      console.log('🔍 [EditTemplate] Sending data:', formData)
       await publicQuotesService.updateTemplate(id, formData)
-      console.log('✅ [EditTemplate] Template updated successfully')
 
       // Stay on edit page - don't navigate
       loadTemplate()
 
     } catch (error: any) {
-      console.error('❌ [EditTemplate] Failed to update template:', error)
-
-      let errorMessage = 'Failed to update template. Please try again.'
-
-      if (error.message?.includes('Validation Error')) {
-        errorMessage = 'Please check your input and try again.'
-      } else if (error.status === 403) {
-        errorMessage = 'You do not have permission to update templates.'
-      } else if (error.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
-      } else if (error.status >= 500) {
-        errorMessage = 'Server error occurred. Please try again later.'
-      }
-
-      console.error('❌ [EditTemplate] Error:', errorMessage)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }
@@ -172,7 +156,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
       // Navigate to the new duplicated template
       navigate(`/public-quotes/templates/${newTemplate.id}/edit`)
     } catch (error) {
-      console.error('Failed to duplicate template:', error)
+      // Failed to duplicate template
     } finally {
       setIsDuplicating(false)
     }
@@ -189,8 +173,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
       // Navigate back to templates list
       navigate('/public-quotes/templates')
     } catch (error) {
-      console.error('Failed to delete template:', error)
-      // Error feedback is also handled by HTTP interceptor
+      // Error feedback is handled by HTTP interceptor
     } finally {
       setIsDeleting(false)
       setShowDeleteDialog(false)

@@ -55,7 +55,6 @@ export const QuotesTab: React.FC = () => {
 
   const handleDeleteQuote = (quote: Quote) => {
     // Placeholder: Will be implemented later
-    console.log('Delete quote:', quote)
   }
 
   return (

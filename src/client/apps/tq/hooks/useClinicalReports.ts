@@ -72,7 +72,6 @@ export const useClinicalReportsList = (initialParams?: Partial<UseClinicalReport
         error: null
       })
     } catch (error) {
-      console.error('Error fetching clinical reports:', error)
       setState({
         data: [],
         total: 0,

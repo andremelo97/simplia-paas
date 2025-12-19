@@ -49,7 +49,7 @@ export const EditTranscriptionPlan: React.FC = () => {
           description: data.description || ''
         })
       } catch (err: any) {
-        console.error('[EditTranscriptionPlan] Failed to load plan:', err)
+        // Error handled silently
       } finally {
         setLoading(false)
       }
@@ -115,7 +115,7 @@ export const EditTranscriptionPlan: React.FC = () => {
       await transcriptionPlansService.updatePlan(parseInt(id!), formData)
       navigate('/transcription-plans')
     } catch (err: any) {
-      console.error('[EditTranscriptionPlan] Failed to update plan:', err)
+      // Error handled by HTTP interceptor
     } finally {
       setSaving(false)
     }

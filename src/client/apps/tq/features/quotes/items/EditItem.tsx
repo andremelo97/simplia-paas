@@ -42,7 +42,7 @@ export const EditItem: React.FC = () => {
         active: item.active
       })
     } catch (error) {
-      console.error('❌ [EditItem] Failed to load item:', error)
+      // Failed to load item
       navigate('/quotes/items')
     } finally {
       setIsLoading(false)
@@ -110,36 +110,15 @@ export const EditItem: React.FC = () => {
     setIsSubmitting(true)
 
     try {
-      console.log('🔍 [EditItem] Sending data:', formData)
       await itemsService.update(id, formData)
-      console.log('✅ [EditItem] Item updated successfully')
 
-      // Success feedback is now handled automatically by the HTTP interceptor
-      // based on the meta.code from the backend response
+      // Success feedback is handled automatically by the HTTP interceptor
 
       // Navigate immediately - toast will show on the items list page
       navigate('/quotes/items')
 
     } catch (error: any) {
-      console.error('❌ [EditItem] Failed to update item:', error)
-
-      // Map backend errors to user-friendly messages
-      let errorMessage = t('quote_items.errors.update_failed')
-
-      // Handle specific error cases based on backend responses
-      if (error.message?.includes('Validation Error')) {
-        errorMessage = t('quote_items.errors.check_input')
-      } else if (error.status === 409) {
-        errorMessage = t('quote_items.errors.already_exists')
-      } else if (error.status === 403) {
-        errorMessage = t('quote_items.errors.no_permission')
-      } else if (error.status === 401) {
-        errorMessage = t('quote_items.errors.session_expired')
-      } else if (error.status >= 500) {
-        errorMessage = t('quote_items.errors.server_error')
-      }
-
-      console.error('❌ [EditItem] Update error:', errorMessage)
+      // Error is handled by HTTP interceptor
     } finally {
       setIsSubmitting(false)
     }

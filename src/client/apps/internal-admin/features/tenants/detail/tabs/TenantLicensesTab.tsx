@@ -68,11 +68,9 @@ export const TenantLicensesTab: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      console.log('🔄 [TenantLicensesTab] Fetching tenant licensed applications:', numericTenantId)
 
       // First, fetch all applications to get the ID mapping
       const allApplications = await ApplicationsService.getApplications()
-      console.log('📋 [TenantLicensesTab] Applications fetched:', allApplications.length)
       setApplications(allApplications)
 
       // Create a slug-to-app mapping
@@ -80,8 +78,6 @@ export const TenantLicensesTab: React.FC = () => {
 
       // Use specific tenant licensed applications endpoint
       const tenantApplications = await ApplicationsService.getTenantLicensedApps(numericTenantId)
-
-      console.log('✅ [TenantLicensesTab] Tenant licensed apps fetched successfully:', tenantApplications)
 
       // Convert applications from tenant licensed apps to license format
       const convertedLicenses: TenantLicense[] = tenantApplications.map(app => {
@@ -104,10 +100,8 @@ export const TenantLicensesTab: React.FC = () => {
         }
       }).filter(license => license.application.slug && license.application.id > 0) // Filter out apps without slug or invalid ID
 
-      console.log('🔄 [TenantLicensesTab] Converted licenses with application IDs:', convertedLicenses.map(l => ({slug: l.application.slug, id: l.application.id})))
       setLicenses(convertedLicenses)
     } catch (err) {
-      console.error('❌ [TenantLicensesTab] Failed to fetch licenses:', err)
       setError('Failed to load licenses. Please try again.')
       setLicenses([])
     } finally {
@@ -178,13 +172,8 @@ export const TenantLicensesTab: React.FC = () => {
   }
 
   const handleViewPricing = (license: TenantLicense) => {
-    console.log('🔍 [TenantLicensesTab] View pricing for:', license.application.name, 'ID:', license.application.id)
-    
     if (license.application.id > 0) {
       navigate(`/applications/${license.application.id}/pricing`)
-    } else {
-      console.error('❌ [TenantLicensesTab] Invalid application ID for pricing navigation:', license.application.id)
-      // Fallback: could show an error message to the user
     }
   }
 

@@ -39,7 +39,7 @@ export const Login: React.FC = () => {
           return
         }
       } catch (err) {
-        console.error('SSO login failed:', err)
+        // SSO login failed
       } finally {
         setIsSsoLoading(false)
       }

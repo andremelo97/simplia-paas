@@ -33,11 +33,8 @@ export const metricsService = {
    * Get platform overview metrics for dashboard
    */
   async getPlatformOverview(): Promise<PlatformMetrics> {
-    console.log('🔍 [MetricsService] Making API call to /internal/api/v1/metrics/overview');
-    
     try {
       const response = await api.get<MetricsResponse>('/internal/api/v1/metrics/overview');
-      console.log('📡 [MetricsService] Metrics API Response:', response);
       
       // Defensive check for response structure
       if (!response || !response.data) {
@@ -52,11 +49,9 @@ export const metricsService = {
         // Direct structure: { data: { tenants: {...}, users: {...}, ... } }
         return response.data as PlatformMetrics;
       } else {
-        console.error('❌ [MetricsService] Unexpected metrics response structure:', response);
         throw new Error('Metrics data not found in response');
       }
     } catch (error) {
-      console.error('❌ [MetricsService] Failed to fetch platform metrics:', error);
       throw error;
     }
   },
@@ -69,7 +64,6 @@ export const metricsService = {
       const response = await api.get<MetricsResponse>('/internal/api/v1/metrics/overview');
       return response.data?.meta || null;
     } catch (error) {
-      console.error('❌ [MetricsService] Failed to fetch metrics meta:', error);
       return null;
     }
   }

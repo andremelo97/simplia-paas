@@ -55,7 +55,6 @@ export function TenantEntitlementsSection({ userRole }: TenantEntitlementsSectio
       setLicenses(data.licenses || [])
       setSummary(data.summary || null)
     } catch (error) {
-      console.error('Failed to load entitlements:', error)
       publishFeedback({
         kind: 'error',
         code: 'LOAD_ENTITLEMENTS_ERROR',

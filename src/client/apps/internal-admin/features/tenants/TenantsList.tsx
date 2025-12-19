@@ -30,34 +30,21 @@ export const TenantsList: React.FC = () => {
 
   const fetchTenants = async () => {
     try {
-      console.log('🏢 [TenantsList] Starting fetch tenants...')
       setLoading(true)
-      
+
       const params = {
         page: currentPage,
         limit: tenantsPerPage,
         search: searchTerm || undefined,
         status: statusFilter !== 'all' ? statusFilter : undefined
       }
-      console.log('📋 [TenantsList] Request params:', params)
-      
+
       const response = await tenantsService.list(params)
       const data = response.data // Backend returns { success, data: { tenants, pagination } }
-      
-      console.log('✅ [TenantsList] Tenants fetched successfully:', {
-        tenantsCount: data.tenants?.length || 0,
-        total: data.pagination?.total
-      })
-      
+
       setTenants(data.tenants || [])
       setTotalPages(Math.ceil((data.pagination?.total || 0) / tenantsPerPage))
     } catch (error) {
-      console.error('❌ [TenantsList] Failed to fetch tenants:', error)
-      console.error('🔍 [TenantsList] Error details:', {
-        name: (error as any)?.name,
-        message: (error as any)?.message,
-        stack: (error as any)?.stack
-      })
       
       addNotification({
         type: 'error',

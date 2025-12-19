@@ -105,7 +105,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
       });
       setPreviewHtml(preview.html);
     } catch (err) {
-      console.error('Failed to generate preview:', err);
+      // Failed to generate preview
     } finally {
       setPreviewLoading(false);
     }
@@ -144,7 +144,6 @@ export const EmailTemplateConfiguration: React.FC = () => {
         setError(t('configurations.email_template.failed_to_load'));
       }
     } catch (err) {
-      console.error('Failed to load email template:', err);
       setError(t('configurations.email_template.failed_to_load'));
     } finally {
       setLoading(false);
@@ -179,7 +178,6 @@ export const EmailTemplateConfiguration: React.FC = () => {
         settings
       });
     } catch (err) {
-      console.error('Failed to update email template:', err);
       setError(t('configurations.email_template.failed_to_save'));
     } finally {
       setSaving(false);
@@ -197,7 +195,6 @@ export const EmailTemplateConfiguration: React.FC = () => {
       setBody(resetTemplate.body);
       setSettings(resetTemplate.settings || DEFAULT_SETTINGS);
     } catch (err) {
-      console.error('Failed to reset email template:', err);
       setError(t('configurations.email_template.failed_to_reset'));
     } finally {
       setSaving(false);

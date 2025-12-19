@@ -40,8 +40,8 @@ export function useCurrencyFormatter(): CurrencyFormatterHook {
           const parsed = JSON.parse(authStorage)
           return parsed.state?.tenantLocale || null
         }
-      } catch (e) {
-        console.warn('⚠️ [useCurrencyFormatter] Failed to read from localStorage:', e)
+      } catch {
+        // Ignore parse errors
       }
       return null
     },
@@ -55,14 +55,6 @@ export function useCurrencyFormatter(): CurrencyFormatterHook {
     const isBrazil = effectiveLocale === 'pt-BR'
     const currency = isBrazil ? 'BRL' : 'USD'
     const currencySymbol = isBrazil ? 'R$' : '$'
-
-    console.log('💰 [useCurrencyFormatter] Currency config:', {
-      tenantLocale,
-      effectiveLocale,
-      isBrazil,
-      currency,
-      currencySymbol
-    })
 
     return { locale: effectiveLocale, currency, currencySymbol }
   }, [tenantLocale])

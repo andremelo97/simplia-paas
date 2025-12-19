@@ -124,7 +124,7 @@ export const Login: React.FC = () => {
     try {
       await login(credentials)
     } catch (error) {
-      console.error('Login failed:', error)
+      // Login failed
     }
   }
 
@@ -180,7 +180,6 @@ export const Login: React.FC = () => {
       await hubService.forgotPassword(credentials.email)
       setForgotPasswordSent(true)
     } catch (error) {
-      console.error('Forgot password error:', error)
       // Still show success message for security (don't reveal if email exists)
       setForgotPasswordSent(true)
     } finally {

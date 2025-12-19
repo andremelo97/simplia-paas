@@ -77,8 +77,6 @@ export const PublicQuoteAccess: React.FC = () => {
       setQuoteData(response.data)
       setIsAuthenticated(true)
     } catch (err: any) {
-      console.error('[PublicQuoteAccess] Password verification failed:', err)
-      
       if (err?.httpStatus === 401 || err?.message?.toLowerCase().includes('password')) {
         setErrorKey('incorrect')
       } else if (err?.httpStatus === 404 || err?.message?.toLowerCase().includes('not found')) {

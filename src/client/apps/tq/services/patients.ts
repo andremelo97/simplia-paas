@@ -58,9 +58,6 @@ export const patientsService = {
     // API sempre retorna em ordem alfabética por padrão
     if (params.q) queryParams.append('search', params.q)  // API expects 'search', not 'q'
 
-    console.log('🔍 [Patients Service] Search params:', params)
-    console.log('🔍 [Patients Service] Query URL:', `/api/tq/v1/patients${queryParams.toString() ? `?${queryParams.toString()}` : ''}`)
-
     const url = `/api/tq/v1/patients${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     const response = await api.get(url)
 
@@ -74,7 +71,6 @@ export const patientsService = {
       patientsData = apiResponse
       total = apiResponse.length
     } else {
-      console.error('❌ [Patients Service] Invalid API response structure:', apiResponse)
       throw new Error('Invalid API response structure')
     }
 
@@ -117,10 +113,7 @@ export const patientsService = {
       notes: data.notes
     }
 
-    console.log('🔄 [Patients Service] Sending data to API:', apiData)
     const response = await api.post('/api/tq/v1/patients', apiData)
-    console.log('✅ [Patients Service] API Response:', response.data)
-    console.log('🔍 [Patients Service] Full response structure:', JSON.stringify(response.data, null, 2))
 
     if (!response.data) {
       throw new Error('Invalid API response structure for create patient')
@@ -128,7 +121,6 @@ export const patientsService = {
 
     // The API returns patient data directly in response.data (same as GET/PUT)
     const apiPatient = response.data
-    console.log('🔍 [Patients Service] Created patient data:', apiPatient)
 
     // Map camelCase response to snake_case frontend format
     const mappedPatient: Patient = {
@@ -142,15 +134,11 @@ export const patientsService = {
       updated_at: apiPatient.updatedAt || apiPatient.updated_at
     }
 
-    console.log('✅ [Patients Service] Mapped created patient:', mappedPatient)
     return mappedPatient
   },
 
   async getPatient(id: string): Promise<Patient> {
-    console.log('🔍 [Patients Service] Fetching patient:', id)
     const response = await api.get(`/api/tq/v1/patients/${id}`)
-    console.log('🔍 [Patients Service] API Response:', response.data)
-    console.log('🔍 [Patients Service] Full response structure:', JSON.stringify(response.data, null, 2))
 
     // Check if response has the expected structure
     if (!response.data) {
@@ -159,7 +147,6 @@ export const patientsService = {
 
     // The API returns patient data directly in response.data
     const apiPatient = response.data
-    console.log('🔍 [Patients Service] API Patient data:', apiPatient)
 
     if (!apiPatient || !apiPatient.id) {
       throw new Error('Patient data is invalid in API response')
@@ -177,7 +164,6 @@ export const patientsService = {
       updated_at: apiPatient.updatedAt || apiPatient.updated_at
     }
 
-    console.log('✅ [Patients Service] Mapped patient:', mappedPatient)
     return mappedPatient
   },
 
@@ -190,10 +176,7 @@ export const patientsService = {
     if (data.phone !== undefined) apiData.phone = data.phone
     if (data.notes !== undefined) apiData.notes = data.notes
 
-    console.log('🔄 [Patients Service] Updating patient data:', apiData)
     const response = await api.put(`/api/tq/v1/patients/${id}`, apiData)
-    console.log('✅ [Patients Service] Update API Response:', response.data)
-    console.log('🔍 [Patients Service] Full response structure:', JSON.stringify(response.data, null, 2))
 
     if (!response.data) {
       throw new Error('Invalid API response structure for update patient')
@@ -201,7 +184,6 @@ export const patientsService = {
 
     // The API returns patient data directly in response.data (same as GET)
     const apiPatient = response.data
-    console.log('🔍 [Patients Service] Updated patient data:', apiPatient)
 
     // Map camelCase response to snake_case frontend format
     const mappedPatient: Patient = {
@@ -215,7 +197,6 @@ export const patientsService = {
       updated_at: apiPatient.updatedAt || apiPatient.updated_at
     }
 
-    console.log('✅ [Patients Service] Mapped updated patient:', mappedPatient)
     return mappedPatient
   },
 

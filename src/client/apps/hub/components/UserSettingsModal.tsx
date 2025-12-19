@@ -74,7 +74,6 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({ isOpen, on
       }, 2000)
     } catch (error) {
       // Error feedback handled automatically by HTTP interceptor
-      console.error('Change password error:', error)
       setIsLoading(false)
     }
   }

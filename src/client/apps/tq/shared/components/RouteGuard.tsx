@@ -27,7 +27,6 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   // PRIORITY: If SSO params are present, always go to login to process them
   // This handles session switching even if user appears "authenticated" from old session
   if (hasSsoParams()) {
-    console.log('🔄 [RouteGuard] SSO params detected, redirecting to login for processing...')
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 

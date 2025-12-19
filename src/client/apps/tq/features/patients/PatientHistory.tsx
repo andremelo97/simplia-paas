@@ -179,7 +179,7 @@ export const PatientHistory: React.FC = () => {
         setQuotes(patientQuotes)
         setClinicalReports(patientReports)
       } catch (error) {
-        console.error('Failed to load patient data:', error)
+        // Failed to load patient data
       } finally {
         setIsLoading(false)
       }

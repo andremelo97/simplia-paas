@@ -33,7 +33,7 @@ export const CommunicationConfiguration: React.FC = () => {
           })
         }
       } catch (error) {
-        console.error('Failed to load communication settings:', error)
+        // Error loading communication settings
       } finally {
         setLoading(false)
       }
@@ -46,7 +46,7 @@ export const CommunicationConfiguration: React.FC = () => {
     try {
       await communicationService.updateSettings(settings)
     } catch (error) {
-      console.error('Failed to update communication settings:', error)
+      // Error updating communication settings
     }
   }
 

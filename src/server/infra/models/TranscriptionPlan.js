@@ -25,6 +25,8 @@ class TranscriptionPlan {
     this.sttModel = data.stt_model;
     this.languageDetectionEnabled = data.language_detection_enabled;
     this.costPerMinuteUsd = parseFloat(data.cost_per_minute_usd);
+    this.isTrial = data.is_trial;
+    this.trialDays = data.trial_days ? parseInt(data.trial_days) : null;
     this.active = data.active;
     this.description = data.description;
     this.createdAt = data.created_at;
@@ -104,6 +106,8 @@ class TranscriptionPlan {
       sttModel,
       languageDetectionEnabled,
       costPerMinuteUsd,
+      isTrial = false,
+      trialDays = null,
       active,
       description = null
     } = planData;
@@ -128,10 +132,12 @@ class TranscriptionPlan {
         stt_model,
         language_detection_enabled,
         cost_per_minute_usd,
+        is_trial,
+        trial_days,
         active,
         description
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
     `;
 
@@ -144,6 +150,8 @@ class TranscriptionPlan {
       sttModel,
       languageDetectionEnabled,
       costPerMinuteUsd,
+      isTrial,
+      trialDays,
       active,
       description
     ]);
@@ -164,6 +172,8 @@ class TranscriptionPlan {
       'stt_model',
       'language_detection_enabled',
       'cost_per_minute_usd',
+      'is_trial',
+      'trial_days',
       'active',
       'description'
     ];
@@ -290,6 +300,8 @@ class TranscriptionPlan {
       sttModel: this.sttModel,
       languageDetectionEnabled: this.languageDetectionEnabled,
       costPerMinuteUsd: this.costPerMinuteUsd,
+      isTrial: this.isTrial,
+      trialDays: this.trialDays,
       active: this.active,
       description: this.description,
       createdAt: this.createdAt,

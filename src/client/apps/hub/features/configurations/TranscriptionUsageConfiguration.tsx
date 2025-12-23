@@ -47,11 +47,17 @@ interface UsageData {
     allowsCustomLimits: boolean
     allowsOverage: boolean
     languageDetectionEnabled: boolean
+    isTrial: boolean
+    trialDays: number | null
   }
   config?: {
     customMonthlyLimit: number | null
     transcriptionLanguage: string | null
     overageAllowed: boolean
+    planActivatedAt: string | null
+    expiresAt: string | null
+    isTrialExpired: boolean
+    remainingTrialDays: number | null
   }
 }
 
@@ -268,15 +274,32 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       </div>
 
       {/* Plan Badge */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="text-sm text-gray-600">{t('transcription_usage.current_plan')}</span>
         <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
           isFullVIP
             ? 'bg-pink-100 text-pink-700'
+            : usage.plan.isTrial
+            ? 'bg-orange-100 text-orange-700'
             : 'bg-gray-100 text-gray-700'
         }`}>
           {usage.plan.name}
         </span>
+        {/* Trial Expiration Badge */}
+        {usage.plan.isTrial && usage.config?.expiresAt && (
+          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            usage.config.isTrialExpired
+              ? 'bg-red-100 text-red-700'
+              : (usage.config.remainingTrialDays ?? 0) <= 2
+              ? 'bg-orange-100 text-orange-700'
+              : 'bg-green-100 text-green-700'
+          }`}>
+            {usage.config.isTrialExpired
+              ? t('transcription_usage.trial_expired')
+              : `${t('transcription_usage.expires_in')} ${usage.config.remainingTrialDays} ${t('transcription_usage.days')}`
+            }
+          </span>
+        )}
       </div>
 
       {/* Non-Premium Info - VIP UPGRADE CARD (First thing user sees) */}

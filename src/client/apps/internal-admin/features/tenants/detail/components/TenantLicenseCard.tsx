@@ -116,7 +116,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
               </div>
               <div>
                 <span className="text-gray-500">Total Seats:</span>
-                <div className="font-medium">{license.userLimit || 'Unlimited'}</div>
+                <div className="font-medium">{license.seatsPurchased || 'Unlimited'}</div>
               </div>
               <div>
                 <span className="text-gray-500">Used Seats:</span>
@@ -125,7 +125,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
               <div>
                 <span className="text-gray-500">Available:</span>
                 <div className="font-medium">
-                  {license.userLimit ? license.userLimit - totalSeatsUsed : 'Unlimited'}
+                  {license.seatsPurchased ? license.seatsPurchased - totalSeatsUsed : 'Unlimited'}
                 </div>
               </div>
             </div>
@@ -235,7 +235,7 @@ export const TenantLicenseCard: React.FC<TenantLicenseCardProps> = ({
             </div>
             <div>
               <span className="text-gray-500">Expires:</span>
-              <div className="font-medium">{formatDate(license.expiryDate)}</div>
+              <div className="font-medium">{formatDate(license.expiresAt)}</div>
             </div>
             <div>
               <span className="text-gray-500">License ID:</span>

@@ -440,12 +440,17 @@ router.get('/me', requireAuth, async (req, res) => {
     }
 
     // Get user's accessible apps (same query as /me/apps)
+    // Note: expiresAt comes from tenant_applications (license level) for trial expiration checking
+    // licenseStatus is computed: 'expired' if expires_at < NOW(), otherwise ta.status
     const { rows: allowedApps } = await db.query(
       `SELECT a.slug,
               a.name,
               uaa.role_in_app   AS "roleInApp",
-              uaa.expires_at    AS "expiresAt",
-              ta.status         AS "licenseStatus"
+              ta.expires_at     AS "expiresAt",
+              CASE
+                WHEN ta.expires_at IS NOT NULL AND ta.expires_at < NOW() THEN 'expired'
+                ELSE ta.status
+              END AS "licenseStatus"
          FROM public.user_application_access uaa
          JOIN public.applications a
            ON a.id = uaa.application_id_fk

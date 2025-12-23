@@ -91,9 +91,9 @@ export const TenantLicensesTab: React.FC = () => {
             description: fullAppData?.description || `${fullAppData?.name || app.slug} license`
           },
           status: app.status,
-          userLimit: app.userLimit,
+          seatsPurchased: app.seatsPurchased,
           totalSeatsUsed: app.seatsUsed,
-          seatsAvailable: app.userLimit ? Math.max(0, app.userLimit - app.seatsUsed) : null,
+          seatsAvailable: app.seatsPurchased ? Math.max(0, app.seatsPurchased - app.seatsUsed) : null,
           expiresAt: app.expiresAt,
           activatedAt: new Date().toISOString(), // We don't have this from the endpoint
           seatsByUserType: [] // We don't have this breakdown from this endpoint

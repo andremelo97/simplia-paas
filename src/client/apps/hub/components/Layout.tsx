@@ -1,6 +1,5 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { useUIStore } from '../store/ui'
@@ -10,6 +9,7 @@ export const Layout: React.FC = () => {
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
+
       {/* Sidebar */}
       <Sidebar />
 

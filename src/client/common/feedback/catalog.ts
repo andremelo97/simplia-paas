@@ -387,6 +387,20 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   AUDIO_DOWNLOAD_FAILED: {
     title: "Download Failed",
     message: "Failed to download audio file. Please try again."
+  },
+
+  // API Key operations
+  API_KEY_CREATED: {
+    title: "API Key Created",
+    message: "API key generated successfully."
+  },
+  API_KEY_UPDATED: {
+    title: "API Key Updated",
+    message: "API key updated successfully."
+  },
+  API_KEY_REVOKED: {
+    title: "API Key Revoked",
+    message: "API key revoked successfully."
   }
 }
 

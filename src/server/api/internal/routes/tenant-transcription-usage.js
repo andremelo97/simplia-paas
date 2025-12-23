@@ -144,12 +144,18 @@ router.get('/transcription-usage', requireAdmin, async (req, res) => {
           name: config.plan?.name || 'Unknown Plan',
           allowsCustomLimits: config.plan?.allowsCustomLimits || false,
           allowsOverage: config.plan?.allowsOverage || false,
-          languageDetectionEnabled: config.plan?.languageDetectionEnabled || false
+          languageDetectionEnabled: config.plan?.languageDetectionEnabled || false,
+          isTrial: config.plan?.isTrial || false,
+          trialDays: config.plan?.trialDays || null
         },
         config: {
           customMonthlyLimit: config.customMonthlyLimit,
           transcriptionLanguage: config.transcriptionLanguage,
-          overageAllowed: config.overageAllowed || false
+          overageAllowed: config.overageAllowed || false,
+          planActivatedAt: config.planActivatedAt,
+          expiresAt: config.getExpiresAt(),
+          isTrialExpired: config.isTrialExpired(),
+          remainingTrialDays: config.getRemainingTrialDays()
         }
       }
     });

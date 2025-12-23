@@ -1,5 +1,5 @@
 import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Sidebar } from '../components/Sidebar'
 import { Header } from '../components/Header'
@@ -8,6 +8,10 @@ import { FeedbackHost } from '@client/common/feedback'
 
 export const AdminLayout: React.FC = () => {
   const { sidebarOpen } = useUIStore()
+  const location = useLocation()
+
+  // Routes that use full-height drawer layouts (no padding needed)
+  const isFullHeightRoute = location.pathname.startsWith('/settings')
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
@@ -19,15 +23,19 @@ export const AdminLayout: React.FC = () => {
         <Header />
 
         <main className="flex-1 overflow-y-auto overflow-x-visible">
-          <div className="p-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Outlet />
-            </motion.div>
-          </div>
+          {isFullHeightRoute ? (
+            <Outlet />
+          ) : (
+            <div className="p-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Outlet />
+              </motion.div>
+            </div>
+          )}
         </main>
       </div>
 

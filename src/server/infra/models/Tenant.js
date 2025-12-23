@@ -18,6 +18,8 @@ class Tenant {
       this.timezone = data.timezone;
       this.status = data.status;
       this.active = data.active;
+      this.stripeCustomerId = data.stripe_customer_id;
+      this.stripeSubscriptionId = data.stripe_subscription_id;
       this.createdAt = data.created_at;
       this.updatedAt = data.updated_at;
     }
@@ -32,18 +34,20 @@ class Tenant {
       timezone: this.timezone,
       status: this.status,
       active: this.active,
+      stripeCustomerId: this.stripeCustomerId,
+      stripeSubscriptionId: this.stripeSubscriptionId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
   }
   // Criar novo tenant
-  static async create({ name, subdomain, schemaName, timezone, status = 'active' }) {
+  static async create({ name, subdomain, schemaName, timezone, status = 'active', stripeCustomerId = null, stripeSubscriptionId = null }) {
     const query = `
-      INSERT INTO tenants (name, subdomain, schema_name, timezone, status, active)
-      VALUES ($1, $2, $3, $4, $5, true)
+      INSERT INTO tenants (name, subdomain, schema_name, timezone, status, active, stripe_customer_id, stripe_subscription_id)
+      VALUES ($1, $2, $3, $4, $5, true, $6, $7)
       RETURNING *
     `;
-    const result = await database.query(query, [name, subdomain, schemaName, timezone, status]);
+    const result = await database.query(query, [name, subdomain, schemaName, timezone, status, stripeCustomerId, stripeSubscriptionId]);
 
     // Create tenant-specific Supabase Storage bucket
     console.log(`🪣 [Tenant.create] Attempting to create bucket for subdomain: ${subdomain}`);
@@ -185,10 +189,10 @@ class Tenant {
     const query = `
       SELECT COUNT(*) as count
       FROM tenant_applications ta
-      WHERE ta.tenant_id_fk = $1 
-      AND ta.active = true 
+      WHERE ta.tenant_id_fk = $1
+      AND ta.active = true
       AND ta.status = 'active'
-      AND (ta.expiry_date IS NULL OR ta.expiry_date > CURRENT_DATE)
+      AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
     `;
     const result = await database.query(query, [id]);
     return parseInt(result.rows[0].count) > 0;
@@ -197,23 +201,23 @@ class Tenant {
   // Buscar tenant com suas licenças
   static async findWithLicenses(id) {
     const query = `
-      SELECT 
+      SELECT
         t.*,
         json_agg(
           json_build_object(
-            'application_id', ta.application_id,
+            'application_id', ta.application_id_fk,
             'app_name', a.name,
             'app_slug', a.slug,
             'status', ta.status,
-            'expiry_date', ta.expiry_date,
-            'user_limit', ta.max_users,
+            'expires_at', ta.expires_at,
+            'seats_purchased', ta.seats_purchased,
             'seats_used', ta.seats_used,
-            'seats_available', (ta.max_users - ta.seats_used)
+            'seats_available', (ta.seats_purchased - ta.seats_used)
           )
         ) FILTER (WHERE ta.id IS NOT NULL) as licenses
       FROM tenants t
       LEFT JOIN tenant_applications ta ON t.id = ta.tenant_id_fk AND ta.active = true
-      LEFT JOIN applications a ON ta.application_id = a.id
+      LEFT JOIN applications a ON ta.application_id_fk = a.id
       WHERE t.id = $1 AND t.active = true
       GROUP BY t.id
     `;

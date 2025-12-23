@@ -32,7 +32,7 @@ export interface TenantMetrics {
   applications: {
     slug: string
     status: string
-    userLimit: number | null
+    seatsPurchased: number | null
     seatsUsed: number
     expiresAt: string | null
   }[]
@@ -326,6 +326,20 @@ export class TenantsService {
     }
   }
 
+  /**
+   * Get tenant applications
+   * @param id - Tenant Id
+   * @returns Promise with tenant applications
+   */
+  async getTenantApplications(id: number): Promise<{ applications: Array<{ slug: string; status: string; seatsPurchased: number | null; seatsUsed: number; expiresAt: string | null }> }> {
+    try {
+      const response = await api.get(`${this.baseEndpoint}/${id}/applications`)
+
+      return response
+    } catch (error) {
+      throw error
+    }
+  }
 
   /**
    * Update tenant by Id
@@ -367,9 +381,9 @@ export class TenantsService {
         applicationSlug: string
         applicationName: string
         status: string
-        userLimit: number | null
+        seatsPurchased: number | null
         seatsUsed: number
-        expiryDate: string | null
+        expiresAt: string | null
         activatedAt: string
       }
     }
@@ -406,10 +420,10 @@ export class TenantsService {
         applicationSlug: string
         applicationName: string
         status: string
-        userLimit: number
+        seatsPurchased: number
         seatsUsed: number
         seatsAvailable: number
-        expiryDate: string | null
+        expiresAt: string | null
         updatedAt: string
       }
     }

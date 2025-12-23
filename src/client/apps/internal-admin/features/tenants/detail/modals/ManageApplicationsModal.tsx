@@ -313,10 +313,10 @@ export const ManageApplicationsModal: React.FC<ManageApplicationsModalProps> = (
 
 
   // Use real usage data from API or fallback to license data
-  const currentUsage = usage || { 
-    used: license.seatsUsed || 0, 
-    total: license.userLimit || null, 
-    available: license.seatsAvailable || null 
+  const currentUsage = usage || {
+    used: license.seatsUsed || 0,
+    total: license.seatsPurchased || null,
+    available: license.seatsAvailable || null
   }
   const usersWithAccess = users?.filter(user => user.granted).length || 0
 

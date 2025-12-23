@@ -4,7 +4,8 @@ import {
   Building2,
   Users,
   Grid3x3,
-  Clock
+  Clock,
+  Settings
 } from 'lucide-react'
 import { useUIStore } from '../store'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
@@ -34,6 +35,11 @@ const navigation: NavigationItem[] = [
     name: 'Transcription Plans',
     href: '/transcription-plans',
     icon: Clock
+  },
+  {
+    name: 'Settings',
+    href: '/settings',
+    icon: Settings
   },
 ]
 

@@ -10,6 +10,8 @@ export interface TranscriptionPlan {
   sttModel: string
   languageDetectionEnabled: boolean
   costPerMinuteUsd: number
+  isTrial: boolean
+  trialDays: number | null
   active: boolean
   description: string | null
   createdAt: string
@@ -25,6 +27,8 @@ export interface CreateTranscriptionPlanInput {
   sttModel: string
   languageDetectionEnabled: boolean
   costPerMinuteUsd: number
+  isTrial?: boolean
+  trialDays?: number | null
   active: boolean
   description?: string
 }
@@ -38,6 +42,8 @@ export interface UpdateTranscriptionPlanInput {
   sttModel?: string
   languageDetectionEnabled?: boolean
   costPerMinuteUsd?: number
+  isTrial?: boolean
+  trialDays?: number | null
   active?: boolean
   description?: string
 }

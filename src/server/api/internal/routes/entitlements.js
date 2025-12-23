@@ -99,14 +99,19 @@ router.get('/', async (req, res) => {
     }
 
     // Get active tenant applications with licenses
+    // status is computed: 'expired' if expires_at < NOW(), otherwise ta.status
     const { rows: licenses } = await db.query(
       `SELECT ta.application_id_fk AS "applicationId",
               a.slug,
               a.name,
-              ta.status,
+              CASE
+                WHEN ta.expires_at IS NOT NULL AND ta.expires_at < NOW() THEN 'expired'
+                ELSE ta.status
+              END AS status,
               ta.activated_at AS "activatedAt",
               ta.seats_used AS "seatsUsed",
-              ta.max_users AS "maxUsers"
+              ta.seats_purchased AS "seatsPurchased",
+              ta.expires_at AS "expiresAt"
        FROM public.tenant_applications ta
        INNER JOIN public.applications a ON a.id = ta.application_id_fk
        WHERE ta.tenant_id_fk = $1
@@ -147,8 +152,9 @@ router.get('/', async (req, res) => {
         name: license.name,
         status: license.status,
         activatedAt: license.activatedAt,
+        expiresAt: license.expiresAt,
         seatsUsed: actualSeatsUsed,
-        maxUsers: license.maxUsers,
+        seatsPurchased: license.seatsPurchased,
         users: users
       });
 

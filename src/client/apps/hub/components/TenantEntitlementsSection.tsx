@@ -21,7 +21,7 @@ interface EntitlementLicense {
   status: 'active' | 'suspended' | 'expired'
   activatedAt: string
   seatsUsed: number
-  maxUsers: number | null
+  seatsPurchased: number | null
   users: EntitlementUser[]
 }
 

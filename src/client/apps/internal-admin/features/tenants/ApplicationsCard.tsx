@@ -7,7 +7,7 @@ import { publishFeedback } from '@client/common/feedback/store'
 interface TenantApplication {
   application: Application
   status: 'active' | 'inactive'
-  userLimit: number
+  seatsPurchased: number
   seatsUsed: number
   expiresAt?: string
   activatedAt: string
@@ -38,15 +38,15 @@ export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) 
         {
           application: allApplications.find(app => app.slug === 'tq') || allApplications[0],
           status: 'active',
-          userLimit: 10,
+          seatsPurchased: 10,
           seatsUsed: 3,
           activatedAt: '2024-08-15T10:00:00Z',
           expiresAt: '2025-08-15T10:00:00Z'
         },
         {
           application: allApplications.find(app => app.slug === 'pm') || allApplications[1],
-          status: 'active', 
-          userLimit: 5,
+          status: 'active',
+          seatsPurchased: 5,
           seatsUsed: 5, // At limit
           activatedAt: '2024-07-01T10:00:00Z'
         }
@@ -191,12 +191,12 @@ export const ApplicationsCard: React.FC<ApplicationsCardProps> = ({ tenantId }) 
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm">
-                        <span className={`font-medium ${getSeatUsageColor(tenantApp.seatsUsed, tenantApp.userLimit)}`} style={getSeatUsageStyle(tenantApp.seatsUsed, tenantApp.userLimit)}>
-                          {tenantApp.seatsUsed}/{tenantApp.userLimit}
+                        <span className={`font-medium ${getSeatUsageColor(tenantApp.seatsUsed, tenantApp.seatsPurchased)}`} style={getSeatUsageStyle(tenantApp.seatsUsed, tenantApp.seatsPurchased)}>
+                          {tenantApp.seatsUsed}/{tenantApp.seatsPurchased}
                         </span>
                         <span className="text-gray-500 ml-1">seats</span>
                       </div>
-                      {tenantApp.seatsUsed >= tenantApp.userLimit && (
+                      {tenantApp.seatsUsed >= tenantApp.seatsPurchased && (
                         <div className="text-xs text-red-600 font-medium">
                           At limit
                         </div>

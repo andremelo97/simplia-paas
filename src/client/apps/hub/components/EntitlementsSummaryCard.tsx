@@ -16,7 +16,7 @@ interface EntitlementLicense {
   status: 'active' | 'suspended' | 'expired'
   activatedAt: string
   seatsUsed: number
-  maxUsers: number | null
+  seatsPurchased: number | null
   users: EntitlementUser[]
 }
 
@@ -59,10 +59,10 @@ export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSumma
 
   const getTotalUsers = (license: EntitlementLicense) => {
     const used = license.seatsUsed || 0
-    if (license.maxUsers === null) {
+    if (license.seatsPurchased === null) {
       return `${used}/${t('entitlements.summary.unlimited')}`
     }
-    return `${used}/${license.maxUsers}`
+    return `${used}/${license.seatsPurchased}`
   }
 
   const getStatusLabel = (status: string) =>
@@ -107,7 +107,6 @@ export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSumma
               <th className="text-center">{t('entitlements.summary.table.status')}</th>
               <th className="text-center">{t('entitlements.summary.table.licenses')}</th>
               <th className="text-center">{t('entitlements.summary.table.activated')}</th>
-              <th className="text-center">{t('entitlements.summary.table.expires')}</th>
             </tr>
           </thead>
           <tbody>
@@ -132,7 +131,6 @@ export function EntitlementsSummaryCard({ licenses, summary }: EntitlementsSumma
                   <span className="font-mono text-sm">{getTotalUsers(license)}</span>
                 </td>
                 <td className="text-center text-sm">{formatDate(license.activatedAt)}</td>
-                <td className="text-center text-sm">{t('entitlements.summary.not_available')}</td>
               </tr>
             ))}
           </tbody>

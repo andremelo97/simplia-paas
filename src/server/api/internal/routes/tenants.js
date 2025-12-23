@@ -1958,15 +1958,15 @@ router.post('/:id/applications/:appSlug/activate', async (req, res) => {
       license = await existingLicense.update({
         status,
         expires_at: expiryDate ? new Date(expiryDate) : null,
-        max_users: userLimit
+        seats_purchased: userLimit
       });
     } else {
       // Create new license
       license = await TenantApplication.grantLicense({
         tenantId: tenantId,
         applicationId: application.id,
-        userLimit,
-        expiryDate,
+        seatsPurchased: userLimit,
+        expiresAt: expiryDate,
         status
       });
     }
@@ -1985,11 +1985,11 @@ router.post('/:id/applications/:appSlug/activate', async (req, res) => {
       status: license.status,
       pricingSnapshot: null, // Will be populated when seats are assigned
       seatsByUserType: [], // Will be populated when users are granted access
-      expiryDate: license.expiryDate,
+      expiresAt: license.expiresAt,
       activatedAt: license.createdAt || license.updatedAt,
-      userLimit: license.userLimit,
+      seatsPurchased: license.seatsPurchased,
       seatsUsed: license.seatsUsed || 0,
-      seatsAvailable: license.userLimit ? (license.userLimit - (license.seatsUsed || 0)) : null,
+      seatsAvailable: license.seatsPurchased ? (license.seatsPurchased - (license.seatsUsed || 0)) : null,
       totalSeatsUsed: license.seatsUsed || 0,
       createdAt: license.createdAt,
       updatedAt: license.updatedAt
@@ -2177,7 +2177,7 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
     
     // Prepare updates
     const updates = {};
-    if (userLimit !== undefined) updates.max_users = parseInt(userLimit);
+    if (userLimit !== undefined) updates.seats_purchased = parseInt(userLimit);
     if (expiryDate !== undefined) updates.expires_at = expiryDate ? new Date(expiryDate) : null;
     if (status !== undefined) updates.status = status;
     
@@ -2820,17 +2820,17 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
     
     // Get license info for seat limits
     const licenseQuery = `
-      SELECT max_users, seats_used
+      SELECT seats_purchased, seats_used
       FROM tenant_applications
       WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = true
     `;
     const licenseResult = await database.query(licenseQuery, [tenantId, application.id]);
     const license = licenseResult.rows[0];
-    
+
     const usage = {
       used: license ? license.seats_used : usedSeats,
-      total: license ? license.max_users : null,
-      available: license && license.max_users ? Math.max(0, license.max_users - license.seats_used) : null
+      total: license ? license.seats_purchased : null,
+      available: license && license.seats_purchased ? Math.max(0, license.seats_purchased - license.seats_used) : null
     };
 
     res.json({
@@ -3549,7 +3549,14 @@ router.get('/:tenantId/users/:userId', async (req, res) => {
 router.put('/:tenantId/users/:userId', async (req, res) => {
   try {
     const { tenantId, userId } = req.params;
-    const updates = req.body;
+    const { firstName, lastName, role, status } = req.body;
+
+    // Convert camelCase to snake_case for model
+    const updates = {};
+    if (firstName !== undefined) updates.first_name = firstName;
+    if (lastName !== undefined) updates.last_name = lastName;
+    if (role !== undefined) updates.role = role;
+    if (status !== undefined) updates.status = status;
 
     // Find user by ID and tenant
     const user = await User.findById(parseInt(userId), parseInt(tenantId));

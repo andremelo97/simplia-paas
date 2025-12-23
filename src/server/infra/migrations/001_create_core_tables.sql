@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS tenants (
   timezone VARCHAR(100) NOT NULL, -- IANA timezone (e.g., 'America/Sao_Paulo', 'Australia/Brisbane')
   status VARCHAR(20) NOT NULL DEFAULT 'active',
   active BOOLEAN NOT NULL DEFAULT true,
+  -- Stripe billing integration
+  stripe_customer_id VARCHAR(255),
+  stripe_subscription_id VARCHAR(255),
   created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC')
 );
@@ -23,6 +26,8 @@ COMMENT ON TABLE tenants IS 'Multi-tenant support - each tenant has isolated sch
 COMMENT ON COLUMN tenants.subdomain IS 'Unique subdomain identifier for tenant (used in URLs and headers)';
 COMMENT ON COLUMN tenants.schema_name IS 'PostgreSQL schema name for tenant isolation';
 COMMENT ON COLUMN tenants.timezone IS 'IANA timezone identifier (immutable after creation) - controls session timezone for tenant-scoped operations';
+COMMENT ON COLUMN tenants.stripe_customer_id IS 'Stripe customer ID for billing integration (cus_xxx)';
+COMMENT ON COLUMN tenants.stripe_subscription_id IS 'Stripe subscription ID for plan management (sub_xxx)';
 
 -- User types table (operations < manager < admin hierarchy)
 CREATE TABLE IF NOT EXISTS user_types (
@@ -91,12 +96,10 @@ CREATE TABLE IF NOT EXISTS tenant_applications (
     id SERIAL PRIMARY KEY,
     tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE RESTRICT, -- Numeric FK to tenants
     application_id_fk INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
-    status VARCHAR(20) DEFAULT 'active', -- active, suspended, expired
+    status VARCHAR(20) DEFAULT 'active', -- active, suspended, expired, trial
     activated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
-    expires_at TIMESTAMPTZ, -- NULL for perpetual licenses
-    expiry_date DATE, -- Date-only expiry for business logic
-    max_users INTEGER, -- NULL for unlimited
-    user_limit INTEGER DEFAULT 999999, -- Seat limit per application
+    expires_at TIMESTAMPTZ, -- NULL for perpetual licenses, set for trials
+    seats_purchased INTEGER DEFAULT 1, -- Seats purchased in the plan
     seats_used INTEGER DEFAULT 0, -- Current seats used
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -106,8 +109,9 @@ CREATE TABLE IF NOT EXISTS tenant_applications (
 
 COMMENT ON TABLE tenant_applications IS 'Licensing - which applications each tenant has licensed';
 COMMENT ON COLUMN tenant_applications.tenant_id_fk IS 'Numeric FK to tenants.id - primary tenant reference';
-COMMENT ON COLUMN tenant_applications.user_limit IS 'Maximum concurrent users for this app';
+COMMENT ON COLUMN tenant_applications.seats_purchased IS 'Number of seats purchased in the plan';
 COMMENT ON COLUMN tenant_applications.seats_used IS 'Currently used seats (tracked by system)';
+COMMENT ON COLUMN tenant_applications.expires_at IS 'License expiration date - NULL for perpetual, set for trials';
 
 -- User application access (granular permissions per user per app)
 CREATE TABLE IF NOT EXISTS user_application_access (
@@ -432,6 +436,8 @@ CREATE TABLE IF NOT EXISTS public.transcription_plans (
   stt_model VARCHAR(50) NOT NULL,
   language_detection_enabled BOOLEAN NOT NULL DEFAULT false,
   cost_per_minute_usd NUMERIC(10, 6) NOT NULL,
+  is_trial BOOLEAN NOT NULL DEFAULT false,
+  trial_days INTEGER NULL,
   active BOOLEAN NOT NULL,
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -446,6 +452,8 @@ COMMENT ON COLUMN public.transcription_plans.allows_overage IS 'Whether users ca
 COMMENT ON COLUMN public.transcription_plans.stt_model IS 'Deepgram STT model to use (nova-3, nova-2, etc.)';
 COMMENT ON COLUMN public.transcription_plans.language_detection_enabled IS 'If true, uses detect_language=true (multilingual $0.0052/min). If false, uses language parameter targeting (monolingual $0.0043/min)';
 COMMENT ON COLUMN public.transcription_plans.cost_per_minute_usd IS 'Cost per minute in USD (calculated based on stt_model + language_detection_enabled)';
+COMMENT ON COLUMN public.transcription_plans.is_trial IS 'Whether this is a trial plan that expires after trial_days';
+COMMENT ON COLUMN public.transcription_plans.trial_days IS 'Number of days the trial lasts (only applicable when is_trial = true)';
 
 -- Tenant transcription configuration
 CREATE TABLE IF NOT EXISTS public.tenant_transcription_config (
@@ -455,6 +463,7 @@ CREATE TABLE IF NOT EXISTS public.tenant_transcription_config (
   custom_monthly_limit INTEGER NULL,
   transcription_language VARCHAR(10) NULL,
   overage_allowed BOOLEAN DEFAULT false,
+  plan_activated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(tenant_id_fk)
@@ -465,6 +474,7 @@ COMMENT ON COLUMN public.tenant_transcription_config.plan_id_fk IS 'Transcriptio
 COMMENT ON COLUMN public.tenant_transcription_config.custom_monthly_limit IS 'Custom monthly limit set by user in Hub (only if plan.allows_custom_limits = true). NULL uses plan default';
 COMMENT ON COLUMN public.tenant_transcription_config.transcription_language IS 'Language for transcription (pt-BR or en-US). NULL = use tenant locale as default';
 COMMENT ON COLUMN public.tenant_transcription_config.overage_allowed IS 'Whether tenant can exceed monthly limit (only if plan.allows_custom_limits = true)';
+COMMENT ON COLUMN public.tenant_transcription_config.plan_activated_at IS 'When the current plan was activated. Updated when plan changes. Used to calculate trial expiration';
 
 -- Tenant transcription usage tracking (per-transcription granular records)
 CREATE TABLE IF NOT EXISTS public.tenant_transcription_usage (
@@ -494,6 +504,36 @@ COMMENT ON COLUMN public.tenant_transcription_usage.stt_model IS 'Deepgram model
 COMMENT ON COLUMN public.tenant_transcription_usage.stt_provider_request_id IS 'Deepgram request_id for audit trail';
 COMMENT ON COLUMN public.tenant_transcription_usage.cost_usd IS 'Calculated cost in USD based on model pricing and duration';
 COMMENT ON COLUMN public.tenant_transcription_usage.usage_date IS 'Date when transcription was completed (for monthly aggregation)';
+
+-- =============================================
+-- API KEYS MANAGEMENT
+-- =============================================
+
+-- API Keys for external integrations (N8N, Zapier, etc.)
+CREATE TABLE IF NOT EXISTS public.api_keys (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(100) NOT NULL,                    -- "N8N Production", "Zapier Backup"
+  key_hash VARCHAR(255) NOT NULL,                -- bcrypt hash (never store plain text)
+  key_prefix VARCHAR(12) NOT NULL,               -- "livo_abc1..." for identification
+  scope VARCHAR(50) NOT NULL DEFAULT 'provisioning', -- permission scope
+  created_by_fk INTEGER REFERENCES users(id),
+  last_used_at TIMESTAMPTZ,
+  expires_at TIMESTAMPTZ,                        -- NULL = never expires
+  active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_active ON public.api_keys(active) WHERE active = true;
+CREATE INDEX IF NOT EXISTS idx_api_keys_scope ON public.api_keys(scope);
+
+COMMENT ON TABLE public.api_keys IS 'API Keys for external integrations (N8N, Stripe webhooks, etc.)';
+COMMENT ON COLUMN public.api_keys.name IS 'Human-readable name for the key (e.g., "N8N Production")';
+COMMENT ON COLUMN public.api_keys.key_hash IS 'bcrypt hash of the API key - never store plain text';
+COMMENT ON COLUMN public.api_keys.key_prefix IS 'First 12 chars of key for identification in UI (e.g., "livo_a1b2...")';
+COMMENT ON COLUMN public.api_keys.scope IS 'Permission scope: provisioning, billing, etc.';
+COMMENT ON COLUMN public.api_keys.last_used_at IS 'Last time this key was used (for audit)';
+COMMENT ON COLUMN public.api_keys.expires_at IS 'Expiration date - NULL means never expires';
 
 -- =============================================
 -- COMMENTS FOR DOCUMENTATION

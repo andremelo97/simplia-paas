@@ -20,7 +20,7 @@ interface EntitlementLicense {
   status: 'active' | 'suspended' | 'expired'
   activatedAt: string
   seatsUsed: number
-  maxUsers: number | null
+  seatsPurchased: number | null
   users: EntitlementUser[]
 }
 
@@ -56,7 +56,7 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
               <h3 className="text-lg font-semibold text-gray-900">
                 {license.name}
               </h3>
-              <StatusBadge status={license.status as 'active' | 'inactive' | 'suspended'} />
+              <StatusBadge status={license.status} />
             </div>
           </div>
 
@@ -131,15 +131,9 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
 
         {/* License Information */}
         <div className="pt-6 border-t border-gray-200">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-gray-500">{t('entitlements.table.activated')}</span>
-              <div className="font-medium">{formatDate(license.activatedAt)}</div>
-            </div>
-            <div>
-              <span className="text-gray-500">{t('entitlements.table.expires')}</span>
-              <div className="font-medium">{t('entitlements.never')}</div>
-            </div>
+          <div className="text-sm">
+            <span className="text-gray-500">{t('entitlements.table.activated')}</span>
+            <div className="font-medium">{formatDate(license.activatedAt)}</div>
           </div>
         </div>
       </CardContent>

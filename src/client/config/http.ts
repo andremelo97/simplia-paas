@@ -152,20 +152,27 @@ class HttpClient {
     // For TQ app, any 401 should redirect to Hub login (SSO)
     // For Hub/Internal-Admin, only handle explicit token expiration
     if (status === 401) {
-      const port = window.location.port
-      const hostname = window.location.hostname
-      const isTQ = port === '3005' || hostname.startsWith('tq.')
+      // Skip redirect for auth endpoints - 401 there means "wrong credentials", not "expired session"
+      const isAuthEndpoint = endpoint.includes('/auth/login') ||
+                             endpoint.includes('/platform-auth/login') ||
+                             endpoint.includes('/tenant-lookup')
 
-      const isTokenExpired = backendMessage?.toLowerCase().includes('expired') ||
-        backendMessage?.toLowerCase().includes('invalid') ||
-        backendMessage?.toLowerCase().includes('jwt') ||
-        errorData?.error === 'Token expired'
+      if (!isAuthEndpoint) {
+        const port = window.location.port
+        const hostname = window.location.hostname
+        const isTQ = port === '3005' || hostname.startsWith('tq.')
 
-      // TQ: Always redirect on 401 (needs SSO from Hub)
-      // Others: Only redirect on explicit token issues
-      if (isTQ || isTokenExpired) {
-        this.handleExpiredToken()
-        return createAppError.auth('SESSION_EXPIRED', status, endpoint)
+        // Check for token-specific errors (not general "invalid credentials")
+        const isTokenExpired = backendMessage?.toLowerCase().includes('expired') ||
+          backendMessage?.toLowerCase().includes('jwt') ||
+          errorData?.error === 'Token expired'
+
+        // TQ: Always redirect on 401 (needs SSO from Hub)
+        // Others: Only redirect on explicit token issues
+        if (isTQ || isTokenExpired) {
+          this.handleExpiredToken()
+          return createAppError.auth('SESSION_EXPIRED', status, endpoint)
+        }
       }
     }
     

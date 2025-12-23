@@ -8,6 +8,8 @@ const {
 } = require('../../../infra/models/TenantTranscriptionConfig');
 const { Tenant, TenantNotFoundError } = require('../../../infra/models/Tenant');
 const { TranscriptionPlan, TranscriptionPlanNotFoundError } = require('../../../infra/models/TranscriptionPlan');
+const { TenantApplication } = require('../../../infra/models/TenantApplication');
+const { Application } = require('../../../infra/models/Application');
 
 const router = express.Router();
 
@@ -165,6 +167,22 @@ router.put('/:tenantId/transcription-config', async (req, res) => {
       throw error;
     }
 
+    // Verify tenant has TQ app access before allowing transcription config
+    const tqApp = await Application.findBySlug('tq');
+    const tqLicense = await TenantApplication.findByTenantAndApplication(
+      parseInt(tenantId),
+      tqApp.id
+    );
+
+    if (!tqLicense || tqLicense.status !== 'active') {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'Tenant must have active TQ app access before configuring transcription plan'
+        }
+      });
+    }
+
     // Verify plan exists
     try {
       await TranscriptionPlan.findById(parseInt(planId));
@@ -183,6 +201,9 @@ router.put('/:tenantId/transcription-config', async (req, res) => {
     // Derive language from tenant timezone (pt-BR for America/Sao_Paulo, en-US for others)
     const defaultLanguage = tenant.timezone === 'America/Sao_Paulo' ? 'pt-BR' : 'en-US';
 
+    // Fetch the plan to check if it's a trial plan
+    const plan = await TranscriptionPlan.findById(parseInt(planId));
+
     // Upsert configuration (reset custom values when only planId is sent)
     const config = await TenantTranscriptionConfig.upsert(parseInt(tenantId), {
       planId: parseInt(planId),
@@ -190,6 +211,33 @@ router.put('/:tenantId/transcription-config', async (req, res) => {
       transcriptionLanguage: defaultLanguage, // Set language based on tenant timezone
       overageAllowed: overageAllowed === true  // Explicit boolean conversion (undefined becomes false)
     });
+
+    // If plan is a trial, update TQ app's expires_at in tenant_applications
+    if (plan.isTrial && plan.trialDays) {
+      try {
+        // Find TQ application
+        const tqApp = await Application.findBySlug('tq');
+
+        // Find tenant's TQ license
+        const tqLicense = await TenantApplication.findByTenantAndApplication(
+          parseInt(tenantId),
+          tqApp.id
+        );
+
+        if (tqLicense) {
+          // Calculate expiration date: NOW + trial_days
+          const expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + plan.trialDays);
+
+          // Update the license with expiration date
+          await tqLicense.update({ expires_at: expiresAt });
+          console.log(`✅ [Trial Plan] Updated TQ license expires_at to ${expiresAt.toISOString()} for tenant ${tenantId}`);
+        }
+      } catch (error) {
+        console.warn(`[Trial Plan] Could not update TQ license expires_at:`, error.message);
+        // Don't fail the whole request if this fails
+      }
+    }
 
     // Fetch full config with plan details
     const fullConfig = await TenantTranscriptionConfig.findByTenantId(parseInt(tenantId));

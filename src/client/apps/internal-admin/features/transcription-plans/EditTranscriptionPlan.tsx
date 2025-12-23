@@ -45,6 +45,8 @@ export const EditTranscriptionPlan: React.FC = () => {
           allowsOverage: data.allowsOverage,
           languageDetectionEnabled: data.languageDetectionEnabled,
           costPerMinuteUsd: data.costPerMinuteUsd,
+          isTrial: data.isTrial,
+          trialDays: data.trialDays,
           active: data.active,
           description: data.description || ''
         })
@@ -240,6 +242,46 @@ export const EditTranscriptionPlan: React.FC = () => {
               label="Allow overage"
               description="If enabled, users can enable usage beyond monthly limits in Hub"
             />
+
+            {/* Trial Plan Configuration */}
+            <div className="border-t pt-6 mt-6">
+              <h3 className="text-sm font-medium text-gray-900 mb-4">Trial Configuration</h3>
+
+              <Checkbox
+                id="isTrial"
+                checked={formData.isTrial}
+                onChange={(e) => {
+                  const isTrial = e.target.checked
+                  setFormData({
+                    ...formData,
+                    isTrial,
+                    trialDays: isTrial ? (formData.trialDays || 7) : null
+                  })
+                }}
+                label="This is a trial plan"
+                description="Trial plans expire after a set number of days from activation"
+              />
+
+              {formData.isTrial && (
+                <div className="mt-4 ml-6 space-y-2">
+                  <Label htmlFor="trialDays">Trial Duration (days)</Label>
+                  <Input
+                    id="trialDays"
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={formData.trialDays || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, trialDays: parseInt(e.target.value) || null })
+                    }
+                    className="w-32"
+                  />
+                  <p className="text-sm text-gray-500">
+                    Number of days until the trial expires (e.g., 7 = 1 week)
+                  </p>
+                </div>
+              )}
+            </div>
 
             <Checkbox
               id="active"

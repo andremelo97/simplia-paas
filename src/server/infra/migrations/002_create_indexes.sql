@@ -71,7 +71,7 @@ CREATE INDEX IF NOT EXISTS idx_access_logs_user_app ON application_access_logs(u
 
 -- Licensing and seat management
 CREATE INDEX IF NOT EXISTS idx_tenant_apps_expiry ON tenant_applications(expires_at) WHERE expires_at IS NOT NULL;
-CREATE INDEX IF NOT EXISTS idx_tenant_apps_seats ON tenant_applications(tenant_id_fk, seats_used, user_limit);
+CREATE INDEX IF NOT EXISTS idx_tenant_apps_seats ON tenant_applications(tenant_id_fk, seats_used, seats_purchased);
 
 -- User access expiry tracking
 CREATE INDEX IF NOT EXISTS idx_user_access_expiry ON user_application_access(expires_at) WHERE expires_at IS NOT NULL;

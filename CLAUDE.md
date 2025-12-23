@@ -801,7 +801,58 @@ expect(formatShortDate(date, 'America/Sao_Paulo', 'pt-BR')).toBe('10/01/2025');
 
 ## API Route Categories
 - **Platform-Scoped** (no tenant header): `/applications`, `/platform-auth`, `/tenants`, `/audit`, `/metrics`, `/me/*`
-- **Tenant-Scoped** (requires x-tenant-id header): `/auth`, `/users`, `/entitlements` 
+- **Tenant-Scoped** (requires x-tenant-id header): `/auth`, `/users`, `/entitlements`
+- **External API** (API key auth): `/api/provisioning` - Used by N8N/Stripe webhooks for tenant provisioning
+
+## Provisioning API (N8N Integration)
+
+The provisioning API allows external systems (N8N, Stripe webhooks) to create new tenants automatically.
+
+**Endpoint**: `POST /api/provisioning/signup`
+
+**Authentication**: API Key via `x-api-key` header (set `PROVISIONING_API_KEY` in env)
+
+**Request Body**:
+```json
+{
+  "tenantName": "Clínica ABC",
+  "tenantSubdomain": "clinica-abc",  // optional, auto-generated if not provided
+  "adminEmail": "admin@clinica.com",
+  "adminFirstName": "João",
+  "adminLastName": "Silva",
+  "timezone": "America/Sao_Paulo",   // default
+  "planSlug": "trial",               // default: trial, options: starter, solo, duo, practice, vip
+  "seatsPurchased": 1,               // default
+  "trialDays": 7,                    // optional, overrides plan default
+  "stripeCustomerId": "cus_xxx",     // optional
+  "stripeSubscriptionId": "sub_xxx"  // optional
+}
+```
+
+**Response (201)**:
+```json
+{
+  "data": {
+    "tenant": { "id": 123, "name": "...", "subdomain": "...", "timezone": "..." },
+    "admin": { "id": 456, "email": "...", "temporaryPassword": "abc123xyz" },
+    "license": { "applicationId": 2, "applicationSlug": "tq", "seatsPurchased": 1, "expiresAt": null },
+    "transcription": { "planSlug": "trial", "monthlyMinutesLimit": 420, "isTrial": true },
+    "hubUrl": "https://hub.livocare.ai",
+    "loginUrl": "https://hub.livocare.ai/login"
+  },
+  "meta": { "code": "TENANT_PROVISIONED" }
+}
+```
+
+**What It Does**:
+1. Creates tenant record and Supabase storage bucket
+2. Creates PostgreSQL schema for tenant
+3. Creates admin user with temporary password
+4. Grants TQ license (auto-provisions TQ tables)
+5. Grants admin user access to TQ (increments seat count)
+6. Configures transcription plan
+
+**Health Check**: `GET /api/provisioning/health` 
 
 ## Regras para Multi-Tenancy no Desenvolvimento
 - **Não** mover `users`/`user_application_access` para schemas de tenant.

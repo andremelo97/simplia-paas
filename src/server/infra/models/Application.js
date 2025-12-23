@@ -174,22 +174,22 @@ class Application {
     const { status = 'active', limit = 50, offset = 0 } = options;
 
     const query = `
-      SELECT a.*, ta.status as tenant_status, ta.activated_at, ta.expires_at, ta.max_users, ta.seats_used
+      SELECT a.*, ta.status as tenant_status, ta.activated_at, ta.expires_at, ta.seats_purchased, ta.seats_used
       FROM public.applications a
       INNER JOIN public.tenant_applications ta ON a.id = ta.application_id_fk
       WHERE ta.tenant_id_fk = $1 AND ta.status = $2
       ORDER BY a.name ASC
       LIMIT $3 OFFSET $4
     `;
-    
+
     const result = await database.query(query, [tenantId, status, limit, offset]);
-    
+
     return result.rows.map(row => {
       const app = new Application(row);
       app.tenantStatus = row.tenant_status;
       app.activatedAt = row.activated_at;
       app.expiresAt = row.expires_at;
-      app.maxUsers = row.max_users;
+      app.seatsPurchased = row.seats_purchased;
       app.seatsUsed = row.seats_used || 0;
       return app;
     });

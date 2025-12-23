@@ -249,7 +249,53 @@
     "quota_warning_title": "Warning: Quota Near Limit",
     "quota_warning_message": "You have used {{used}} of {{limit}} minutes ({{percent}}%). Consider managing your usage or increasing your limit.",
     "quota_exceeded_title": "Quota Exceeded",
-    "quota_exceeded_message": "You have reached your monthly limit of {{limit}} minutes. Cannot start new transcription until next month. Contact your account manager to increase your limit."
+    "quota_exceeded_message": "You have reached your monthly limit of {{limit}} minutes. Cannot start new transcription until next month. Contact your account manager to increase your limit.",
+    "trial_expired": "Trial expired",
+    "expires_in": "Expires in",
+    "days": "days"
+  },
+  "trial_expired": {
+    "title": "Your trial period has ended",
+    "usage_during_trial": "You used during trial:",
+    "hours": "hours",
+    "minutes_total": "minutes total",
+    "message": "To continue using transcription features, choose a plan that fits your needs.",
+    "view_plans": "View Plans"
+  },
+  "plans": {
+    "title": "Choose your plan",
+    "subtitle": "Select the ideal plan for your transcription needs",
+    "back_to_hub": "Back to Hub",
+    "per_month": "/month",
+    "custom_price": "Custom pricing",
+    "most_popular": "Most Popular",
+    "contact_sales": "Contact Sales",
+    "questions_title": "Still have questions?",
+    "questions_description": "Our team is ready to help you choose the best plan.",
+    "talk_to_team": "Talk to Team",
+    "starter": {
+      "name": "Starter",
+      "description": "For clinics starting with transcription"
+    },
+    "professional": {
+      "name": "Professional",
+      "description": "For growing clinics"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "For large operations"
+    },
+    "features": {
+      "monthly_minutes": "Monthly minutes",
+      "transcription_quality": "Transcription quality",
+      "custom_limits": "Customizable limits",
+      "overage_allowed": "Overage usage",
+      "language_detection": "Language detection",
+      "priority_support": "Priority support",
+      "dedicated_account": "Dedicated account manager",
+      "custom_integration": "Custom integrations",
+      "unlimited": "Unlimited"
+    }
   },
   "header": {
     "user_settings_tooltip": "User Settings"

@@ -17,8 +17,8 @@ class TenantApplication {
     this.applicationId = data.application_id_fk;
     this.status = data.status;
     this.activatedAt = data.activated_at;
-    this.expiresAt = data.expires_at || data.expiry_date;
-    this.maxUsers = data.max_users || data.user_limit;
+    this.expiresAt = data.expires_at;
+    this.seatsPurchased = data.seats_purchased || 1;
     this.seatsUsed = data.seats_used || 0;
     this.active = data.active !== false;
     this.createdAt = data.created_at;
@@ -147,9 +147,9 @@ class TenantApplication {
    * This method also provisions app-specific database schemas when needed
    */
   static async grantLicense(licenseData) {
-    const { tenantId, applicationId, userLimit = null, expiryDate = null, status = 'active' } = licenseData;
+    const { tenantId, applicationId, seatsPurchased = 1, expiresAt = null, status = 'active' } = licenseData;
 
-    console.log('🔄 [TenantApplication.grantLicense] Starting license creation:', { tenantId, applicationId, userLimit, expiryDate, status });
+    console.log('🔄 [TenantApplication.grantLicense] Starting license creation:', { tenantId, applicationId, seatsPurchased, expiresAt, status });
 
     // Verify application exists and get app details
     const application = await Application.findById(applicationId);
@@ -178,7 +178,7 @@ class TenantApplication {
 
     console.log('🔄 [TenantApplication.grantLicense] Inserting new license...');
     const query = `
-      INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, max_users)
+      INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, seats_purchased)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
@@ -188,8 +188,8 @@ class TenantApplication {
         tenantId,
         applicationId,
         status,
-        expiryDate,
-        userLimit
+        expiresAt,
+        seatsPurchased
       ]);
 
       console.log('✅ [TenantApplication.grantLicense] License inserted successfully:', result.rows[0].id);
@@ -228,7 +228,7 @@ class TenantApplication {
    * Update tenant application license
    */
   async update(updates) {
-    const allowedUpdates = ['status', 'expires_at', 'max_users'];
+    const allowedUpdates = ['status', 'expires_at', 'seats_purchased'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -277,10 +277,10 @@ class TenantApplication {
       SELECT COUNT(*) as count
       FROM public.tenant_applications ta
       JOIN public.applications a ON ta.application_id_fk = a.id
-      WHERE ta.tenant_id_fk = $1 
-      AND ta.active = true 
+      WHERE ta.tenant_id_fk = $1
+      AND ta.active = true
       AND ta.status = 'active'
-      AND (ta.expiry_date IS NULL OR ta.expiry_date > CURRENT_DATE)
+      AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
     `;
     const result = await database.query(query, [tenantId]);
     return parseInt(result.rows[0].count);
@@ -371,12 +371,12 @@ class TenantApplication {
    * Check if tenant can add more users to this application
    */
   async canAddUser() {
-    if (!this.maxUsers) {
+    if (!this.seatsPurchased) {
       return true; // No limit
     }
-    
+
     const currentCount = await this.getUserCount();
-    return currentCount < this.maxUsers;
+    return currentCount < this.seatsPurchased;
   }
 
   /**
@@ -386,11 +386,11 @@ class TenantApplication {
     const query = `
       SELECT ta.*, a.slug, a.name, a.id as app_id
       FROM tenant_applications ta
-      JOIN applications a ON ta.application_id_fk = a.id  
-      WHERE ta.tenant_id_fk = $1 AND a.slug = $2 
-      AND ta.active = true 
+      JOIN applications a ON ta.application_id_fk = a.id
+      WHERE ta.tenant_id_fk = $1 AND a.slug = $2
+      AND ta.active = true
       AND ta.status = 'active'
-      AND (ta.expiry_date IS NULL OR ta.expiry_date > CURRENT_DATE)
+      AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
     `;
     const result = await database.query(query, [tenantId, appSlug]);
     return result.rows.length > 0 ? result.rows[0] : null;
@@ -401,9 +401,9 @@ class TenantApplication {
    */
   static async checkSeatAvailability(tenantId, applicationId) {
     const query = `
-      SELECT max_users, seats_used,
-             (max_users - seats_used) as seats_available
-      FROM tenant_applications 
+      SELECT seats_purchased, seats_used,
+             (seats_purchased - seats_used) as seats_available
+      FROM tenant_applications
       WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = true
     `;
     const result = await database.query(query, [tenantId, applicationId]);
@@ -411,16 +411,16 @@ class TenantApplication {
   }
 
   /**
-   * Expire licenses that have passed their expiry date
+   * Expire licenses that have passed their expires_at date
    */
   static async expireLicenses() {
     const query = `
-      UPDATE tenant_applications 
+      UPDATE tenant_applications
       SET status = 'expired'
-      WHERE expiry_date < CURRENT_DATE 
-      AND status != 'expired' 
+      WHERE expires_at < NOW()
+      AND status != 'expired'
       AND active = true
-      RETURNING tenant_id_fk, application_id
+      RETURNING tenant_id_fk, application_id_fk
     `;
     const result = await database.query(query);
     return result.rows;
@@ -437,7 +437,7 @@ class TenantApplication {
       WHERE ta.tenant_id_fk = $1
       AND ta.active = true
       AND ta.status = 'active'
-      AND (ta.expiry_date IS NULL OR ta.expiry_date > CURRENT_DATE)
+      AND (ta.expires_at IS NULL OR ta.expires_at > NOW())
     `;
     const result = await database.query(query, [tenantId]);
     return result.rows.map(row => row.slug);
@@ -455,9 +455,9 @@ class TenantApplication {
       status: this.status,
       activatedAt: this.activatedAt,
       expiresAt: this.expiresAt,
-      maxUsers: this.maxUsers,
+      seatsPurchased: this.seatsPurchased,
       seatsUsed: this.seatsUsed,
-      seatsAvailable: this.maxUsers ? (this.maxUsers - this.seatsUsed) : null,
+      seatsAvailable: this.seatsPurchased ? (this.seatsPurchased - this.seatsUsed) : null,
       active: this.active,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

@@ -249,7 +249,53 @@
     "quota_warning_title": "Atenção: Cota Próxima do Limite",
     "quota_warning_message": "Você usou {{used}} de {{limit}} minutos ({{percent}}%). Considere gerenciar seu uso ou aumentar seu limite.",
     "quota_exceeded_title": "Cota Excedida",
-    "quota_exceeded_message": "Você atingiu seu limite mensal de {{limit}} minutos. Não é possível iniciar nova transcrição até o próximo mês. Entre em contato com seu gerente de conta para aumentar seu limite."
+    "quota_exceeded_message": "Você atingiu seu limite mensal de {{limit}} minutos. Não é possível iniciar nova transcrição até o próximo mês. Entre em contato com seu gerente de conta para aumentar seu limite.",
+    "trial_expired": "Trial expirado",
+    "expires_in": "Expira em",
+    "days": "dias"
+  },
+  "trial_expired": {
+    "title": "Seu período de teste terminou",
+    "usage_during_trial": "Você usou durante o trial:",
+    "hours": "horas",
+    "minutes_total": "minutos no total",
+    "message": "Para continuar usando os recursos de transcrição, escolha um plano que atenda às suas necessidades.",
+    "view_plans": "Ver Planos"
+  },
+  "plans": {
+    "title": "Escolha seu plano",
+    "subtitle": "Selecione o plano ideal para suas necessidades de transcrição",
+    "back_to_hub": "Voltar ao Hub",
+    "per_month": "/mês",
+    "custom_price": "Sob consulta",
+    "most_popular": "Mais Popular",
+    "contact_sales": "Falar com Vendas",
+    "questions_title": "Ainda tem dúvidas?",
+    "questions_description": "Nossa equipe está pronta para ajudar você a escolher o melhor plano.",
+    "talk_to_team": "Falar com a Equipe",
+    "starter": {
+      "name": "Starter",
+      "description": "Para clínicas iniciando com transcrição"
+    },
+    "professional": {
+      "name": "Professional",
+      "description": "Para clínicas em crescimento"
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "Para grandes operações"
+    },
+    "features": {
+      "monthly_minutes": "Minutos mensais",
+      "transcription_quality": "Qualidade de transcrição",
+      "custom_limits": "Limites personalizáveis",
+      "overage_allowed": "Uso além do limite",
+      "language_detection": "Detecção de idioma",
+      "priority_support": "Suporte prioritário",
+      "dedicated_account": "Gerente de conta dedicado",
+      "custom_integration": "Integrações personalizadas",
+      "unlimited": "Ilimitado"
+    }
   },
   "header": {
     "user_settings_tooltip": "Configurações de Usuário"

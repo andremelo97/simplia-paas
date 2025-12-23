@@ -64,7 +64,7 @@ export interface TenantLicensedApp {
   slug: string;
   name: string;
   status: string;
-  userLimit: number | null;
+  seatsPurchased: number | null;
   seatsUsed: number;
   expiresAt: string | null;
 }

@@ -19,24 +19,24 @@ export const AdjustSeatsModal: React.FC<AdjustSeatsModalProps> = ({
   tenantId,
   onAdjusted
 }) => {
-  const [userLimit, setUserLimit] = useState<number>(license.userLimit || 0)
+  const [seatLimit, setSeatLimit] = useState<number>(license.seatsPurchased || 0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Reset state when modal opens/closes or license changes
   useEffect(() => {
     if (isOpen) {
-      setUserLimit(license.userLimit || 0)
+      setSeatLimit(license.seatsPurchased || 0)
       setError(null)
     }
-  }, [isOpen, license.userLimit])
+  }, [isOpen, license.seatsPurchased])
 
   const currentUsed = license.seatsUsed || 0
-  const currentTotal = license.userLimit || 0
+  const currentTotal = license.seatsPurchased || 0
   const currentAvailable = Math.max(0, currentTotal - currentUsed)
 
-  const newAvailable = Math.max(0, userLimit - currentUsed)
-  const isReducingBelowUsed = userLimit < currentUsed
+  const newAvailable = Math.max(0, seatLimit - currentUsed)
+  const isReducingBelowUsed = seatLimit < currentUsed
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,13 +51,13 @@ export const AdjustSeatsModal: React.FC<AdjustSeatsModalProps> = ({
       setError(null)
 
       const response = await tenantsService.adjustLicense(tenantId, license.application.slug, {
-        userLimit
+        userLimit: seatLimit
       })
 
       // Convert response to TenantLicense format
       const updatedLicense: TenantLicense = {
         ...license,
-        userLimit: response.data.license.userLimit,
+        seatsPurchased: response.data.license.seatsPurchased,
         seatsUsed: response.data.license.seatsUsed,
         seatsAvailable: response.data.license.seatsAvailable,
         updatedAt: response.data.license.updatedAt
@@ -131,16 +131,16 @@ export const AdjustSeatsModal: React.FC<AdjustSeatsModalProps> = ({
 
         {/* New Limit Input */}
         <div>
-          <label htmlFor="userLimit" className="block text-sm font-medium text-gray-700 mb-2">
-            New User Limit
+          <label htmlFor="seatLimit" className="block text-sm font-medium text-gray-700 mb-2">
+            New Seat Limit
           </label>
           <Input
-            id="userLimit"
+            id="seatLimit"
             type="number"
             min={0}
-            value={userLimit}
-            onChange={(e) => setUserLimit(parseInt(e.target.value) || 0)}
-            placeholder="Enter new user limit"
+            value={seatLimit}
+            onChange={(e) => setSeatLimit(parseInt(e.target.value) || 0)}
+            placeholder="Enter new seat limit"
             className="w-full"
             required
             disabled={isSubmitting}
@@ -151,7 +151,7 @@ export const AdjustSeatsModal: React.FC<AdjustSeatsModalProps> = ({
         </div>
 
         {/* New Usage Preview */}
-        {userLimit !== currentTotal && (
+        {seatLimit !== currentTotal && (
           <div className="bg-blue-50 rounded-lg p-4 space-y-3">
             <h3 className="text-sm font-medium text-blue-900">After Adjustment</h3>
             <div className="grid grid-cols-3 gap-4 text-sm">
@@ -161,7 +161,7 @@ export const AdjustSeatsModal: React.FC<AdjustSeatsModalProps> = ({
               </div>
               <div>
                 <div className="text-blue-600">Total</div>
-                <div className="font-semibold text-blue-900">{userLimit}</div>
+                <div className="font-semibold text-blue-900">{seatLimit}</div>
               </div>
               <div>
                 <div className="text-blue-600">Available</div>

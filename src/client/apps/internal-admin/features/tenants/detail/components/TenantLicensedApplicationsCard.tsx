@@ -26,9 +26,9 @@ export const TenantLicensedApplicationsCard: React.FC<TenantLicensedApplications
 
   const getTotalSeats = (license: TenantLicense) => {
     // Use totalSeatsUsed if available, otherwise calculate from seatsByUserType
-    const used = license.totalSeatsUsed ?? 
+    const used = license.totalSeatsUsed ??
       (license.seatsByUserType?.reduce((sum, seat) => sum + seat.used, 0) || 0)
-    const total = license.userLimit || '∞'
+    const total = license.seatsPurchased || '∞'
     return `${used}/${total}`
   }
 
@@ -87,7 +87,7 @@ export const TenantLicensedApplicationsCard: React.FC<TenantLicensedApplications
                   {formatDate(license.activatedAt)}
                 </td>
                 <td className="text-center text-sm">
-                  {formatDate(license.expiryDate)}
+                  {formatDate(license.expiresAt)}
                 </td>
               </tr>
             ))}

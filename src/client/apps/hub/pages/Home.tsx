@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { ExternalLink, Grid3x3 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ExternalLink, Grid3x3, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Card, Button, StatusBadge, Badge } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
@@ -20,10 +21,33 @@ interface UserApp {
 
 export const Home: React.FC = () => {
   const { t } = useTranslation('hub')
+  const navigate = useNavigate()
   const { user, tenantName, isLoading, loadUserProfile } = useAuthStore()
 
   // Get apps directly from user state
   const apps = user?.allowedApps || []
+
+  // Calculate TQ trial state from app.expiresAt
+  const tqTrialState = useMemo(() => {
+    const tqApp = apps.find(app => app.slug === 'tq')
+    if (!tqApp || !tqApp.expiresAt) {
+      return null // Not a trial (no expiration date)
+    }
+
+    const expiresAt = new Date(tqApp.expiresAt)
+    const now = new Date()
+    const isExpired = expiresAt <= now
+
+    // Calculate remaining days
+    const diffMs = expiresAt.getTime() - now.getTime()
+    const remainingDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+
+    return {
+      isTrialExpired: isExpired,
+      isTrial: true,
+      remainingDays: isExpired ? 0 : remainingDays
+    }
+  }, [apps])
 
   const refreshApps = async () => {
     try {
@@ -41,6 +65,12 @@ export const Home: React.FC = () => {
   const handleAppClick = (app: UserApp) => {
     // Special handling for TQ app - SSO integration
     if (app.slug === 'tq') {
+      // Check if TQ trial is expired
+      if (tqTrialState?.isTrialExpired) {
+        navigate('/plans')
+        return
+      }
+
       const { token, tenantId } = useAuthStore.getState()
 
       if (token && tenantId) {
@@ -145,8 +175,12 @@ export const Home: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
-              <Card 
-                className="p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105"
+              <Card
+                className={`p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
+                  app.slug === 'tq' && tqTrialState?.isTrialExpired
+                    ? 'ring-2 ring-red-300 bg-red-50/50'
+                    : ''
+                }`}
                 onClick={() => handleAppClick(app)}
               >
                 <div className="flex items-center justify-between mb-4">
@@ -168,11 +202,26 @@ export const Home: React.FC = () => {
                   {app.name}
                 </h3>
 
-                <div className="mb-3 space-x-2">
-                  <StatusBadge
-                    status={app.licenseStatus as 'active' | 'inactive' | 'suspended'}
-                    size="sm"
-                  />
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  {/* Show trial expired badge for TQ */}
+                  {app.slug === 'tq' && tqTrialState?.isTrialExpired ? (
+                    <Badge variant="error" size="sm" className="inline-flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3" />
+                      {t('transcription_usage.trial_expired')}
+                    </Badge>
+                  ) : app.slug === 'tq' && tqTrialState?.isTrial && tqTrialState.remainingDays !== null ? (
+                    <Badge
+                      variant={tqTrialState.remainingDays <= 2 ? 'warning' : 'info'}
+                      size="sm"
+                    >
+                      {t('transcription_usage.expires_in')} {tqTrialState.remainingDays} {t('transcription_usage.days')}
+                    </Badge>
+                  ) : (
+                    <StatusBadge
+                      status={app.licenseStatus as 'active' | 'inactive' | 'suspended' | 'expired'}
+                      size="sm"
+                    />
+                  )}
                   {app.roleInApp && (
                     <Badge variant="secondary" size="sm">
                       {app.roleInApp}

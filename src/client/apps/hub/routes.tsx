@@ -9,6 +9,7 @@ import { Configurations } from './features/configurations/Configurations'
 import { BrandingConfiguration } from './features/configurations/BrandingConfiguration'
 import { CommunicationConfiguration } from './features/configurations/CommunicationConfiguration'
 import { TranscriptionUsageConfiguration } from './features/configurations/TranscriptionUsageConfiguration'
+import { Plans } from './pages/Plans'
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, isLoading, isHydrated } = useAuthStore()
@@ -51,9 +52,12 @@ const AdminRoute: React.FC = () => {
 }
 
 const PublicRoute: React.FC = () => {
-  const { isAuthenticated, isLoading, isHydrated } = useAuthStore()
+  const { isAuthenticated, isHydrated } = useAuthStore()
 
-  if (!isHydrated || isLoading) {
+  // Only wait for hydration, NOT isLoading
+  // Login page handles its own loading state (button spinner, disabled inputs)
+  // Showing loading here would unmount the Login component and clear password field
+  if (!isHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -83,6 +87,10 @@ export const router = createBrowserRouter([
     path: '/',
     element: <ProtectedRoute />,
     children: [
+      {
+        path: 'plans',
+        element: <Plans />
+      },
       {
         path: '/',
         element: <Layout />,

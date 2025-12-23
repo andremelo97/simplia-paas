@@ -21,6 +21,8 @@ import { TenantUsersTab } from '../features/tenants/detail/tabs/TenantUsersTab'
 import { TenantLicensesTab } from '../features/tenants/detail/tabs/TenantLicensesTab'
 import { TenantAddressesTab } from '../features/tenants/detail/tabs/TenantAddressesTab'
 import { TenantContactsTab } from '../features/tenants/detail/tabs/TenantContactsTab'
+import { Settings } from '../features/settings/Settings'
+import { ApiKeysConfiguration } from '../features/settings/ApiKeysConfiguration'
 
 const NotFound: React.FC = () => (
   <div className="min-h-64 flex items-center justify-center">
@@ -91,6 +93,12 @@ export const AppRoutes: React.FC = () => {
         <Route path="transcription-plans" element={<TranscriptionPlansList />} />
         <Route path="transcription-plans/create" element={<CreateTranscriptionPlan />} />
         <Route path="transcription-plans/:id/edit" element={<EditTranscriptionPlan />} />
+
+        {/* Settings routes with drawer layout */}
+        <Route path="settings" element={<Settings />}>
+          <Route index element={<Navigate to="api-keys" replace />} />
+          <Route path="api-keys" element={<ApiKeysConfiguration />} />
+        </Route>
 
         <Route path="*" element={<NotFound />} />
       </Route>

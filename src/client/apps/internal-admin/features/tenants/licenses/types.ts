@@ -31,9 +31,9 @@ export interface TenantLicense {
   status: LicenseStatus
   pricingSnapshot: PricingSnapshot | null
   seatsByUserType: SeatsByUserType[]
-  expiryDate: string | null
+  expiresAt: string | null
   activatedAt: string
-  userLimit: number | null
+  seatsPurchased: number | null
   seatsUsed: number
   seatsAvailable: number | null
   totalSeatsUsed: number

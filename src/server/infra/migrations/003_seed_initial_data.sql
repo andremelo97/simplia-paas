@@ -98,6 +98,7 @@ ON CONFLICT (email) DO NOTHING;
 -- =============================================
 
 -- TQ Pricing Plans (from docs/tq-pricing.md):
+--   Trial: 7h/7dias (Grátis) - 1 Admin - Free trial
 --   Starter: 40h/mês (R$ 119) - 1 Admin
 --   Solo: 80h/mês (R$ 189) - 1 Admin + 1 Operations [Popular]
 --   Duo: 160h/mês (R$ 349) - 1 Admin + 1 Manager, multilingual [Popular]
@@ -107,8 +108,26 @@ ON CONFLICT (email) DO NOTHING;
 -- Transcription strategies:
 --   1. Monolingual (language_detection_enabled=false): Nova-3 with language parameter - $0.0043/min
 --   2. Multilingual (language_detection_enabled=true): Nova-3 with detect_language=true - $0.0052/min
-INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, language_detection_enabled, cost_per_minute_usd, active, description)
+INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, language_detection_enabled, cost_per_minute_usd, is_trial, trial_days, active, description)
 VALUES
+  (
+    'trial',
+    'Trial',
+    420,
+    false,
+    false,
+    'nova-3',
+    false,
+    0.0043,
+    true,
+    7,
+    true,
+    '• 7 horas de transcrição (durante 7 dias)
+• 1 licença Admin inclusa
+• Transcrição monolíngue
+• Acesso a todas as funcionalidades
+• Sem compromisso'
+  ),
   (
     'starter',
     'Starter',
@@ -118,6 +137,8 @@ VALUES
     'nova-3',
     false,
     0.0043,
+    false,
+    NULL,
     true,
     '• 40 horas de transcrição/mês (~2h/dia)
 • 1 licença Admin inclusa
@@ -135,6 +156,8 @@ VALUES
     'nova-3',
     false,
     0.0043,
+    false,
+    NULL,
     true,
     '• 80 horas de transcrição/mês (~4h/dia)
 • 1 Admin + 1 Operations inclusos
@@ -153,6 +176,8 @@ VALUES
     'nova-3',
     true,
     0.0052,
+    false,
+    NULL,
     true,
     '• 160 horas de transcrição/mês (~8h/dia)
 • 1 Admin + 1 Manager inclusos
@@ -171,6 +196,8 @@ VALUES
     'nova-3',
     true,
     0.0052,
+    false,
+    NULL,
     true,
     '• 240 horas de transcrição/mês (~12h/dia)
 • 1 Admin + 1 Manager + 1 Ops inclusos
@@ -191,6 +218,8 @@ VALUES
     'nova-3',
     true,
     0.0052,
+    false,
+    NULL,
     true,
     '• Horas de transcrição personalizadas
 • Permite exceder limite mensal

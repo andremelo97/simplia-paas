@@ -23,6 +23,7 @@ const transcriptionPlansRoutes = require('./api/internal/routes/transcription-pl
 const tenantTranscriptionConfigRoutes = require('./api/internal/routes/tenant-transcription-config');
 const tenantTranscriptionUsageRoutes = require('./api/internal/routes/tenant-transcription-usage');
 const jobsRoutes = require('./api/internal/routes/jobs');
+const apiKeysRoutes = require('./api/internal/routes/api-keys');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
@@ -32,6 +33,7 @@ const deepgramWebhookRoutes = require('./api/tq/routes/deepgram-webhook');
 // Public routes (no auth required)
 const tenantLookupRoutes = require('./api/internal/public/tenant-lookup');
 const publicViewRoutes = require('./api/public/routes/view');
+const provisioningRoutes = require('./api/internal/routes/provisioning');
 
 // Website routes (public, no auth)
 const websiteContactRoutes = require('./api/website/routes/contact');
@@ -149,6 +151,13 @@ internalRouter.use('/metrics', metricsRoutes);
 // Jobs routes (platform-scoped, for internal admins only)
 internalRouter.use('/jobs', jobsRoutes);
 
+// API Keys routes (platform-scoped, for internal admins only)
+internalRouter.use('/api-keys',
+  requireAuth,
+  requirePlatformRole('internal_admin'),
+  apiKeysRoutes
+);
+
 // Configurations routes (platform-scoped, uses authenticated user's tenant)
 internalRouter.use('/configurations/branding', brandingRoutes);
 internalRouter.use('/configurations/communication', communicationRoutes);
@@ -177,6 +186,9 @@ app.use('/api/public', cors(internalCorsOptions), publicViewRoutes);
 
 // Mount website API routes (NO authentication required, for contact form etc.)
 app.use('/api/website/contact', cors(internalCorsOptions), websiteContactRoutes);
+
+// Mount provisioning API routes (API key auth, for N8N/Stripe webhooks)
+app.use('/api/provisioning', cors(internalCorsOptions), provisioningRoutes);
 
 // Mount public quote access route FIRST (NO authentication, NO tenant middleware required)
 // This allows patients to access quotes via /api/tq/v1/pq/:accessToken

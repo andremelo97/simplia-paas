@@ -29,11 +29,17 @@ interface TranscriptionUsageResponse {
       allowsCustomLimits: boolean
       allowsOverage: boolean
       languageDetectionEnabled: boolean
+      isTrial: boolean
+      trialDays: number | null
     }
     config: {
       customMonthlyLimit: number | null
       transcriptionLanguage: string | null
       overageAllowed: boolean
+      planActivatedAt: string | null
+      expiresAt: string | null
+      isTrialExpired: boolean
+      remainingTrialDays: number | null
     }
   }
   meta: {
@@ -86,7 +92,11 @@ class TranscriptionUsageService {
     // x-tenant-id header will be automatically injected by interceptor
     const response = await api.get('/internal/api/v1/configurations/transcription-usage')
 
-    return response.data
+    // Backend returns { success: true, data: {...} }, we need the inner data
+    // But some axios configs may already unwrap, so handle both cases
+    const data = response.data?.data || response.data
+
+    return data
   }
 
   /**

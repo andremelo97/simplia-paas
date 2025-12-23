@@ -44,6 +44,7 @@ export const EditTenantPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [hasTqAccess, setHasTqAccess] = useState(false)
   
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
@@ -64,6 +65,17 @@ export const EditTenantPage: React.FC = () => {
         // Load core tenant data
         const tenantResponse = await tenantsService.getTenant(parseInt(id))
         const tenant = tenantResponse.data
+
+        // Load tenant applications to check TQ access
+        try {
+          const appsResponse = await tenantsService.getTenantApplications(parseInt(id))
+          const tqApp = appsResponse.applications?.find((app: any) => app.slug === 'tq')
+          const hasTq = tqApp && tqApp.status === 'active'
+          setHasTqAccess(hasTq)
+        } catch (err) {
+          // No applications yet, that's fine
+          setHasTqAccess(false)
+        }
 
         // Load transcription plans
         const plansResponse = await transcriptionPlansService.getPlans({ active: true })
@@ -594,11 +606,17 @@ export const EditTenantPage: React.FC = () => {
                       }
                     })
                   ]}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !hasTqAccess}
                 />
-                <p className="text-sm text-gray-500 mt-1">
-                  Users can customize limits and overage in Hub if plan allows
-                </p>
+                {!hasTqAccess ? (
+                  <p className="text-sm text-amber-600 mt-1">
+                    ⚠️ Grant TQ app access first before selecting a transcription plan
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Users can customize limits and overage in Hub if plan allows
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

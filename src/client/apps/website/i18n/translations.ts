@@ -14,12 +14,12 @@ export const translations = {
       automation: 'Automações',
       tqDescription: 'Transcreva consultas e gere cotações automaticamente',
       access: 'Acessar',
-      scheduleDemo: 'Agendar Demonstração'
+      knowApp: 'Conhecer App'
     },
     hero: {
       tagline: 'Onde cuidado encontra conversão',
       subtitle: 'Plataforma SaaS para clínicas de estética. Centralize operações, automatize processos e escale seu negócio.',
-      cta: 'Agendar Demonstração'
+      cta: 'Conhecer App'
     },
     platform: {
       badge: 'Plataforma Multi-App',
@@ -70,7 +70,7 @@ export const translations = {
         badge: 'App LivoCare',
         title: 'TQ - Transcription & Quote',
         description: 'Transforme consultas em cotações profissionais. Grave áudios diretamente no navegador, transcreva com precisão médica e deixe nosso Agente de IA preencher automaticamente seus templates. Envie cotações personalizadas com link seguro, senha e rastreamento de visualizações.',
-        cta1: 'Agendar Demonstração',
+        cta1: 'Ver Planos',
         cta2: 'Acessar TQ',
         videoPlaceholder: 'Vídeo em breve'
       },
@@ -134,6 +134,15 @@ export const translations = {
         hoursSuffix: 'h/mês',
         exceeding: 'Excedente',
         exceedingPrice: 'R$ 2/hora',
+        trial: {
+          badge: 'Teste Grátis',
+          title: 'Experimente por 7 dias grátis',
+          description: 'Teste todos os recursos do TQ sem compromisso. Sem cartão de crédito.',
+          cta: 'Começar Teste Grátis',
+          features: ['7 dias grátis', 'Todos os recursos', 'Sem cartão']
+        },
+        selectPlan: 'Selecionar Plano',
+        contactSales: 'Falar com Vendas',
         plans: [
           {
             name: 'Starter',
@@ -339,20 +348,29 @@ export const translations = {
       cta: 'Começar agora'
     },
     contact: {
-      title: 'Entre em Contato',
-      subtitle: 'Tem alguma dúvida? Fale conosco',
+      badge: 'Fale Conosco',
+      title: 'Vamos conversar?',
+      subtitle: 'Nossa equipe está pronta para ajudar sua clínica a crescer.',
       name: 'Nome',
       namePlaceholder: 'Seu nome completo',
+      company: 'Empresa',
+      companyPlaceholder: 'Nome da sua clínica ou empresa',
       email: 'E-mail',
       emailPlaceholder: 'seu@email.com',
       phone: 'Telefone',
       phonePlaceholder: '(11) 99999-9999',
       message: 'Mensagem',
-      messagePlaceholder: 'Como podemos ajudar?',
+      messagePlaceholder: 'Conte-nos sobre sua necessidade...',
       send: 'Enviar Mensagem',
       sending: 'Enviando...',
-      successMessage: 'Mensagem enviada com sucesso! Entraremos em contato dentro de 24 horas.',
-      errorRequired: 'Todos os campos são obrigatórios'
+      successMessage: 'Mensagem enviada com sucesso! Entraremos em contato em breve.',
+      errorRequired: 'Todos os campos são obrigatórios',
+      responseTime: 'Respondemos em até 24 horas',
+      reasons: {
+        vip: 'Conhecer o plano VIP com recursos ilimitados',
+        automation: 'Solicitar automações e integrações personalizadas',
+        questions: 'Tirar dúvidas sobre a plataforma'
+      }
     },
     footer: {
       tagline: 'Onde cuidado encontra conversão.',
@@ -379,12 +397,12 @@ export const translations = {
       automation: 'Automation',
       tqDescription: 'Transcribe consultations and generate quotes automatically',
       access: 'Sign In',
-      scheduleDemo: 'Schedule Demo'
+      knowApp: 'Discover App'
     },
     hero: {
       tagline: 'Where care meets conversion',
       subtitle: 'SaaS platform for aesthetic clinics. Centralize operations, automate processes, and scale your business.',
-      cta: 'Schedule Demo'
+      cta: 'Discover App'
     },
     platform: {
       badge: 'Multi-App Platform',
@@ -435,7 +453,7 @@ export const translations = {
         badge: 'LivoCare App',
         title: 'TQ - Transcription & Quote',
         description: 'Transform consultations into professional quotes. Record audio directly in the browser, transcribe with medical-grade accuracy, and let our AI Agent automatically fill your templates. Send personalized quotes with secure links, passwords, and view tracking.',
-        cta1: 'Schedule Demo',
+        cta1: 'View Plans',
         cta2: 'Access TQ',
         videoPlaceholder: 'Video coming soon'
       },
@@ -499,6 +517,15 @@ export const translations = {
         hoursSuffix: 'h/month',
         exceeding: 'Exceeding',
         exceedingPrice: 'R$ 2/hour',
+        trial: {
+          badge: 'Free Trial',
+          title: 'Try it free for 7 days',
+          description: 'Test all TQ features with no commitment. No credit card required.',
+          cta: 'Start Free Trial',
+          features: ['7 days free', 'All features', 'No credit card']
+        },
+        selectPlan: 'Select Plan',
+        contactSales: 'Contact Sales',
         plans: [
           {
             name: 'Starter',
@@ -704,20 +731,29 @@ export const translations = {
       cta: 'Get started'
     },
     contact: {
-      title: 'Contact Us',
-      subtitle: 'Have questions? Get in touch',
+      badge: 'Contact Us',
+      title: 'Let\'s talk?',
+      subtitle: 'Our team is ready to help your clinic grow.',
       name: 'Name',
       namePlaceholder: 'Your full name',
+      company: 'Company',
+      companyPlaceholder: 'Your clinic or company name',
       email: 'Email',
       emailPlaceholder: 'your@email.com',
       phone: 'Phone',
       phonePlaceholder: '+1 (555) 123-4567',
       message: 'Message',
-      messagePlaceholder: 'How can we help?',
+      messagePlaceholder: 'Tell us about your needs...',
       send: 'Send Message',
       sending: 'Sending...',
-      successMessage: 'Message sent successfully! We will contact you within 24 hours.',
-      errorRequired: 'All fields are required'
+      successMessage: 'Message sent successfully! We will contact you soon.',
+      errorRequired: 'All fields are required',
+      responseTime: 'We respond within 24 hours',
+      reasons: {
+        vip: 'Learn about the VIP plan with unlimited resources',
+        automation: 'Request custom automations and integrations',
+        questions: 'Ask questions about the platform'
+      }
     },
     footer: {
       tagline: 'Where care meets conversion.',

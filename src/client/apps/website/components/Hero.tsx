@@ -87,9 +87,12 @@ export function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
         >
-          <button className="btn-primary text-lg px-10 py-4">
+          <a
+            href="#app"
+            className="btn-primary text-lg px-10 py-4 inline-block"
+          >
             {t.hero.cta}
-          </button>
+          </a>
         </motion.div>
       </div>
 

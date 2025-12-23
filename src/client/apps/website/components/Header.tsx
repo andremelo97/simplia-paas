@@ -198,9 +198,12 @@ export function Header() {
               {t.nav.access}
             </a>
 
-            {/* Schedule Demo button - Desktop only (lg and up) */}
-            <button className="hidden lg:block px-4 py-2 rounded-lg bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white text-sm font-medium hover:opacity-90 transition-opacity">
-              {t.nav.scheduleDemo}
+            {/* Conhecer App button - Desktop only (lg and up) */}
+            <button
+              onClick={() => scrollTo('app')}
+              className="hidden lg:block px-4 py-2 rounded-lg bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+            >
+              {t.nav.knowApp}
             </button>
 
             {/* Hamburger Menu - Mobile and Tablet (below lg) */}
@@ -311,12 +314,12 @@ export function Header() {
               {/* Divider */}
               <div className="border-t border-gray-100 my-2" />
 
-              {/* Schedule Demo button */}
+              {/* Conhecer App button */}
               <button
                 className="mx-4 mt-2 px-4 py-3 rounded-lg bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-medium hover:shadow-lg hover:shadow-[#B725B7]/30 active:scale-[0.98] transition-all duration-200"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={() => scrollTo('app')}
               >
-                {t.nav.scheduleDemo}
+                {t.nav.knowApp}
               </button>
             </div>
           </div>

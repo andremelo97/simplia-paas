@@ -1,8 +1,8 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { Check, X, ArrowLeft, Mail, Zap, Crown, Rocket } from 'lucide-react'
+import { Check, X, Home, LogIn, Mail, Zap, Crown, Rocket } from 'lucide-react'
 import { Button, Card } from '@client/common/ui'
+import { useAuthStore } from '../store/auth'
 
 interface PlanFeature {
   name: string
@@ -13,7 +13,7 @@ interface PlanFeature {
 
 export const Plans: React.FC = () => {
   const { t } = useTranslation('hub')
-  const navigate = useNavigate()
+  const { isAuthenticated } = useAuthStore()
 
   const plans = [
     {
@@ -63,8 +63,12 @@ export const Plans: React.FC = () => {
     window.location.href = 'mailto:contato@livocare.ai?subject=Interesse em Plano de Transcrição'
   }
 
-  const handleBack = () => {
-    navigate('/')
+  const handleGoToHub = () => {
+    window.location.href = 'https://hub.livocare.ai'
+  }
+
+  const handleGoToLogin = () => {
+    window.location.href = 'https://hub.livocare.ai/login'
   }
 
   return (
@@ -72,13 +76,38 @@ export const Plans: React.FC = () => {
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('plans.back_to_hub')}
-          </button>
+          <div className="flex items-center justify-between mb-6">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <img
+                src="https://frfrxusmzrhgfkwclxon.supabase.co/storage/v1/object/public/public-assets//logos/tq-logo-purple.png"
+                alt="TQ"
+                className="h-10"
+              />
+            </div>
+
+            {/* Action Button */}
+            {isAuthenticated ? (
+              <Button
+                variant="outline"
+                onClick={handleGoToHub}
+                className="flex items-center gap-2"
+              >
+                <Home className="h-4 w-4" />
+                {t('plans.go_to_hub')}
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={handleGoToLogin}
+                className="flex items-center gap-2"
+              >
+                <LogIn className="h-4 w-4" />
+                {t('plans.login')}
+              </Button>
+            )}
+          </div>
+
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900">
               {t('plans.title')}

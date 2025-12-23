@@ -2,7 +2,16 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { Contact } from '../../components/Contact'
-import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronLeft, ChevronRight, Code, Globe, ArrowRight, Star } from 'lucide-react'
+import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronLeft, ChevronRight, Code, Globe, ArrowRight, Star, Gift, Sparkles } from 'lucide-react'
+
+// Stripe Checkout URLs
+const CHECKOUT_URLS: Record<string, string> = {
+  trial: 'https://buy.stripe.com/test_eVq28r5LWchW3zU7I84Vy01',
+  starter: 'https://buy.stripe.com/test_3cI3cvfmw4PudaubYo4Vy00',
+  solo: 'https://buy.stripe.com/test_dRmbJ1deoeq4daufaA4Vy02',
+  duo: 'https://buy.stripe.com/test_5kQ3cv8Y85Ty9Yi6E44Vy03',
+  practice: 'https://buy.stripe.com/test_eVqfZhb6geq41rM3rS4Vy04'
+}
 
 export function TQPage() {
   const { t } = useLanguage()
@@ -66,7 +75,7 @@ export function TQPage() {
               </p>
               <div className="flex flex-wrap gap-4">
                 <a
-                  href="#contact"
+                  href="#pricing"
                   className="px-6 py-3 bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
                 >
                   {t.tqPage.hero.cta1}
@@ -383,6 +392,60 @@ export function TQPage() {
             </p>
           </motion.div>
 
+          {/* Trial Banner */}
+          <motion.div
+            className="mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#5ED6CE] via-[#0a8a80] to-[#5ED6CE] p-[2px]">
+              <div className="relative rounded-2xl bg-white px-6 py-8 md:px-12 md:py-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-[#5ED6CE] to-[#0a8a80] rounded-2xl flex items-center justify-center flex-shrink-0">
+                      <Gift className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-3 py-0.5 bg-[#5ED6CE]/20 text-[#0a8a80] text-sm font-bold rounded-full">
+                          {t.tqPage.pricing.trial.badge}
+                        </span>
+                        <Sparkles className="w-4 h-4 text-[#5ED6CE]" />
+                      </div>
+                      <h3 className="text-xl md:text-2xl font-bold text-gray-900">
+                        {t.tqPage.pricing.trial.title}
+                      </h3>
+                      <p className="text-gray-600 mt-1">
+                        {t.tqPage.pricing.trial.description}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                      {t.tqPage.pricing.trial.features.map((feature: string, i: number) => (
+                        <span key={i} className="flex items-center gap-1">
+                          <Check className="w-4 h-4 text-[#5ED6CE]" />
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                    <a
+                      href={CHECKOUT_URLS.trial}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-8 py-3 bg-gradient-to-r from-[#5ED6CE] to-[#0a8a80] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap flex items-center gap-2"
+                    >
+                      {t.tqPage.pricing.trial.cta}
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Pricing Cards Carousel */}
           <div className="relative mb-8 md:mb-16">
             {/* Navigation Arrows */}
@@ -468,7 +531,7 @@ export function TQPage() {
                               {plan.users}
                             </div>
                           </div>
-                          <ul className="space-y-3">
+                          <ul className="space-y-3 mb-6">
                             {plan.features.map((feature, j) => (
                               <li key={j} className={`flex items-start gap-3 ${isWhiteText ? 'text-white/90' : 'text-gray-600'}`}>
                                 <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isWhiteText ? 'text-white' : 'text-[#5ED6CE]'}`} />
@@ -476,6 +539,33 @@ export function TQPage() {
                               </li>
                             ))}
                           </ul>
+                          {/* CTA Button */}
+                          {isVIP ? (
+                            <button
+                              onClick={() => {
+                                const element = document.getElementById('contact')
+                                if (element) element.scrollIntoView({ behavior: 'smooth' })
+                              }}
+                              className="w-full py-3 bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                            >
+                              {t.tqPage.pricing.contactSales}
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
+                          ) : (
+                            <a
+                              href={CHECKOUT_URLS[plan.name.toLowerCase()]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`w-full py-3 font-semibold rounded-lg transition-opacity flex items-center justify-center gap-2 ${
+                                isWhiteText
+                                  ? 'bg-white text-gray-900 hover:bg-gray-100'
+                                  : 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white hover:opacity-90'
+                              }`}
+                            >
+                              {t.tqPage.pricing.selectPlan}
+                              <ArrowRight className="w-4 h-4" />
+                            </a>
+                          )}
                         </div>
                       </div>
                     )
@@ -538,7 +628,7 @@ export function TQPage() {
                                   {plan.users}
                                 </div>
                               </div>
-                              <ul className="space-y-3">
+                              <ul className="space-y-3 mb-6">
                                 {plan.features.map((feature, j) => (
                                   <li key={j} className={`flex items-start gap-3 ${isWhiteText ? 'text-white/90' : 'text-gray-600'}`}>
                                     <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isWhiteText ? 'text-white' : 'text-[#5ED6CE]'}`} />
@@ -546,6 +636,20 @@ export function TQPage() {
                                   </li>
                                 ))}
                               </ul>
+                              {/* CTA Button */}
+                              <a
+                                href={CHECKOUT_URLS[plan.name.toLowerCase()]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`w-full py-3 font-semibold rounded-lg transition-opacity flex items-center justify-center gap-2 ${
+                                  isWhiteText
+                                    ? 'bg-white text-gray-900 hover:bg-gray-100'
+                                    : 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white hover:opacity-90'
+                                }`}
+                              >
+                                {t.tqPage.pricing.selectPlan}
+                                <ArrowRight className="w-4 h-4" />
+                              </a>
                             </div>
                           )
                         })}
@@ -607,7 +711,7 @@ export function TQPage() {
                                   {plan.users}
                                 </div>
                               </div>
-                              <ul className="space-y-3">
+                              <ul className="space-y-3 mb-6">
                                 {plan.features.map((feature, j) => (
                                   <li key={j} className={`flex items-start gap-3 ${isWhiteText ? 'text-white/90' : 'text-gray-600'}`}>
                                     <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isWhiteText ? 'text-white' : 'text-[#5ED6CE]'}`} />
@@ -615,6 +719,20 @@ export function TQPage() {
                                   </li>
                                 ))}
                               </ul>
+                              {/* CTA Button */}
+                              <a
+                                href={CHECKOUT_URLS[plan.name.toLowerCase()]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`w-full py-3 font-semibold rounded-lg transition-opacity flex items-center justify-center gap-2 ${
+                                  isWhiteText
+                                    ? 'bg-white text-gray-900 hover:bg-gray-100'
+                                    : 'bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white hover:opacity-90'
+                                }`}
+                              >
+                                {t.tqPage.pricing.selectPlan}
+                                <ArrowRight className="w-4 h-4" />
+                              </a>
                             </div>
                           )
                         })}
@@ -657,7 +775,7 @@ export function TQPage() {
                                   {plan.users}
                                 </div>
                               </div>
-                              <ul className="space-y-3">
+                              <ul className="space-y-3 mb-6">
                                 {plan.features.map((feature, j) => (
                                   <li key={j} className="flex items-start gap-3 text-gray-600">
                                     <Check className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#5ED6CE]" />
@@ -665,6 +783,17 @@ export function TQPage() {
                                   </li>
                                 ))}
                               </ul>
+                              {/* CTA Button - VIP goes to contact */}
+                              <button
+                                onClick={() => {
+                                  const element = document.getElementById('contact')
+                                  if (element) element.scrollIntoView({ behavior: 'smooth' })
+                                }}
+                                className="w-full py-3 bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                              >
+                                {t.tqPage.pricing.contactSales}
+                                <ArrowRight className="w-4 h-4" />
+                              </button>
                             </div>
                           )
                         })}

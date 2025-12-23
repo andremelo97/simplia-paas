@@ -84,13 +84,14 @@ export const router = createBrowserRouter([
     ]
   },
   {
+    // Plans page is public - can be accessed without authentication
+    path: '/plans',
+    element: <Plans />
+  },
+  {
     path: '/',
     element: <ProtectedRoute />,
     children: [
-      {
-        path: 'plans',
-        element: <Plans />
-      },
       {
         path: '/',
         element: <Layout />,

@@ -302,32 +302,49 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         )}
       </div>
 
-      {/* Non-Premium Info - VIP UPGRADE CARD (First thing user sees) */}
+      {/* Upgrade Card (for non-premium plans) */}
       {!hasAnyPremiumFeature && (
-        <Alert variant="gradient">
-          <AlertCircle className="h-5 w-5 text-[#E91E63] mt-0.5" />
-          <div className="flex-1">
-            <AlertTitle>{t('transcription_usage.upgrade_title')}</AlertTitle>
-            <AlertDescription>
-              <p className="mb-3">{t('transcription_usage.upgrade_description')}</p>
-              <ul className="space-y-2 mb-3">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
-                  <span>{t('transcription_usage.upgrade_benefits.custom_limit')}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
-                  <span>{t('transcription_usage.upgrade_benefits.overage')}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
-                  <span>{t('transcription_usage.upgrade_benefits.priority_support')}</span>
-                </li>
-              </ul>
-              <p className="text-xs text-gray-600">{t('transcription_usage.upgrade_cta')}</p>
-            </AlertDescription>
+        <Card className="relative overflow-hidden">
+          {/* Gradient Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#B725B7] via-[#E91E63] to-[#B725B7] opacity-5"></div>
+
+          <div className="relative p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {t('transcription_usage.upgrade_title')}
+                </h3>
+                <p className="text-gray-600 mb-4">{t('transcription_usage.upgrade_description')}</p>
+                <ul className="space-y-2 mb-4">
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
+                    <span>{t('transcription_usage.upgrade_benefits.custom_limit')}</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
+                    <span>{t('transcription_usage.upgrade_benefits.overage')}</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-700">
+                    <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
+                    <span>{t('transcription_usage.upgrade_benefits.priority_support')}</span>
+                  </li>
+                </ul>
+                <Button
+                  variant="primary"
+                  onClick={() => window.open('/plans', '_blank')}
+                  className="inline-flex items-center gap-2"
+                >
+                  {t('transcription_usage.view_plans')}
+                </Button>
+              </div>
+            </div>
           </div>
-        </Alert>
+        </Card>
       )}
 
       {/* Current Month Usage */}

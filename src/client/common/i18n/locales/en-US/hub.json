@@ -218,13 +218,13 @@
     "allow_overage": "Allow overage usage",
     "overage_description": "If enabled, you can continue transcribing beyond your monthly limit. Additional charges may apply.",
     "upgrade_title": "Want to upgrade your plan?",
-    "upgrade_description": "Upgrade to a VIP plan and unlock:",
+    "upgrade_description": "Upgrade to a higher plan and unlock exclusive features:",
     "upgrade_benefits": {
       "custom_limit": "Change monthly limit as you wish",
       "overage": "Allow overage without blocks",
       "priority_support": "Priority support"
     },
-    "upgrade_cta": "Contact your account manager for more information.",
+    "view_plans": "View Available Plans",
     "usage_history": "Usage History (Last 6 Months)",
     "last_6_months": "Last 6 months",
     "no_history": "No usage history available",
@@ -232,7 +232,6 @@
     "minutes_used": "Minutes Used",
     "usage_percent": "Usage %",
     "minutes": "minutes",
-    "vip_only": "VIP plan only",
     "total_cost": "Total Cost (USD)",
     "transcriptions": "Transcriptions",
     "detailed_usage": "Detailed Usage",
@@ -265,7 +264,8 @@
   "plans": {
     "title": "Choose your plan",
     "subtitle": "Select the ideal plan for your transcription needs",
-    "back_to_hub": "Back to Hub",
+    "go_to_hub": "Go to Hub",
+    "login": "Login",
     "per_month": "/month",
     "custom_price": "Custom pricing",
     "most_popular": "Most Popular",

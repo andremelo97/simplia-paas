@@ -891,28 +891,32 @@ Secure file storage for audio files with tenant isolation.
 # Environment Variables
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-SUPABASE_STORAGE_BUCKET=tq-audio-files
-SUPABASE_STORAGE_PUBLIC_URL=https://your-project.supabase.co/storage/v1/s3
+# Note: Bucket names are no longer needed - per-tenant buckets created automatically
 ```
 
-#### Storage Structure
+#### Storage Structure (Per-Tenant Buckets)
+Each tenant has a dedicated bucket created during provisioning:
+
 ```
-tq-audio-files/
-├── tenant_1/
+tenant-acme-clinic/           # Bucket for tenant "acme-clinic"
+├── audio-files/
 │   ├── {transcription-uuid-1}.mp3
 │   └── {transcription-uuid-2}.webm
-├── tenant_2/
-│   ├── {transcription-uuid-3}.wav
-│   └── {transcription-uuid-4}.mp4
-└── tenant_n/
-    └── ...
+└── branding/
+    ├── logo.png
+    └── favicon.ico
+
+tenant-med-center/            # Bucket for tenant "med-center"
+├── audio-files/
+│   └── {transcription-uuid-3}.wav
+└── branding/
+    └── logo.png
 ```
 
 #### URL Generation
-For external API access (like Deepgram):
-- **Signed URLs**: 24-hour expiry for external services
-- **Public URLs**: For internal application access
-- **Security**: Automatic tenant isolation in file paths
+- **Public URLs**: Permanent, non-expiring URLs for all files
+- **Complete Isolation**: Each tenant has own bucket (LGPD/HIPAA compliant)
+- **Auto-Creation**: Buckets created automatically during tenant provisioning
 
 #### File Management
 ```javascript

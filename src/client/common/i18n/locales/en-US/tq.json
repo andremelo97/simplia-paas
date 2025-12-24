@@ -874,5 +874,106 @@
     "quota_exceeded_message": "You have reached your monthly limit of {{limit}} minutes. Cannot start new transcription until next month. Contact your account manager to increase your limit.",
     "quota_warning_title": "Warning: Quota Near Limit",
     "quota_warning_message": "You have used {{used}} of {{limit}} minutes ({{percent}}% of your monthly quota). Consider managing your usage or increasing your limit."
+  },
+  "onboarding": {
+    "title": "Get Started with TQ",
+    "skip": "Skip for now",
+    "back": "Back",
+    "next": "Next",
+    "complete_button": "Complete",
+    "steps": {
+      "welcome": "Welcome",
+      "transcription": "Transcription",
+      "templates": "Templates",
+      "landing_pages": "LP",
+      "email_config": "Email",
+      "workflow": "Workflow",
+      "complete": "Ready!"
+    },
+    "welcome": {
+      "title": "Welcome to TQ!",
+      "description": "TQ helps you transcribe consultations, manage patients, and create professional quotes and clinical reports. Let's learn how it works!",
+      "ready_title": "Ready to use!",
+      "ready_description": "This quick tour will show you the main features. It takes about 2 minutes.",
+      "features_title": "What you can do:",
+      "feature1": "Record and transcribe consultations",
+      "feature2": "Manage patient records",
+      "feature3": "Create quotes with AI assistance",
+      "feature4": "Generate clinical reports",
+      "feature5": "Share quotes with custom landing pages"
+    },
+    "transcription": {
+      "title": "Audio Transcription",
+      "description": "Record your consultations or upload audio files, and TQ will automatically transcribe them into text using AI.",
+      "how_it_works": "How it works:",
+      "step1_title": "Start Recording",
+      "step1_desc": "Click \"Start Transcribing\" or upload an existing audio file.",
+      "step2_title": "AI Transcription",
+      "step2_desc": "The audio is automatically converted to text.",
+      "step3_title": "Create Session",
+      "step3_desc": "Link the transcription to a patient to create a session.",
+      "try_now": "Try Transcription Now"
+    },
+    "templates": {
+      "title": "Document Templates",
+      "description": "Templates are pre-made document structures that AI fills in automatically using your transcription data.",
+      "types": "Available templates:",
+      "quote": "Quotes",
+      "quote_desc": "Treatment proposals with pricing",
+      "report": "Clinical Reports",
+      "report_desc": "Medical documentation",
+      "syntax_title": "Template Syntax:",
+      "syntax_placeholder": "AI fills from transcription",
+      "syntax_variable": "System data (patient, date)",
+      "syntax_instruction": "AI guidance (removed in output)",
+      "guide_hint": "A complete guide is available on the template create/edit page.",
+      "view_templates": "View Templates"
+    },
+    "landing_pages": {
+      "title": "Public Quote Pages",
+      "description": "Create beautiful landing pages to share quotes with your patients. They can view the quote details without needing to log in.",
+      "features_title": "Features:",
+      "feature1": "Drag-and-drop page builder",
+      "feature2": "Custom branding and colors",
+      "feature3": "Password protection",
+      "feature4": "Shareable links via email",
+      "hint": "This is an advanced feature. You can create up to 3 templates and customize them with the visual editor.",
+      "view_templates": "View Landing Page Templates"
+    },
+    "email_config": {
+      "title": "Email Template",
+      "description": "Customize the email template used when sending quotes to patients. Add your logo, colors, and contact information.",
+      "customize_title": "You can customize:",
+      "customize1": "Header and button colors",
+      "customize2": "Company logo",
+      "customize3": "Contact information",
+      "customize4": "Social media links",
+      "hub_note_title": "Branding from Hub",
+      "hub_note_description": "Logo and brand colors are configured in Hub. The email template will use those settings automatically.",
+      "configure_now": "Configure Email Template"
+    },
+    "workflow": {
+      "title": "Complete Workflow",
+      "description": "Here's how everything connects:",
+      "step1": "Record or upload audio",
+      "step2": "Select or create patient",
+      "step3": "Choose template & let AI fill it",
+      "step4": "Review, edit & send to patient"
+    },
+    "complete": {
+      "title": "You're Ready!",
+      "description": "You now know the basics of TQ. Start by creating your first transcription or adding patients.",
+      "start_transcription": "Start Transcription",
+      "add_patient": "Add Patient"
+    },
+    "resume": {
+      "title": "Continue Setup?",
+      "description": "Resume the setup assistant when ready.",
+      "button": "Resume",
+      "dismiss": "Dismiss"
+    }
+  },
+  "header": {
+    "help_tooltip": "Setup Assistant"
   }
 }

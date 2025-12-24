@@ -1803,7 +1803,7 @@ router.get('/:id/applications', async (req, res) => {
         slug: app.slug,
         name: app.name,
         status: app.tenantStatus || app.status,
-        userLimit: app.maxUsers,
+        seatsPurchased: app.seatsPurchased,
         seatsUsed: app.seatsUsed || 0,
         expiresAt: app.expiresAt
       })),
@@ -2192,11 +2192,11 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
     const updatedLicense = await license.update(updates);
     
     console.log(`✅ [Platform] License adjusted: ${appSlug} for tenant ${tenantId}`, {
-      userLimit: updatedLicense.maxUsers,
+      seatsPurchased: updatedLicense.seatsPurchased,
       seatsUsed: updatedLicense.seatsUsed,
-      available: (updatedLicense.maxUsers || 0) - (updatedLicense.seatsUsed || 0)
+      available: (updatedLicense.seatsPurchased || 0) - (updatedLicense.seatsUsed || 0)
     });
-    
+
     res.json({
       success: true,
       meta: {
@@ -2209,9 +2209,9 @@ router.put('/:id/applications/:appSlug/adjust', async (req, res) => {
           tenantId: tenantId,
           applicationSlug: appSlug,
           applicationName: application.name,
-          userLimit: updatedLicense.maxUsers,
+          seatsPurchased: updatedLicense.seatsPurchased,
           seatsUsed: updatedLicense.seatsUsed,
-          seatsAvailable: (updatedLicense.maxUsers || 0) - (updatedLicense.seatsUsed || 0),
+          seatsAvailable: (updatedLicense.seatsPurchased || 0) - (updatedLicense.seatsUsed || 0),
           status: updatedLicense.status,
           expiresAt: updatedLicense.expiresAt,
           updatedAt: updatedLicense.updatedAt
@@ -2382,18 +2382,18 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
       
       // Check seat availability
       const seatsUsed = license.seatsUsed || 0;
-      const userLimit = license.maxUsers;
-      const seatsAvailable = userLimit ? (userLimit - seatsUsed) : Infinity;
+      const seatsPurchased = license.seatsPurchased;
+      const seatsAvailable = seatsPurchased ? (seatsPurchased - seatsUsed) : Infinity;
       
       if (seatsAvailable <= 0) {
         await database.query('ROLLBACK');
         return res.status(422).json({
           error: 'Validation Error',
-          message: `No seats available for '${appSlug}'. Currently using ${seatsUsed}/${userLimit} seats.`,
+          message: `No seats available for '${appSlug}'. Currently using ${seatsUsed}/${seatsPurchased} seats.`,
           details: {
             reason: 'NO_SEATS_AVAILABLE',
             seatsUsed,
-            userLimit,
+            seatsPurchased,
             seatsAvailable: 0
           }
         });
@@ -2438,7 +2438,7 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
       
       await database.query('COMMIT');
       
-      console.log(`✅ [Platform] Access granted: ${appSlug} to user ${userId}, seats: ${seatsUsed + 1}/${userLimit}`);
+      console.log(`✅ [Platform] Access granted: ${appSlug} to user ${userId}, seats: ${seatsUsed + 1}/${seatsPurchased}`);
       
       res.status(201).json({
         success: true,
@@ -2599,7 +2599,7 @@ router.post('/:id/users/:userId/applications/:appSlug/revoke', async (req, res) 
       
       // Get updated license info
       const license = await TenantApplication.findByTenantAndApplication(tenantId, application.id);
-      const seatsRemaining = license.maxUsers ? (license.maxUsers - (license.seatsUsed - 1)) : Infinity;
+      const seatsRemaining = license.seatsPurchased ? (license.seatsPurchased - (license.seatsUsed - 1)) : Infinity;
       
       await database.query('COMMIT');
       

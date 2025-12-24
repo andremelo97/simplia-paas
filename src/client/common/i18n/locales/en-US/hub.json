@@ -319,7 +319,8 @@
     }
   },
   "header": {
-    "user_settings_tooltip": "User Settings"
+    "user_settings_tooltip": "User Settings",
+    "help_tooltip": "Setup Assistant"
   },
   "user_settings": {
     "title": "User Settings",
@@ -338,6 +339,62 @@
         "passwords_dont_match": "Passwords don't match",
         "same_as_current": "New password must be different from current password"
       }
+    }
+  },
+  "onboarding": {
+    "title": "Get Started with Hub",
+    "skip": "Skip for now",
+    "back": "Back",
+    "next": "Next",
+    "complete_button": "Complete",
+    "steps": {
+      "welcome": "Welcome",
+      "branding": "Branding",
+      "communication": "Email",
+      "complete": "Ready!"
+    },
+    "welcome": {
+      "title": "Welcome to Hub!",
+      "description": "Welcome! This is your central hub to manage your organization.",
+      "intro": "Hub is your central management portal. From here you can access all your applications, configure your organization settings, and manage your team.",
+      "ready_title": "All set! You can start using it right away.",
+      "ready_description": "Your system is 100% functional. The following settings are optional — use them to customize the system with your brand.",
+      "hint": "You can skip this wizard at any time and configure these settings later.",
+      "features_title": "What you can do:",
+      "feature1": "Access all your licensed applications",
+      "feature2": "Customize branding with your logo and colors",
+      "feature3": "Configure email settings for notifications",
+      "feature4": "Monitor transcription usage and quotas"
+    },
+    "branding": {
+      "title": "Customize Your Brand",
+      "description": "Upload your company logo and set your brand colors. This will be displayed on public quotes and reports sent to your clients.",
+      "features": "You can configure:",
+      "feature1": "Company logo",
+      "feature2": "Primary and secondary colors",
+      "feature3": "Company name display",
+      "configure_now": "Configure Branding Now"
+    },
+    "communication": {
+      "title": "Email Configuration",
+      "description": "Set up your SMTP server to send emails to clients. This allows you to send quotes and reports directly from the system.",
+      "features": "Email features:",
+      "feature1": "Send quotes via email",
+      "feature2": "Send clinical reports",
+      "feature3": "Custom sender name and email",
+      "configure_now": "Configure Email Now"
+    },
+    "complete": {
+      "title": "You're All Set!",
+      "description": "Your Hub is ready to use. You can always access these settings from the Configurations menu in the sidebar.",
+      "go_settings": "Go to Settings",
+      "go_home": "Go to Home"
+    },
+    "resume": {
+      "title": "Continue Setup?",
+      "description": "Resume the setup assistant when ready.",
+      "button": "Resume",
+      "dismiss": "Dismiss"
     }
   }
 }

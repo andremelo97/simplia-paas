@@ -536,6 +536,33 @@ COMMENT ON COLUMN public.api_keys.last_used_at IS 'Last time this key was used (
 COMMENT ON COLUMN public.api_keys.expires_at IS 'Expiration date - NULL means never expires';
 
 -- =============================================
+-- USER ONBOARDING TRACKING
+-- =============================================
+
+-- Onboarding wizard completion tracking (admin-only feature)
+-- Separate table allows scalability for new apps without modifying users table
+CREATE TABLE IF NOT EXISTS public.user_onboarding (
+  id SERIAL PRIMARY KEY,
+  user_id_fk INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  app_slug VARCHAR(50) NOT NULL, -- 'hub', 'tq', 'crm', etc.
+  completed BOOLEAN NOT NULL DEFAULT false,
+  completed_at TIMESTAMPTZ,
+  skipped BOOLEAN NOT NULL DEFAULT false,
+  skipped_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+  UNIQUE(user_id_fk, app_slug)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_onboarding_user_id ON public.user_onboarding(user_id_fk);
+CREATE INDEX IF NOT EXISTS idx_user_onboarding_app_slug ON public.user_onboarding(app_slug);
+
+COMMENT ON TABLE public.user_onboarding IS 'Onboarding wizard completion tracking per user per app (admin-only feature)';
+COMMENT ON COLUMN public.user_onboarding.user_id_fk IS 'User who completed/skipped the onboarding';
+COMMENT ON COLUMN public.user_onboarding.app_slug IS 'Application identifier: hub, tq, crm, automation, etc.';
+COMMENT ON COLUMN public.user_onboarding.completed IS 'Whether user completed all wizard steps';
+COMMENT ON COLUMN public.user_onboarding.skipped IS 'Whether user skipped the wizard';
+
+-- =============================================
 -- COMMENTS FOR DOCUMENTATION
 -- =============================================
 

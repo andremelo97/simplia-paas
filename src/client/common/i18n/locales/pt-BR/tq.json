@@ -874,5 +874,106 @@
     "quota_exceeded_message": "Você atingiu seu limite mensal de {{limit}} minutos. Não é possível iniciar nova transcrição até o próximo mês. Entre em contato com seu gerente de conta para aumentar seu limite.",
     "quota_warning_title": "Atenção: Cota Próxima do Limite",
     "quota_warning_message": "Você usou {{used}} de {{limit}} minutos ({{percent}}% da sua cota mensal). Considere gerenciar seu uso ou aumentar seu limite."
+  },
+  "onboarding": {
+    "title": "Primeiros Passos no TQ",
+    "skip": "Pular por agora",
+    "back": "Voltar",
+    "next": "Próximo",
+    "complete_button": "Concluir",
+    "steps": {
+      "welcome": "Boas-vindas",
+      "transcription": "Transcrição",
+      "templates": "Templates",
+      "landing_pages": "LP",
+      "email_config": "E-mail",
+      "workflow": "Fluxo",
+      "complete": "Pronto!"
+    },
+    "welcome": {
+      "title": "Bem-vindo ao TQ!",
+      "description": "O TQ ajuda você a transcrever consultas, gerenciar pacientes e criar orçamentos e relatórios clínicos profissionais. Vamos aprender como funciona!",
+      "ready_title": "Pronto para usar!",
+      "ready_description": "Este tour rápido mostrará as principais funcionalidades. Leva cerca de 2 minutos.",
+      "features_title": "O que você pode fazer:",
+      "feature1": "Gravar e transcrever consultas",
+      "feature2": "Gerenciar registros de pacientes",
+      "feature3": "Criar orçamentos com assistência de IA",
+      "feature4": "Gerar relatórios clínicos",
+      "feature5": "Compartilhar orçamentos com landing pages personalizadas"
+    },
+    "transcription": {
+      "title": "Transcrição de Áudio",
+      "description": "Grave suas consultas ou faça upload de arquivos de áudio, e o TQ irá transcrever automaticamente em texto usando IA.",
+      "how_it_works": "Como funciona:",
+      "step1_title": "Iniciar Gravação",
+      "step1_desc": "Clique em \"Iniciar Transcrição\" ou faça upload de um arquivo de áudio existente.",
+      "step2_title": "Transcrição IA",
+      "step2_desc": "O áudio é automaticamente convertido em texto.",
+      "step3_title": "Criar Sessão",
+      "step3_desc": "Vincule a transcrição a um paciente para criar uma sessão.",
+      "try_now": "Experimentar Transcrição Agora"
+    },
+    "templates": {
+      "title": "Templates de Documentos",
+      "description": "Templates são estruturas de documentos pré-definidas que a IA preenche automaticamente usando os dados da sua transcrição.",
+      "types": "Templates disponíveis:",
+      "quote": "Orçamentos",
+      "quote_desc": "Propostas de tratamento com preços",
+      "report": "Relatórios Clínicos",
+      "report_desc": "Documentação médica",
+      "syntax_title": "Sintaxe do Template:",
+      "syntax_placeholder": "IA preenche da transcrição",
+      "syntax_variable": "Dados do sistema (paciente, data)",
+      "syntax_instruction": "Orientação para IA (removido no resultado)",
+      "guide_hint": "Um guia completo está disponível na página de criar/editar template.",
+      "view_templates": "Ver Templates"
+    },
+    "landing_pages": {
+      "title": "Páginas de Orçamento Público",
+      "description": "Crie páginas bonitas para compartilhar orçamentos com seus pacientes. Eles podem ver os detalhes do orçamento sem precisar fazer login.",
+      "features_title": "Recursos:",
+      "feature1": "Editor de página arrastar e soltar",
+      "feature2": "Cores e marca personalizadas",
+      "feature3": "Proteção por senha",
+      "feature4": "Links compartilháveis via e-mail",
+      "hint": "Este é um recurso avançado. Você pode criar até 3 templates e personalizá-los com o editor visual.",
+      "view_templates": "Ver Templates de Landing Page"
+    },
+    "email_config": {
+      "title": "Template de E-mail",
+      "description": "Personalize o template de e-mail usado ao enviar orçamentos para pacientes. Adicione seu logo, cores e informações de contato.",
+      "customize_title": "Você pode personalizar:",
+      "customize1": "Cores do cabeçalho e botões",
+      "customize2": "Logo da empresa",
+      "customize3": "Informações de contato",
+      "customize4": "Links de redes sociais",
+      "hub_note_title": "Marca do Hub",
+      "hub_note_description": "Logo e cores da marca são configurados no Hub. O template de e-mail usará essas configurações automaticamente.",
+      "configure_now": "Configurar Template de E-mail"
+    },
+    "workflow": {
+      "title": "Fluxo Completo",
+      "description": "Veja como tudo se conecta:",
+      "step1": "Grave ou faça upload do áudio",
+      "step2": "Selecione ou crie um paciente",
+      "step3": "Escolha o template e deixe a IA preencher",
+      "step4": "Revise, edite e envie ao paciente"
+    },
+    "complete": {
+      "title": "Você está Pronto!",
+      "description": "Agora você conhece o básico do TQ. Comece criando sua primeira transcrição ou adicionando pacientes.",
+      "start_transcription": "Iniciar Transcrição",
+      "add_patient": "Adicionar Paciente"
+    },
+    "resume": {
+      "title": "Continuar Configuração?",
+      "description": "Retome o assistente de configuração quando estiver pronto.",
+      "button": "Retomar",
+      "dismiss": "Dispensar"
+    }
+  },
+  "header": {
+    "help_tooltip": "Assistente de Configuração"
   }
 }

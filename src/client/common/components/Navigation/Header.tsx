@@ -49,6 +49,7 @@ export interface HeaderProps {
   className?: string
   getDisplayRole?: (user: User) => string
   searchComponent?: React.ReactNode
+  rightActions?: React.ReactNode
 }
 
 const defaultGetBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
@@ -118,7 +119,8 @@ export const Header: React.FC<HeaderProps> = ({
   showLogout = true,
   className,
   getDisplayRole = defaultGetDisplayRole,
-  searchComponent
+  searchComponent,
+  rightActions
 }) => {
   const location = useLocation()
   
@@ -223,6 +225,13 @@ export const Header: React.FC<HeaderProps> = ({
                 <Bell className="w-4 h-4" />
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
               </Button>
+            </div>
+          )}
+
+          {/* Right Actions (custom) */}
+          {rightActions && (
+            <div className="pr-3">
+              {rightActions}
             </div>
           )}
 

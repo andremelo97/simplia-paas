@@ -319,7 +319,8 @@
     }
   },
   "header": {
-    "user_settings_tooltip": "Configurações de Usuário"
+    "user_settings_tooltip": "Configurações de Usuário",
+    "help_tooltip": "Assistente de Configuração"
   },
   "user_settings": {
     "title": "Configurações de Usuário",
@@ -338,6 +339,62 @@
         "passwords_dont_match": "As senhas não coincidem",
         "same_as_current": "Nova senha deve ser diferente da senha atual"
       }
+    }
+  },
+  "onboarding": {
+    "title": "Primeiros Passos no Hub",
+    "skip": "Pular por agora",
+    "back": "Voltar",
+    "next": "Próximo",
+    "complete_button": "Concluir",
+    "steps": {
+      "welcome": "Boas-vindas",
+      "branding": "Marca",
+      "communication": "Email",
+      "complete": "Pronto!"
+    },
+    "welcome": {
+      "title": "Bem-vindo ao Hub!",
+      "description": "Bem-vindo! Este é seu hub central para gerenciar sua organização.",
+      "intro": "O Hub é seu portal central de gerenciamento. Daqui você pode acessar todas as suas aplicações, configurar as opções da sua organização e gerenciar sua equipe.",
+      "ready_title": "Tudo pronto! Você já pode começar a usar.",
+      "ready_description": "Seu sistema está 100% funcional. As configurações a seguir são opcionais — use-as para deixar o sistema com a cara da sua empresa.",
+      "hint": "Você pode pular este assistente a qualquer momento e configurar essas opções depois.",
+      "features_title": "O que você pode fazer:",
+      "feature1": "Acessar todas as suas aplicações licenciadas",
+      "feature2": "Personalizar a marca com seu logo e cores",
+      "feature3": "Configurar email para notificações",
+      "feature4": "Monitorar uso de transcrição e cotas"
+    },
+    "branding": {
+      "title": "Personalize Sua Marca",
+      "description": "Faça upload do logo da sua empresa e defina as cores da marca. Isso será exibido em orçamentos públicos e relatórios enviados aos seus clientes.",
+      "features": "Você pode configurar:",
+      "feature1": "Logo da empresa",
+      "feature2": "Cores primária e secundária",
+      "feature3": "Nome da empresa exibido",
+      "configure_now": "Configurar Marca Agora"
+    },
+    "communication": {
+      "title": "Configuração de Email",
+      "description": "Configure seu servidor SMTP para enviar emails aos clientes. Isso permite enviar orçamentos e relatórios diretamente do sistema.",
+      "features": "Recursos de email:",
+      "feature1": "Enviar orçamentos por email",
+      "feature2": "Enviar relatórios clínicos",
+      "feature3": "Nome e email do remetente personalizados",
+      "configure_now": "Configurar Email Agora"
+    },
+    "complete": {
+      "title": "Tudo Pronto!",
+      "description": "Seu Hub está pronto para uso. Você pode acessar essas configurações a qualquer momento no menu Configurações na barra lateral.",
+      "go_settings": "Ir para Configurações",
+      "go_home": "Ir para Início"
+    },
+    "resume": {
+      "title": "Continuar Configuração?",
+      "description": "Retome o assistente de configuração quando estiver pronto.",
+      "button": "Retomar",
+      "dismiss": "Dispensar"
     }
   }
 }

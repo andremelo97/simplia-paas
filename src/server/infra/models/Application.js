@@ -244,7 +244,8 @@ class Application {
         tenantStatus: this.tenantStatus,
         activatedAt: this.activatedAt,
         expiresAt: this.expiresAt,
-        maxUsers: this.maxUsers
+        seatsPurchased: this.seatsPurchased,
+        seatsUsed: this.seatsUsed
       })
     };
   }

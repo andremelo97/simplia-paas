@@ -1,10 +1,13 @@
 import React, { useCallback, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useAuthStore } from '../store/auth'
+import { useOnboardingStore } from '../store/onboarding'
 import { hubService } from '../services/hub'
 import { Header as CommonHeader } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
 import { UserSettingsModal } from './UserSettingsModal'
+import { HelpCircle } from 'lucide-react'
+import { Button, Tooltip } from '@client/common/ui'
 
 interface BreadcrumbItem {
   label: string
@@ -60,6 +63,7 @@ const getDisplayRole = (user: any) => {
 
 export const Header: React.FC = () => {
   const { user, tenantName, tenantSlug } = useAuthStore()
+  const { openWizard } = useOnboardingStore()
   const { t } = useTranslation('hub')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
@@ -86,6 +90,23 @@ export const Header: React.FC = () => {
     slug: tenantSlug || '',
   } : null
 
+  // Only show help button for admin users
+  const showHelpButton = user?.role === 'admin'
+
+  // Help button component for the header
+  const helpButton = showHelpButton ? (
+    <Tooltip content={t('header.help_tooltip', 'Setup Assistant')} side="bottom">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={openWizard}
+        className="text-gray-500 hover:text-[#B725B7] transition-colors"
+      >
+        <HelpCircle className="w-5 h-5" />
+      </Button>
+    </Tooltip>
+  ) : null
+
   return (
     <>
       <CommonHeader
@@ -96,8 +117,9 @@ export const Header: React.FC = () => {
         userTooltip={t('header.user_settings_tooltip')}
         getBreadcrumbs={localizedBreadcrumbs}
         getDisplayRole={getDisplayRole}
-        showSearch={false} // Hub doesn't need search
-        showNotifications={false} // Hub doesn't need notifications for now
+        showSearch={false}
+        showNotifications={false}
+        rightActions={helpButton}
       />
 
       <UserSettingsModal

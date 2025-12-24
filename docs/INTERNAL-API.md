@@ -1170,13 +1170,200 @@ POST /branding/upload-video
 - Configurable opacity overlay for text legibility
 - Optional disable on mobile to save data
 
-**Supabase Storage Architecture**:
-- **Generic Service**: `SupabaseStorageService` requires bucket name on instantiation
-- **Audio Bucket**: `tq-audio-files` (env: `SUPABASE_AUDIO_BUCKET`)
-- **Branding Bucket**: `tq-branding-assets` (env: `SUPABASE_BRANDING_BUCKET`)
-- **Pattern**: Each endpoint creates its own instance with appropriate bucket
-- **Tenant Isolation**: All files stored under `tenant_{id}/` prefix
-- **File Cleanup**: Old files are automatically deleted when new ones are uploaded or when branding is reset
+**Supabase Storage Architecture** (Per-Tenant Buckets):
+- **Bucket per Tenant**: `tenant-{subdomain}` (e.g., `tenant-acme-clinic`)
+- **Folder Structure**: `audio-files/`, `branding/` within each bucket
+- **Pattern**: Buckets created automatically during tenant provisioning
+- **Tenant Isolation**: Complete data isolation per tenant (LGPD/HIPAA compliant)
+- **File Cleanup**: Old files automatically deleted when new ones uploaded
+
+---
+
+## 📋 11. Onboarding Wizard
+
+**Tag:** `global`
+**Base:** `/onboarding`
+
+Track onboarding wizard completion for Hub and TQ applications (admin-only feature).
+
+### GET `/onboarding/status`
+Get onboarding status for all apps.
+
+**Response**:
+```json
+{
+  "data": {
+    "hub": { "completed": true, "skipped": false, "completedAt": "2025-01-15T10:00:00Z" },
+    "tq": { "completed": false, "skipped": false }
+  }
+}
+```
+
+### GET `/onboarding/:appSlug/needs`
+Check if user needs onboarding for an app.
+
+**Parameters**: `appSlug` (hub | tq)
+
+**Response**:
+```json
+{ "data": { "needsOnboarding": true } }
+```
+
+### POST `/onboarding/:appSlug/complete`
+Mark onboarding as completed.
+
+### POST `/onboarding/:appSlug/skip`
+Mark onboarding as skipped.
+
+### POST `/onboarding/:appSlug/reset`
+Reset onboarding status (allows re-running wizard).
+
+---
+
+## 📊 12. Transcription Plans
+
+**Tag:** `global`
+**Base:** `/transcription-plans`
+
+> **Acesso**: Platform Admin (`internal_admin`) apenas
+
+Manage transcription quota plans (Basic, VIP, etc.) with monthly limits and features.
+
+### GET `/transcription-plans`
+List all transcription plans.
+
+**Parameters**: `active` (boolean), `limit`, `offset`
+
+**Response**:
+```json
+{
+  "data": {
+    "plans": [
+      {
+        "id": 1,
+        "slug": "starter",
+        "name": "Starter Plan",
+        "monthlyMinutesLimit": 420,
+        "allowsCustomLimits": false,
+        "allowsOverage": false,
+        "sttModel": "nova-3",
+        "costPerMinuteUsd": 0.0043,
+        "active": true
+      }
+    ],
+    "pagination": { "total": 5, "limit": 50, "offset": 0 }
+  }
+}
+```
+
+### GET `/transcription-plans/:id`
+Get plan by ID.
+
+### POST `/transcription-plans`
+Create new plan.
+
+**Body**:
+```json
+{
+  "slug": "vip",
+  "name": "VIP Plan",
+  "monthlyMinutesLimit": 2400,
+  "allowsCustomLimits": true,
+  "allowsOverage": true,
+  "sttModel": "nova-3",
+  "languageDetectionEnabled": false,
+  "costPerMinuteUsd": 0.0043,
+  "active": true
+}
+```
+
+### PUT `/transcription-plans/:id`
+Update plan.
+
+### DELETE `/transcription-plans/:id`
+Soft delete plan (sets `active = false`).
+
+---
+
+## 🚀 13. Provisioning API
+
+**Tag:** `external`
+**Base:** `/api/provisioning`
+
+> **Autenticação**: API Key via `x-api-key` header (NOT JWT)
+
+External API for N8N/Stripe webhook integration. Creates tenants automatically after Stripe checkout.
+
+### GET `/provisioning/health`
+Health check endpoint.
+
+### POST `/provisioning/signup`
+Provision new tenant with admin user.
+
+**Headers**: `x-api-key: <provisioning_api_key>`
+
+**Body**:
+```json
+{
+  "tenantName": "Clínica ABC",
+  "tenantSubdomain": "clinica-abc",
+  "adminEmail": "admin@clinica.com",
+  "adminFirstName": "João",
+  "adminLastName": "Silva",
+  "adminPhone": "+5511999999999",
+  "timezone": "America/Sao_Paulo",
+  "planSlug": "starter",
+  "seatsPurchased": 1,
+  "trialDays": 7,
+  "stripeCustomerId": "cus_xxx",
+  "stripeSubscriptionId": "sub_xxx",
+  "address": {
+    "line1": "Rua Example, 123",
+    "city": "São Paulo",
+    "state": "SP",
+    "postalCode": "01234-567",
+    "country": "BR"
+  }
+}
+```
+
+**Response (201)**:
+```json
+{
+  "data": {
+    "tenant": { "id": 123, "name": "Clínica ABC", "subdomain": "clinica-abc" },
+    "admin": { "id": 456, "email": "admin@clinica.com", "temporaryPassword": "abc123xyz" },
+    "license": { "applicationSlug": "tq", "seatsPurchased": 1, "expiresAt": null },
+    "transcription": { "planSlug": "starter", "monthlyMinutesLimit": 420 },
+    "hubUrl": "https://hub.livocare.ai",
+    "loginUrl": "https://hub.livocare.ai/login"
+  },
+  "meta": { "code": "TENANT_PROVISIONED" }
+}
+```
+
+### PUT `/provisioning/plan-change`
+Change tenant subscription plan (upgrade/downgrade).
+
+**Body**:
+```json
+{
+  "stripeCustomerId": "cus_xxx",
+  "stripeSubscriptionId": "sub_xxx",
+  "newPlanSlug": "solo",
+  "newSeatsPurchased": 2
+}
+```
+
+### PUT `/provisioning/cancel`
+Cancel tenant subscription.
+
+**Body**:
+```json
+{
+  "stripeCustomerId": "cus_xxx"
+}
+```
 
 ---
 
@@ -1446,6 +1633,28 @@ npm run db:drop:test
 - `GET /audit/access-summary` - Access summary stats
 - `GET /audit/security-alerts` - Security alerts
 - `GET /metrics/overview` - Platform overview metrics
+
+#### Onboarding (`/onboarding`)
+- `GET /onboarding/status` - Get all apps onboarding status
+- `GET /onboarding/:appSlug/needs` - Check if user needs onboarding
+- `POST /onboarding/:appSlug/complete` - Mark onboarding completed
+- `POST /onboarding/:appSlug/skip` - Skip onboarding
+- `POST /onboarding/:appSlug/reset` - Reset onboarding status
+
+#### Transcription Plans (`/transcription-plans`)
+- `GET /transcription-plans` - List transcription plans
+- `GET /transcription-plans/:id` - Get plan by ID
+- `POST /transcription-plans` - Create plan
+- `PUT /transcription-plans/:id` - Update plan
+- `DELETE /transcription-plans/:id` - Soft delete plan
+
+### 🚀 External API Routes (API Key Auth)
+
+#### Provisioning (`/api/provisioning`)
+- `GET /provisioning/health` - Health check
+- `POST /provisioning/signup` - Provision new tenant
+- `PUT /provisioning/plan-change` - Change subscription plan
+- `PUT /provisioning/cancel` - Cancel subscription
 
 ### 🏢 Tenant-Scoped Routes
 *Require x-tenant-id header and tenant authentication*

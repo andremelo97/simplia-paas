@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/auth'
+import { useOnboardingStore } from '../store/onboarding'
 import { Header as CommonHeader } from '@client/common/components'
 import { QuickSearchBar } from '../../components/home/QuickSearchBar'
 import { patientsService, Patient } from '../../services/patients'
@@ -9,6 +10,8 @@ import { clinicalReportsService, ClinicalReport } from '../../services/clinicalR
 import { templatesService, Template } from '../../services/templates'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { useTranslation } from 'react-i18next'
+import { HelpCircle } from 'lucide-react'
+import { Tooltip, Button } from '@client/common/ui'
 
 const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
   const segments = pathname.split('/').filter(Boolean)
@@ -111,6 +114,7 @@ const getDisplayRole = (user: any) => {
 export const Header: React.FC = () => {
   const { t } = useTranslation('tq')
   const { user } = useAuthStore()
+  const { openWizard } = useOnboardingStore()
   const [patients, setPatients] = useState<Patient[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
@@ -145,6 +149,21 @@ export const Header: React.FC = () => {
     loadSearchData()
   }, [])
 
+  // Only show help button for admin users
+  const isAdmin = user?.role === 'admin'
+  const helpButton = isAdmin ? (
+    <Tooltip content={t('header.help_tooltip', 'Setup Assistant')} side="bottom">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={openWizard}
+        className="text-gray-500 hover:text-[#B725B7] transition-colors"
+      >
+        <HelpCircle className="w-5 h-5" />
+      </Button>
+    </Tooltip>
+  ) : null
+
   return (
     <CommonHeader
       user={user}
@@ -164,6 +183,7 @@ export const Header: React.FC = () => {
           publicQuoteTemplates={publicQuoteTemplates}
         />
       }
+      rightActions={helpButton}
     />
   )
 }

@@ -24,6 +24,7 @@ const tenantTranscriptionConfigRoutes = require('./api/internal/routes/tenant-tr
 const tenantTranscriptionUsageRoutes = require('./api/internal/routes/tenant-transcription-usage');
 const jobsRoutes = require('./api/internal/routes/jobs');
 const apiKeysRoutes = require('./api/internal/routes/api-keys');
+const onboardingRoutes = require('./api/internal/routes/onboarding');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
@@ -164,6 +165,9 @@ internalRouter.use('/configurations/communication', communicationRoutes);
 internalRouter.use('/configurations', tenantTranscriptionUsageRoutes); // Transcription usage & config
 // Legacy path kept for backward compatibility
 internalRouter.use('/configurations/smtp', communicationRoutes);
+
+// Onboarding routes (platform-scoped, for wizard completion tracking)
+internalRouter.use('/onboarding', onboardingRoutes);
 
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();

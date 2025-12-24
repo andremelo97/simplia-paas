@@ -585,15 +585,16 @@ router.post('/signup', async (req, res) => {
 
 /**
  * @openapi
- * /provisioning/upgrade:
+ * /provisioning/plan-change:
  *   put:
  *     tags: [Provisioning]
- *     summary: Upgrade tenant subscription plan
+ *     summary: Change tenant subscription plan (upgrade or downgrade)
  *     description: |
  *       **Scope:** External (API Key required)
  *
  *       Updates tenant's transcription plan and seats after Stripe subscription update.
- *       Called by N8N after receiving customer.subscription.updated webhook from Stripe.
+ *       Handles both upgrades and downgrades. Called by N8N after receiving
+ *       customer.subscription.updated webhook from Stripe.
  *     security:
  *       - apiKeyAuth: []
  *     requestBody:
@@ -622,15 +623,15 @@ router.post('/signup', async (req, res) => {
  *                 example: 2
  *     responses:
  *       200:
- *         description: Plan upgraded successfully
+ *         description: Plan changed successfully (includes changeType - upgrade/downgrade)
  *       400:
  *         description: Validation error
  *       404:
  *         description: Tenant or plan not found
  *       500:
- *         description: Upgrade failed
+ *         description: Plan change failed
  */
-router.put('/upgrade', async (req, res) => {
+router.put('/plan-change', async (req, res) => {
   const client = await database.getClient();
 
   try {
@@ -651,7 +652,7 @@ router.put('/upgrade', async (req, res) => {
       });
     }
 
-    console.log(`🔄 [Provisioning] Starting upgrade for customer: ${stripeCustomerId}`);
+    console.log(`🔄 [Provisioning] Starting plan change for customer: ${stripeCustomerId}`);
 
     // Find tenant by Stripe customer ID
     const tenantQuery = 'SELECT * FROM public.tenants WHERE stripe_customer_id = $1';
@@ -770,8 +771,26 @@ router.put('/upgrade', async (req, res) => {
       // Commit transaction
       await client.query('COMMIT');
 
-      const seatsAdded = newSeatsPurchased - oldSeats;
-      console.log(`🎉 [Provisioning] Upgrade completed! Seats added: ${seatsAdded}`);
+      // Calculate differences
+      const seatsDifference = newSeatsPurchased - oldSeats;
+      const oldMinutes = oldPlan?.monthlyMinutesLimit || 0;
+      const newMinutes = newPlan.monthlyMinutesLimit || 0;
+
+      // Determine change type based on plan minutes (primary) and seats (secondary)
+      let changeType;
+      if (newMinutes > oldMinutes) {
+        changeType = 'upgrade';
+      } else if (newMinutes < oldMinutes) {
+        changeType = 'downgrade';
+      } else if (seatsDifference > 0) {
+        changeType = 'upgrade';
+      } else if (seatsDifference < 0) {
+        changeType = 'downgrade';
+      } else {
+        changeType = 'lateral'; // Same plan, same seats (shouldn't happen normally)
+      }
+
+      console.log(`🎉 [Provisioning] Plan change completed! Type: ${changeType}, Seats diff: ${seatsDifference}`);
 
       // Return success response
       res.status(200).json({
@@ -787,23 +806,25 @@ router.put('/upgrade', async (req, res) => {
             firstName: adminUser.first_name,
             lastName: adminUser.last_name
           } : null,
+          changeType,
           oldPlan: oldPlan ? {
             slug: oldPlan.slug,
             name: oldPlan.name,
+            monthlyMinutesLimit: oldMinutes,
             seats: oldSeats
           } : null,
           newPlan: {
             slug: newPlan.slug,
             name: newPlan.name,
-            monthlyMinutesLimit: newPlan.monthlyMinutesLimit,
+            monthlyMinutesLimit: newMinutes,
             seats: newSeatsPurchased
           },
-          seatsAdded,
+          seatsDifference,
           loginUrl: 'https://hub.livocare.ai/login'
         },
         meta: {
-          code: 'PLAN_UPGRADED',
-          message: `Plan upgraded from ${oldPlan?.slug || 'none'} to ${newPlanSlug}`
+          code: 'PLAN_CHANGED',
+          message: `Plan ${changeType} from ${oldPlan?.slug || 'none'} to ${newPlanSlug}`
         }
       });
 
@@ -813,11 +834,11 @@ router.put('/upgrade', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('❌ [Provisioning] Upgrade error:', error);
+    console.error('❌ [Provisioning] Plan change error:', error);
     res.status(500).json({
       error: {
-        code: 'UPGRADE_FAILED',
-        message: error.message || 'Failed to upgrade plan'
+        code: 'PLAN_CHANGE_FAILED',
+        message: error.message || 'Failed to change plan'
       }
     });
   } finally {

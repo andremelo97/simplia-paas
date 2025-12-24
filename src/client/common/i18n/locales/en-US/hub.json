@@ -267,34 +267,60 @@
     "go_to_hub": "Go to Hub",
     "login": "Login",
     "per_month": "/month",
+    "per_month_short": "/month",
     "custom_price": "Custom pricing",
+    "custom": "Custom",
     "most_popular": "Most Popular",
+    "popular": "Popular",
+    "recommended": "Recommended",
+    "best_value": "Best Value",
+    "select_plan": "Select Plan",
     "contact_sales": "Contact Sales",
+    "trial_banner": "Try 7 days free, no commitment!",
+    "start_trial": "Start Now",
     "questions_title": "Still have questions?",
     "questions_description": "Our team is ready to help you choose the best plan.",
+    "email_us": "Send us an email at",
     "talk_to_team": "Talk to Team",
     "starter": {
-      "name": "Starter",
-      "description": "For clinics starting with transcription"
+      "description": "Perfect to get started"
     },
-    "professional": {
-      "name": "Professional",
-      "description": "For growing clinics"
+    "solo": {
+      "description": "Individual professional"
     },
-    "enterprise": {
-      "name": "Enterprise",
-      "description": "For large operations"
+    "duo": {
+      "description": "Small clinics"
+    },
+    "practice": {
+      "description": "Growing clinics"
+    },
+    "vip": {
+      "description": "Clinics with larger teams"
     },
     "features": {
-      "monthly_minutes": "Monthly minutes",
-      "transcription_quality": "Transcription quality",
-      "custom_limits": "Customizable limits",
-      "overage_allowed": "Overage usage",
-      "language_detection": "Language detection",
+      "hours_40": "40 hours transcription/month (~2h/day)",
+      "hours_80": "80 hours transcription/month (~4h/day)",
+      "hours_160": "160 hours transcription/month (~8h/day)",
+      "hours_240": "240 hours transcription/month (~12h/day)",
+      "custom_hours": "Custom hours as needed",
+      "admin_1": "1 Admin license included",
+      "admin_ops": "1 Admin + 1 Operations included",
+      "admin_manager": "1 Admin + 1 Manager included",
+      "licenses_3": "1 Admin + 1 Manager + 1 Ops included",
+      "additional_licenses": "Additional licenses available",
+      "unlimited_licenses": "Unlimited licenses",
+      "monolingual": "Monolingual transcription",
+      "multilingual": "Automatic multilingual transcription",
+      "templates_3": "Up to 3 landing page templates",
+      "unlimited_templates": "Unlimited templates",
+      "setup_included": "Initial setup included",
+      "dedicated_setup": "Dedicated setup with onboarding",
+      "template_support": "Template creation support",
+      "standard_support": "Standard support",
       "priority_support": "Priority support",
-      "dedicated_account": "Dedicated account manager",
-      "custom_integration": "Custom integrations",
-      "unlimited": "Unlimited"
+      "dedicated_support": "Dedicated 24/7 support",
+      "overage_allowed": "Allow exceeding monthly limit",
+      "custom_integration": "Custom integrations"
     }
   },
   "header": {

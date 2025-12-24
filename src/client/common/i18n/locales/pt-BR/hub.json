@@ -267,34 +267,60 @@
     "go_to_hub": "Ir para o Hub",
     "login": "Fazer Login",
     "per_month": "/mês",
+    "per_month_short": "/mês",
     "custom_price": "Sob consulta",
+    "custom": "Personalizado",
     "most_popular": "Mais Popular",
+    "popular": "Popular",
+    "recommended": "Recomendado",
+    "best_value": "Melhor Custo-Benefício",
+    "select_plan": "Selecionar Plano",
     "contact_sales": "Falar com Vendas",
+    "trial_banner": "Experimente 7 dias grátis, sem compromisso!",
+    "start_trial": "Começar Agora",
     "questions_title": "Ainda tem dúvidas?",
     "questions_description": "Nossa equipe está pronta para ajudar você a escolher o melhor plano.",
+    "email_us": "Envie um e-mail para",
     "talk_to_team": "Falar com a Equipe",
     "starter": {
-      "name": "Starter",
-      "description": "Para clínicas iniciando com transcrição"
+      "description": "Perfeito para começar"
     },
-    "professional": {
-      "name": "Professional",
-      "description": "Para clínicas em crescimento"
+    "solo": {
+      "description": "Profissional individual"
     },
-    "enterprise": {
-      "name": "Enterprise",
-      "description": "Para grandes operações"
+    "duo": {
+      "description": "Pequenas clínicas"
+    },
+    "practice": {
+      "description": "Clínicas em crescimento"
+    },
+    "vip": {
+      "description": "Clínicas com equipes maiores"
     },
     "features": {
-      "monthly_minutes": "Minutos mensais",
-      "transcription_quality": "Qualidade de transcrição",
-      "custom_limits": "Limites personalizáveis",
-      "overage_allowed": "Uso além do limite",
-      "language_detection": "Detecção de idioma",
+      "hours_40": "40 horas de transcrição/mês (~2h/dia)",
+      "hours_80": "80 horas de transcrição/mês (~4h/dia)",
+      "hours_160": "160 horas de transcrição/mês (~8h/dia)",
+      "hours_240": "240 horas de transcrição/mês (~12h/dia)",
+      "custom_hours": "Horas personalizadas conforme necessidade",
+      "admin_1": "1 licença Admin inclusa",
+      "admin_ops": "1 Admin + 1 Operations inclusos",
+      "admin_manager": "1 Admin + 1 Manager inclusos",
+      "licenses_3": "1 Admin + 1 Manager + 1 Ops inclusos",
+      "additional_licenses": "Licenças adicionais disponíveis",
+      "unlimited_licenses": "Licenças ilimitadas",
+      "monolingual": "Transcrição monolíngue",
+      "multilingual": "Transcrição multilíngue automática",
+      "templates_3": "Até 3 templates de landing page",
+      "unlimited_templates": "Templates ilimitados",
+      "setup_included": "Setup inicial incluso",
+      "dedicated_setup": "Setup dedicado com onboarding",
+      "template_support": "Suporte para criação de templates",
+      "standard_support": "Suporte padrão",
       "priority_support": "Suporte prioritário",
-      "dedicated_account": "Gerente de conta dedicado",
-      "custom_integration": "Integrações personalizadas",
-      "unlimited": "Ilimitado"
+      "dedicated_support": "Suporte dedicado 24/7",
+      "overage_allowed": "Permite exceder limite mensal",
+      "custom_integration": "Integrações personalizadas"
     }
   },
   "header": {

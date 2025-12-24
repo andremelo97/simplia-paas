@@ -300,10 +300,33 @@ router.post('/signup', async (req, res) => {
     try {
       const existingUser = await User.findByEmailGlobal(adminEmail.toLowerCase());
       if (existingUser) {
+        // Get tenant info for the response
+        let tenantInfo = null;
+        try {
+          const existingTenant = await Tenant.findById(existingUser.tenantIdFk);
+          tenantInfo = {
+            id: existingTenant.id,
+            name: existingTenant.name,
+            subdomain: existingTenant.subdomain
+          };
+        } catch (e) {
+          // Tenant might not exist, continue without it
+        }
+
         return res.status(409).json({
           error: {
             code: 'USER_EXISTS',
             message: `User with email '${adminEmail}' already exists`
+          },
+          data: {
+            user: {
+              id: existingUser.id,
+              email: existingUser.email,
+              firstName: existingUser.firstName,
+              lastName: existingUser.lastName
+            },
+            tenant: tenantInfo,
+            loginUrl: 'https://hub.livocare.ai/login'
           }
         });
       }

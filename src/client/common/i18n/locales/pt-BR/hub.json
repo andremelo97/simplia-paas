@@ -251,7 +251,10 @@
     "quota_exceeded_message": "Você atingiu seu limite mensal de {{limit}} minutos. Não é possível iniciar nova transcrição até o próximo mês. Entre em contato com seu gerente de conta para aumentar seu limite.",
     "trial_expired": "Trial expirado",
     "expires_in": "Expira em",
-    "days": "dias"
+    "days": "dias",
+    "manage_subscription": "Gerenciar Assinatura",
+    "manage_subscription_description": "Atualize seu plano, método de pagamento ou visualize faturas",
+    "open_billing_portal": "Abrir Portal de Cobrança"
   },
   "trial_expired": {
     "title": "Seu período de teste terminou",

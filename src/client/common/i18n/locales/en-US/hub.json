@@ -251,7 +251,10 @@
     "quota_exceeded_message": "You have reached your monthly limit of {{limit}} minutes. Cannot start new transcription until next month. Contact your account manager to increase your limit.",
     "trial_expired": "Trial expired",
     "expires_in": "Expires in",
-    "days": "days"
+    "days": "days",
+    "manage_subscription": "Manage Subscription",
+    "manage_subscription_description": "Update your plan, payment method, or view invoices",
+    "open_billing_portal": "Open Billing Portal"
   },
   "trial_expired": {
     "title": "Your trial period has ended",

@@ -585,6 +585,430 @@ router.post('/signup', async (req, res) => {
 
 /**
  * @openapi
+ * /provisioning/upgrade:
+ *   put:
+ *     tags: [Provisioning]
+ *     summary: Upgrade tenant subscription plan
+ *     description: |
+ *       **Scope:** External (API Key required)
+ *
+ *       Updates tenant's transcription plan and seats after Stripe subscription update.
+ *       Called by N8N after receiving customer.subscription.updated webhook from Stripe.
+ *     security:
+ *       - apiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [stripeCustomerId, newPlanSlug, newSeatsPurchased]
+ *             properties:
+ *               stripeCustomerId:
+ *                 type: string
+ *                 description: Stripe customer ID
+ *                 example: "cus_xxxxxxxxxxxxx"
+ *               stripeSubscriptionId:
+ *                 type: string
+ *                 description: Stripe subscription ID
+ *                 example: "sub_xxxxxxxxxxxxx"
+ *               newPlanSlug:
+ *                 type: string
+ *                 description: New transcription plan slug
+ *                 example: "solo"
+ *               newSeatsPurchased:
+ *                 type: integer
+ *                 description: New total number of seats
+ *                 example: 2
+ *     responses:
+ *       200:
+ *         description: Plan upgraded successfully
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Tenant or plan not found
+ *       500:
+ *         description: Upgrade failed
+ */
+router.put('/upgrade', async (req, res) => {
+  const client = await database.getClient();
+
+  try {
+    const {
+      stripeCustomerId,
+      stripeSubscriptionId,
+      newPlanSlug,
+      newSeatsPurchased
+    } = req.body;
+
+    // Validate required fields
+    if (!stripeCustomerId || !newPlanSlug || newSeatsPurchased === undefined) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'stripeCustomerId, newPlanSlug, and newSeatsPurchased are required'
+        }
+      });
+    }
+
+    console.log(`🔄 [Provisioning] Starting upgrade for customer: ${stripeCustomerId}`);
+
+    // Find tenant by Stripe customer ID
+    const tenantQuery = 'SELECT * FROM public.tenants WHERE stripe_customer_id = $1';
+    const tenantResult = await database.query(tenantQuery, [stripeCustomerId]);
+
+    if (tenantResult.rows.length === 0) {
+      return res.status(404).json({
+        error: {
+          code: 'TENANT_NOT_FOUND',
+          message: `No tenant found with Stripe customer ID: ${stripeCustomerId}`
+        }
+      });
+    }
+
+    const tenant = tenantResult.rows[0];
+    console.log(`📁 [Provisioning] Found tenant: ${tenant.name} (ID: ${tenant.id})`);
+
+    // Get TQ application
+    const tqApp = await Application.findBySlug('tq');
+    if (!tqApp) {
+      return res.status(500).json({
+        error: {
+          code: 'TQ_APP_NOT_FOUND',
+          message: 'TQ application not found in database'
+        }
+      });
+    }
+
+    // Get current transcription config
+    const currentConfig = await TenantTranscriptionConfig.findByTenantId(tenant.id);
+    const oldPlan = currentConfig ? {
+      slug: currentConfig.planSlug,
+      name: currentConfig.planName,
+      monthlyMinutesLimit: currentConfig.monthlyMinutesLimit
+    } : null;
+
+    // Get current seats
+    const currentLicenseQuery = `
+      SELECT seats_purchased, seats_used
+      FROM public.tenant_applications
+      WHERE tenant_id_fk = $1 AND application_id_fk = $2
+    `;
+    const currentLicenseResult = await database.query(currentLicenseQuery, [tenant.id, tqApp.id]);
+    const oldSeats = currentLicenseResult.rows.length > 0 ? currentLicenseResult.rows[0].seats_purchased : 1;
+
+    // Get new transcription plan
+    let newPlan;
+    try {
+      newPlan = await TranscriptionPlan.findBySlug(newPlanSlug);
+    } catch (error) {
+      return res.status(400).json({
+        error: {
+          code: 'INVALID_PLAN',
+          message: `Transcription plan '${newPlanSlug}' not found`
+        }
+      });
+    }
+
+    // Get admin user for email
+    const adminQuery = `
+      SELECT id, email, first_name, last_name
+      FROM public.users
+      WHERE tenant_id_fk = $1 AND role = 'admin'
+      ORDER BY created_at ASC
+      LIMIT 1
+    `;
+    const adminResult = await database.query(adminQuery, [tenant.id]);
+    const adminUser = adminResult.rows.length > 0 ? adminResult.rows[0] : null;
+
+    // Start transaction
+    await client.query('BEGIN');
+
+    try {
+      // 1. Update transcription config with new plan
+      console.log(`📊 [Provisioning] Updating plan from ${oldPlan?.slug || 'none'} to ${newPlanSlug}`);
+
+      // Remove trial expiration if upgrading from trial
+      let expiresAt = null;
+      if (!newPlan.isTrial && currentConfig?.expiresAt) {
+        // Clear expiration when upgrading from trial to paid plan
+        const clearExpirationQuery = `
+          UPDATE public.tenant_applications
+          SET expires_at = NULL
+          WHERE tenant_id_fk = $1 AND application_id_fk = $2
+        `;
+        await client.query(clearExpirationQuery, [tenant.id, tqApp.id]);
+      }
+
+      await TenantTranscriptionConfig.upsert(tenant.id, {
+        planId: newPlan.id,
+        customMonthlyLimit: null,
+        overageAllowed: newPlan.allowsOverage || false
+      });
+      console.log(`✅ [Provisioning] Transcription plan updated`);
+
+      // 2. Update seats purchased
+      console.log(`👥 [Provisioning] Updating seats from ${oldSeats} to ${newSeatsPurchased}`);
+      const updateSeatsQuery = `
+        UPDATE public.tenant_applications
+        SET seats_purchased = $1, updated_at = NOW()
+        WHERE tenant_id_fk = $2 AND application_id_fk = $3
+      `;
+      await client.query(updateSeatsQuery, [newSeatsPurchased, tenant.id, tqApp.id]);
+      console.log(`✅ [Provisioning] Seats updated`);
+
+      // 3. Update Stripe subscription ID if provided
+      if (stripeSubscriptionId) {
+        const updateStripeQuery = `
+          UPDATE public.tenants
+          SET stripe_subscription_id = $1, updated_at = NOW()
+          WHERE id = $2
+        `;
+        await client.query(updateStripeQuery, [stripeSubscriptionId, tenant.id]);
+      }
+
+      // Commit transaction
+      await client.query('COMMIT');
+
+      const seatsAdded = newSeatsPurchased - oldSeats;
+      console.log(`🎉 [Provisioning] Upgrade completed! Seats added: ${seatsAdded}`);
+
+      // Return success response
+      res.status(200).json({
+        data: {
+          tenant: {
+            id: tenant.id,
+            name: tenant.name,
+            subdomain: tenant.subdomain
+          },
+          admin: adminUser ? {
+            id: adminUser.id,
+            email: adminUser.email,
+            firstName: adminUser.first_name,
+            lastName: adminUser.last_name
+          } : null,
+          oldPlan: oldPlan ? {
+            slug: oldPlan.slug,
+            name: oldPlan.name,
+            seats: oldSeats
+          } : null,
+          newPlan: {
+            slug: newPlan.slug,
+            name: newPlan.name,
+            monthlyMinutesLimit: newPlan.monthlyMinutesLimit,
+            seats: newSeatsPurchased
+          },
+          seatsAdded,
+          loginUrl: 'https://hub.livocare.ai/login'
+        },
+        meta: {
+          code: 'PLAN_UPGRADED',
+          message: `Plan upgraded from ${oldPlan?.slug || 'none'} to ${newPlanSlug}`
+        }
+      });
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('❌ [Provisioning] Upgrade error:', error);
+    res.status(500).json({
+      error: {
+        code: 'UPGRADE_FAILED',
+        message: error.message || 'Failed to upgrade plan'
+      }
+    });
+  } finally {
+    client.release();
+  }
+});
+
+/**
+ * @openapi
+ * /provisioning/cancel:
+ *   put:
+ *     tags: [Provisioning]
+ *     summary: Cancel tenant subscription
+ *     description: |
+ *       **Scope:** External (API Key required)
+ *
+ *       Deactivates tenant account after Stripe subscription cancellation.
+ *       Called by N8N after receiving customer.subscription.deleted webhook from Stripe.
+ *       Data is preserved for potential reactivation.
+ *     security:
+ *       - apiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [stripeCustomerId]
+ *             properties:
+ *               stripeCustomerId:
+ *                 type: string
+ *                 description: Stripe customer ID
+ *                 example: "cus_xxxxxxxxxxxxx"
+ *               stripeSubscriptionId:
+ *                 type: string
+ *                 description: Stripe subscription ID
+ *                 example: "sub_xxxxxxxxxxxxx"
+ *     responses:
+ *       200:
+ *         description: Subscription cancelled successfully
+ *       404:
+ *         description: Tenant not found
+ *       500:
+ *         description: Cancellation failed
+ */
+router.put('/cancel', async (req, res) => {
+  const client = await database.getClient();
+
+  try {
+    const {
+      stripeCustomerId,
+      stripeSubscriptionId
+    } = req.body;
+
+    // Validate required fields
+    if (!stripeCustomerId) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'stripeCustomerId is required'
+        }
+      });
+    }
+
+    console.log(`🚫 [Provisioning] Starting cancellation for customer: ${stripeCustomerId}`);
+
+    // Find tenant by Stripe customer ID
+    const tenantQuery = 'SELECT * FROM public.tenants WHERE stripe_customer_id = $1';
+    const tenantResult = await database.query(tenantQuery, [stripeCustomerId]);
+
+    if (tenantResult.rows.length === 0) {
+      return res.status(404).json({
+        error: {
+          code: 'TENANT_NOT_FOUND',
+          message: `No tenant found with Stripe customer ID: ${stripeCustomerId}`
+        }
+      });
+    }
+
+    const tenant = tenantResult.rows[0];
+    console.log(`📁 [Provisioning] Found tenant: ${tenant.name} (ID: ${tenant.id})`);
+
+    // Get admin user for email notification
+    const adminQuery = `
+      SELECT id, email, first_name, last_name
+      FROM public.users
+      WHERE tenant_id_fk = $1 AND role = 'admin'
+      ORDER BY created_at ASC
+      LIMIT 1
+    `;
+    const adminResult = await database.query(adminQuery, [tenant.id]);
+    const adminUser = adminResult.rows.length > 0 ? adminResult.rows[0] : null;
+
+    // Get current plan info before cancellation
+    const currentConfig = await TenantTranscriptionConfig.findByTenantId(tenant.id);
+
+    // Start transaction
+    await client.query('BEGIN');
+
+    try {
+      const cancelledAt = new Date();
+
+      // 1. Update tenant status to cancelled
+      console.log(`🔒 [Provisioning] Updating tenant status to cancelled`);
+      const updateTenantQuery = `
+        UPDATE public.tenants
+        SET status = 'cancelled', active = false, updated_at = NOW()
+        WHERE id = $1
+      `;
+      await client.query(updateTenantQuery, [tenant.id]);
+
+      // 2. Deactivate all tenant applications (soft delete)
+      console.log(`📜 [Provisioning] Deactivating tenant applications`);
+      const deactivateAppsQuery = `
+        UPDATE public.tenant_applications
+        SET active = false, updated_at = NOW()
+        WHERE tenant_id_fk = $1
+      `;
+      await client.query(deactivateAppsQuery, [tenant.id]);
+
+      // 3. Deactivate all user access (soft delete)
+      console.log(`👥 [Provisioning] Deactivating user access`);
+      const deactivateAccessQuery = `
+        UPDATE public.user_application_access
+        SET active = false
+        WHERE tenant_id_fk = $1
+      `;
+      await client.query(deactivateAccessQuery, [tenant.id]);
+
+      // 4. Disable transcription config
+      console.log(`📊 [Provisioning] Disabling transcription config`);
+      const disableConfigQuery = `
+        UPDATE public.tenant_transcription_config
+        SET enabled = false, updated_at = NOW()
+        WHERE tenant_id_fk = $1
+      `;
+      await client.query(disableConfigQuery, [tenant.id]);
+
+      // Commit transaction
+      await client.query('COMMIT');
+
+      console.log(`🎉 [Provisioning] Cancellation completed for tenant: ${tenant.name}`);
+
+      // Return success response
+      res.status(200).json({
+        data: {
+          tenant: {
+            id: tenant.id,
+            name: tenant.name,
+            subdomain: tenant.subdomain
+          },
+          admin: adminUser ? {
+            id: adminUser.id,
+            email: adminUser.email,
+            firstName: adminUser.first_name,
+            lastName: adminUser.last_name
+          } : null,
+          cancelledPlan: currentConfig ? {
+            slug: currentConfig.planSlug,
+            name: currentConfig.planName
+          } : null,
+          cancelledAt: cancelledAt.toISOString(),
+          dataRetentionDays: 30,
+          reactivationUrl: 'https://hub.livocare.ai/plans'
+        },
+        meta: {
+          code: 'SUBSCRIPTION_CANCELLED',
+          message: 'Subscription cancelled successfully. Data will be retained for 30 days.'
+        }
+      });
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('❌ [Provisioning] Cancellation error:', error);
+    res.status(500).json({
+      error: {
+        code: 'CANCELLATION_FAILED',
+        message: error.message || 'Failed to cancel subscription'
+      }
+    });
+  } finally {
+    client.release();
+  }
+});
+
+/**
+ * @openapi
  * /provisioning/health:
  *   get:
  *     tags: [Provisioning]

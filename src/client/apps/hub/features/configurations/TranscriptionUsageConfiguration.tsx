@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Clock, TrendingUp, Settings, AlertCircle, Check } from 'lucide-react'
+import { Clock, TrendingUp, Settings, AlertCircle, Check, CreditCard, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Label, Progress, Alert, AlertTitle, AlertDescription, Checkbox, Select } from '@client/common/ui'
 import { transcriptionUsageService } from '../../services/transcriptionUsageService'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+
+// Stripe Customer Portal URL
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/test_3cI3cvfmw4PudaubYo4Vy00'
 
 interface CurrentUsage {
   month: string
@@ -301,6 +304,33 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
           </span>
         )}
       </div>
+
+      {/* Manage Subscription Card */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#5ED6CE] to-[#0a8a80] flex items-center justify-center">
+              <CreditCard className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                {t('transcription_usage.manage_subscription')}
+              </h3>
+              <p className="text-sm text-gray-600">
+                {t('transcription_usage.manage_subscription_description')}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => window.open(STRIPE_PORTAL_URL, '_blank')}
+            className="flex items-center gap-2"
+          >
+            <ExternalLink className="h-4 w-4" />
+            {t('transcription_usage.open_billing_portal')}
+          </Button>
+        </div>
+      </Card>
 
       {/* Upgrade Card (for non-premium plans) */}
       {!hasAnyPremiumFeature && (

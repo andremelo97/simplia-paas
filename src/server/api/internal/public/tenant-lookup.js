@@ -1,6 +1,5 @@
 const express = require('express');
 const { Pool } = require('pg');
-const crypto = require('crypto');
 
 const router = express.Router();
 
@@ -149,9 +148,6 @@ router.post('/tenant-lookup', async (req, res) => {
       });
     }
     
-    // Hash email for logging (security)
-    const emailHash = crypto.createHash('sha256').update(normalizedEmail + process.env.JWT_SECRET).digest('hex').substring(0, 16);
-    
     // Query database for user and tenant (1:1 relationship)
     const query = `
       SELECT t.id, t.name, t.subdomain as slug
@@ -163,12 +159,7 @@ router.post('/tenant-lookup', async (req, res) => {
     
     const result = await pool.query(query, [normalizedEmail]);
     
-    const executionTime = Date.now() - startTime;
-    
     if (result.rows.length === 0) {
-      // Log failed attempt (use hash to protect privacy)
-      console.log(`[AUDIT] Tenant lookup failed - Hash: ${emailHash}, IP: ${clientIP}, Time: ${executionTime}ms`);
-      
       return res.status(404).json({
         success: false,
         meta: {
@@ -177,11 +168,8 @@ router.post('/tenant-lookup', async (req, res) => {
         }
       });
     }
-    
+
     const tenant = result.rows[0];
-    
-    // Log successful lookup (use hash to protect privacy)
-    console.log(`[AUDIT] Tenant lookup success - Hash: ${emailHash}, TenantID: ${tenant.id}, IP: ${clientIP}, Time: ${executionTime}ms`);
     
     res.json({
       success: true,

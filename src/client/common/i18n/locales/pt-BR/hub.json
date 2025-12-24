@@ -217,14 +217,6 @@
     "validation_min_limit": "O limite mínimo é {{limit}} minutos",
     "allow_overage": "Permitir ultrapassar o limite",
     "overage_description": "Se ativado, você poderá continuar transcrevendo além do seu limite mensal. Cobranças adicionais podem ser aplicadas.",
-    "upgrade_title": "Quer fazer upgrade do seu plano?",
-    "upgrade_description": "Faça upgrade para um plano superior e desbloqueie recursos exclusivos:",
-    "upgrade_benefits": {
-      "custom_limit": "Alterar limite mensal como quiser",
-      "overage": "Permitir ultrapassar o limite sem bloqueios",
-      "priority_support": "Suporte prioritário"
-    },
-    "view_plans": "Ver Planos Disponíveis",
     "usage_history": "Histórico de Uso (Últimos 6 Meses)",
     "last_6_months": "Últimos 6 meses",
     "no_history": "Sem histórico de uso disponível",

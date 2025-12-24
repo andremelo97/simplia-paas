@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Clock, TrendingUp, Settings, AlertCircle, Check, CreditCard, ExternalLink } from 'lucide-react'
+import { Clock, TrendingUp, Settings, AlertCircle, CreditCard, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Label, Progress, Alert, AlertTitle, AlertDescription, Checkbox, Select } from '@client/common/ui'
 import { transcriptionUsageService } from '../../services/transcriptionUsageService'
@@ -331,51 +331,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
           </Button>
         </div>
       </Card>
-
-      {/* Upgrade Card (for non-premium plans) */}
-      {!hasAnyPremiumFeature && (
-        <Card className="relative overflow-hidden">
-          {/* Gradient Background */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#B725B7] via-[#E91E63] to-[#B725B7] opacity-5"></div>
-
-          <div className="relative p-6">
-            <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {t('transcription_usage.upgrade_title')}
-                </h3>
-                <p className="text-gray-600 mb-4">{t('transcription_usage.upgrade_description')}</p>
-                <ul className="space-y-2 mb-4">
-                  <li className="flex items-center gap-2 text-sm text-gray-700">
-                    <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
-                    <span>{t('transcription_usage.upgrade_benefits.custom_limit')}</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-700">
-                    <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
-                    <span>{t('transcription_usage.upgrade_benefits.overage')}</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-700">
-                    <Check className="h-4 w-4 text-[#B725B7] flex-shrink-0" />
-                    <span>{t('transcription_usage.upgrade_benefits.priority_support')}</span>
-                  </li>
-                </ul>
-                <Button
-                  variant="primary"
-                  onClick={() => window.open('/plans', '_blank')}
-                  className="inline-flex items-center gap-2"
-                >
-                  {t('transcription_usage.view_plans')}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Card>
-      )}
 
       {/* Current Month Usage */}
       <Card className="p-6">

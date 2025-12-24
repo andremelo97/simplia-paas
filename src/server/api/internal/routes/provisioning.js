@@ -279,8 +279,6 @@ router.post('/signup', async (req, res) => {
       });
     }
 
-    console.log(`🚀 [Provisioning] Starting provisioning for tenant: ${tenantName}`);
-
     // Generate or validate subdomain
     const subdomain = tenantSubdomain || generateSubdomain(tenantName);
     const schemaName = `tenant_${subdomain.replace(/-/g, '_')}`;
@@ -379,7 +377,6 @@ router.post('/signup', async (req, res) => {
 
     try {
       // 1. Create tenant
-      console.log(`📁 [Provisioning] Creating tenant: ${tenantName} (${subdomain})`);
       const tenant = await Tenant.create({
         name: tenantName,
         subdomain,
@@ -389,12 +386,9 @@ router.post('/signup', async (req, res) => {
         stripeCustomerId: stripeCustomerId || null,
         stripeSubscriptionId: stripeSubscriptionId || null
       });
-      console.log(`✅ [Provisioning] Tenant created with ID: ${tenant.id}`);
 
       // 2. Create tenant schema
-      console.log(`📁 [Provisioning] Creating schema: ${schemaName}`);
       await Tenant.createSchema(schemaName);
-      console.log(`✅ [Provisioning] Schema created`);
 
       // 3. Generate temporary password and hash it
       const temporaryPassword = generateTemporaryPassword();
@@ -402,7 +396,6 @@ router.post('/signup', async (req, res) => {
       const passwordHash = await bcrypt.hash(temporaryPassword, saltRounds);
 
       // 4. Create admin user
-      console.log(`👤 [Provisioning] Creating admin user: ${adminEmail}`);
       const adminUser = await User.create({
         tenantIdFk: tenant.id,
         email: adminEmail.toLowerCase(),
@@ -413,7 +406,6 @@ router.post('/signup', async (req, res) => {
         status: 'active',
         userTypeId: adminUserTypeId
       });
-      console.log(`✅ [Provisioning] Admin user created with ID: ${adminUser.id}`);
 
       // 5. Calculate license expiration
       let expiresAt = null;
@@ -424,7 +416,6 @@ router.post('/signup', async (req, res) => {
       }
 
       // 6. Grant TQ license to tenant (this also provisions TQ schema tables)
-      console.log(`📜 [Provisioning] Granting TQ license to tenant`);
       const license = await TenantApplication.grantLicense({
         tenantId: tenant.id,
         applicationId: tqApp.id,
@@ -432,11 +423,8 @@ router.post('/signup', async (req, res) => {
         expiresAt,
         status: 'active'
       });
-      console.log(`✅ [Provisioning] TQ license granted`);
 
       // 7. Grant admin user access to TQ
-      console.log(`🔑 [Provisioning] Granting admin access to TQ`);
-
       // Insert directly to avoid pricing validation (provisioning is special)
       const accessQuery = `
         INSERT INTO user_application_access (
@@ -456,23 +444,19 @@ router.post('/signup', async (req, res) => {
 
       // Increment seat count
       await TenantApplication.incrementSeat(tenant.id, tqApp.id);
-      console.log(`✅ [Provisioning] Admin access granted`);
 
       // 8. Configure transcription plan
-      console.log(`📊 [Provisioning] Configuring transcription plan: ${planSlug}`);
       await TenantTranscriptionConfig.upsert(tenant.id, {
         planId: transcriptionPlan.id,
         customMonthlyLimit: null,
         transcriptionLanguage: null,
         overageAllowed: false
       });
-      console.log(`✅ [Provisioning] Transcription plan configured`);
 
       // 9. Stripe IDs already stored in tenant record (step 1)
 
       // 10. Create tenant address if provided
       if (address && address.line1) {
-        console.log(`📍 [Provisioning] Creating tenant address`);
         const addressQuery = `
           INSERT INTO public.tenant_addresses (
             tenant_id_fk, type, line1, line2, city, state, postal_code, country_code, is_primary
@@ -488,12 +472,10 @@ router.post('/signup', async (req, res) => {
           address.postalCode || null,
           (address.country || 'BR').toUpperCase().substring(0, 2)
         ]);
-        console.log(`✅ [Provisioning] Tenant address created`);
       }
 
       // 11. Create admin contact with phone if provided
       if (adminPhone) {
-        console.log(`📞 [Provisioning] Creating admin contact`);
         const contactQuery = `
           INSERT INTO public.tenant_contacts (
             tenant_id_fk, type, full_name, email, phone, is_primary
@@ -506,13 +488,10 @@ router.post('/signup', async (req, res) => {
           adminEmail.toLowerCase(),
           adminPhone
         ]);
-        console.log(`✅ [Provisioning] Admin contact created`);
       }
 
       // Commit transaction
       await client.query('COMMIT');
-
-      console.log(`🎉 [Provisioning] Tenant provisioned successfully!`);
 
       // Return success response
       res.status(201).json({
@@ -652,8 +631,6 @@ router.put('/plan-change', async (req, res) => {
       });
     }
 
-    console.log(`🔄 [Provisioning] Starting plan change for customer: ${stripeCustomerId}`);
-
     // Find tenant by Stripe customer ID
     const tenantQuery = 'SELECT * FROM public.tenants WHERE stripe_customer_id = $1';
     const tenantResult = await database.query(tenantQuery, [stripeCustomerId]);
@@ -668,7 +645,6 @@ router.put('/plan-change', async (req, res) => {
     }
 
     const tenant = tenantResult.rows[0];
-    console.log(`📁 [Provisioning] Found tenant: ${tenant.name} (ID: ${tenant.id})`);
 
     // Get TQ application
     const tqApp = await Application.findBySlug('tq');
@@ -727,8 +703,6 @@ router.put('/plan-change', async (req, res) => {
 
     try {
       // 1. Update transcription config with new plan
-      console.log(`📊 [Provisioning] Updating plan from ${oldPlan?.slug || 'none'} to ${newPlanSlug}`);
-
       // Remove trial expiration if upgrading from trial
       let expiresAt = null;
       if (!newPlan.isTrial && currentConfig?.expiresAt) {
@@ -746,17 +720,14 @@ router.put('/plan-change', async (req, res) => {
         customMonthlyLimit: null,
         overageAllowed: newPlan.allowsOverage || false
       });
-      console.log(`✅ [Provisioning] Transcription plan updated`);
 
       // 2. Update seats purchased
-      console.log(`👥 [Provisioning] Updating seats from ${oldSeats} to ${newSeatsPurchased}`);
       const updateSeatsQuery = `
         UPDATE public.tenant_applications
         SET seats_purchased = $1, updated_at = NOW()
         WHERE tenant_id_fk = $2 AND application_id_fk = $3
       `;
       await client.query(updateSeatsQuery, [newSeatsPurchased, tenant.id, tqApp.id]);
-      console.log(`✅ [Provisioning] Seats updated`);
 
       // 3. Update Stripe subscription ID if provided
       if (stripeSubscriptionId) {
@@ -789,8 +760,6 @@ router.put('/plan-change', async (req, res) => {
       } else {
         changeType = 'lateral'; // Same plan, same seats (shouldn't happen normally)
       }
-
-      console.log(`🎉 [Provisioning] Plan change completed! Type: ${changeType}, Seats diff: ${seatsDifference}`);
 
       // Return success response
       res.status(200).json({
@@ -903,8 +872,6 @@ router.put('/cancel', async (req, res) => {
       });
     }
 
-    console.log(`🚫 [Provisioning] Starting cancellation for customer: ${stripeCustomerId}`);
-
     // Find tenant by Stripe customer ID
     const tenantQuery = 'SELECT * FROM public.tenants WHERE stripe_customer_id = $1';
     const tenantResult = await database.query(tenantQuery, [stripeCustomerId]);
@@ -919,7 +886,6 @@ router.put('/cancel', async (req, res) => {
     }
 
     const tenant = tenantResult.rows[0];
-    console.log(`📁 [Provisioning] Found tenant: ${tenant.name} (ID: ${tenant.id})`);
 
     // Get admin user for email notification
     const adminQuery = `
@@ -942,7 +908,6 @@ router.put('/cancel', async (req, res) => {
       const cancelledAt = new Date();
 
       // 1. Update tenant status to cancelled
-      console.log(`🔒 [Provisioning] Updating tenant status to cancelled`);
       const updateTenantQuery = `
         UPDATE public.tenants
         SET status = 'cancelled', active = false, updated_at = NOW()
@@ -951,7 +916,6 @@ router.put('/cancel', async (req, res) => {
       await client.query(updateTenantQuery, [tenant.id]);
 
       // 2. Deactivate all tenant applications (soft delete)
-      console.log(`📜 [Provisioning] Deactivating tenant applications`);
       const deactivateAppsQuery = `
         UPDATE public.tenant_applications
         SET active = false, updated_at = NOW()
@@ -960,7 +924,6 @@ router.put('/cancel', async (req, res) => {
       await client.query(deactivateAppsQuery, [tenant.id]);
 
       // 3. Deactivate all user access (soft delete)
-      console.log(`👥 [Provisioning] Deactivating user access`);
       const deactivateAccessQuery = `
         UPDATE public.user_application_access
         SET active = false
@@ -969,7 +932,6 @@ router.put('/cancel', async (req, res) => {
       await client.query(deactivateAccessQuery, [tenant.id]);
 
       // 4. Disable transcription config
-      console.log(`📊 [Provisioning] Disabling transcription config`);
       const disableConfigQuery = `
         UPDATE public.tenant_transcription_config
         SET enabled = false, updated_at = NOW()
@@ -979,8 +941,6 @@ router.put('/cancel', async (req, res) => {
 
       // Commit transaction
       await client.query('COMMIT');
-
-      console.log(`🎉 [Provisioning] Cancellation completed for tenant: ${tenant.name}`);
 
       // Return success response
       res.status(200).json({

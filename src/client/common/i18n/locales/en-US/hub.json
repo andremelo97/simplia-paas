@@ -217,14 +217,6 @@
     "validation_min_limit": "Minimum limit is {{limit}} minutes",
     "allow_overage": "Allow overage usage",
     "overage_description": "If enabled, you can continue transcribing beyond your monthly limit. Additional charges may apply.",
-    "upgrade_title": "Want to upgrade your plan?",
-    "upgrade_description": "Upgrade to a higher plan and unlock exclusive features:",
-    "upgrade_benefits": {
-      "custom_limit": "Change monthly limit as you wish",
-      "overage": "Allow overage without blocks",
-      "priority_support": "Priority support"
-    },
-    "view_plans": "View Available Plans",
     "usage_history": "Usage History (Last 6 Months)",
     "last_6_months": "Last 6 months",
     "no_history": "No usage history available",

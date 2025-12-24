@@ -9,7 +9,6 @@ import { Configurations } from './features/configurations/Configurations'
 import { BrandingConfiguration } from './features/configurations/BrandingConfiguration'
 import { CommunicationConfiguration } from './features/configurations/CommunicationConfiguration'
 import { TranscriptionUsageConfiguration } from './features/configurations/TranscriptionUsageConfiguration'
-import { Plans } from './pages/Plans'
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, isLoading, isHydrated } = useAuthStore()
@@ -82,11 +81,6 @@ export const router = createBrowserRouter([
         element: <Login />
       }
     ]
-  },
-  {
-    // Plans page is public - can be accessed without authentication
-    path: '/plans',
-    element: <Plans />
   },
   {
     path: '/',

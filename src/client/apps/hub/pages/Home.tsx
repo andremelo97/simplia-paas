@@ -1,12 +1,14 @@
 import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
 import { ExternalLink, Grid3x3, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Card, Button, StatusBadge, Badge } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
 import { publishFeedback } from '@client/common/feedback'
 import { TenantEntitlementsSection } from '../components/TenantEntitlementsSection'
+
+// Stripe Customer Portal URL
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/test_3cI3cvfmw4PudaubYo4Vy00'
 
 interface UserApp {
   slug: string
@@ -21,7 +23,6 @@ interface UserApp {
 
 export const Home: React.FC = () => {
   const { t } = useTranslation('hub')
-  const navigate = useNavigate()
   const { user, tenantName, isLoading, loadUserProfile } = useAuthStore()
 
   // Get apps directly from user state
@@ -65,9 +66,9 @@ export const Home: React.FC = () => {
   const handleAppClick = (app: UserApp) => {
     // Special handling for TQ app - SSO integration
     if (app.slug === 'tq') {
-      // Check if TQ trial is expired
+      // Check if TQ trial is expired - redirect to Stripe portal
       if (tqTrialState?.isTrialExpired) {
-        navigate('/plans')
+        window.open(STRIPE_PORTAL_URL, '_blank', 'noopener,noreferrer')
         return
       }
 

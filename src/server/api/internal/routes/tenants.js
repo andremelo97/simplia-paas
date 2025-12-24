@@ -2775,30 +2775,14 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
     const countQuery = `
       SELECT COUNT(*) as total
       FROM users u
-      WHERE u.tenant_id_fk = $1 
+      WHERE u.tenant_id_fk = $1
         AND u.active = true
     `;
-
-    console.log('🔄 [Tenants API] Executing query with params:', {
-      tenantId,
-      applicationId: application.id,
-      appSlug,
-      limit,
-      offset
-    });
-    
-    console.log('🔍 [Tenants API] Query SQL:', query);
 
     const [usersResult, countResult] = await Promise.all([
       database.query(query, [tenantId, application.id, limit, offset]),
       database.query(countQuery, [tenantId])
     ]);
-
-    console.log('✅ [Tenants API] Query results:', {
-      usersFound: usersResult.rows.length,
-      totalCount: countResult.rows[0].total,
-      sampleUsers: usersResult.rows.slice(0, 2)
-    });
 
     const users = usersResult.rows.map(user => ({
       id: user.id,
@@ -3435,19 +3419,8 @@ router.post('/:tenantId/users', async (req, res) => {
  *         description: User not found in tenant
  */
 router.get('/:tenantId/users/:userId', async (req, res) => {
-  console.log('🎯 [TENANT-USER] Route matched! Full request info:', {
-    method: req.method,
-    path: req.path,
-    params: req.params,
-    query: req.query,
-    baseUrl: req.baseUrl,
-    originalUrl: req.originalUrl
-  });
-
   try {
     const { tenantId, userId } = req.params;
-
-    console.log('🔍 [TENANT-USER] GET endpoint called:', { tenantId: parseInt(tenantId), userId: parseInt(userId) });
 
     // Find user by ID and tenant
     const user = await User.findById(parseInt(userId), parseInt(tenantId));

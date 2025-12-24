@@ -649,7 +649,6 @@ router.post('/forgot-password', authRateLimit, async (req, res) => {
       user = await User.findByEmailGlobal(email);
     } catch (error) {
       // User not found - return success anyway (security)
-      console.log(`Forgot password: User not found for email ${email}`);
       return res.json(successResponse);
     }
 
@@ -746,7 +745,6 @@ router.post('/forgot-password', authRateLimit, async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`Password reset email sent to ${user.email}`);
 
     res.json(successResponse);
   } catch (error) {

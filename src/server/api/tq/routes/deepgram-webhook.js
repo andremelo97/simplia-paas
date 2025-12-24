@@ -296,15 +296,6 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
 
     // Record usage with local cost calculation (fire and forget)
     // Real cost will be updated later by daily cron job
-    console.log(`[Transcription Usage] 📊 ========== STARTING USAGE RECORDING ==========`);
-    console.log(`[Transcription Usage] 📊 tenantId: ${tenantId} (type: ${typeof tenantId})`);
-    console.log(`[Transcription Usage] 📊 transcriptionId: ${transcriptionId}`);
-    console.log(`[Transcription Usage] 📊 audioDurationSeconds: ${audioDurationSeconds}`);
-    console.log(`[Transcription Usage] 📊 sttModel: ${DEFAULT_STT_MODEL}`);
-    console.log(`[Transcription Usage] 📊 detectedLanguage: ${detectedLanguage}`);
-    console.log(`[Transcription Usage] 📊 sttProviderRequestId: ${sttProviderRequestId}`);
-    console.log(`[Transcription Usage] 📊 Calling TenantTranscriptionUsage.create()...`);
-
     TenantTranscriptionUsage.create(parseInt(tenantId), {
       transcriptionId: transcriptionId,
       audioDurationSeconds: audioDurationSeconds,
@@ -312,21 +303,9 @@ router.post('/webhook/deepgram', express.raw({ type: 'application/json' }), asyn
       detectedLanguage: detectedLanguage,
       sttProviderRequestId: sttProviderRequestId,
       usageDate: new Date()
-    }).then((result) => {
-      console.log(`[Transcription Usage] ✅ ========== SUCCESS ==========`);
-      console.log(`[Transcription Usage] ✅ Record created with ID: ${result.id}`);
-      console.log(`[Transcription Usage] ✅ Cost calculated: $${result.costUsd}`);
-      console.log(`[Transcription Usage] ✅ Tenant: ${result.tenantId}`);
     }).catch(error => {
-      console.error(`[Transcription Usage] ❌ ========== FAILED ==========`);
-      console.error(`[Transcription Usage] ❌ Error type:`, error.constructor.name);
-      console.error(`[Transcription Usage] ❌ Error message:`, error.message);
-      console.error(`[Transcription Usage] ❌ Error code:`, error.code);
-      console.error(`[Transcription Usage] ❌ Full error:`, error);
-      console.error(`[Transcription Usage] ❌ Stack trace:`, error.stack);
+      console.error('[Transcription Usage] Failed to record usage:', error.message);
     });
-
-    console.log(`[Webhook] 🔍 DEBUG - Sending 200 OK response to Deepgram (valid transcript)...`);
     res.status(200).json({ success: true, message: 'Transcription processed successfully' });
     console.log(`[Webhook] ✅ Response sent successfully - webhook processing complete`);
 

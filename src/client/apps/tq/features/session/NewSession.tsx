@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
 import {
   ChevronDown,
-  ChevronUp,
   Mic,
   Play,
   Pause,
@@ -13,7 +11,8 @@ import {
   AlertCircle,
   Upload,
   Plus,
-  Bot
+  Bot,
+  HelpCircle
 } from 'lucide-react'
 import {
   Card,
@@ -32,7 +31,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  LinkToast
+  LinkToast,
+  Modal
 } from '@client/common/ui'
 import { useAuthStore } from '../../shared/store'
 import { sessionsService, Session } from '../../services/sessions'
@@ -198,6 +198,9 @@ export const NewSession: React.FC = () => {
   // Quota state
   const [quota, setQuota] = useState<QuotaResponse | null>(null)
   const [isLoadingQuota, setIsLoadingQuota] = useState(true)
+
+  // Workflow help modal state
+  const [showHelpModal, setShowHelpModal] = useState(false)
 
   // Dropdown is now handled by the DropdownMenu component
 
@@ -1013,7 +1016,17 @@ export const NewSession: React.FC = () => {
       {/* Header with Title and Controls */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
+            {/* Help button */}
+            <button
+              onClick={() => setShowHelpModal(true)}
+              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[#B725B7] bg-purple-50 hover:bg-purple-100 rounded-full transition-colors"
+            >
+              <HelpCircle className="w-3 h-3" />
+              {t('sessions.workflow_guide.title')}
+            </button>
+          </div>
           <p className="text-gray-600 mt-1">
             {t('sessions.pages.management_subtitle')}
           </p>
@@ -1468,6 +1481,120 @@ export const NewSession: React.FC = () => {
           type={toastData.type}
         />
       )}
+
+      {/* Workflow Help Modal */}
+      <Modal
+        open={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+        title={t('sessions.workflow_guide.modal_title')}
+        size="xl"
+      >
+        <div className="px-6 pt-4 pb-6">
+          {/* Introduction */}
+          <p className="text-gray-600 mb-8">
+            {t('sessions.workflow_guide.intro')}
+          </p>
+
+          {/* Step 1 - Transcription */}
+          <div className="flex gap-4 pb-6 border-b border-gray-200">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center text-white font-bold">
+              1
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                {t('sessions.workflow_guide.step1_title')}
+              </h3>
+              <p className="text-gray-600 text-sm mb-3">
+                {t('sessions.workflow_guide.step1_detail')}
+              </p>
+              <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                <p className="text-gray-700">
+                  <strong>{t('sessions.workflow_guide.tip')}:</strong> {t('sessions.workflow_guide.step1_tip')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 2 - Patient */}
+          <div className="flex gap-4 py-6 border-b border-gray-200">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center text-white font-bold">
+              2
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                {t('sessions.workflow_guide.step2_title')}
+              </h3>
+              <p className="text-gray-600 text-sm mb-3">
+                {t('sessions.workflow_guide.step2_detail')}
+              </p>
+              <div className="bg-purple-50 rounded-lg p-3 text-sm border border-purple-100">
+                <p className="text-gray-700 mb-2">
+                  <strong>{t('sessions.workflow_guide.step2_search_title')}:</strong> {t('sessions.workflow_guide.step2_search')}
+                </p>
+                <p className="text-gray-700">
+                  <strong>{t('sessions.workflow_guide.step2_create_title')}:</strong> {t('sessions.workflow_guide.step2_create')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3 - Session */}
+          <div className="flex gap-4 py-6 border-b border-gray-200">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center text-white font-bold">
+              3
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                {t('sessions.workflow_guide.step3_title')}
+              </h3>
+              <p className="text-gray-600 text-sm mb-3">
+                {t('sessions.workflow_guide.step3_detail')}
+              </p>
+              <div className="bg-gray-50 rounded-lg p-3 text-sm">
+                <p className="text-gray-700">
+                  <strong>{t('sessions.workflow_guide.step3_button')}:</strong> {t('sessions.workflow_guide.step3_button_desc')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 4 - Documents */}
+          <div className="flex gap-4 pt-6">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center text-white font-bold">
+              4
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-gray-900 mb-2">
+                {t('sessions.workflow_guide.step4_title')}
+              </h3>
+              <p className="text-gray-600 text-sm mb-3">
+                {t('sessions.workflow_guide.step4_detail')}
+              </p>
+              <div className="space-y-2">
+                <div className="bg-pink-50 rounded-lg p-3 text-sm border border-pink-100">
+                  <p className="text-gray-700 mb-1">
+                    <strong className="text-[#E91E63]">{t('sessions.workflow_guide.step4_template_title')}</strong>
+                  </p>
+                  <p className="text-gray-600">{t('sessions.workflow_guide.step4_template_desc')}</p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-3 text-sm border border-purple-100">
+                  <p className="text-gray-700 mb-1">
+                    <strong className="text-[#B725B7]">{t('sessions.workflow_guide.step4_agent_title')}</strong>
+                  </p>
+                  <p className="text-gray-600">{t('sessions.workflow_guide.step4_agent_desc')}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Close button */}
+          <div className="flex justify-end mt-8">
+            <Button variant="primary" onClick={() => setShowHelpModal(false)}>
+              {t('sessions.workflow_guide.got_it')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }

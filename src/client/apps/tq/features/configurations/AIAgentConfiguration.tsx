@@ -154,16 +154,19 @@ export const AIAgentConfiguration: React.FC = () => {
             <h3 className="text-sm font-medium text-gray-900 mb-2">
               {t('configurations.ai_agent.available_variables')}
             </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              {t('configurations.ai_agent.variables_explanation')}
+            </p>
             <ul className="text-sm text-gray-700 space-y-1">
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.first_name$</code> - Nome do paciente</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.last_name$</code> - Sobrenome do paciente</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.fullName$</code> - Nome completo do paciente</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$date.now$</code> - Data atual</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$session.created_at$</code> - Data da sessão</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$transcription$</code> - Transcrição completa <span className="text-red-600 font-semibold">*</span></li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.first_name$</code> - Seu nome</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.last_name$</code> - Seu sobrenome</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.fullName$</code> - Seu nome completo</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.first_name$</code> - {t('configurations.ai_agent.var_patient_first_name')}</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.last_name$</code> - {t('configurations.ai_agent.var_patient_last_name')}</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.fullName$</code> - {t('configurations.ai_agent.var_patient_full_name')}</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$date.now$</code> - {t('configurations.ai_agent.var_date_now')}</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$session.created_at$</code> - {t('configurations.ai_agent.var_session_created_at')}</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$transcription$</code> - {t('configurations.ai_agent.var_transcription')} <span className="text-red-600 font-semibold">*</span></li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.first_name$</code> - {t('configurations.ai_agent.var_me_first_name')}</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.last_name$</code> - {t('configurations.ai_agent.var_me_last_name')}</li>
+              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.fullName$</code> - {t('configurations.ai_agent.var_me_full_name')}</li>
             </ul>
             <p className="text-xs text-gray-600 mt-2">
               <span className="text-red-600 font-semibold">*</span> {t('configurations.ai_agent.transcription_required')}

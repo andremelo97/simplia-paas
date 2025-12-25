@@ -18,7 +18,8 @@ import {
   Mail,
   Palette,
   ExternalLink,
-  Rocket
+  Rocket,
+  Bot
 } from 'lucide-react'
 
 export const TQOnboardingWizard: React.FC = () => {
@@ -179,7 +180,7 @@ export const TQOnboardingWizard: React.FC = () => {
               </h3>
               <p className="text-gray-600">
                 {t('onboarding.transcription.description',
-                  'Record your consultations or upload audio files, and TQ will automatically transcribe them into text using AI.'
+                  'Record your consultations or upload audio files, and TQ will automatically transcribe them into text.'
                 )}
               </p>
             </div>
@@ -209,7 +210,7 @@ export const TQOnboardingWizard: React.FC = () => {
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">
-                    {t('onboarding.transcription.step2_title', 'AI Transcription')}
+                    {t('onboarding.transcription.step2_title', 'Automatic Transcription')}
                   </p>
                   <p className="text-sm text-gray-600">
                     {t('onboarding.transcription.step2_desc', 'The audio is automatically converted to text.')}
@@ -243,13 +244,13 @@ export const TQOnboardingWizard: React.FC = () => {
         </div>
       )
     },
-    // Step 3: Templates - With syntax instructions
+    // Step 3: Templates - With syntax instructions + AI Agent alternative
     {
       id: 'templates',
       title: t('onboarding.steps.templates', 'Templates'),
       content: (
         <div className="py-4">
-          <div className="flex items-start gap-4 mb-5">
+          <div className="flex items-start gap-4 mb-4">
             <div className="w-12 h-12 rounded-lg bg-pink-100 flex items-center justify-center flex-shrink-0">
               <FileText className="w-6 h-6 text-[#E91E63]" />
             </div>
@@ -265,10 +266,10 @@ export const TQOnboardingWizard: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             {/* Template Types */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3 text-sm">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <h4 className="font-medium text-gray-900 mb-2 text-sm">
                 {t('onboarding.templates.types', 'Available templates:')}
               </h4>
               <div className="space-y-2">
@@ -298,11 +299,11 @@ export const TQOnboardingWizard: React.FC = () => {
             </div>
 
             {/* Syntax Guide */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-3 text-sm">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <h4 className="font-medium text-gray-900 mb-2 text-sm">
                 {t('onboarding.templates.syntax_title', 'Template Syntax:')}
               </h4>
-              <div className="space-y-2 text-xs">
+              <div className="space-y-1.5 text-xs">
                 <div className="flex items-start gap-2">
                   <div className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-mono">[placeholder]</div>
                   <span className="text-gray-600">{t('onboarding.templates.syntax_placeholder', 'AI fills from transcription')}</span>
@@ -316,17 +317,53 @@ export const TQOnboardingWizard: React.FC = () => {
                   <span className="text-gray-600">{t('onboarding.templates.syntax_instruction', 'AI guidance (removed in output)')}</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-3 italic">
+              <p className="text-xs text-gray-500 mt-2 italic">
                 {t('onboarding.templates.guide_hint', 'A complete guide is available on the template create/edit page.')}
               </p>
             </div>
           </div>
 
+          {/* AI Agent Alternative */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-gray-900 text-sm mb-1">
+                  {t('onboarding.templates.ai_agent_title', 'Or use the AI Agent')}
+                </h4>
+                <p className="text-xs text-gray-600 mb-2">
+                  {t('onboarding.templates.ai_agent_description',
+                    'Don\'t want to use templates? The AI Agent can create documents for you directly from the transcription. Just click this button in the session page:'
+                  )}
+                </p>
+                {/* Visual representation of the button - exact copy from NewSession */}
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-[5px] text-sm font-medium cursor-default" style={{ fontFamily: 'Montserrat, sans-serif', height: '32px' }}>
+                  <Bot className="w-4 h-4" />
+                  {t('sessions.call_ai_agent', 'Call AI Agent')}
+                </div>
+                <p className="text-xs text-gray-600 mt-3">
+                  {t('onboarding.templates.ai_agent_config_hint',
+                    'You can customize the AI Agent\'s initial instructions in the configurations.'
+                  )}
+                </p>
+                <button
+                  onClick={() => goToPage('/configurations/ai-agent')}
+                  className="mt-2 text-xs text-[#B725B7] hover:text-[#9a1f9a] font-medium flex items-center gap-1"
+                >
+                  {t('onboarding.templates.configure_ai_agent', 'Configure AI Agent')}
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => goToPage('/templates')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#E91E63] text-[#E91E63] rounded-lg hover:bg-pink-50 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-[#E91E63] text-[#E91E63] rounded-lg hover:bg-pink-50 transition-colors text-sm"
           >
-            <FileText className="w-5 h-5" />
+            <FileText className="w-4 h-4" />
             {t('onboarding.templates.view_templates', 'View Templates')}
             <ArrowRight className="w-4 h-4" />
           </button>

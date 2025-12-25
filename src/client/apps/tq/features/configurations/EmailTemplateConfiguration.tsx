@@ -512,6 +512,9 @@ export const EmailTemplateConfiguration: React.FC = () => {
                 <h3 className="text-sm font-medium text-gray-900 mb-2">
                   {t('configurations.email_template.available_variables')}
                 </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  {t('configurations.email_template.variables_explanation')}
+                </p>
                 <ul className="text-sm text-gray-700 space-y-1">
                   <li>
                     <code

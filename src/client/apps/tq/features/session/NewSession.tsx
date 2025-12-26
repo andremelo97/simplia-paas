@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   ChevronDown,
@@ -14,6 +14,21 @@ import {
   Bot,
   HelpCircle
 } from 'lucide-react'
+
+// LocalStorage key for draft persistence
+const DRAFT_STORAGE_KEY = 'tq-new-session-draft'
+
+// Draft state interface
+interface DraftState {
+  transcription: string
+  createdTranscriptionId: string | null
+  patientMode: 'search' | 'create'
+  patientName: string
+  searchQuery: string
+  selectedPatient: Patient | null
+  createdPatient: Patient | null
+  savedAt: number
+}
 import {
   Card,
   CardContent,
@@ -202,7 +217,114 @@ export const NewSession: React.FC = () => {
   // Workflow help modal state
   const [showHelpModal, setShowHelpModal] = useState(false)
 
+  // Draft restoration flag - prevents saving during initial load
+  const [isDraftRestored, setIsDraftRestored] = useState(false)
+
   // Dropdown is now handled by the DropdownMenu component
+
+  // Check if there are unsaved changes (for beforeunload warning)
+  const hasUnsavedChanges = useMemo(() => {
+    const hasTranscription = transcription.trim().length > 0
+    const hasPatient = selectedPatient !== null || createdPatient !== null
+    const noSessionYet = !session
+    return hasTranscription && hasPatient && noSessionYet
+  }, [transcription, selectedPatient, createdPatient, session])
+
+  // Restore draft from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedDraft = localStorage.getItem(DRAFT_STORAGE_KEY)
+      if (savedDraft) {
+        const draft: DraftState = JSON.parse(savedDraft)
+
+        // Check if draft is not too old (24 hours max)
+        const MAX_AGE = 24 * 60 * 60 * 1000 // 24 hours
+        if (Date.now() - draft.savedAt < MAX_AGE) {
+          // Restore state
+          if (draft.transcription) setTranscription(draft.transcription)
+          if (draft.createdTranscriptionId) setCreatedTranscriptionId(draft.createdTranscriptionId)
+          if (draft.patientMode) setPatientMode(draft.patientMode)
+          if (draft.patientName) setPatientName(draft.patientName)
+          if (draft.searchQuery) setSearchQuery(draft.searchQuery)
+          if (draft.selectedPatient) setSelectedPatient(draft.selectedPatient)
+          if (draft.createdPatient) setCreatedPatient(draft.createdPatient)
+        } else {
+          // Draft too old, clear it
+          localStorage.removeItem(DRAFT_STORAGE_KEY)
+        }
+      }
+    } catch {
+      // Silent fail - localStorage might not be available
+    }
+    setIsDraftRestored(true)
+  }, [])
+
+  // Save draft to localStorage when state changes (debounced)
+  useEffect(() => {
+    // Don't save during initial load
+    if (!isDraftRestored) return
+
+    // Don't save if session already created (draft is complete)
+    if (session) return
+
+    const timeoutId = setTimeout(() => {
+      try {
+        const draft: DraftState = {
+          transcription,
+          createdTranscriptionId,
+          patientMode,
+          patientName,
+          searchQuery,
+          selectedPatient,
+          createdPatient,
+          savedAt: Date.now()
+        }
+
+        // Only save if there's meaningful data
+        const hasData = transcription.trim() || selectedPatient || createdPatient || patientName.trim()
+        if (hasData) {
+          localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft))
+        }
+      } catch {
+        // Silent fail
+      }
+    }, 1000) // 1 second debounce
+
+    return () => clearTimeout(timeoutId)
+  }, [
+    isDraftRestored,
+    session,
+    transcription,
+    createdTranscriptionId,
+    patientMode,
+    patientName,
+    searchQuery,
+    selectedPatient,
+    createdPatient
+  ])
+
+  // Clear draft from localStorage
+  const clearDraft = useCallback(() => {
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY)
+    } catch {
+      // Silent fail
+    }
+  }, [])
+
+  // beforeunload warning when leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = '' // Required for Chrome
+        return ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
 
   // Simulate autosave without API calls (for now)
   const debouncedTranscription = useDebouncedValue(transcription, 2000)
@@ -493,6 +615,9 @@ export const NewSession: React.FC = () => {
       const newSession = await ensureSession()
       // Success feedback is handled automatically by HTTP interceptor
 
+      // Clear draft from localStorage after successful creation
+      clearDraft()
+
       // Show session link toast
       setToastData({
         itemId: newSession.id,
@@ -542,6 +667,9 @@ export const NewSession: React.FC = () => {
         status: 'draft'
       }
       const newQuote = await quotesService.createQuote(quoteData)
+
+      // Clear draft from localStorage after successful creation
+      clearDraft()
 
       // Show quote link toast (redirects to /quotes)
       setToastData({
@@ -595,6 +723,9 @@ export const NewSession: React.FC = () => {
         throw new Error('Invalid clinical report response from API')
       }
 
+      // Clear draft from localStorage after successful creation
+      clearDraft()
+
       // Show LinkToast for navigation (not publishFeedback - feedback is automatic)
       setToastData({
         itemId: newReport.id,
@@ -630,6 +761,9 @@ export const NewSession: React.FC = () => {
 
   // Handle Template Quote creation callback
   const handleTemplateQuoteCreated = (quoteId: string, quoteNumber: string) => {
+    // Clear draft from localStorage after successful creation
+    clearDraft()
+
     // Show quote link toast (redirects to /quotes)
     setToastData({
       itemId: quoteId,
@@ -681,6 +815,9 @@ export const NewSession: React.FC = () => {
       if (!newReport || !newReport.id || !newReport.number) {
         throw new Error('Invalid clinical report response from API')
       }
+
+      // Clear draft from localStorage after successful creation
+      clearDraft()
 
       // Show LinkToast for navigation
       setToastData({

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
   ChevronDown,
@@ -12,7 +13,8 @@ import {
   Upload,
   Plus,
   Bot,
-  HelpCircle
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react'
 
 // LocalStorage key for draft persistence
@@ -1155,6 +1157,16 @@ export const NewSession: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
+            {/* Session badge - shows after session is created */}
+            {session && (
+              <Link
+                to={`/sessions/${session.id}/edit`}
+                className="flex items-center gap-1.5 px-3 py-1 text-sm font-medium text-white bg-[#B725B7] hover:bg-[#9a1f9a] rounded-full transition-colors"
+              >
+                {session.number}
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            )}
             {/* Help button */}
             <button
               onClick={() => setShowHelpModal(true)}

@@ -338,6 +338,12 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Public quote template deleted successfully."
   },
 
+  // Bug Reports
+  BUG_REPORT_SUBMITTED: {
+    title: "Bug Report Sent",
+    message: "Your bug report has been submitted successfully. Thank you!"
+  },
+
   // Branding operations
   BRANDING_UPDATED: {
     title: "Branding Updated",

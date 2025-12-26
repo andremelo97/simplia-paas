@@ -25,6 +25,7 @@ const tenantTranscriptionUsageRoutes = require('./api/internal/routes/tenant-tra
 const jobsRoutes = require('./api/internal/routes/jobs');
 const apiKeysRoutes = require('./api/internal/routes/api-keys');
 const onboardingRoutes = require('./api/internal/routes/onboarding');
+const bugReportsRoutes = require('./api/internal/routes/bug-reports');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
@@ -175,6 +176,7 @@ tenantScopedRouter.use(tenantMiddleware, requireAuth);
 
 tenantScopedRouter.use('/users', userRoutes); // Re-enabled for pricing system grant/revoke functionality
 tenantScopedRouter.use('/entitlements', entitlementsRoutes);
+tenantScopedRouter.use('/bug-reports', bugReportsRoutes);
 
 // TQ App API Routes (require TQ app access)
 tenantScopedRouter.use('/tq', requireTranscriptionQuoteAccess(), tqRoutes);

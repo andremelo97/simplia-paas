@@ -164,23 +164,27 @@ class SupabaseStorageService {
 
       const bucketExists = buckets.some(bucket => bucket.name === this.bucketName);
 
-      if (!bucketExists) {
-        const { error: createError } = await this.supabase.storage.createBucket(this.bucketName, {
-          public: true
-          // Note: fileSizeLimit and allowedMimeTypes removed - causes "object exceeded maximum size" error
-          // File size limit and MIME validation are done at application level during upload
-        });
-
-        if (createError) {
-          throw new Error(`Failed to create bucket: ${createError.message}`);
-        }
-
-        console.log(`Created Supabase storage bucket: ${this.bucketName}`);
+      if (bucketExists) {
+        console.log(`[Storage] Bucket already exists: ${this.bucketName}`);
+        return true;
       }
 
+      // Bucket doesn't exist, create it
+      console.log(`[Storage] Creating new bucket: ${this.bucketName}`);
+      const { error: createError } = await this.supabase.storage.createBucket(this.bucketName, {
+        public: true
+        // Note: fileSizeLimit and allowedMimeTypes removed - causes "object exceeded maximum size" error
+        // File size limit and MIME validation are done at application level during upload
+      });
+
+      if (createError) {
+        throw new Error(`Failed to create bucket: ${createError.message}`);
+      }
+
+      console.log(`[Storage] Created Supabase storage bucket: ${this.bucketName}`);
       return true;
     } catch (error) {
-      console.error('Bucket setup error:', error);
+      console.error('[Storage] Bucket setup error:', error);
       throw error;
     }
   }
@@ -219,11 +223,17 @@ class SupabaseStorageService {
 
 module.exports = SupabaseStorageService;
 /**
+ * Default folders to create in each tenant bucket
+ */
+const DEFAULT_TENANT_FOLDERS = ['audio-files', 'branding', 'bug-reports'];
+
+/**
  * Create tenant-specific bucket during TQ app provisioning
+ * Also creates default folders (audio-files, branding, bug-reports)
  *
  * @param {string} tenantSlug - Tenant slug (e.g., 'acme-clinic')
  * @param {boolean} isPublic - Whether bucket should be public (default: true)
- * @returns {Promise<{bucketName: string, created: boolean}>}
+ * @returns {Promise<{bucketName: string, created: boolean, folders: string[]}>}
  */
 async function createTenantBucket(tenantSlug, isPublic = true) {
   if (!tenantSlug) {
@@ -252,28 +262,123 @@ async function createTenantBucket(tenantSlug, isPublic = true) {
     }
 
     const bucketExists = buckets?.some(b => b.name === bucketName);
+    let bucketCreated = false;
 
     if (bucketExists) {
       console.log(`ℹ️  Bucket already exists: ${bucketName}`);
-      return { bucketName, created: false };
+    } else {
+      // Create bucket
+      const { error: createError } = await supabase.storage.createBucket(bucketName, {
+        public: isPublic
+        // Note: fileSizeLimit and allowedMimeTypes removed - causes "object exceeded maximum size" error
+        // File size limit and MIME validation are done at application level during upload
+      });
+
+      if (createError) {
+        throw new Error(`Failed to create bucket: ${createError.message}`);
+      }
+
+      console.log(`✅ Created tenant bucket: ${bucketName} (public: ${isPublic})`);
+      bucketCreated = true;
     }
 
-    const { data, error: createError } = await supabase.storage.createBucket(bucketName, {
-      public: isPublic
-      // Note: fileSizeLimit and allowedMimeTypes removed - causes "object exceeded maximum size" error
-      // File size limit and MIME validation are done at application level during upload
-    });
+    // Create default folders by uploading .gitkeep placeholder files
+    const createdFolders = [];
+    for (const folder of DEFAULT_TENANT_FOLDERS) {
+      try {
+        const placeholderPath = `${folder}/.gitkeep`;
 
-    if (createError) {
-      throw new Error(`Failed to create bucket: ${createError.message}`);
+        // Check if folder already has content
+        const { data: existingFiles } = await supabase.storage
+          .from(bucketName)
+          .list(folder, { limit: 1 });
+
+        if (existingFiles && existingFiles.length > 0) {
+          console.log(`ℹ️  Folder already exists with content: ${bucketName}/${folder}/`);
+          continue;
+        }
+
+        // Create placeholder file to ensure folder exists
+        const { error: uploadError } = await supabase.storage
+          .from(bucketName)
+          .upload(placeholderPath, Buffer.from(''), {
+            contentType: 'text/plain',
+            upsert: true
+          });
+
+        if (uploadError) {
+          console.warn(`⚠️  Failed to create folder ${folder}: ${uploadError.message}`);
+        } else {
+          console.log(`✅ Created folder: ${bucketName}/${folder}/`);
+          createdFolders.push(folder);
+        }
+      } catch (folderError) {
+        console.warn(`⚠️  Error creating folder ${folder}:`, folderError.message);
+      }
     }
 
-    console.log(`✅ Created tenant bucket: ${bucketName} (public: ${isPublic})`);
-    return { bucketName, created: true };
+    return { bucketName, created: bucketCreated, folders: createdFolders };
 
   } catch (error) {
     console.error(`❌ Failed to create tenant bucket for ${tenantSlug}:`, error);
     throw error;
+  }
+}
+
+/**
+ * Ensure a specific folder exists in a bucket
+ *
+ * @param {string} bucketName - Bucket name
+ * @param {string} folder - Folder name
+ * @returns {Promise<boolean>}
+ */
+async function ensureFolderExists(bucketName, folder) {
+  try {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('[ensureFolderExists] Missing Supabase configuration');
+      return false;
+    }
+
+    const { createClient } = require('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
+
+    // Check if folder has content
+    const { data: existingFiles, error: listError } = await supabase.storage
+      .from(bucketName)
+      .list(folder, { limit: 1 });
+
+    if (listError) {
+      console.warn(`[ensureFolderExists] Error listing folder ${folder}: ${listError.message}`);
+    }
+
+    if (existingFiles && existingFiles.length > 0) {
+      return true; // Folder exists with content
+    }
+
+    // Create placeholder to ensure folder exists
+    const placeholderPath = `${folder}/.gitkeep`;
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(placeholderPath, Buffer.from(''), {
+        contentType: 'text/plain',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.warn(`[ensureFolderExists] Failed to create folder ${folder}: ${uploadError.message}`);
+      return false;
+    }
+
+    console.log(`[ensureFolderExists] Created folder: ${bucketName}/${folder}/`);
+    return true;
+  } catch (error) {
+    console.error(`[ensureFolderExists] Error:`, error);
+    return false;
   }
 }
 
@@ -345,3 +450,5 @@ async function deleteFileByUrl(fileUrl) {
 
 module.exports.createTenantBucket = createTenantBucket;
 module.exports.deleteFileByUrl = deleteFileByUrl;
+module.exports.ensureFolderExists = ensureFolderExists;
+module.exports.DEFAULT_TENANT_FOLDERS = DEFAULT_TENANT_FOLDERS;

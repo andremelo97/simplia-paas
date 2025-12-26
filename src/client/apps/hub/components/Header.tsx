@@ -6,7 +6,8 @@ import { hubService } from '../services/hub'
 import { Header as CommonHeader } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
 import { UserSettingsModal } from './UserSettingsModal'
-import { HelpCircle } from 'lucide-react'
+import { BugReportModal } from './BugReportModal'
+import { HelpCircle, Bug } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 
 interface BreadcrumbItem {
@@ -66,6 +67,7 @@ export const Header: React.FC = () => {
   const { openWizard } = useOnboardingStore()
   const { t } = useTranslation('hub')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isBugReportOpen, setIsBugReportOpen] = useState(false)
 
   const localizedBreadcrumbs = useCallback(
     (pathname: string) => buildBreadcrumbs(pathname, t),
@@ -93,19 +95,36 @@ export const Header: React.FC = () => {
   // Only show help button for admin users
   const showHelpButton = user?.role === 'admin'
 
-  // Help button component for the header
-  const helpButton = showHelpButton ? (
-    <Tooltip content={t('header.help_tooltip', 'Setup Assistant')} side="bottom">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={openWizard}
-        className="text-gray-500 hover:text-[#B725B7] transition-colors"
-      >
-        <HelpCircle className="w-5 h-5" />
-      </Button>
-    </Tooltip>
-  ) : null
+  // Right actions for the header (bug report + help)
+  const rightActions = (
+    <div className="flex items-center gap-1">
+      {/* Bug Report Button */}
+      <Tooltip content={t('header.bug_report_tooltip', 'Report a Bug')} side="bottom">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsBugReportOpen(true)}
+          className="text-gray-500 hover:text-[#E91E63] transition-colors"
+        >
+          <Bug className="w-5 h-5" />
+        </Button>
+      </Tooltip>
+
+      {/* Help Button (admin only) */}
+      {showHelpButton && (
+        <Tooltip content={t('header.help_tooltip', 'Setup Assistant')} side="bottom">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={openWizard}
+            className="text-gray-500 hover:text-[#B725B7] transition-colors"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </Button>
+        </Tooltip>
+      )}
+    </div>
+  )
 
   return (
     <>
@@ -119,12 +138,17 @@ export const Header: React.FC = () => {
         getDisplayRole={getDisplayRole}
         showSearch={false}
         showNotifications={false}
-        rightActions={helpButton}
+        rightActions={rightActions}
       />
 
       <UserSettingsModal
         isOpen={isSettingsOpen}
         onClose={handleCloseSettings}
+      />
+
+      <BugReportModal
+        isOpen={isBugReportOpen}
+        onClose={() => setIsBugReportOpen(false)}
       />
     </>
   )

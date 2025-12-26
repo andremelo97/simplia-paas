@@ -101,6 +101,7 @@ Sistema de notificações padronizadas para operações bem-sucedidas:
 - `LICENSE_ACTIVATED`, `LICENSE_ADJUSTED`
 - `PRICING_CREATED`, `PRICING_UPDATED`
 - `BRANDING_UPDATED`, `BRANDING_RESET`, `LOGO_UPLOADED`, `FAVICON_UPLOADED`, `VIDEO_UPLOADED`
+- `BUG_REPORT_SUBMITTED`
 
 ---
 
@@ -1220,7 +1221,61 @@ Reset onboarding status (allows re-running wizard).
 
 ---
 
-## 📊 12. Transcription Plans
+## 🐛 12. Bug Reports
+
+**Tag:** `tenant`
+**Base:** `/bug-reports`
+
+> **Escopo**: Tenant-specific (requer `x-tenant-id`)
+
+Submit bug reports from Hub application with optional file attachments.
+
+### POST `/bug-reports`
+Submit a bug report with optional attachments.
+
+**Headers:**
+- `Authorization: Bearer <jwt>`
+- `x-tenant-id: <tenantId numérico>`
+- `Content-Type: multipart/form-data`
+
+**Form Data:**
+- `description` (string, required): Bug description
+- `attachments` (files, optional): Up to 5 files (images/videos), max 50MB each
+
+**Allowed MIME Types:**
+- Images: `image/jpeg`, `image/png`, `image/gif`, `image/webp`
+- Videos: `video/mp4`, `video/webm`, `video/quicktime`
+
+**Response (200)**:
+```json
+{
+  "data": { "success": true },
+  "meta": { "code": "BUG_REPORT_SUBMITTED" }
+}
+```
+
+**Behavior:**
+- Uploads attachments to Supabase Storage: `tenant-{subdomain}/bug-reports/`
+- Sends formatted HTML email to `admin@livocare.ai`
+- Email includes: tenant info, user info, timestamp, description, attachment links
+- Uses default SMTP configuration (`DEFAULT_SMTP_*` env vars)
+
+**Email Format:**
+- **From**: `"LivoCare Hub" <noreply@livocare.ai>`
+- **To**: `admin@livocare.ai`
+- **Reply-To**: User's email (for easy response)
+- **Subject**: `[Bug Report] {tenant_name} - {date}`
+
+**Errors:**
+| Status | Code | Description |
+|--------|------|-------------|
+| 400 | - | Description is required |
+| 401 | - | Authentication required |
+| 500 | - | Failed to submit bug report |
+
+---
+
+## 📊 13. Transcription Plans
 
 **Tag:** `global`
 **Base:** `/transcription-plans`
@@ -1285,7 +1340,7 @@ Soft delete plan (sets `active = false`).
 
 ---
 
-## 🚀 13. Provisioning API
+## 🚀 14. Provisioning API
 
 **Tag:** `external`
 **Base:** `/api/provisioning`
@@ -1561,9 +1616,9 @@ npm run db:drop:test
 
 # 📊 API Statistics
 
-- **Total Endpoints**: 75+ (estimated)
+- **Total Endpoints**: 76+ (estimated)
 - **Platform Admin**: 58 endpoints (unchanged)
-- **Tenant Admin**: 5 endpoints (streamlined)
+- **Tenant Admin**: 6 endpoints (streamlined)
 - **Authentication Endpoints**: 8 (platform + tenant auth)
 - **Debug/Dev Endpoints**: 8 (development only)
 - **Rate Limited**: Authentication routes (10-15 req/15min)
@@ -1667,6 +1722,9 @@ npm run db:drop:test
 
 #### Tenant Users (`/users`)
 - `GET /users` - List users in tenant
+
+#### Bug Reports (`/bug-reports`)
+- `POST /bug-reports` - Submit bug report with attachments
 
 ### 🔧 Development Routes
 *Debug/development endpoints (no auth required)*

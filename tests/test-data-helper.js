@@ -241,7 +241,210 @@ async function getCoreTestData() {
   };
 }
 
+// =====================================================
+// TQ-SPECIFIC FACTORIES
+// =====================================================
+
+/**
+ * Create a test patient in tenant schema
+ * @param {string} schema - Tenant schema name
+ * @param {Object} options - Patient configuration
+ * @returns {Object} Created patient data
+ */
+async function createTestPatient(schema, options = {}) {
+  const {
+    firstName = 'Test',
+    lastName = 'Patient',
+    email = 'patient_' + Date.now() + '@test.com',
+    phone = '+5511999999999',
+    dateOfBirth = '1990-01-15',
+    gender = 'male',
+    notes = null
+  } = options;
+
+  await global.testDb.query(`SET LOCAL search_path TO "${schema}", public`);
+
+  const result = await global.testDb.query(
+    `INSERT INTO patient (first_name, last_name, email, phone, date_of_birth, gender, notes)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING *`,
+    [firstName, lastName, email, phone, dateOfBirth, gender, notes]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Create a test session in tenant schema
+ * @param {string} schema - Tenant schema name
+ * @param {string} patientId - Patient UUID
+ * @param {Object} options - Session configuration
+ * @returns {Object} Created session data
+ */
+async function createTestSession(schema, patientId, options = {}) {
+  const {
+    status = 'pending',
+    notes = 'Test session notes',
+    scheduledAt = new Date().toISOString()
+  } = options;
+
+  await global.testDb.query(`SET LOCAL search_path TO "${schema}", public`);
+
+  const result = await global.testDb.query(
+    `INSERT INTO session (patient_id, status, notes, scheduled_at)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [patientId, status, notes, scheduledAt]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Create a test quote in tenant schema
+ * @param {string} schema - Tenant schema name
+ * @param {string} sessionId - Session UUID
+ * @param {Object} options - Quote configuration
+ * @returns {Object} Created quote data
+ */
+async function createTestQuote(schema, sessionId, options = {}) {
+  const {
+    content = '<p>Test quote content</p>',
+    status = 'draft',
+    total = 0
+  } = options;
+
+  await global.testDb.query(`SET LOCAL search_path TO "${schema}", public`);
+
+  const result = await global.testDb.query(
+    `INSERT INTO quote (session_id, content, status, total)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [sessionId, content, status, total]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Create a test quote item in tenant schema
+ * @param {string} schema - Tenant schema name
+ * @param {string} quoteId - Quote UUID
+ * @param {Object} options - Item configuration
+ * @returns {Object} Created item data
+ */
+async function createTestQuoteItem(schema, quoteId, options = {}) {
+  const {
+    name = 'Test Item',
+    description = 'Test item description',
+    basePrice = 100.00,
+    discountAmount = 0,
+    quantity = 1
+  } = options;
+
+  const finalPrice = (basePrice - discountAmount) * quantity;
+
+  await global.testDb.query(`SET LOCAL search_path TO "${schema}", public`);
+
+  const result = await global.testDb.query(
+    `INSERT INTO quote_item (quote_id, name, description, base_price, discount_amount, final_price, quantity)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING *`,
+    [quoteId, name, description, basePrice, discountAmount, finalPrice, quantity]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Create a test template in tenant schema
+ * @param {string} schema - Tenant schema name
+ * @param {Object} options - Template configuration
+ * @returns {Object} Created template data
+ */
+async function createTestTemplate(schema, options = {}) {
+  const {
+    title = 'Test Template',
+    content = '<p>Test template content with [placeholder]</p>',
+    description = 'Test template description',
+    active = true
+  } = options;
+
+  await global.testDb.query(`SET LOCAL search_path TO "${schema}", public`);
+
+  const result = await global.testDb.query(
+    `INSERT INTO template (title, content, description, active)
+     VALUES ($1, $2, $3, $4)
+     RETURNING *`,
+    [title, content, description, active]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Create a test clinical report in tenant schema
+ * @param {string} schema - Tenant schema name
+ * @param {string} sessionId - Session UUID
+ * @param {string} patientId - Patient UUID
+ * @param {Object} options - Report configuration
+ * @returns {Object} Created report data
+ */
+async function createTestClinicalReport(schema, sessionId, patientId, options = {}) {
+  const {
+    title = 'Test Clinical Report',
+    content = '<p>Test clinical report content</p>',
+    templateId = null
+  } = options;
+
+  await global.testDb.query(`SET LOCAL search_path TO "${schema}", public`);
+
+  const result = await global.testDb.query(
+    `INSERT INTO clinical_report (session_id, patient_id, title, content, template_id)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [sessionId, patientId, title, content, templateId]
+  );
+
+  return result.rows[0];
+}
+
+/**
+ * Create TQ tenant schema with all required tables
+ * @param {string} schema - Schema name to create
+ * @param {string} timezone - Tenant timezone (default: America/Sao_Paulo)
+ */
+async function createTQSchema(schema, timezone = 'America/Sao_Paulo') {
+  // Create schema
+  await global.testDb.query(`CREATE SCHEMA IF NOT EXISTS "${schema}"`);
+
+  // Run TQ provisioner tables
+  const TQProvisioner = require('@server/infra/provisioners/tq');
+  await TQProvisioner.createSchema(schema, timezone);
+}
+
+/**
+ * Cleanup TQ test data from a schema
+ * @param {string} schema - Schema name to clean
+ */
+async function cleanupTQSchema(schema) {
+  try {
+    await global.testDb.query(`SET LOCAL search_path TO "${schema}", public`);
+
+    // Delete in dependency order
+    await global.testDb.query('DELETE FROM clinical_report');
+    await global.testDb.query('DELETE FROM quote_item');
+    await global.testDb.query('DELETE FROM quote');
+    await global.testDb.query('DELETE FROM session');
+    await global.testDb.query('DELETE FROM patient');
+    await global.testDb.query('DELETE FROM template');
+  } catch (error) {
+    console.warn('TQ cleanup warning:', error.message);
+  }
+}
+
 module.exports = {
+  // Hub/Platform factories
   createTestTenant,
   createTestUser,
   createTestApplication,
@@ -250,5 +453,15 @@ module.exports = {
   createTestUserAccess,
   cleanupTestTenant,
   cleanupTestApplications,
-  getCoreTestData
+  getCoreTestData,
+
+  // TQ factories
+  createTestPatient,
+  createTestSession,
+  createTestQuote,
+  createTestQuoteItem,
+  createTestTemplate,
+  createTestClinicalReport,
+  createTQSchema,
+  cleanupTQSchema,
 };

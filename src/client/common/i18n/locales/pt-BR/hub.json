@@ -320,7 +320,25 @@
   },
   "header": {
     "user_settings_tooltip": "Configurações de Usuário",
-    "help_tooltip": "Assistente de Configuração"
+    "help_tooltip": "Assistente de Configuração",
+    "bug_report_tooltip": "Reportar um Bug"
+  },
+  "bug_report": {
+    "title": "Reportar Bug",
+    "from": "De",
+    "tenant": "Tenant",
+    "subject": "Assunto",
+    "description": "Descreva o problema",
+    "description_placeholder": "Descreva o bug em detalhes. Inclua os passos para reproduzir, o comportamento esperado e o que realmente aconteceu...",
+    "attachments": "Anexos",
+    "add_attachment": "Adicionar Imagem/Vídeo",
+    "attachment_help": "Imagens e vídeos (máx. 50MB cada, até 5 arquivos)",
+    "submit": "Enviar Relatório",
+    "submitting": "Enviando...",
+    "error_description_required": "Por favor, descreva o problema",
+    "error_file_too_large": "Arquivo {{name}} é muito grande (máx. 50MB)",
+    "error_max_files": "Máximo de 5 arquivos permitidos",
+    "error_submit_failed": "Falha ao enviar relatório. Tente novamente."
   },
   "user_settings": {
     "title": "Configurações de Usuário",

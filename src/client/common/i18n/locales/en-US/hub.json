@@ -320,7 +320,25 @@
   },
   "header": {
     "user_settings_tooltip": "User Settings",
-    "help_tooltip": "Setup Assistant"
+    "help_tooltip": "Setup Assistant",
+    "bug_report_tooltip": "Report a Bug"
+  },
+  "bug_report": {
+    "title": "Report Bug",
+    "from": "From",
+    "tenant": "Tenant",
+    "subject": "Subject",
+    "description": "Describe the problem",
+    "description_placeholder": "Describe the bug in detail. Include steps to reproduce, expected behavior, and what actually happened...",
+    "attachments": "Attachments",
+    "add_attachment": "Add Image/Video",
+    "attachment_help": "Images and videos (max 50MB each, up to 5 files)",
+    "submit": "Submit Report",
+    "submitting": "Submitting...",
+    "error_description_required": "Please describe the problem",
+    "error_file_too_large": "File {{name}} is too large (max 50MB)",
+    "error_max_files": "Maximum of 5 files allowed",
+    "error_submit_failed": "Failed to submit report. Please try again."
   },
   "user_settings": {
     "title": "User Settings",

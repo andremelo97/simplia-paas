@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { Contact } from '../../components/Contact'
-import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronLeft, ChevronRight, Code, Globe, ArrowRight, Star, Gift, Sparkles, X, Maximize2 } from 'lucide-react'
+import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronLeft, ChevronRight, Code, Globe, ArrowRight, Star, Gift, Sparkles, X } from 'lucide-react'
 
 // Stripe Checkout URLs
 const CHECKOUT_URLS: Record<string, string> = {
@@ -78,16 +78,15 @@ export function TQPage() {
               >
                 <X className="w-8 h-8" />
               </button>
-              <video
-                className="w-full rounded-lg"
-                autoPlay
-                loop
-                muted
-                playsInline
-                controls
-              >
-                <source src={expandedVideo} type="video/mp4" />
-              </video>
+              <div className="aspect-video w-full">
+                <iframe
+                  className="w-full h-full rounded-lg"
+                  src={`https://www.youtube.com/embed/${expandedVideo}?autoplay=1`}
+                  title="TQ Tutorial"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -140,20 +139,18 @@ export function TQPage() {
               className="relative"
             >
               <div
-                className="aspect-video bg-gradient-to-br from-[#B725B7]/10 to-[#E91E63]/10 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer group relative"
-                onClick={() => setExpandedVideo('/video-tq-page.MOV')}
+                className="aspect-video bg-black rounded-2xl border border-gray-200 overflow-hidden cursor-pointer group relative"
+                onClick={() => setExpandedVideo('6a_-qRhVnPw')}
               >
-                <video
+                <img
+                  src="https://img.youtube.com/vi/6a_-qRhVnPw/maxresdefault.jpg"
+                  alt="TQ Tutorial"
                   className="w-full h-full object-cover"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                >
-                  <source src="/video-tq-page.MOV" type="video/mp4" />
-                </video>
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                />
+                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                  <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                    <Play className="w-8 h-8 text-white ml-1" />
+                  </div>
                 </div>
               </div>
             </motion.div>

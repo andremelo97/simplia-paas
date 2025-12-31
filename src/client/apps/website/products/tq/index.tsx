@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { Contact } from '../../components/Contact'
-import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronLeft, ChevronRight, Code, Globe, ArrowRight, Star, Gift, Sparkles } from 'lucide-react'
+import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronLeft, ChevronRight, Code, Globe, ArrowRight, Star, Gift, Sparkles, X, Maximize2 } from 'lucide-react'
 
 // Stripe Checkout URLs
 const CHECKOUT_URLS: Record<string, string> = {
@@ -18,6 +18,7 @@ export function TQPage() {
   const [activeStep, setActiveStep] = useState(0)
   const [pricingSlide, setPricingSlide] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [expandedVideo, setExpandedVideo] = useState<string | null>(null)
 
   // Detect mobile screen
   useEffect(() => {
@@ -54,6 +55,44 @@ export function TQPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Video Modal */}
+      <AnimatePresence>
+        {expandedVideo && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setExpandedVideo(null)}
+          >
+            <motion.div
+              className="relative w-full max-w-5xl"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setExpandedVideo(null)}
+                className="absolute -top-12 right-0 text-white/70 hover:text-white transition-colors"
+              >
+                <X className="w-8 h-8" />
+              </button>
+              <video
+                className="w-full rounded-lg"
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls
+              >
+                <source src={expandedVideo} type="video/mp4" />
+              </video>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hero Section */}
       <section className="pt-32 pb-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto px-6">
@@ -100,12 +139,21 @@ export function TQPage() {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              <div className="aspect-video bg-gradient-to-br from-[#B725B7]/10 to-[#E91E63]/10 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#B725B7] to-[#E91E63] rounded-full flex items-center justify-center mx-auto mb-4 cursor-pointer hover:scale-105 transition-transform">
-                    <Play className="w-8 h-8 text-white ml-1" />
-                  </div>
-                  <span className="text-gray-500">{t.tqPage.hero.videoPlaceholder}</span>
+              <div
+                className="aspect-video bg-gradient-to-br from-[#B725B7]/10 to-[#E91E63]/10 rounded-2xl border border-gray-200 flex items-center justify-center overflow-hidden cursor-pointer group relative"
+                onClick={() => setExpandedVideo('/video-tq-page.MOV')}
+              >
+                <video
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-tq-page.MOV" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
             </motion.div>
@@ -203,13 +251,13 @@ export function TQPage() {
                   {/* Step Content */}
                   <div className="p-4 md:p-6">
                     <div className="grid md:grid-cols-2 gap-6 items-center">
-                      {/* Video Placeholder */}
+                      {/* Step Icon */}
                       <div className="aspect-video bg-gradient-to-br from-[#5ED6CE]/10 to-[#B725B7]/10 rounded-xl border border-gray-200 flex items-center justify-center">
-                        <div className="text-center">
-                          <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-[#5ED6CE] to-[#B725B7] rounded-full flex items-center justify-center mx-auto mb-2 cursor-pointer hover:scale-105 transition-transform">
-                            <Play className="w-5 h-5 md:w-6 md:h-6 text-white ml-0.5" />
-                          </div>
-                          <span className="text-gray-400 text-xs">{t.tqPage.howItWorks.videoPlaceholder}</span>
+                        <div className="w-20 h-20 md:w-28 md:h-28 bg-gradient-to-br from-[#5ED6CE] to-[#B725B7] rounded-2xl flex items-center justify-center shadow-lg">
+                          {activeStep === 0 && <Mic className="w-10 h-10 md:w-14 md:h-14 text-white" />}
+                          {activeStep === 1 && <FileText className="w-10 h-10 md:w-14 md:h-14 text-white" />}
+                          {activeStep === 2 && <Sparkles className="w-10 h-10 md:w-14 md:h-14 text-white" />}
+                          {activeStep === 3 && <Link2 className="w-10 h-10 md:w-14 md:h-14 text-white" />}
                         </div>
                       </div>
 

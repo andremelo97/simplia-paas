@@ -366,6 +366,8 @@ export const translations = {
       successMessage: 'Mensagem enviada com sucesso! Entraremos em contato em breve.',
       errorRequired: 'Todos os campos são obrigatórios',
       responseTime: 'Respondemos em até 24 horas',
+      preferWhatsApp: 'Prefere WhatsApp?',
+      whatsAppButton: 'Conversar agora',
       reasons: {
         vip: 'Conhecer o plano VIP com recursos ilimitados',
         automation: 'Solicitar automações e integrações personalizadas',
@@ -749,6 +751,8 @@ export const translations = {
       successMessage: 'Message sent successfully! We will contact you soon.',
       errorRequired: 'All fields are required',
       responseTime: 'We respond within 24 hours',
+      preferWhatsApp: 'Prefer WhatsApp?',
+      whatsAppButton: 'Chat now',
       reasons: {
         vip: 'Learn about the VIP plan with unlimited resources',
         automation: 'Request custom automations and integrations',

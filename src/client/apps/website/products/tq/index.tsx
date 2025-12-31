@@ -4,13 +4,13 @@ import { useLanguage } from '../../i18n/LanguageContext'
 import { Contact } from '../../components/Contact'
 import { Mic, FileText, Link2, FileCheck, Users, Settings, Play, Check, ChevronLeft, ChevronRight, Code, Globe, ArrowRight, Star, Gift, Sparkles, X } from 'lucide-react'
 
-// Stripe Checkout URLs
+// Stripe Checkout URLs (Production)
 const CHECKOUT_URLS: Record<string, string> = {
-  trial: 'https://buy.stripe.com/test_eVq28r5LWchW3zU7I84Vy01',
-  starter: 'https://buy.stripe.com/test_3cI3cvfmw4PudaubYo4Vy00',
-  solo: 'https://buy.stripe.com/test_dRmbJ1deoeq4daufaA4Vy02',
-  duo: 'https://buy.stripe.com/test_5kQ3cv8Y85Ty9Yi6E44Vy03',
-  practice: 'https://buy.stripe.com/test_eVqfZhb6geq41rM3rS4Vy04'
+  trial: 'https://buy.stripe.com/eVqeVc21raBtc3p9Kdawo00',
+  starter: 'https://buy.stripe.com/9B600icG5eRJ9Vh8G9awo01',
+  solo: 'https://buy.stripe.com/3cIbJ06hHaBt2sPe0tawo02',
+  duo: 'https://buy.stripe.com/7sY5kCfSh10T6J58G9awo03',
+  practice: 'https://buy.stripe.com/5kQ6oGcG5dNF3wT3lPawo04'
 }
 
 export function TQPage() {

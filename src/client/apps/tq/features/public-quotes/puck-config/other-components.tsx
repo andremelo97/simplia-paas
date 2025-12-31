@@ -1878,4 +1878,1373 @@ export const createOtherComponents = (branding: BrandingData) => ({
       )
     },
   },
+  Testimonials: {
+    fields: {
+      title: {
+        type: 'text' as const,
+        label: 'Section Title',
+      },
+      showTitle: {
+        type: 'radio' as const,
+        label: 'Show Title',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      testimonials: {
+        type: 'array' as const,
+        label: 'Testimonials',
+        max: 6,
+        arrayFields: {
+          quote: {
+            type: 'textarea' as const,
+            label: 'Quote',
+          },
+          authorName: {
+            type: 'text' as const,
+            label: 'Author Name',
+          },
+          authorRole: {
+            type: 'text' as const,
+            label: 'Role / Company',
+          },
+          authorPhoto: {
+            type: 'text' as const,
+            label: 'Photo URL (optional)',
+          },
+          rating: {
+            type: 'select' as const,
+            label: 'Rating (stars)',
+            options: [
+              { label: 'No rating', value: 0 },
+              { label: '1 star', value: 1 },
+              { label: '2 stars', value: 2 },
+              { label: '3 stars', value: 3 },
+              { label: '4 stars', value: 4 },
+              { label: '5 stars', value: 5 },
+            ],
+          },
+        },
+        defaultItemProps: {
+          quote: 'This product exceeded my expectations. Highly recommended!',
+          authorName: 'John Doe',
+          authorRole: 'CEO, Company',
+          authorPhoto: '',
+          rating: 5,
+        },
+      },
+      columns: {
+        type: 'select' as const,
+        label: 'Columns',
+        options: [
+          { label: '1 column', value: 1 },
+          { label: '2 columns', value: 2 },
+          { label: '3 columns', value: 3 },
+        ],
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      cardBackgroundColor: {
+        type: 'select' as const,
+        label: 'Card Background',
+        options: backgroundColorOptions,
+      },
+      quoteColor: {
+        type: 'select' as const,
+        label: 'Quote Text Color',
+        options: textColorOptions,
+      },
+      authorColor: {
+        type: 'select' as const,
+        label: 'Author Name Color',
+        options: textColorOptions,
+      },
+      roleColor: {
+        type: 'select' as const,
+        label: 'Role Text Color',
+        options: textColorOptions,
+      },
+      starColor: {
+        type: 'select' as const,
+        label: 'Star Color',
+        options: [
+          { label: 'Yellow', value: '#fbbf24' },
+          { label: 'Primary', value: 'primary' },
+          { label: 'Secondary', value: 'secondary' },
+          { label: 'Orange', value: '#f97316' },
+          { label: 'Gold', value: '#d4af37' },
+        ],
+      },
+    },
+    defaultProps: {
+      title: 'What Our Clients Say',
+      showTitle: true,
+      testimonials: [
+        {
+          quote: 'Exceptional service and results. The team went above and beyond our expectations.',
+          authorName: 'Maria Silva',
+          authorRole: 'Marketing Director, TechCorp',
+          authorPhoto: '',
+          rating: 5,
+        },
+        {
+          quote: 'Professional, reliable, and truly understands our needs. Highly recommended!',
+          authorName: 'Carlos Santos',
+          authorRole: 'CEO, StartupX',
+          authorPhoto: '',
+          rating: 5,
+        },
+      ],
+      columns: 2,
+      verticalPadding: 48,
+      backgroundColor: 'none',
+      cardBackgroundColor: '#ffffff',
+      quoteColor: '#374151',
+      authorColor: '#111827',
+      roleColor: '#6b7280',
+      starColor: '#fbbf24',
+    },
+    render: ({ title, showTitle, testimonials, columns, verticalPadding, backgroundColor, cardBackgroundColor, quoteColor, authorColor, roleColor, starColor }: any) => {
+      const gridId = `testimonials-grid-${Math.random().toString(36).substr(2, 9)}`
+      const cardId = `testimonials-card-${Math.random().toString(36).substr(2, 9)}`
+
+      const validTestimonials = Array.isArray(testimonials) ? testimonials.filter((t: any) => t && t.quote) : []
+
+      const renderStars = (rating: number) => {
+        if (!rating || rating === 0) return null
+        return (
+          <div style={{ display: 'flex', gap: '2px', marginBottom: '12px' }}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <svg
+                key={star}
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill={star <= rating ? resolveColor(starColor, branding) : 'none'}
+                stroke={resolveColor(starColor, branding)}
+                strokeWidth="2"
+              >
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            ))}
+          </div>
+        )
+      }
+
+      if (validTestimonials.length === 0) {
+        return (
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div
+              style={{
+                maxWidth: '1152px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                height: '120px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                fontSize: '14px',
+              }}
+            >
+              Add testimonials to display customer reviews
+            </div>
+          </div>
+        )
+      }
+
+      return (
+        <>
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div style={{ maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto' }}>
+              {showTitle && title && (
+                <h2
+                  style={{
+                    fontSize: '28px',
+                    fontWeight: '700',
+                    textAlign: 'center',
+                    marginBottom: '40px',
+                    color: resolveColor(authorColor, branding),
+                  }}
+                >
+                  {title}
+                </h2>
+              )}
+              <div
+                className={gridId}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${Math.min(columns, validTestimonials.length)}, 1fr)`,
+                  gap: '24px',
+                }}
+              >
+                {validTestimonials.map((testimonial: any, index: number) => (
+                  <div
+                    key={index}
+                    className={cardId}
+                    style={{
+                      padding: '24px',
+                      borderRadius: '12px',
+                      backgroundColor: resolveColor(cardBackgroundColor, branding),
+                      boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {renderStars(testimonial.rating)}
+                    <p
+                      style={{
+                        fontSize: '15px',
+                        lineHeight: '1.7',
+                        color: resolveColor(quoteColor, branding),
+                        marginBottom: '20px',
+                        flex: 1,
+                        fontStyle: 'italic',
+                      }}
+                    >
+                      "{testimonial.quote}"
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      {testimonial.authorPhoto ? (
+                        <img
+                          src={testimonial.authorPhoto}
+                          alt={testimonial.authorName}
+                          style={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '48px',
+                            height: '48px',
+                            borderRadius: '50%',
+                            backgroundColor: branding.primaryColor,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#ffffff',
+                            fontWeight: '600',
+                            fontSize: '18px',
+                          }}
+                        >
+                          {testimonial.authorName?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
+                      )}
+                      <div>
+                        <div
+                          style={{
+                            fontWeight: '600',
+                            fontSize: '15px',
+                            color: resolveColor(authorColor, branding),
+                          }}
+                        >
+                          {testimonial.authorName}
+                        </div>
+                        {testimonial.authorRole && (
+                          <div
+                            style={{
+                              fontSize: '13px',
+                              color: resolveColor(roleColor, branding),
+                            }}
+                          >
+                            {testimonial.authorRole}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <style>{`
+            @media (max-width: 768px) {
+              .${gridId} {
+                grid-template-columns: 1fr !important;
+              }
+            }
+            @media (min-width: 769px) and (max-width: 1024px) {
+              .${gridId} {
+                grid-template-columns: repeat(${Math.min(2, columns)}, 1fr) !important;
+              }
+            }
+          `}</style>
+        </>
+      )
+    },
+  },
+  FAQ: {
+    fields: {
+      title: {
+        type: 'text' as const,
+        label: 'Section Title',
+      },
+      showTitle: {
+        type: 'radio' as const,
+        label: 'Show Title',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      items: {
+        type: 'array' as const,
+        label: 'Questions & Answers',
+        max: 12,
+        arrayFields: {
+          question: {
+            type: 'text' as const,
+            label: 'Question',
+          },
+          answer: {
+            type: 'textarea' as const,
+            label: 'Answer',
+          },
+        },
+        defaultItemProps: {
+          question: 'How does your service work?',
+          answer: 'Our service is designed to be simple and intuitive. Just sign up, choose your plan, and you can start using all features immediately.',
+        },
+      },
+      allowMultipleOpen: {
+        type: 'radio' as const,
+        label: 'Allow Multiple Open',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      defaultOpen: {
+        type: 'radio' as const,
+        label: 'First Item Open by Default',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+      maxWidth: {
+        type: 'select' as const,
+        label: 'Max Width',
+        options: [
+          { label: 'Small (640px)', value: '640px' },
+          { label: 'Medium (768px)', value: '768px' },
+          { label: 'Large (896px)', value: '896px' },
+          { label: 'Full (1152px)', value: '1152px' },
+        ],
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      questionColor: {
+        type: 'select' as const,
+        label: 'Question Color',
+        options: textColorOptions,
+      },
+      answerColor: {
+        type: 'select' as const,
+        label: 'Answer Color',
+        options: textColorOptions,
+      },
+      iconColor: {
+        type: 'select' as const,
+        label: 'Icon Color',
+        options: textColorOptions,
+      },
+      dividerColor: {
+        type: 'select' as const,
+        label: 'Divider Color',
+        options: [
+          { label: 'Light Gray', value: '#e5e7eb' },
+          { label: 'Gray', value: '#d1d5db' },
+          { label: 'Primary', value: 'primary' },
+          { label: 'None', value: 'transparent' },
+        ],
+      },
+    },
+    defaultProps: {
+      title: 'Frequently Asked Questions',
+      showTitle: true,
+      items: [
+        {
+          question: 'How does your service work?',
+          answer: 'Our service is designed to be simple and intuitive. Just sign up, choose your plan, and you can start using all features immediately.',
+        },
+        {
+          question: 'What payment methods do you accept?',
+          answer: 'We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers for annual plans.',
+        },
+        {
+          question: 'Can I cancel my subscription anytime?',
+          answer: 'Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees.',
+        },
+      ],
+      allowMultipleOpen: false,
+      defaultOpen: true,
+      verticalPadding: 48,
+      maxWidth: '768px',
+      backgroundColor: 'none',
+      questionColor: '#111827',
+      answerColor: '#4b5563',
+      iconColor: '#6b7280',
+      dividerColor: '#e5e7eb',
+    },
+    render: ({ title, showTitle, items, allowMultipleOpen, defaultOpen, verticalPadding, maxWidth, backgroundColor, questionColor, answerColor, iconColor, dividerColor }: any) => {
+      const [openItems, setOpenItems] = React.useState<number[]>(defaultOpen ? [0] : [])
+
+      const validItems = Array.isArray(items) ? items.filter((item: any) => item && item.question) : []
+
+      const toggleItem = (index: number) => {
+        if (allowMultipleOpen) {
+          setOpenItems((prev) =>
+            prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+          )
+        } else {
+          setOpenItems((prev) => (prev.includes(index) ? [] : [index]))
+        }
+      }
+
+      const isOpen = (index: number) => openItems.includes(index)
+
+      if (validItems.length === 0) {
+        return (
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div
+              style={{
+                maxWidth: maxWidth,
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                height: '120px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                fontSize: '14px',
+              }}
+            >
+              Add FAQ items to display questions and answers
+            </div>
+          </div>
+        )
+      }
+
+      return (
+        <div
+          style={{
+            width: '100%',
+            paddingTop: `${verticalPadding}px`,
+            paddingBottom: `${verticalPadding}px`,
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            backgroundColor: resolveColor(backgroundColor, branding),
+          }}
+        >
+          <div style={{ maxWidth: maxWidth, marginLeft: 'auto', marginRight: 'auto' }}>
+            {showTitle && title && (
+              <h2
+                style={{
+                  fontSize: '28px',
+                  fontWeight: '700',
+                  textAlign: 'center',
+                  marginBottom: '40px',
+                  color: resolveColor(questionColor, branding),
+                }}
+              >
+                {title}
+              </h2>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {validItems.map((item: any, index: number) => (
+                <div
+                  key={index}
+                  style={{
+                    borderBottom: index < validItems.length - 1 ? `1px solid ${resolveColor(dividerColor, branding)}` : 'none',
+                  }}
+                >
+                  <button
+                    onClick={() => toggleItem(index)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '20px 0',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '16px',
+                        fontWeight: '600',
+                        color: resolveColor(questionColor, branding),
+                        paddingRight: '16px',
+                      }}
+                    >
+                      {item.question}
+                    </span>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={resolveColor(iconColor, branding)}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{
+                        flexShrink: 0,
+                        transform: isOpen(index) ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease',
+                      }}
+                    >
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </button>
+                  <div
+                    style={{
+                      maxHeight: isOpen(index) ? '500px' : '0px',
+                      overflow: 'hidden',
+                      transition: 'max-height 0.3s ease',
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontSize: '15px',
+                        lineHeight: '1.7',
+                        color: resolveColor(answerColor, branding),
+                        paddingBottom: '20px',
+                        whiteSpace: 'pre-wrap',
+                      }}
+                    >
+                      {item.answer}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )
+    },
+  },
+  PricingTable: {
+    fields: {
+      title: {
+        type: 'text' as const,
+        label: 'Section Title',
+      },
+      showTitle: {
+        type: 'radio' as const,
+        label: 'Show Title',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      subtitle: {
+        type: 'text' as const,
+        label: 'Subtitle',
+      },
+      plans: {
+        type: 'array' as const,
+        label: 'Pricing Plans',
+        max: 4,
+        arrayFields: {
+          name: {
+            type: 'text' as const,
+            label: 'Plan Name',
+          },
+          price: {
+            type: 'text' as const,
+            label: 'Price',
+          },
+          period: {
+            type: 'text' as const,
+            label: 'Period (e.g., /month)',
+          },
+          description: {
+            type: 'text' as const,
+            label: 'Description',
+          },
+          features: {
+            type: 'textarea' as const,
+            label: 'Features (one per line)',
+          },
+          buttonLabel: {
+            type: 'text' as const,
+            label: 'Button Label',
+          },
+          buttonUrl: {
+            type: 'text' as const,
+            label: 'Button URL',
+          },
+          isHighlighted: {
+            type: 'radio' as const,
+            label: 'Highlight (Recommended)',
+            options: [
+              { label: 'Yes', value: true },
+              { label: 'No', value: false },
+            ],
+          },
+          highlightLabel: {
+            type: 'text' as const,
+            label: 'Highlight Badge Text',
+          },
+        },
+        defaultItemProps: {
+          name: 'Basic',
+          price: '$29',
+          period: '/month',
+          description: 'Perfect for small teams',
+          features: 'Feature 1\nFeature 2\nFeature 3',
+          buttonLabel: 'Get Started',
+          buttonUrl: '#',
+          isHighlighted: false,
+          highlightLabel: 'Most Popular',
+        },
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      cardBackgroundColor: {
+        type: 'select' as const,
+        label: 'Card Background',
+        options: backgroundColorOptions,
+      },
+      highlightBorderColor: {
+        type: 'select' as const,
+        label: 'Highlight Border Color',
+        options: [
+          { label: 'Primary', value: 'primary' },
+          { label: 'Secondary', value: 'secondary' },
+          { label: 'Tertiary', value: 'tertiary' },
+          { label: 'Blue', value: '#3b82f6' },
+          { label: 'Green', value: '#10b981' },
+          { label: 'Purple', value: '#8b5cf6' },
+        ],
+      },
+    },
+    defaultProps: {
+      title: 'Choose Your Plan',
+      showTitle: true,
+      subtitle: 'Simple, transparent pricing that grows with you',
+      plans: [
+        {
+          name: 'Starter',
+          price: '$19',
+          period: '/month',
+          description: 'For individuals and small projects',
+          features: '5 Projects\n10GB Storage\nEmail Support\nBasic Analytics',
+          buttonLabel: 'Start Free Trial',
+          buttonUrl: '#',
+          isHighlighted: false,
+          highlightLabel: '',
+        },
+        {
+          name: 'Professional',
+          price: '$49',
+          period: '/month',
+          description: 'For growing teams and businesses',
+          features: 'Unlimited Projects\n100GB Storage\nPriority Support\nAdvanced Analytics\nTeam Collaboration\nAPI Access',
+          buttonLabel: 'Get Started',
+          buttonUrl: '#',
+          isHighlighted: true,
+          highlightLabel: 'Most Popular',
+        },
+        {
+          name: 'Enterprise',
+          price: '$99',
+          period: '/month',
+          description: 'For large organizations',
+          features: 'Everything in Pro\nUnlimited Storage\n24/7 Phone Support\nCustom Integrations\nDedicated Account Manager\nSLA Guarantee',
+          buttonLabel: 'Contact Sales',
+          buttonUrl: '#',
+          isHighlighted: false,
+          highlightLabel: '',
+        },
+      ],
+      verticalPadding: 64,
+      backgroundColor: 'none',
+      cardBackgroundColor: '#ffffff',
+      highlightBorderColor: 'primary',
+    },
+    render: ({ title, showTitle, subtitle, plans, verticalPadding, backgroundColor, cardBackgroundColor, highlightBorderColor }: any) => {
+      const gridId = `pricing-grid-${Math.random().toString(36).substr(2, 9)}`
+      const cardId = `pricing-card-${Math.random().toString(36).substr(2, 9)}`
+
+      const validPlans = Array.isArray(plans) ? plans.filter((p: any) => p && p.name) : []
+
+      if (validPlans.length === 0) {
+        return (
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div
+              style={{
+                maxWidth: '1152px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                fontSize: '14px',
+              }}
+            >
+              Add pricing plans to display comparison table
+            </div>
+          </div>
+        )
+      }
+
+      const parseFeatures = (features: string) => {
+        if (!features) return []
+        return features.split('\n').filter((f: string) => f.trim())
+      }
+
+      return (
+        <>
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div style={{ maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto' }}>
+              {showTitle && (title || subtitle) && (
+                <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+                  {title && (
+                    <h2
+                      style={{
+                        fontSize: '32px',
+                        fontWeight: '700',
+                        color: '#111827',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      {title}
+                    </h2>
+                  )}
+                  {subtitle && (
+                    <p
+                      style={{
+                        fontSize: '18px',
+                        color: '#6b7280',
+                      }}
+                    >
+                      {subtitle}
+                    </p>
+                  )}
+                </div>
+              )}
+              <div
+                className={gridId}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${Math.min(validPlans.length, 3)}, 1fr)`,
+                  gap: '24px',
+                  alignItems: 'stretch',
+                }}
+              >
+                {validPlans.map((plan: any, index: number) => {
+                  const features = parseFeatures(plan.features)
+                  const borderColor = plan.isHighlighted ? resolveColor(highlightBorderColor, branding) : '#e5e7eb'
+
+                  return (
+                    <div
+                      key={index}
+                      className={cardId}
+                      style={{
+                        padding: '32px',
+                        borderRadius: '16px',
+                        backgroundColor: resolveColor(cardBackgroundColor, branding),
+                        border: `2px solid ${borderColor}`,
+                        boxShadow: plan.isHighlighted
+                          ? '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
+                          : '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        position: 'relative',
+                        transform: plan.isHighlighted ? 'scale(1.02)' : 'none',
+                      }}
+                    >
+                      {plan.isHighlighted && plan.highlightLabel && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: '-12px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            backgroundColor: resolveColor(highlightBorderColor, branding),
+                            color: '#ffffff',
+                            padding: '4px 16px',
+                            borderRadius: '20px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                          }}
+                        >
+                          {plan.highlightLabel}
+                        </div>
+                      )}
+                      <div style={{ marginBottom: '24px' }}>
+                        <h3
+                          style={{
+                            fontSize: '20px',
+                            fontWeight: '600',
+                            color: '#111827',
+                            marginBottom: '8px',
+                          }}
+                        >
+                          {plan.name}
+                        </h3>
+                        {plan.description && (
+                          <p style={{ fontSize: '14px', color: '#6b7280' }}>{plan.description}</p>
+                        )}
+                      </div>
+                      <div style={{ marginBottom: '24px' }}>
+                        <span style={{ fontSize: '40px', fontWeight: '700', color: '#111827' }}>
+                          {plan.price}
+                        </span>
+                        {plan.period && (
+                          <span style={{ fontSize: '16px', color: '#6b7280' }}>{plan.period}</span>
+                        )}
+                      </div>
+                      <ul style={{ listStyle: 'none', padding: 0, margin: 0, marginBottom: '32px', flex: 1 }}>
+                        {features.map((feature: string, fIndex: number) => (
+                          <li
+                            key={fIndex}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '8px 0',
+                              fontSize: '14px',
+                              color: '#374151',
+                            }}
+                          >
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke={branding.primaryColor}
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                      {plan.buttonLabel && (
+                        <a
+                          href={plan.buttonUrl || '#'}
+                          style={{
+                            display: 'block',
+                            width: '100%',
+                            textAlign: 'center',
+                            padding: '14px 24px',
+                            borderRadius: '8px',
+                            fontSize: '15px',
+                            fontWeight: '600',
+                            textDecoration: 'none',
+                            backgroundColor: plan.isHighlighted ? branding.primaryColor : 'transparent',
+                            color: plan.isHighlighted ? '#ffffff' : branding.primaryColor,
+                            border: `2px solid ${branding.primaryColor}`,
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          {plan.buttonLabel}
+                        </a>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+          <style>{`
+            @media (max-width: 768px) {
+              .${gridId} {
+                grid-template-columns: 1fr !important;
+              }
+              .${cardId} {
+                transform: none !important;
+              }
+            }
+            @media (min-width: 769px) and (max-width: 1024px) {
+              .${gridId} {
+                grid-template-columns: repeat(${Math.min(2, validPlans.length)}, 1fr) !important;
+              }
+            }
+          `}</style>
+        </>
+      )
+    },
+  },
+  TeamSection: {
+    fields: {
+      title: {
+        type: 'text' as const,
+        label: 'Section Title',
+      },
+      showTitle: {
+        type: 'radio' as const,
+        label: 'Show Title',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      subtitle: {
+        type: 'text' as const,
+        label: 'Subtitle',
+      },
+      members: {
+        type: 'array' as const,
+        label: 'Team Members',
+        max: 8,
+        arrayFields: {
+          name: {
+            type: 'text' as const,
+            label: 'Name',
+          },
+          role: {
+            type: 'text' as const,
+            label: 'Role / Position',
+          },
+          photo: {
+            type: 'text' as const,
+            label: 'Photo URL',
+          },
+          bio: {
+            type: 'textarea' as const,
+            label: 'Short Bio (optional)',
+          },
+          linkedin: {
+            type: 'text' as const,
+            label: 'LinkedIn URL (optional)',
+          },
+          email: {
+            type: 'text' as const,
+            label: 'Email (optional)',
+          },
+        },
+        defaultItemProps: {
+          name: 'Team Member',
+          role: 'Position',
+          photo: '',
+          bio: '',
+          linkedin: '',
+          email: '',
+        },
+      },
+      columns: {
+        type: 'select' as const,
+        label: 'Columns',
+        options: [
+          { label: '2 columns', value: 2 },
+          { label: '3 columns', value: 3 },
+          { label: '4 columns', value: 4 },
+        ],
+      },
+      cardStyle: {
+        type: 'radio' as const,
+        label: 'Card Style',
+        options: [
+          { label: 'Card', value: 'card' },
+          { label: 'Minimal', value: 'minimal' },
+        ],
+      },
+      photoSize: {
+        type: 'select' as const,
+        label: 'Photo Size',
+        options: [
+          { label: 'Small (80px)', value: 80 },
+          { label: 'Medium (120px)', value: 120 },
+          { label: 'Large (160px)', value: 160 },
+        ],
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      cardBackgroundColor: {
+        type: 'select' as const,
+        label: 'Card Background',
+        options: backgroundColorOptions,
+      },
+      nameColor: {
+        type: 'select' as const,
+        label: 'Name Color',
+        options: textColorOptions,
+      },
+      roleColor: {
+        type: 'select' as const,
+        label: 'Role Color',
+        options: textColorOptions,
+      },
+    },
+    defaultProps: {
+      title: 'Meet Our Team',
+      showTitle: true,
+      subtitle: 'The talented people behind our success',
+      members: [
+        {
+          name: 'Ana Costa',
+          role: 'CEO & Founder',
+          photo: '',
+          bio: '',
+          linkedin: '',
+          email: '',
+        },
+        {
+          name: 'Pedro Lima',
+          role: 'CTO',
+          photo: '',
+          bio: '',
+          linkedin: '',
+          email: '',
+        },
+        {
+          name: 'Julia Mendes',
+          role: 'Head of Design',
+          photo: '',
+          bio: '',
+          linkedin: '',
+          email: '',
+        },
+      ],
+      columns: 3,
+      cardStyle: 'card',
+      photoSize: 120,
+      verticalPadding: 64,
+      backgroundColor: 'none',
+      cardBackgroundColor: '#ffffff',
+      nameColor: '#111827',
+      roleColor: '#6b7280',
+    },
+    render: ({ title, showTitle, subtitle, members, columns, cardStyle, photoSize, verticalPadding, backgroundColor, cardBackgroundColor, nameColor, roleColor }: any) => {
+      const gridId = `team-grid-${Math.random().toString(36).substr(2, 9)}`
+
+      const validMembers = Array.isArray(members) ? members.filter((m: any) => m && m.name) : []
+
+      if (validMembers.length === 0) {
+        return (
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div
+              style={{
+                maxWidth: '1152px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                height: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                fontSize: '14px',
+              }}
+            >
+              Add team members to display
+            </div>
+          </div>
+        )
+      }
+
+      const renderMemberCard = (member: any, index: number) => {
+        const initials = member.name
+          ?.split(' ')
+          .map((n: string) => n.charAt(0))
+          .join('')
+          .toUpperCase()
+          .slice(0, 2) || 'TM'
+
+        const cardContent = (
+          <>
+            {member.photo ? (
+              <img
+                src={member.photo}
+                alt={member.name}
+                style={{
+                  width: `${photoSize}px`,
+                  height: `${photoSize}px`,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  marginBottom: '16px',
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: `${photoSize}px`,
+                  height: `${photoSize}px`,
+                  borderRadius: '50%',
+                  backgroundColor: branding.primaryColor,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  fontWeight: '600',
+                  fontSize: `${photoSize / 3}px`,
+                  marginBottom: '16px',
+                }}
+              >
+                {initials}
+              </div>
+            )}
+            <h3
+              style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: resolveColor(nameColor, branding),
+                marginBottom: '4px',
+              }}
+            >
+              {member.name}
+            </h3>
+            <p
+              style={{
+                fontSize: '14px',
+                color: resolveColor(roleColor, branding),
+                marginBottom: member.bio ? '12px' : '0',
+              }}
+            >
+              {member.role}
+            </p>
+            {member.bio && (
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: '#6b7280',
+                  lineHeight: '1.5',
+                  marginBottom: '16px',
+                }}
+              >
+                {member.bio}
+              </p>
+            )}
+            {(member.linkedin || member.email) && (
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                {member.linkedin && (
+                  <a
+                    href={member.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#6b7280' }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z" />
+                    </svg>
+                  </a>
+                )}
+                {member.email && (
+                  <a
+                    href={`mailto:${member.email}`}
+                    style={{ color: '#6b7280' }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6" />
+                    </svg>
+                  </a>
+                )}
+              </div>
+            )}
+          </>
+        )
+
+        if (cardStyle === 'card') {
+          return (
+            <div
+              key={index}
+              style={{
+                padding: '32px 24px',
+                borderRadius: '12px',
+                backgroundColor: resolveColor(cardBackgroundColor, branding),
+                boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+            >
+              {cardContent}
+            </div>
+          )
+        }
+
+        return (
+          <div
+            key={index}
+            style={{
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            {cardContent}
+          </div>
+        )
+      }
+
+      return (
+        <>
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div style={{ maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto' }}>
+              {showTitle && (title || subtitle) && (
+                <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+                  {title && (
+                    <h2
+                      style={{
+                        fontSize: '32px',
+                        fontWeight: '700',
+                        color: resolveColor(nameColor, branding),
+                        marginBottom: '12px',
+                      }}
+                    >
+                      {title}
+                    </h2>
+                  )}
+                  {subtitle && (
+                    <p
+                      style={{
+                        fontSize: '18px',
+                        color: resolveColor(roleColor, branding),
+                      }}
+                    >
+                      {subtitle}
+                    </p>
+                  )}
+                </div>
+              )}
+              <div
+                className={gridId}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${Math.min(columns, validMembers.length)}, 1fr)`,
+                  gap: '32px',
+                }}
+              >
+                {validMembers.map((member: any, index: number) => renderMemberCard(member, index))}
+              </div>
+            </div>
+          </div>
+          <style>{`
+            @media (max-width: 640px) {
+              .${gridId} {
+                grid-template-columns: 1fr !important;
+              }
+            }
+            @media (min-width: 641px) and (max-width: 1024px) {
+              .${gridId} {
+                grid-template-columns: repeat(${Math.min(2, columns)}, 1fr) !important;
+              }
+            }
+          `}</style>
+        </>
+      )
+    },
+  },
 })

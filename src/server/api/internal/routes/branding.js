@@ -192,7 +192,12 @@ router.put('/', requireAdmin, async (req, res) => {
       tertiaryColor,
       logoUrl,
       backgroundVideoUrl,
-      companyName
+      companyName,
+      // Contact information
+      email,
+      phone,
+      address,
+      socialLinks
     } = req.body;
 
     // Basic validation for color format (hex colors)
@@ -225,7 +230,12 @@ router.put('/', requireAdmin, async (req, res) => {
       tertiaryColor,
       logoUrl,
       backgroundVideoUrl,
-      companyName
+      companyName,
+      // Contact information
+      email,
+      phone,
+      address,
+      socialLinks
     });
 
     res.json({
@@ -421,14 +431,19 @@ router.post('/upload-logo', requireAdmin, upload.single('image'), async (req, re
       req.file.mimetype
     );
 
-    // Update branding configuration with new logo URL
+    // Update branding configuration with new logo URL (preserve all existing fields)
     const updateData = {
       primaryColor: existingBranding.primaryColor,
       secondaryColor: existingBranding.secondaryColor,
       tertiaryColor: existingBranding.tertiaryColor,
       logoUrl: uploadResult.url,
       backgroundVideoUrl: existingBranding.backgroundVideoUrl,
-      companyName: existingBranding.companyName
+      companyName: existingBranding.companyName,
+      // Preserve contact information
+      email: existingBranding.email,
+      phone: existingBranding.phone,
+      address: existingBranding.address,
+      socialLinks: existingBranding.socialLinks
     };
 
     const branding = await TenantBranding.upsert(tenantId, updateData);
@@ -546,14 +561,19 @@ router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (r
       req.file.mimetype
     );
 
-    // Update branding configuration with new video URL
+    // Update branding configuration with new video URL (preserve all existing fields)
     const updateData = {
       primaryColor: existingBranding.primaryColor,
       secondaryColor: existingBranding.secondaryColor,
       tertiaryColor: existingBranding.tertiaryColor,
       logoUrl: existingBranding.logoUrl,
       backgroundVideoUrl: uploadResult.url,
-      companyName: existingBranding.companyName
+      companyName: existingBranding.companyName,
+      // Preserve contact information
+      email: existingBranding.email,
+      phone: existingBranding.phone,
+      address: existingBranding.address,
+      socialLinks: existingBranding.socialLinks
     };
 
     const branding = await TenantBranding.upsert(tenantId, updateData);

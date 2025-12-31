@@ -110,30 +110,38 @@ function substituteVariables(text, variables) {
 
 /**
  * Generate footer contact info HTML
- * @param {Object} settings - Template settings
+ * Visibility controlled by settings, data comes from branding
+ * @param {Object} settings - Email template settings (showEmail, showPhone, showAddress, showSocialLinks)
+ * @param {Object} branding - Tenant branding with contact data (email, phone, address, socialLinks)
  * @param {string} locale - Locale for labels
  * @returns {string} Footer contact info HTML
  */
-function generateFooterContactInfo(settings, locale) {
+function generateFooterContactInfo(settings, branding, locale) {
   const parts = [];
 
-  // Phone
-  if (settings.showPhone && settings.phone) {
-    const phoneLabel = locale === 'pt-BR' ? 'Telefone' : 'Phone';
-    parts.push(`<p style="margin: 4px 0; color: #6b7280; font-size: 12px;">📞 ${phoneLabel}: ${settings.phone}</p>`);
+  // Email - visibility from settings, data from branding
+  if (settings.showEmail !== false && branding.email) {
+    const emailLabel = locale === 'pt-BR' ? 'E-mail' : 'Email';
+    parts.push(`<p style="margin: 4px 0; color: #6b7280; font-size: 12px;">✉️ ${emailLabel}: <a href="mailto:${branding.email}" style="color: #B725B7; text-decoration: none;">${branding.email}</a></p>`);
   }
 
-  // Address
-  if (settings.showAddress && settings.address) {
+  // Phone - visibility from settings, data from branding
+  if (settings.showPhone !== false && branding.phone) {
+    const phoneLabel = locale === 'pt-BR' ? 'Telefone' : 'Phone';
+    parts.push(`<p style="margin: 4px 0; color: #6b7280; font-size: 12px;">📞 ${phoneLabel}: ${branding.phone}</p>`);
+  }
+
+  // Address - visibility from settings, data from branding
+  if (settings.showAddress !== false && branding.address) {
     const addressLabel = locale === 'pt-BR' ? 'Endereço' : 'Address';
-    const addressFormatted = settings.address.replace(/\n/g, ', ');
+    const addressFormatted = branding.address.replace(/\n/g, ', ');
     parts.push(`<p style="margin: 4px 0; color: #6b7280; font-size: 12px;">📍 ${addressLabel}: ${addressFormatted}</p>`);
   }
 
-  // Social Links
-  if (settings.showSocialLinks && settings.socialLinks) {
+  // Social Links - visibility from settings, data from branding
+  if (settings.showSocialLinks !== false && branding.socialLinks) {
     const socialParts = [];
-    const { facebook, instagram, linkedin, website } = settings.socialLinks;
+    const { facebook, instagram, linkedin, twitter, whatsapp, website } = branding.socialLinks;
 
     if (facebook) {
       socialParts.push(`<a href="${facebook}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">Facebook</a>`);
@@ -143,6 +151,12 @@ function generateFooterContactInfo(settings, locale) {
     }
     if (linkedin) {
       socialParts.push(`<a href="${linkedin}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">LinkedIn</a>`);
+    }
+    if (twitter) {
+      socialParts.push(`<a href="${twitter}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">Twitter</a>`);
+    }
+    if (whatsapp) {
+      socialParts.push(`<a href="${whatsapp}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">WhatsApp</a>`);
     }
     if (website) {
       socialParts.push(`<a href="${website}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">Website</a>`);
@@ -164,6 +178,8 @@ function generateFooterContactInfo(settings, locale) {
 function generateHtmlEmail({ bodyText, branding, settings, variables, locale }) {
   const logoUrl = branding.logoUrl;
   const companyName = branding.companyName || variables.clinicName || '';
+  // Use headerText from settings, fallback to companyName
+  const headerText = settings.headerText || companyName;
   const showLogo = settings.showLogo !== false && logoUrl;
 
   // Resolve colors from settings
@@ -175,8 +191,8 @@ function generateHtmlEmail({ bodyText, branding, settings, variables, locale }) 
   const buttonBackground = resolveBackground(buttonColorType, branding);
   const buttonTextColor = resolveTextColor(settings.buttonTextColor || 'white');
 
-  // Generate footer contact info
-  const footerContactInfo = generateFooterContactInfo(settings, locale);
+  // Generate footer contact info (visibility from settings, data from branding)
+  const footerContactInfo = generateFooterContactInfo(settings, branding, locale);
 
   // Process body text - replace $PUBLIC_LINK$ and $PASSWORD_BLOCK$ with styled versions
   let processedBody = bodyText
@@ -237,7 +253,7 @@ function generateHtmlEmail({ bodyText, branding, settings, variables, locale }) 
               </div>
               ` : `
               <div style="text-align: center;">
-                <h1 style="color: ${headerTextColor}; margin: 0; font-size: 24px; font-weight: 600;">${companyName}</h1>
+                <h1 style="color: ${headerTextColor}; margin: 0; font-size: 24px; font-weight: 600;">${headerText}</h1>
               </div>
               `}
             </td>

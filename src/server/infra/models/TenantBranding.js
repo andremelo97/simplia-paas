@@ -17,6 +17,12 @@ class TenantBranding {
     this.logoUrl = data.logo_url;
     this.backgroundVideoUrl = data.background_video_url;
     this.companyName = data.company_name;
+    // Contact information
+    this.email = data.email;
+    this.phone = data.phone;
+    this.address = data.address;
+    this.socialLinks = data.social_links || {};
+    // Metadata
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
@@ -59,7 +65,11 @@ class TenantBranding {
       tertiary_color: '#5ED6CE',
       logo_url: null,
       background_video_url: null,
-      company_name: companyName
+      company_name: companyName,
+      email: null,
+      phone: null,
+      address: null,
+      social_links: {}
     });
   }
 
@@ -74,7 +84,11 @@ class TenantBranding {
       tertiaryColor,
       logoUrl,
       backgroundVideoUrl,
-      companyName
+      companyName,
+      email,
+      phone,
+      address,
+      socialLinks
     } = brandingData;
 
     const query = `
@@ -85,9 +99,13 @@ class TenantBranding {
         tertiary_color,
         logo_url,
         background_video_url,
-        company_name
+        company_name,
+        email,
+        phone,
+        address,
+        social_links
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       ON CONFLICT (tenant_id_fk)
       DO UPDATE SET
         primary_color = COALESCE(EXCLUDED.primary_color, tenant_branding.primary_color),
@@ -96,6 +114,10 @@ class TenantBranding {
         logo_url = EXCLUDED.logo_url,
         background_video_url = EXCLUDED.background_video_url,
         company_name = EXCLUDED.company_name,
+        email = EXCLUDED.email,
+        phone = EXCLUDED.phone,
+        address = EXCLUDED.address,
+        social_links = COALESCE(EXCLUDED.social_links, tenant_branding.social_links),
         updated_at = CURRENT_TIMESTAMP
       RETURNING *
     `;
@@ -107,7 +129,11 @@ class TenantBranding {
       tertiaryColor,
       logoUrl,
       backgroundVideoUrl,
-      companyName
+      companyName,
+      email,
+      phone,
+      address,
+      JSON.stringify(socialLinks || {})
     ]);
 
     return new TenantBranding(result.rows[0]);
@@ -140,6 +166,10 @@ class TenantBranding {
       logoUrl: this.logoUrl,
       backgroundVideoUrl: this.backgroundVideoUrl,
       companyName: this.companyName,
+      email: this.email,
+      phone: this.phone,
+      address: this.address,
+      socialLinks: this.socialLinks,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

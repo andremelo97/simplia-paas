@@ -1,14 +1,39 @@
 import React, { useState, useEffect } from 'react'
-import { Upload, Palette, Video } from 'lucide-react'
+import { Upload, Palette, Video, Phone, MapPin, Globe, Facebook, Instagram, Linkedin, Twitter, Mail } from 'lucide-react'
+
+// Phone mask function for Brazilian format
+const formatPhone = (value: string): string => {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  if (digits.length <= 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
+}
+
+// WhatsApp icon component (lucide doesn't have brand icons)
+const WhatsAppIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+)
 import { useTranslation } from 'react-i18next'
-import { Button, Input, Card, Label, Alert, AlertDescription } from '@client/common/ui'
-import { brandingService, BrandingData } from '../../services/brandingService'
+import { Button, Input, Card, Label, Alert, AlertDescription, Textarea } from '@client/common/ui'
+import { brandingService, BrandingData, SocialLinks } from '../../services/brandingService'
 import { ImageUploadModal } from '../../components/configurations/ImageUploadModal'
 import { VideoUploadModal } from '../../components/configurations/VideoUploadModal'
 
+// Social network configuration with icons
+const SOCIAL_NETWORKS = [
+  { key: 'facebook', icon: Facebook, label: 'Facebook', placeholder: 'https://facebook.com/sua-empresa' },
+  { key: 'instagram', icon: Instagram, label: 'Instagram', placeholder: 'https://instagram.com/sua-empresa' },
+  { key: 'linkedin', icon: Linkedin, label: 'LinkedIn', placeholder: 'https://linkedin.com/company/sua-empresa' },
+  { key: 'twitter', icon: Twitter, label: 'Twitter/X', placeholder: 'https://twitter.com/sua-empresa' },
+  { key: 'whatsapp', icon: WhatsAppIcon, label: 'WhatsApp', placeholder: 'https://wa.me/5511999999999' },
+  { key: 'website', icon: Globe, label: 'Website', placeholder: 'https://www.sua-empresa.com.br' },
+] as const
+
 export const BrandingConfiguration: React.FC = () => {
   const { t } = useTranslation('hub')
-  // Initialize with empty values so form always renders
   const [branding, setBranding] = useState<BrandingData>({
     tenantId: 0,
     primaryColor: '',
@@ -16,8 +41,30 @@ export const BrandingConfiguration: React.FC = () => {
     tertiaryColor: '',
     logoUrl: null,
     backgroundVideoUrl: null,
-    companyName: null
+    companyName: null,
+    email: null,
+    phone: null,
+    address: null,
+    socialLinks: {}
   })
+
+  // Track which social network input is expanded
+  const [expandedSocial, setExpandedSocial] = useState<string | null>(null)
+
+  const updateSocialLink = (platform: keyof SocialLinks, value: string) => {
+    setBranding(prev => ({
+      ...prev,
+      socialLinks: {
+        ...prev.socialLinks,
+        [platform]: value || undefined
+      }
+    }))
+  }
+
+  const toggleSocialExpand = (key: string) => {
+    setExpandedSocial(prev => prev === key ? null : key)
+  }
+
   const [loading, setLoading] = useState(true)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [videoUploadModalOpen, setVideoUploadModalOpen] = useState(false)
@@ -44,7 +91,6 @@ export const BrandingConfiguration: React.FC = () => {
 
     try {
       await brandingService.updateBranding(branding)
-      // Feedback handled by HTTP interceptor
     } catch (error) {
       // Error updating branding
     }
@@ -61,17 +107,11 @@ export const BrandingConfiguration: React.FC = () => {
     }
   }
 
-  const handleOpenUploadModal = () => {
-    setUploadModalOpen(true)
-  }
-
   const handleUploadComplete = (imageUrl: string) => {
-    // Update local state with new logo URL
     setBranding(prev => ({ ...prev, logoUrl: imageUrl }))
   }
 
   const handleVideoUploadComplete = (videoUrl: string) => {
-    // Update local state with new video URL
     setBranding(prev => ({ ...prev, backgroundVideoUrl: videoUrl }))
   }
 
@@ -161,18 +201,119 @@ export const BrandingConfiguration: React.FC = () => {
         </div>
       </Card>
 
-      {/* Company Info */}
+      {/* Company Info + Contact - Side by Side */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('branding.company_info')}</h2>
-        <div>
-          <Label htmlFor="companyName">{t('branding.company_name')}</Label>
-          <Input
-            id="companyName"
-            value={branding.companyName || ''}
-            onChange={(e) => setBranding({ ...branding, companyName: e.target.value })}
-            placeholder={t('branding.company_name_placeholder')}
-            className="mt-2"
-          />
+        <p className="text-sm text-gray-600 mb-4">{t('branding.contact_info_description')}</p>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column - Company Name, Email & Address */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="companyName">{t('branding.company_name')}</Label>
+              <Input
+                id="companyName"
+                value={branding.companyName || ''}
+                onChange={(e) => setBranding({ ...branding, companyName: e.target.value })}
+                placeholder={t('branding.company_name_placeholder')}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email" className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-gray-500" />
+                {t('branding.email')}
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={branding.email || ''}
+                onChange={(e) => setBranding({ ...branding, email: e.target.value })}
+                placeholder={t('branding.email_placeholder')}
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="address" className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-gray-500" />
+                {t('branding.address')}
+              </Label>
+              <Textarea
+                id="address"
+                value={branding.address || ''}
+                onChange={(e) => setBranding({ ...branding, address: e.target.value })}
+                placeholder={t('branding.address_placeholder')}
+                rows={2}
+                className="mt-2"
+              />
+            </div>
+          </div>
+
+          {/* Right Column - Phone & Social Links */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="phone" className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-gray-500" />
+                {t('branding.phone')}
+              </Label>
+              <Input
+                id="phone"
+                value={branding.phone || ''}
+                onChange={(e) => setBranding({ ...branding, phone: formatPhone(e.target.value) })}
+                placeholder="(11) 99999-9999"
+                className="mt-2"
+              />
+            </div>
+
+            {/* Social Links with Icons */}
+            <div>
+              <Label className="mb-2 block">{t('branding.social_links')}</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {SOCIAL_NETWORKS.map(({ key, icon: Icon, label }) => {
+                  const hasValue = !!branding.socialLinks?.[key as keyof SocialLinks]
+                  const isExpanded = expandedSocial === key
+
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => toggleSocialExpand(key)}
+                      className={`p-2 rounded-lg border transition-all ${
+                        hasValue
+                          ? 'bg-[#B725B7] text-white border-[#B725B7]'
+                          : isExpanded
+                            ? 'bg-gray-100 border-[#B725B7] text-[#B725B7]'
+                            : 'bg-white border-gray-300 text-gray-500 hover:border-[#B725B7] hover:text-[#B725B7]'
+                      }`}
+                      title={label}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Expanded Input for Selected Social Network */}
+              {expandedSocial && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  {SOCIAL_NETWORKS.filter(n => n.key === expandedSocial).map(({ key, icon: Icon, label, placeholder }) => (
+                    <div key={key} className="flex items-center gap-2">
+                      <Icon className="h-5 w-5 text-[#B725B7] flex-shrink-0" />
+                      <Input
+                        value={branding.socialLinks?.[key as keyof SocialLinks] || ''}
+                        onChange={(e) => updateSocialLink(key as keyof SocialLinks, e.target.value)}
+                        placeholder={placeholder}
+                        className="flex-1"
+                        autoFocus
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -194,7 +335,7 @@ export const BrandingConfiguration: React.FC = () => {
             <Button
               variant="outline"
               className="w-full md:w-auto"
-              onClick={handleOpenUploadModal}
+              onClick={() => setUploadModalOpen(true)}
             >
               <Upload className="h-4 w-4 mr-2" />
               {t('branding.upload_logo')}

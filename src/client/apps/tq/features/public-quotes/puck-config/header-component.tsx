@@ -228,6 +228,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
   },
   Footer: {
     fields: {
+      // === APPEARANCE ===
       backgroundColor: {
         type: 'radio' as const,
         label: 'Background Color',
@@ -239,100 +240,10 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           { label: 'Dark', value: 'dark' },
         ],
       },
-      showSocialLinks: {
-        type: 'radio' as const,
-        label: 'Show Social Links',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No', value: false },
-        ],
-      },
-      socialLinks: {
-        type: 'array' as const,
-        label: 'Social Links',
-        arrayFields: {
-          platform: {
-            type: 'select' as const,
-            label: 'Platform',
-            options: [
-              { label: 'Facebook', value: 'facebook' },
-              { label: 'Instagram', value: 'instagram' },
-              { label: 'Twitter/X', value: 'twitter' },
-              { label: 'LinkedIn', value: 'linkedin' },
-              { label: 'YouTube', value: 'youtube' },
-              { label: 'TikTok', value: 'tiktok' },
-            ],
-          },
-          url: {
-            type: 'text' as const,
-            label: 'URL',
-          },
-        },
-      },
-      showQuickLinks: {
-        type: 'radio' as const,
-        label: 'Show Quick Links',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No', value: false },
-        ],
-      },
-      quickLinks: {
-        type: 'array' as const,
-        label: 'Quick Links',
-        arrayFields: {
-          label: {
-            type: 'text' as const,
-            label: 'Label',
-          },
-          url: {
-            type: 'text' as const,
-            label: 'URL',
-          },
-        },
-      },
-      showContact: {
-        type: 'radio' as const,
-        label: 'Show Contact',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No', value: false },
-        ],
-      },
-      contactItems: {
-        type: 'array' as const,
-        label: 'Contact Items',
-        arrayFields: {
-          type: {
-            type: 'select' as const,
-            label: 'Type',
-            options: [
-              { label: 'Phone', value: 'phone' },
-              { label: 'Email', value: 'email' },
-              { label: 'Address', value: 'address' },
-            ],
-          },
-          value: {
-            type: 'text' as const,
-            label: 'Value',
-          },
-        },
-      },
-      copyrightText: {
-        type: 'text' as const,
-        label: 'Copyright Text',
-      },
-      socialTitle: {
-        type: 'text' as const,
-        label: 'Social Links Heading',
-      },
-      quickLinksTitle: {
-        type: 'text' as const,
-        label: 'Quick Links Heading',
-      },
-      contactTitle: {
-        type: 'text' as const,
-        label: 'Contact Heading',
+      textColor: {
+        type: 'select' as const,
+        label: 'Text Color',
+        options: textColorOptions,
       },
       verticalPadding: {
         type: 'select' as const,
@@ -360,32 +271,178 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           { label: '48px', value: 48 },
         ],
       },
-      textColor: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
+      // === DATA SOURCE ===
+      contactSource: {
+        type: 'radio' as const,
+        label: 'Contact & Social Data Source',
+        options: [
+          { label: 'Use Branding Data (Recommended)', value: 'branding' },
+          { label: 'Custom (Manual Entry)', value: 'custom' },
+        ],
       },
+      // === SOCIAL LINKS SECTION ===
+      socialTitle: {
+        type: 'text' as const,
+        label: 'Social Links - Title',
+      },
+      showSocialLinks: {
+        type: 'radio' as const,
+        label: 'Social Links - Show Section',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      socialLinks: {
+        type: 'array' as const,
+        label: 'Social Links - Items (Custom Mode)',
+        arrayFields: {
+          platform: {
+            type: 'select' as const,
+            label: 'Platform',
+            options: [
+              { label: 'Facebook', value: 'facebook' },
+              { label: 'Instagram', value: 'instagram' },
+              { label: 'Twitter/X', value: 'twitter' },
+              { label: 'LinkedIn', value: 'linkedin' },
+              { label: 'WhatsApp', value: 'whatsapp' },
+              { label: 'YouTube', value: 'youtube' },
+              { label: 'TikTok', value: 'tiktok' },
+              { label: 'Website', value: 'website' },
+            ],
+          },
+          url: {
+            type: 'text' as const,
+            label: 'URL',
+          },
+        },
+      },
+      // === QUICK LINKS SECTION ===
+      quickLinksTitle: {
+        type: 'text' as const,
+        label: 'Quick Links - Title',
+      },
+      showQuickLinks: {
+        type: 'radio' as const,
+        label: 'Quick Links - Show Section',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      quickLinks: {
+        type: 'array' as const,
+        label: 'Quick Links - Items',
+        arrayFields: {
+          label: {
+            type: 'text' as const,
+            label: 'Label',
+          },
+          url: {
+            type: 'text' as const,
+            label: 'URL',
+          },
+        },
+      },
+      // === CONTACT SECTION ===
+      contactTitle: {
+        type: 'text' as const,
+        label: 'Contact - Title',
+      },
+      showContact: {
+        type: 'radio' as const,
+        label: 'Contact - Show Section',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      // Branding mode toggles
+      showEmail: {
+        type: 'radio' as const,
+        label: 'Contact - Show Email (Branding Mode)',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      showPhone: {
+        type: 'radio' as const,
+        label: 'Contact - Show Phone (Branding Mode)',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      showAddress: {
+        type: 'radio' as const,
+        label: 'Contact - Show Address (Branding Mode)',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      // Custom mode items
+      contactItems: {
+        type: 'array' as const,
+        label: 'Contact - Items (Custom Mode)',
+        arrayFields: {
+          type: {
+            type: 'select' as const,
+            label: 'Type',
+            options: [
+              { label: 'Phone', value: 'phone' },
+              { label: 'Email', value: 'email' },
+              { label: 'Address', value: 'address' },
+            ],
+          },
+          value: {
+            type: 'text' as const,
+            label: 'Value',
+          },
+        },
+      },
+      // === COPYRIGHT ===
+      copyrightText: {
+        type: 'text' as const,
+        label: 'Copyright Text',
+      },
+    },
+    // Conditionally show/hide fields based on contactSource
+    resolveFields: (data: any, { fields }: any) => {
+      const isBrandingMode = data.props.contactSource === 'branding'
+
+      // Create a new fields object with conditional visibility
+      const resolvedFields = { ...fields }
+
+      if (isBrandingMode) {
+        // Hide custom mode fields, show branding mode fields
+        delete resolvedFields.socialLinks
+        delete resolvedFields.contactItems
+      } else {
+        // Hide branding mode fields, show custom mode fields
+        delete resolvedFields.showEmail
+        delete resolvedFields.showPhone
+        delete resolvedFields.showAddress
+      }
+
+      return resolvedFields
     },
     defaultProps: {
       backgroundColor: 'dark',
+      contactSource: 'branding',
       showSocialLinks: true,
-      socialLinks: [
-        { platform: 'facebook', url: 'https://facebook.com' },
-        { platform: 'instagram', url: 'https://instagram.com' },
-        { platform: 'twitter', url: 'https://twitter.com' },
-      ],
+      socialLinks: [],
       showQuickLinks: true,
       quickLinks: [
         { label: 'Privacy Policy', url: '#privacy' },
         { label: 'Terms of Service', url: '#terms' },
-        { label: 'Contact', url: '#contact' },
       ],
       showContact: true,
-      contactItems: [
-        { type: 'phone', value: '+1 (555) 123-4567' },
-        { type: 'email', value: 'contact@example.com' },
-        { type: 'address', value: '123 Main St, City, State 12345' },
-      ],
+      showEmail: true,
+      showPhone: true,
+      showAddress: true,
+      contactItems: [],
       socialTitle: 'Social Media',
       quickLinksTitle: 'Quick Links',
       contactTitle: 'Contact',
@@ -394,7 +451,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       horizontalPadding: 16,
       textColor: '#ffffff',
     },
-    render: ({ backgroundColor, showSocialLinks, socialLinks, showQuickLinks, quickLinks, showContact, contactItems, copyrightText, verticalPadding, horizontalPadding, textColor, socialTitle, quickLinksTitle, contactTitle }: any) => {
+    render: ({ backgroundColor, contactSource, showSocialLinks, socialLinks, showQuickLinks, quickLinks, showContact, showEmail, showPhone, showAddress, contactItems, copyrightText, verticalPadding, horizontalPadding, textColor, socialTitle, quickLinksTitle, contactTitle }: any) => {
       const getBackgroundColor = () => {
         switch (backgroundColor) {
           case 'primary':
@@ -416,6 +473,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       }
 
       const getSocialIcon = (platform: string) => {
+        // All icons must be stroke-based (not fill) since SVG uses stroke="currentColor"
         const icons: any = {
           facebook: 'M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z',
           instagram: 'M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01M6.5 2h11A4.5 4.5 0 0122 6.5v11a4.5 4.5 0 01-4.5 4.5h-11A4.5 4.5 0 012 17.5v-11A4.5 4.5 0 016.5 2z',
@@ -423,6 +481,10 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           linkedin: 'M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z',
           youtube: 'M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.25 29 29 0 00-.46-5.33z M9.75 15.02l0-6.89 5.75 3.44z',
           tiktok: 'M9 12a4 4 0 104 4V4a5 5 0 005 5',
+          // WhatsApp: simple chat bubble with tail (stroke-based)
+          whatsapp: 'M12 3a9 9 0 00-9 9c0 1.5.4 3 1.1 4.3L3 21l4.7-1.1c1.3.7 2.8 1.1 4.3 1.1a9 9 0 000-18z',
+          // Website: globe icon (stroke-based)
+          website: 'M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z',
         }
         return icons[platform] || icons.facebook
       }
@@ -435,6 +497,43 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
         }
         return icons[type] || icons.phone
       }
+
+      // Build effective contact items based on source
+      const getEffectiveContactItems = () => {
+        if (contactSource === 'branding') {
+          const items: Array<{ type: string; value: string }> = []
+          if (showEmail && branding.email) {
+            items.push({ type: 'email', value: branding.email })
+          }
+          if (showPhone && branding.phone) {
+            items.push({ type: 'phone', value: branding.phone })
+          }
+          if (showAddress && branding.address) {
+            items.push({ type: 'address', value: branding.address })
+          }
+          return items
+        }
+        return contactItems || []
+      }
+
+      // Build effective social links based on source
+      const getEffectiveSocialLinks = () => {
+        if (contactSource === 'branding' && branding.socialLinks) {
+          const links: Array<{ platform: string; url: string }> = []
+          const socialData = branding.socialLinks as Record<string, string | undefined>
+          const platforms = ['facebook', 'instagram', 'twitter', 'linkedin', 'whatsapp', 'website']
+          platforms.forEach(platform => {
+            if (socialData[platform]) {
+              links.push({ platform, url: socialData[platform]! })
+            }
+          })
+          return links
+        }
+        return socialLinks || []
+      }
+
+      const effectiveContactItems = getEffectiveContactItems()
+      const effectiveSocialLinks = getEffectiveSocialLinks()
 
       const uniqueId = `footer-${Math.random().toString(36).substr(2, 9)}`
       const wrapperId = `footer-wrapper-${Math.random().toString(36).substr(2, 9)}`
@@ -472,7 +571,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
               {/* Three column grid */}
               <div className={`${uniqueId}-grid`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '32px' }}>
                 {/* Social Links */}
-                {showSocialLinks && socialLinks && socialLinks.length > 0 && (
+                {showSocialLinks && effectiveSocialLinks && effectiveSocialLinks.length > 0 && (
                   <div>
                     <h3
                       style={{
@@ -487,7 +586,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                       {effectiveSocialTitle}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {socialLinks.map((link: any, index: number) => (
+                      {effectiveSocialLinks.map((link: any, index: number) => (
                         <a
                           key={index}
                           href={link.url}
@@ -563,7 +662,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 )}
 
                 {/* Contact */}
-                {showContact && contactItems && contactItems.length > 0 && (
+                {showContact && effectiveContactItems && effectiveContactItems.length > 0 && (
                   <div>
                     <h3
                       style={{
@@ -578,7 +677,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                       {effectiveContactTitle}
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {contactItems.map((item: any, index: number) => (
+                      {effectiveContactItems.map((item: any, index: number) => (
                         <div
                           key={index}
                           style={{

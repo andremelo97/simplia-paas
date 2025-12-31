@@ -320,6 +320,12 @@ CREATE TABLE IF NOT EXISTS tenant_branding (
   -- Display information
   company_name VARCHAR(255),
 
+  -- Contact information
+  email VARCHAR(255),
+  phone VARCHAR(50),
+  address TEXT,
+  social_links JSONB NOT NULL DEFAULT '{}'::jsonb,
+
   -- Metadata
   created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -337,6 +343,7 @@ COMMENT ON COLUMN tenant_branding.tertiary_color IS 'Tertiary brand color in hex
 COMMENT ON COLUMN tenant_branding.logo_url IS 'URL to tenant logo (Supabase storage path)';
 COMMENT ON COLUMN tenant_branding.background_video_url IS 'URL to background video for Hero sections (Supabase storage, MP4 format, max 20MB)';
 COMMENT ON COLUMN tenant_branding.company_name IS 'Company display name for public pages';
+COMMENT ON COLUMN tenant_branding.email IS 'Contact email for public pages and email footers';
 
 -- =============================================
 -- POSTGRESQL TRIGGERS

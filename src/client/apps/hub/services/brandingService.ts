@@ -1,5 +1,15 @@
 import { api as http } from '@client/config/http';
 
+export interface SocialLinks {
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
+  whatsapp?: string;
+  website?: string;
+  [key: string]: string | undefined; // Allow additional social networks
+}
+
 export interface BrandingData {
   id?: number;
   tenantId: number;
@@ -9,6 +19,12 @@ export interface BrandingData {
   logoUrl: string | null;
   backgroundVideoUrl?: string | null;
   companyName: string | null;
+  // Contact information
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  socialLinks?: SocialLinks;
+  // Metadata
   createdAt?: string;
   updatedAt?: string;
 }

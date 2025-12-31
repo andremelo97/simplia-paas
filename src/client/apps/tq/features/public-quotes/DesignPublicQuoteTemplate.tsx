@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Puck } from '@measured/puck'
 import '@measured/puck/puck.css'
 import { Button } from '@client/common/ui'
-import { Maximize2, Minimize2, Eye, Save } from 'lucide-react'
+import { Maximize2, Minimize2, Eye, Save, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { publicQuotesService } from '../../services/publicQuotes'
 import { brandingService, BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
 import { useAuthStore } from '../../shared/store'
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 export const DesignPublicQuoteTemplate: React.FC = () => {
   const { t } = useTranslation('tq')
@@ -22,12 +24,41 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [config, setConfig] = useState<any>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [lastSavedData, setLastSavedData] = useState<string>('')
+  const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const handleSaveRef = useRef<() => void>(() => {})
+
+  // Keep ref updated with latest handleSave
+  useEffect(() => {
+    handleSaveRef.current = () => handleSave(false)
+  })
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+S or Cmd+S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        if (canEdit && !isSaving) {
+          handleSaveRef.current()
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [canEdit, isSaving])
 
   useEffect(() => {
     loadBrandingAndTemplate()
   }, [id])
 
   const loadBrandingAndTemplate = async () => {
+    setIsLoading(true)
     try {
       // Load branding first
       const brandingData = await brandingService.getBranding()
@@ -41,6 +72,8 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
       await loadTemplate()
     } catch (error) {
       // Failed to load branding
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -51,33 +84,104 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
       setTemplate(fetchedTemplate)
 
       // Load existing content or initialize empty
-      if (fetchedTemplate.content && Object.keys(fetchedTemplate.content).length > 0) {
-        setData(fetchedTemplate.content)
-      } else {
-        setData({ content: [], root: {} })
-      }
+      const initialData = fetchedTemplate.content && Object.keys(fetchedTemplate.content).length > 0
+        ? fetchedTemplate.content
+        : { content: [], root: {} }
+
+      setData(initialData)
+      setLastSavedData(JSON.stringify(initialData))
+      setHasUnsavedChanges(false)
     } catch (error) {
       // Failed to load template
     }
   }
 
-  const handleSave = async () => {
-    if (!id) return
+  // Check for unsaved changes
+  const checkUnsavedChanges = useCallback((newData: any) => {
+    const newDataStr = JSON.stringify(newData)
+    const hasChanges = newDataStr !== lastSavedData
+    setHasUnsavedChanges(hasChanges)
+    return hasChanges
+  }, [lastSavedData])
+
+  // Auto-save after 30 seconds of inactivity
+  const scheduleAutoSave = useCallback(() => {
+    if (!canEdit) return
+
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current)
+    }
+
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      if (hasUnsavedChanges && !isSaving) {
+        handleSave(true)
+      }
+    }, 30000) // 30 seconds
+  }, [canEdit, hasUnsavedChanges, isSaving])
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
+      if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current)
+    }
+  }, [])
+
+  // Warn user before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault()
+        e.returnValue = ''
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [hasUnsavedChanges])
+
+  const handleSave = async (isAutoSave = false) => {
+    if (!id || isSaving) return
+
+    // Clear any existing status timeout
+    if (saveStatusTimeoutRef.current) {
+      clearTimeout(saveStatusTimeoutRef.current)
+    }
+
     setIsSaving(true)
+    setSaveStatus('saving')
+
     try {
       const updatedTemplate = await publicQuotesService.updateTemplate(id, {
         content: data
       })
       // Update template state to reflect saved changes
       setTemplate(updatedTemplate)
+      setLastSavedData(JSON.stringify(data))
+      setHasUnsavedChanges(false)
+      setSaveStatus('saved')
+
+      // Reset status after 3 seconds
+      saveStatusTimeoutRef.current = setTimeout(() => {
+        setSaveStatus('idle')
+      }, 3000)
     } catch (error) {
-      // Failed to save template layout
+      setSaveStatus('error')
+
+      // Reset error status after 5 seconds
+      saveStatusTimeoutRef.current = setTimeout(() => {
+        setSaveStatus('idle')
+      }, 5000)
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleCancel = () => {
+    if (hasUnsavedChanges) {
+      const confirmLeave = window.confirm(t('public_quotes.unsaved_changes_confirm'))
+      if (!confirmLeave) return
+    }
     navigate('/public-quotes/templates')
   }
 
@@ -86,12 +190,90 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
     window.open(`/public-quotes/templates/${id}/preview`, '_blank')
   }
 
+  const handleDataChange = (updatedData: any) => {
+    setData(updatedData)
+    checkUnsavedChanges(updatedData)
+    scheduleAutoSave()
+  }
+
   const hasContent = data?.content && Array.isArray(data.content) && data.content.length > 0
+
+  // Render save button with status
+  const renderSaveButton = () => {
+    const getButtonContent = () => {
+      switch (saveStatus) {
+        case 'saving':
+          return (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              {t('public_quotes.saving_layout')}
+            </>
+          )
+        case 'saved':
+          return (
+            <>
+              <Check size={16} className="text-green-500" />
+              {t('public_quotes.layout_saved')}
+            </>
+          )
+        case 'error':
+          return (
+            <>
+              <AlertCircle size={16} className="text-red-500" />
+              {t('public_quotes.save_error')}
+            </>
+          )
+        default:
+          return (
+            <>
+              <Save size={16} />
+              {t('public_quotes.save_layout')}
+              {hasUnsavedChanges && (
+                <span className="w-2 h-2 bg-orange-500 rounded-full ml-1" title={t('public_quotes.unsaved_changes')} />
+              )}
+            </>
+          )
+      }
+    }
+
+    const getButtonVariant = () => {
+      if (saveStatus === 'saved') return 'default'
+      if (saveStatus === 'error') return 'danger'
+      return 'default'
+    }
+
+    return (
+      <Button
+        type="button"
+        variant={getButtonVariant() as any}
+        onClick={() => handleSave(false)}
+        disabled={isSaving || saveStatus === 'saved'}
+        className={`flex items-center gap-2 transition-all ${
+          saveStatus === 'saved' ? 'bg-green-50 border-green-200 text-green-700' : ''
+        } ${
+          saveStatus === 'error' ? 'bg-red-50 border-red-200 text-red-700' : ''
+        }`}
+      >
+        {getButtonContent()}
+      </Button>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={32} className="animate-spin text-primary-500" />
+          <div className="text-gray-500">{t('public_quotes.loading_template')}</div>
+        </div>
+      </div>
+    )
+  }
 
   if (!template || !config || !branding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading template...</div>
+        <div className="text-gray-500">{t('public_quotes.template_not_found')}</div>
       </div>
     )
   }
@@ -123,9 +305,7 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
         <Puck
           config={config}
           data={data}
-          onChange={(updatedData: any) => {
-            setData(updatedData)
-          }}
+          onChange={handleDataChange}
           onPublish={(publishedData: any) => {
             setData(publishedData)
           }}
@@ -135,19 +315,7 @@ export const DesignPublicQuoteTemplate: React.FC = () => {
           overrides={{
             headerActions: () => (
               <div className="flex items-center gap-2">
-                {canEdit && (
-                  <Button
-                    type="button"
-                    variant="default"
-                    onClick={handleSave}
-                    isLoading={isSaving}
-                    disabled={isSaving}
-                    className="flex items-center gap-2"
-                  >
-                    <Save size={16} />
-                    {isSaving ? t('public_quotes.saving_layout') : t('public_quotes.save_layout')}
-                  </Button>
-                )}
+                {canEdit && renderSaveButton()}
                 <Button
                   type="button"
                   variant="secondary"

@@ -13,26 +13,28 @@ export type ColorOption =
 export type TextColorOption = 'white' | 'black';
 
 export interface SocialLinks {
-  facebook: string;
-  instagram: string;
-  linkedin: string;
-  website: string;
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  twitter?: string;
+  whatsapp?: string;
+  website?: string;
+  [key: string]: string | undefined;
 }
 
 export interface EmailTemplateSettings {
   ctaButtonText: string;
   showLogo: boolean;
-  showSocialLinks: boolean;
-  showAddress: boolean;
-  showPhone: boolean;
-  // Contact info fields
-  address: string;
-  phone: string;
-  socialLinks: SocialLinks;
+  headerText: string; // Text shown in header when showLogo is false
   headerColor: ColorOption;
   headerTextColor: TextColorOption;
   buttonColor: ColorOption;
   buttonTextColor: TextColorOption;
+  // Contact info visibility (data comes from Branding)
+  showEmail: boolean;
+  showPhone: boolean;
+  showAddress: boolean;
+  showSocialLinks: boolean;
 }
 
 export interface Branding {
@@ -44,6 +46,11 @@ export interface Branding {
   logoUrl: string | null;
   backgroundVideoUrl: string | null;
   companyName: string | null;
+  // Contact information
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
+  socialLinks?: SocialLinks;
 }
 
 export interface EmailTemplate {

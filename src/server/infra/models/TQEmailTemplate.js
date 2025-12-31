@@ -185,42 +185,30 @@ $PASSWORD_BLOCK$`
       'pt-BR': {
         ctaButtonText: 'Ver Cotação',
         showLogo: true,
-        showSocialLinks: false,
-        showAddress: false,
-        showPhone: false,
-        // Contact info fields
-        address: '',
-        phone: '',
-        socialLinks: {
-          facebook: '',
-          instagram: '',
-          linkedin: '',
-          website: ''
-        },
+        headerText: '',
         headerColor: 'primary-gradient',
         headerTextColor: 'white',
         buttonColor: 'primary-gradient',
-        buttonTextColor: 'white'
+        buttonTextColor: 'white',
+        // Contact info visibility (data comes from Branding)
+        showEmail: true,
+        showPhone: true,
+        showAddress: true,
+        showSocialLinks: true
       },
       'en-US': {
         ctaButtonText: 'View Quote',
         showLogo: true,
-        showSocialLinks: false,
-        showAddress: false,
-        showPhone: false,
-        // Contact info fields
-        address: '',
-        phone: '',
-        socialLinks: {
-          facebook: '',
-          instagram: '',
-          linkedin: '',
-          website: ''
-        },
+        headerText: '',
         headerColor: 'primary-gradient',
         headerTextColor: 'white',
         buttonColor: 'primary-gradient',
-        buttonTextColor: 'white'
+        buttonTextColor: 'white',
+        // Contact info visibility (data comes from Branding)
+        showEmail: true,
+        showPhone: true,
+        showAddress: true,
+        showSocialLinks: true
       }
     };
 

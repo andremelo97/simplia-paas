@@ -280,8 +280,13 @@
       "step4_template_title": "\"+ New Quote or Report\" button",
       "step4_template_desc": "Opens a screen where you choose a template (document model). The AI automatically fills in the template using information from the transcription. Ideal for standardized documents.",
       "step4_agent_title": "\"Call AI Agent\" button",
-      "step4_agent_desc": "Opens a conversation with the AI where you can ask to create documents freely, without a template. You can chat, request adjustments, and create quotes or clinical reports directly."
+      "step4_agent_desc": "Opens a conversation with the AI where you can ask to create documents freely, without a template. You can chat, request adjustments, and create quotes or clinical reports directly.",
+      "step4_agent_config_hint": "You can customize the initial message we send to the AI agent in the configurations.",
+      "step4_agent_config_link": "Configure AI Agent",
+      "draft_title": "Auto-Save Draft",
+      "draft_desc": "Your work is automatically saved in the browser. If you accidentally close the page, your transcription and selected patient may be recovered when you return. Use the reset button (↺) next to the \"+ New Session\" button to clear everything and start fresh."
     },
+    "clear_draft": "Clear draft and start fresh",
     "session": "Session",
     "number": "Session Number",
     "transcription": "Transcription",
@@ -765,6 +770,14 @@
         "forbidden": "Access denied to this quote.",
         "default": "Failed to access quote. Please try again later."
       }
+    },
+    "approve": {
+      "loading": "Approving quote...",
+      "success_title": "Quote Approved!",
+      "success_message": "Thank you! Your quote has been approved successfully.",
+      "error_invalid_state": "This quote cannot be approved in its current state.",
+      "error_unauthorized": "Authorization failed. Please refresh the page and try again.",
+      "error_failed": "Failed to approve quote. Please try again."
     }
   },
   "auth": {
@@ -931,7 +944,7 @@
       "title": "Welcome to TQ!",
       "description": "TQ helps you transcribe consultations, manage patients, and create professional quotes and clinical reports. Let's learn how it works!",
       "ready_title": "Ready to use!",
-      "ready_description": "This quick tour will show you the main features. It takes about 2 minutes.",
+      "ready_description": "The system is 100% functional with default settings. This tour shows how to customize TQ to match your style.",
       "features_title": "What you can do:",
       "feature1": "Record and transcribe consultations",
       "feature2": "Manage patient records",

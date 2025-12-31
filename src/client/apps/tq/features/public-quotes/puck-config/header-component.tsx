@@ -58,6 +58,15 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
         label: 'Button Text Color',
         options: textColorOptions,
       },
+      buttonAction: {
+        type: 'select' as const,
+        label: 'Button Action',
+        options: [
+          { label: 'None (visual only)', value: 'none' },
+          { label: 'Approve Quote', value: 'approve_quote' },
+          { label: 'Link (URL)', value: 'link' },
+        ],
+      },
     },
     defaultProps: {
       backgroundColor: 'white',
@@ -67,6 +76,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       buttonUrl: '#',
       buttonVariant: 'primary',
       buttonTextColor: '#ffffff',
+      buttonAction: 'none',
     },
     render: ({ backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor }: any) => {
       const headerButtonId = `header-btn-${Math.random().toString(36).substr(2, 9)}`

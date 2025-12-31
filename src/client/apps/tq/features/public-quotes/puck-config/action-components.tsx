@@ -8,6 +8,19 @@ export const createActionComponents = (branding: BrandingData) => ({
       label: {
         type: 'text' as const,
       },
+      action: {
+        type: 'select' as const,
+        label: 'Action',
+        options: [
+          { label: 'None (visual only)', value: 'none' },
+          { label: 'Approve Quote', value: 'approve_quote' },
+          { label: 'Link (URL)', value: 'link' },
+        ],
+      },
+      url: {
+        type: 'text' as const,
+        label: 'URL (for Link action)',
+      },
       style: {
         type: 'radio' as const,
         label: 'Style',
@@ -26,6 +39,15 @@ export const createActionComponents = (branding: BrandingData) => ({
           { label: 'Large', value: 'lg' },
         ],
       },
+      align: {
+        type: 'radio' as const,
+        label: 'Alignment',
+        options: [
+          { label: 'Left', value: 'left' },
+          { label: 'Center', value: 'center' },
+          { label: 'Right', value: 'right' },
+        ],
+      },
       textColor: {
         type: 'select' as const,
         label: 'Text Color',
@@ -34,11 +56,25 @@ export const createActionComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       text: 'Click here',
+      action: 'none',
+      url: '',
       style: 'primary',
       size: 'md',
+      align: 'left',
       textColor: '#ffffff',
     },
-    render: ({ text, style, size, textColor }: any) => {
+    render: ({ text, action, url, style, size, align, textColor }: any) => {
+      const getAlignStyle = (align: string) => {
+        switch (align) {
+          case 'center':
+            return { display: 'flex', justifyContent: 'center' }
+          case 'right':
+            return { display: 'flex', justifyContent: 'flex-end' }
+          default:
+            return { display: 'flex', justifyContent: 'flex-start' }
+        }
+      }
+
       const getStyleConfig = (style: string) => {
         switch (style) {
           case 'primary':
@@ -79,10 +115,12 @@ export const createActionComponents = (branding: BrandingData) => ({
       }
 
       return (
-        <>
+        <div style={{ width: '100%', ...getAlignStyle(align) }}>
           <button
             className={uniqueId}
             style={{
+              display: 'inline-block',
+              width: 'fit-content',
               borderRadius: '4px',
               fontWeight: '500',
               border: '1px solid',
@@ -103,7 +141,7 @@ export const createActionComponents = (branding: BrandingData) => ({
               }
             }
           `}</style>
-        </>
+        </div>
       )
     },
   },

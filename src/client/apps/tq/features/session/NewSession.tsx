@@ -14,7 +14,8 @@ import {
   Plus,
   Bot,
   HelpCircle,
-  ExternalLink
+  ExternalLink,
+  RotateCcw
 } from 'lucide-react'
 
 // LocalStorage key for draft persistence
@@ -305,14 +306,25 @@ export const NewSession: React.FC = () => {
     createdPatient
   ])
 
-  // Clear draft from localStorage
+  // Clear draft from localStorage and reset all form state
   const clearDraft = useCallback(() => {
     try {
       localStorage.removeItem(DRAFT_STORAGE_KEY)
+      // Reset all form state
+      setTranscription('')
+      setCreatedTranscriptionId(null)
+      setPatientMode('search')
+      setPatientName('')
+      setSearchQuery('')
+      setSelectedPatient(null)
+      setCreatedPatient(null)
+      setSession(null)
+      setSessionContext({ patientId: null, transcriptionId: null })
+      timer.reset()
     } catch {
       // Silent fail
     }
-  }, [])
+  }, [timer])
 
   // beforeunload warning when leaving with unsaved changes
   useEffect(() => {
@@ -617,8 +629,12 @@ export const NewSession: React.FC = () => {
       const newSession = await ensureSession()
       // Success feedback is handled automatically by HTTP interceptor
 
-      // Clear draft from localStorage after successful creation
-      clearDraft()
+      // Clear draft from localStorage after successful creation (but keep form state)
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY)
+      } catch {
+        // Silent fail
+      }
 
       // Show session link toast
       setToastData({
@@ -670,8 +686,12 @@ export const NewSession: React.FC = () => {
       }
       const newQuote = await quotesService.createQuote(quoteData)
 
-      // Clear draft from localStorage after successful creation
-      clearDraft()
+      // Clear draft from localStorage after successful creation (but keep form state)
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY)
+      } catch {
+        // Silent fail
+      }
 
       // Show quote link toast (redirects to /quotes)
       setToastData({
@@ -725,8 +745,12 @@ export const NewSession: React.FC = () => {
         throw new Error('Invalid clinical report response from API')
       }
 
-      // Clear draft from localStorage after successful creation
-      clearDraft()
+      // Clear draft from localStorage after successful creation (but keep form state)
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY)
+      } catch {
+        // Silent fail
+      }
 
       // Show LinkToast for navigation (not publishFeedback - feedback is automatic)
       setToastData({
@@ -763,8 +787,12 @@ export const NewSession: React.FC = () => {
 
   // Handle Template Quote creation callback
   const handleTemplateQuoteCreated = (quoteId: string, quoteNumber: string) => {
-    // Clear draft from localStorage after successful creation
-    clearDraft()
+    // Clear draft from localStorage after successful creation (but keep form state)
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY)
+    } catch {
+      // Silent fail
+    }
 
     // Show quote link toast (redirects to /quotes)
     setToastData({
@@ -818,8 +846,12 @@ export const NewSession: React.FC = () => {
         throw new Error('Invalid clinical report response from API')
       }
 
-      // Clear draft from localStorage after successful creation
-      clearDraft()
+      // Clear draft from localStorage after successful creation (but keep form state)
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY)
+      } catch {
+        // Silent fail
+      }
 
       // Show LinkToast for navigation
       setToastData({
@@ -1459,6 +1491,15 @@ export const NewSession: React.FC = () => {
 
           {/* Right side: Action Buttons */}
           <div className="flex items-center gap-3">
+            {/* Clear draft button - always visible */}
+            <button
+              onClick={clearDraft}
+              className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              title={t('sessions.clear_draft')}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+
             {/* New Session - Primary action with animated gradient border when enabled */}
             <div className="relative inline-block">
               {isNewSessionEnabled() && (
@@ -1726,12 +1767,57 @@ export const NewSession: React.FC = () => {
                   </p>
                   <p className="text-gray-600">{t('sessions.workflow_guide.step4_template_desc')}</p>
                 </div>
-                <div className="bg-purple-50 rounded-lg p-3 text-sm border border-purple-100">
-                  <p className="text-gray-700 mb-1">
-                    <strong className="text-[#B725B7]">{t('sessions.workflow_guide.step4_agent_title')}</strong>
-                  </p>
-                  <p className="text-gray-600">{t('sessions.workflow_guide.step4_agent_desc')}</p>
+                {/* AI Agent Section - Enhanced with visual button and config link */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900 text-sm mb-1">
+                        {t('sessions.workflow_guide.step4_agent_title')}
+                      </p>
+                      <p className="text-gray-600 text-sm mb-3">{t('sessions.workflow_guide.step4_agent_desc')}</p>
+
+                      {/* Visual representation of the button */}
+                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-[5px] text-sm font-medium cursor-default mb-3" style={{ fontFamily: 'Montserrat, sans-serif', height: '32px' }}>
+                        <Bot className="w-4 h-4" />
+                        {t('sessions.call_ai_agent')}
+                      </div>
+
+                      {/* Config hint and link */}
+                      <p className="text-xs text-gray-600 mb-2">
+                        {t('sessions.workflow_guide.step4_agent_config_hint')}
+                      </p>
+                      <a
+                        href="/configurations/ai-agent"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-[#B725B7] hover:text-[#9a1f9a] font-medium flex items-center gap-1"
+                      >
+                        {t('sessions.workflow_guide.step4_agent_config_link')}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Draft Auto-Save Tip */}
+          <div className="mt-8 bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <RotateCcw className="w-4 h-4 text-gray-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 mb-1">
+                  {t('sessions.workflow_guide.draft_title')}
+                </h4>
+                <p className="text-gray-600 text-sm">
+                  {t('sessions.workflow_guide.draft_desc')}
+                </p>
               </div>
             </div>
           </div>

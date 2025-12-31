@@ -252,8 +252,13 @@
       "step4_template_title": "Botão \"+ Nova Cotação ou Relatório\"",
       "step4_template_desc": "Abre uma tela onde você escolhe um template (modelo de documento). A IA preenche o template automaticamente usando as informações da transcrição. Ideal para documentos padronizados.",
       "step4_agent_title": "Botão \"Chamar Agente de IA\"",
-      "step4_agent_desc": "Abre uma conversa com a IA onde você pode pedir para criar documentos de forma livre, sem template. Você pode conversar, pedir ajustes e criar cotações ou relatórios clínicos diretamente."
+      "step4_agent_desc": "Abre uma conversa com a IA onde você pode pedir para criar documentos de forma livre, sem template. Você pode conversar, pedir ajustes e criar cotações ou relatórios clínicos diretamente.",
+      "step4_agent_config_hint": "Você pode personalizar a mensagem inicial que enviamos ao agente de IA nas configurações.",
+      "step4_agent_config_link": "Configurar Agente de IA",
+      "draft_title": "Rascunho Automático",
+      "draft_desc": "Seu trabalho é salvo automaticamente no navegador. Se você fechar a página acidentalmente, a transcrição e o paciente selecionado podem ser recuperados quando você voltar. Use o botão de reset (↺) ao lado do botão \"+ Nova Sessão\" para limpar tudo e começar do zero."
     },
+    "clear_draft": "Limpar rascunho e começar do zero",
     "session": "Sessão",
     "number": "Número da Sessão",
     "transcription": "Transcrição",
@@ -737,6 +742,14 @@
         "forbidden": "Acesso negado a esta cota\u00E7\u00E3o.",
         "default": "N\u00E3o foi poss\u00EDvel acessar a cota\u00E7\u00E3o. Tente novamente mais tarde."
       }
+    },
+    "approve": {
+      "loading": "Aprovando proposta...",
+      "success_title": "Proposta Aprovada!",
+      "success_message": "Obrigado! Sua proposta foi aprovada com sucesso.",
+      "error_invalid_state": "Esta proposta n\u00E3o pode ser aprovada no estado atual.",
+      "error_unauthorized": "Falha na autoriza\u00E7\u00E3o. Por favor, atualize a p\u00E1gina e tente novamente.",
+      "error_failed": "N\u00E3o foi poss\u00EDvel aprovar a proposta. Tente novamente."
     }
   },
   "auth": {
@@ -931,7 +944,7 @@
       "title": "Bem-vindo ao TQ!",
       "description": "O TQ ajuda você a transcrever consultas, gerenciar pacientes e criar orçamentos e relatórios clínicos profissionais. Vamos aprender como funciona!",
       "ready_title": "Pronto para usar!",
-      "ready_description": "Este tour rápido mostrará as principais funcionalidades. Leva cerca de 2 minutos.",
+      "ready_description": "O sistema já está 100% funcional com as configurações padrão. Este tour mostra como personalizar o TQ com a sua cara.",
       "features_title": "O que você pode fazer:",
       "feature1": "Gravar e transcrever consultas",
       "feature2": "Gerenciar registros de pacientes",

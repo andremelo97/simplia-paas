@@ -20,6 +20,8 @@ interface FooterLabels {
 interface QuotePreviewOptions {
   labels?: Partial<QuotePreviewLabels>
   footerLabels?: Partial<FooterLabels>
+  accessToken?: string
+  onApprove?: () => void
 }
 
 const defaultLabels: QuotePreviewLabels = {
@@ -40,6 +42,16 @@ const defaultFooterLabels: FooterLabels = {
 
 const getEffectiveLabel = (value: string | undefined, fallback: string) =>
   (typeof value === 'string' && value.trim().length > 0) ? value : fallback
+
+// Ensure URL has protocol (https:// by default)
+const ensureProtocol = (url: string): string => {
+  if (!url) return url
+  const trimmed = url.trim()
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+  return `https://${trimmed}`
+}
 
 /**
  * Create Puck config with resolved quote data for preview
@@ -64,7 +76,7 @@ export const createConfigWithResolvedData = (
     const colors: Record<string, string> = {
       primary: branding.primaryColor,
       secondary: branding.secondaryColor,
-      accent: branding.accentColor,
+      accent: branding.tertiaryColor,
       gray: '#6b7280',
       black: '#000000'
     }
@@ -91,6 +103,265 @@ export const createConfigWithResolvedData = (
     ...baseConfig,
     components: {
       ...baseConfig.components,
+      // Override Button to handle actions
+      Button: {
+        ...baseConfig.components.Button,
+        render: ({ text, action, url, style, size, align, textColor }: any) => {
+          const getAlignStyle = (a: string) => {
+            switch (a) {
+              case 'center':
+                return { display: 'flex', justifyContent: 'center' }
+              case 'right':
+                return { display: 'flex', justifyContent: 'flex-end' }
+              default:
+                return { display: 'flex', justifyContent: 'flex-start' }
+            }
+          }
+
+          const getStyleConfig = (s: string) => {
+            switch (s) {
+              case 'primary':
+                return { backgroundColor: branding.primaryColor, borderColor: branding.primaryColor }
+              case 'secondary':
+                return { backgroundColor: branding.secondaryColor, borderColor: branding.secondaryColor }
+              case 'tertiary':
+                return { backgroundColor: branding.tertiaryColor, borderColor: branding.tertiaryColor }
+              case 'outline':
+                return { backgroundColor: 'transparent', borderColor: branding.primaryColor }
+              default:
+                return { backgroundColor: branding.primaryColor, borderColor: branding.primaryColor }
+            }
+          }
+
+          const resolveTextColor = (color: string) => {
+            const colors: Record<string, string> = {
+              primary: branding.primaryColor,
+              secondary: branding.secondaryColor,
+              tertiary: branding.tertiaryColor,
+            }
+            return colors[color] || color
+          }
+
+          const buttonTextColor = resolveTextColor(textColor)
+          const uniqueId = `button-${Math.random().toString(36).substr(2, 9)}`
+
+          const baseSizeStyles = {
+            sm: { paddingLeft: '12px', paddingRight: '12px', paddingTop: '6px', paddingBottom: '6px', fontSize: '12px' },
+            md: { paddingLeft: '16px', paddingRight: '16px', paddingTop: '8px', paddingBottom: '8px', fontSize: '14px' },
+            lg: { paddingLeft: '24px', paddingRight: '24px', paddingTop: '10px', paddingBottom: '10px', fontSize: '16px' },
+          }
+
+          const handleClick = () => {
+            if (action === 'approve_quote' && options.onApprove) {
+              options.onApprove()
+            } else if (action === 'link' && url) {
+              window.open(ensureProtocol(url), '_blank', 'noopener,noreferrer')
+            }
+          }
+
+          return (
+            <div style={{ width: '100%', ...getAlignStyle(align) }}>
+              <button
+                className={uniqueId}
+                onClick={handleClick}
+                style={{
+                  display: 'inline-block',
+                  width: 'fit-content',
+                  borderRadius: '4px',
+                  fontWeight: '500',
+                  border: '1px solid',
+                  wordBreak: 'break-word',
+                  cursor: action !== 'none' ? 'pointer' : 'default',
+                  ...baseSizeStyles[size as keyof typeof baseSizeStyles],
+                  ...getStyleConfig(style),
+                  color: buttonTextColor,
+                }}
+              >
+                {text}
+              </button>
+              <style>{`
+                @media (min-width: 640px) {
+                  .${uniqueId} {
+                    ${size === 'sm' ? 'padding-left: 16px; padding-right: 16px; padding-top: 8px; padding-bottom: 8px; font-size: 14px;' : ''}
+                    ${size === 'md' ? 'padding-left: 24px; padding-right: 24px; padding-top: 10px; padding-bottom: 10px; font-size: 16px;' : ''}
+                    ${size === 'lg' ? 'padding-left: 32px; padding-right: 32px; padding-top: 12px; padding-bottom: 12px; font-size: 18px;' : ''}
+                  }
+                }
+              `}</style>
+            </div>
+          )
+        }
+      },
+      // Override Header to handle button actions
+      Header: {
+        ...baseConfig.components.Header,
+        render: ({ backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor, buttonAction }: any) => {
+          const headerButtonId = `header-btn-${Math.random().toString(36).substr(2, 9)}`
+
+          const getBackgroundColor = () => {
+            switch (backgroundColor) {
+              case 'primary':
+                return branding.primaryColor
+              case 'secondary':
+                return branding.secondaryColor
+              case 'tertiary':
+                return branding.tertiaryColor
+              case 'white':
+              default:
+                return '#ffffff'
+            }
+          }
+
+          const getTextColor = () => {
+            return backgroundColor === 'white' ? '#111827' : '#ffffff'
+          }
+
+          const resolveTextColor = (color: string) => {
+            const colors: Record<string, string> = {
+              primary: branding.primaryColor,
+              secondary: branding.secondaryColor,
+              tertiary: branding.tertiaryColor,
+            }
+            return colors[color] || color
+          }
+
+          const getButtonStyles = () => {
+            const baseStyles = {
+              display: 'inline-flex',
+              alignItems: 'center',
+              paddingLeft: '20px',
+              paddingRight: '20px',
+              paddingTop: '10px',
+              paddingBottom: '10px',
+              borderRadius: '6px',
+              fontSize: '14px',
+              fontWeight: '500',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+              border: '1px solid',
+              cursor: buttonAction !== 'none' ? 'pointer' : 'default',
+            }
+
+            const textColor = resolveTextColor(buttonTextColor)
+
+            switch (buttonVariant) {
+              case 'primary':
+                return {
+                  ...baseStyles,
+                  backgroundColor: branding.primaryColor,
+                  color: textColor,
+                  borderColor: branding.primaryColor,
+                }
+              case 'secondary':
+                return {
+                  ...baseStyles,
+                  backgroundColor: branding.secondaryColor,
+                  color: textColor,
+                  borderColor: branding.secondaryColor,
+                }
+              case 'tertiary':
+                return {
+                  ...baseStyles,
+                  backgroundColor: branding.tertiaryColor,
+                  color: textColor,
+                  borderColor: branding.tertiaryColor,
+                }
+              case 'outline':
+                return {
+                  ...baseStyles,
+                  backgroundColor: 'transparent',
+                  color: textColor,
+                  borderColor: backgroundColor === 'white' ? branding.primaryColor : '#ffffff',
+                }
+              default:
+                return baseStyles
+            }
+          }
+
+          const handleClick = (e: React.MouseEvent) => {
+            e.preventDefault()
+            if (buttonAction === 'approve_quote' && options.onApprove) {
+              options.onApprove()
+            } else if (buttonAction === 'link' && buttonUrl) {
+              window.open(ensureProtocol(buttonUrl), '_blank', 'noopener,noreferrer')
+            }
+          }
+
+          return (
+            <>
+              <header
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  zIndex: 50,
+                  backgroundColor: getBackgroundColor(),
+                  borderBottom: `1px solid ${backgroundColor === 'white' ? '#e5e7eb' : 'transparent'}`,
+                  height: `${parseInt(height)}px`,
+                  paddingLeft: '32px',
+                  paddingRight: '32px',
+                }}
+              >
+                <div
+                  style={{
+                    maxWidth: '1152px',
+                    margin: '0 auto',
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  {branding.logoUrl ? (
+                    <img
+                      src={branding.logoUrl}
+                      alt="Logo"
+                      style={{
+                        maxHeight: `${parseInt(height) * 0.6}px`,
+                        maxWidth: '200px',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  ) : (
+                    <span
+                      style={{
+                        fontSize: '24px',
+                        fontWeight: 'bold',
+                        color: getTextColor(),
+                      }}
+                    >
+                      LOGO
+                    </span>
+                  )}
+                  {showButton && buttonLabel && (
+                    <button
+                      onClick={handleClick}
+                      className={headerButtonId}
+                      style={getButtonStyles() as React.CSSProperties}
+                    >
+                      {buttonLabel}
+                    </button>
+                  )}
+                </div>
+              </header>
+              {/* Spacer to compensate for fixed header */}
+              <div style={{ height: `${parseInt(height)}px` }} />
+              <style>{`
+                @media (max-width: 768px) {
+                  .${headerButtonId} {
+                    padding-left: 12px !important;
+                    padding-right: 12px !important;
+                    padding-top: 6px !important;
+                    padding-bottom: 6px !important;
+                    font-size: 12px !important;
+                  }
+                }
+              `}</style>
+            </>
+          )
+        },
+      },
       QuoteNumber: {
         ...baseConfig.components.QuoteNumber,
         render: ({ label, size = 'm' }: any) => {

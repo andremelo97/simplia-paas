@@ -11,6 +11,7 @@ const PUBLIC_QUOTE_TEMPLATE_BASE = {
         showButton: true,
         buttonLabel: '', // to be filled per locale
         buttonVariant: 'primary',
+        buttonAction: 'approve_quote', // action to perform on click
         backgroundColor: 'white',
         buttonTextColor: '#ffffff'
       }
@@ -202,29 +203,29 @@ function buildPublicQuoteTemplateContent(locale) {
   const currentYear = new Date().getFullYear();
 
   if (locale === 'pt-BR') {
-    base.content[0].props.buttonLabel = 'Comecar agora';
-    base.content[1].props.title = 'Apresente sua proposta';
-    base.content[1].props.description = 'Compartilhe os destaques da sua cotacao com clareza e profissionalismo.';
-    base.content[3].props.content[0].props.title = 'Detalhes da cotacao';
-    base.content[3].props.content[0].props.description = 'Informacoes resumidas da proposta';
-    base.content[3].props.content[2].props.label = 'Cotacao #';
+    base.content[0].props.buttonLabel = 'Aprovar Proposta';
+    base.content[1].props.title = 'Sua Proposta de Tratamento';
+    base.content[1].props.description = 'Confira os detalhes do seu plano de tratamento personalizado.';
+    base.content[3].props.content[0].props.title = 'Detalhes da Proposta';
+    base.content[3].props.content[0].props.description = 'Informações do seu tratamento';
+    base.content[3].props.content[2].props.label = 'Proposta #';
     base.content[3].props.content[4].props.label = 'Total';
-    base.content[5].props.quickLinks[0].label = 'Politica de Privacidade';
+    base.content[5].props.quickLinks[0].label = 'Política de Privacidade';
     base.content[5].props.quickLinks[1].label = 'Termos de Uso';
     base.content[5].props.quickLinks[2].label = 'Contato';
-    base.content[5].props.socialTitle = 'Redes sociais';
-    base.content[5].props.quickLinksTitle = 'Links rapidos';
+    base.content[5].props.socialTitle = 'Redes Sociais';
+    base.content[5].props.quickLinksTitle = 'Links Rápidos';
     base.content[5].props.contactTitle = 'Contato';
     base.content[5].props.contactItems[0].value = '+55 (11) 1234-5678';
     base.content[5].props.contactItems[2].value = 'Av. Principal, 123 - Cidade, Estado';
     base.content[5].props.copyrightText = `Copyright ${currentYear} Todos os direitos reservados.`;
   } else {
-    base.content[0].props.buttonLabel = 'Get Started';
-    base.content[1].props.title = 'Hero Title';
-    base.content[1].props.description = 'Hero description click here.';
-    base.content[3].props.content[0].props.title = 'Card Title';
-    base.content[3].props.content[0].props.description = 'Card description goes here';
-    base.content[3].props.content[2].props.label = 'Quote #';
+    base.content[0].props.buttonLabel = 'Approve Proposal';
+    base.content[1].props.title = 'Your Treatment Proposal';
+    base.content[1].props.description = 'Review the details of your personalized treatment plan.';
+    base.content[3].props.content[0].props.title = 'Proposal Details';
+    base.content[3].props.content[0].props.description = 'Your treatment information';
+    base.content[3].props.content[2].props.label = 'Proposal #';
     base.content[3].props.content[4].props.label = 'Total';
     base.content[5].props.quickLinks[0].label = 'Privacy Policy';
     base.content[5].props.quickLinks[1].label = 'Terms of Service';

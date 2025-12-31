@@ -1,6 +1,7 @@
 const express = require('express');
 const database = require('../../../infra/db/database');
 const { PublicQuote } = require('../../../infra/models/PublicQuote');
+const { Quote } = require('../../../infra/models/Quote');
 
 const router = express.Router();
 
@@ -182,6 +183,171 @@ router.post('/pq/:accessToken', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to access public quote'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /pq/{accessToken}/approve:
+ *   patch:
+ *     tags: [TQ - Public Quote Access]
+ *     summary: Approve quote via public link
+ *     description: |
+ *       **Public endpoint** - No authentication required.
+ *
+ *       Approves the quote associated with this public link.
+ *       Requires password verification.
+ *     parameters:
+ *       - in: path
+ *         name: accessToken
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Public quote access token (64 chars hex)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 description: Password to access the quote
+ *     responses:
+ *       200:
+ *         description: Quote approved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     approved:
+ *                       type: boolean
+ *                     quoteNumber:
+ *                       type: string
+ *       401:
+ *         description: Invalid password
+ *       404:
+ *         description: Quote not found or expired
+ *       409:
+ *         description: Quote already approved or in invalid state
+ */
+router.patch('/pq/:accessToken/approve', async (req, res) => {
+  try {
+    const { accessToken } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Password is required'
+      });
+    }
+
+    // Find tenant schema for this access token
+    const tenantsQuery = `
+      SELECT id, schema_name
+      FROM public.tenants
+      WHERE status = 'active'
+    `;
+    const tenantsResult = await database.query(tenantsQuery);
+
+    let tenantSchema = null;
+    let quoteId = null;
+
+    // Search in each tenant schema for the access_token
+    for (const tenant of tenantsResult.rows) {
+      try {
+        const query = `
+          SELECT pq.quote_id
+          FROM ${tenant.schema_name}.public_quote pq
+          WHERE pq.access_token = $1 AND pq.active = true
+          LIMIT 1
+        `;
+        const result = await database.query(query, [accessToken]);
+
+        if (result.rows.length > 0) {
+          tenantSchema = tenant.schema_name;
+          quoteId = result.rows[0].quote_id;
+          break;
+        }
+      } catch (error) {
+        // Schema might not have public_quote table yet, continue
+        continue;
+      }
+    }
+
+    if (!tenantSchema || !quoteId) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Quote not found or has expired'
+      });
+    }
+
+    // Get public quote with password hash
+    const publicQuote = await PublicQuote.findByToken(accessToken, tenantSchema);
+
+    // Check if expired
+    if (publicQuote.isExpired()) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'This quote link has expired'
+      });
+    }
+
+    // Verify password
+    const isValid = await publicQuote.verifyPassword(password);
+
+    if (!isValid) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Invalid password'
+      });
+    }
+
+    // Get current quote status
+    const quote = await Quote.findById(quoteId, tenantSchema);
+
+    // Check if quote can be approved (only draft or sent can be approved)
+    if (quote.status === 'approved') {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'This quote has already been approved'
+      });
+    }
+
+    if (quote.status === 'rejected' || quote.status === 'expired') {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'This quote cannot be approved in its current state'
+      });
+    }
+
+    // Update quote status to approved
+    await Quote.update(quoteId, { status: 'approved' }, tenantSchema);
+
+    res.json({
+      data: {
+        approved: true,
+        quoteNumber: quote.number
+      },
+      meta: {
+        code: 'QUOTE_APPROVED_BY_CLIENT'
+      }
+    });
+
+  } catch (error) {
+    console.error('Public quote approve error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to approve quote'
     });
   }
 });

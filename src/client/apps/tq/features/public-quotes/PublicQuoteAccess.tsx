@@ -1,10 +1,10 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Render } from '@measured/puck'
 import '@measured/puck/puck.css'
 import { Button, Input, Label, Card, CardContent, Select } from '@client/common/ui'
-import { Lock, AlertCircle } from 'lucide-react'
+import { Lock, AlertCircle, CheckCircle, X } from 'lucide-react'
 import { createConfigWithResolvedData } from './puck-config-preview'
 import { api } from '@client/config/http'
 
@@ -30,10 +30,16 @@ export const PublicQuoteAccess: React.FC = () => {
 
   const [language, setLanguage] = useState<'en-US' | 'pt-BR'>('en-US')
   const [password, setPassword] = useState('')
+  const [storedPassword, setStoredPassword] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
   const [errorKey, setErrorKey] = useState<ErrorKey | null>(null)
   const [quoteData, setQuoteData] = useState<PublicQuoteData | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  // Approval states
+  const [isApproving, setIsApproving] = useState(false)
+  const [isApproved, setIsApproved] = useState(false)
+  const [approvalError, setApprovalError] = useState<string | null>(null)
 
   useEffect(() => {
     if (i18n.language !== language) {
@@ -75,6 +81,7 @@ export const PublicQuoteAccess: React.FC = () => {
 
       // The response.data IS the data object from the backend
       setQuoteData(response.data)
+      setStoredPassword(password) // Store password for approval
       setIsAuthenticated(true)
     } catch (err: any) {
       if (err?.httpStatus === 401 || err?.message?.toLowerCase().includes('password')) {
@@ -90,6 +97,38 @@ export const PublicQuoteAccess: React.FC = () => {
       setIsVerifying(false)
     }
   }
+
+  // Handle quote approval
+  const handleApprove = useCallback(async () => {
+    if (isApproving || isApproved) return
+
+    setIsApproving(true)
+    setApprovalError(null)
+
+    try {
+      await api.patch(
+        `/api/tq/v1/pq/${accessToken}/approve`,
+        { password: storedPassword }
+      )
+
+      setIsApproved(true)
+    } catch (err: any) {
+      if (err?.httpStatus === 409) {
+        // Quote already approved or invalid state
+        if (err?.message?.toLowerCase().includes('already')) {
+          setIsApproved(true) // Treat as success - it's already approved
+        } else {
+          setApprovalError(t('public_quotes.approve.error_invalid_state'))
+        }
+      } else if (err?.httpStatus === 401) {
+        setApprovalError(t('public_quotes.approve.error_unauthorized'))
+      } else {
+        setApprovalError(t('public_quotes.approve.error_failed'))
+      }
+    } finally {
+      setIsApproving(false)
+    }
+  }, [accessToken, storedPassword, isApproving, isApproved, t])
 
   // Create preview config from saved content package
   // Content package has { template, resolvedData } - already resolved on backend
@@ -125,9 +164,11 @@ export const PublicQuoteAccess: React.FC = () => {
     // Use createConfigWithResolvedData directly with the saved resolvedData
     return createConfigWithResolvedData(branding, quoteData.content.resolvedData, {
       labels: quoteLabels,
-      footerLabels
+      footerLabels,
+      accessToken,
+      onApprove: handleApprove
     })
-  }, [quoteData, quoteLabels, footerLabels])
+  }, [quoteData, quoteLabels, footerLabels, accessToken, handleApprove])
 
   // Password entry form
   if (!isAuthenticated) {
@@ -231,8 +272,67 @@ export const PublicQuoteAccess: React.FC = () => {
   // Render the public quote with Puck
   // Use the saved template from content package
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       <Render config={previewConfig} data={quoteData.content.template} />
+
+      {/* Approval success overlay */}
+      {isApproved && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setIsApproved(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl p-8 max-w-md mx-4 text-center relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setIsApproved(false)}
+              className="absolute top-3 right-3 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {t('public_quotes.approve.success_title')}
+            </h2>
+            <p className="text-gray-600">
+              {t('public_quotes.approve.success_message')}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Approval error toast */}
+      {approvalError && !isApproved && (
+        <div className="fixed bottom-4 right-4 bg-red-50 border border-red-200 rounded-lg shadow-lg p-4 max-w-sm z-50">
+          <div className="flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-red-800">{approvalError}</p>
+              <button
+                onClick={() => setApprovalError(null)}
+                className="text-xs text-red-600 hover:text-red-800 mt-1"
+              >
+                {t('common:dismiss')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approving loading indicator */}
+      {isApproving && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-gray-700">{t('public_quotes.approve.loading')}</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

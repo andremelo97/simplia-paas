@@ -8,7 +8,7 @@ import { publishFeedback } from '@client/common/feedback'
 import { TenantEntitlementsSection } from '../components/TenantEntitlementsSection'
 
 // Stripe Customer Portal URL
-const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/test_3cI3cvfmw4PudaubYo4Vy00'
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/eVqeVc21raBtc3p9Kdawo00'
 
 interface UserApp {
   slug: string

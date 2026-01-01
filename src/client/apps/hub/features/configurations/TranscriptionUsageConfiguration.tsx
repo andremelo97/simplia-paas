@@ -6,7 +6,7 @@ import { transcriptionUsageService } from '../../services/transcriptionUsageServ
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 // Stripe Customer Portal URL
-const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/test_3cI3cvfmw4PudaubYo4Vy00'
+const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/eVqeVc21raBtc3p9Kdawo00'
 
 interface CurrentUsage {
   month: string

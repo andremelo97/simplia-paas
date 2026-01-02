@@ -26,6 +26,8 @@ class TenantTranscriptionConfig {
     this.planActivatedAt = data.plan_activated_at;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
+    // License expiration from tenant_applications (for Stripe trial)
+    this.licenseExpiresAt = data.license_expires_at || null;
   }
 
   /**
@@ -42,9 +44,12 @@ class TenantTranscriptionConfig {
         tp.allows_overage as plan_allows_overage,
         tp.language_detection_enabled as plan_language_detection_enabled,
         tp.is_trial as plan_is_trial,
-        tp.trial_days as plan_trial_days
+        tp.trial_days as plan_trial_days,
+        ta.expires_at as license_expires_at
       FROM public.tenant_transcription_config ttc
       INNER JOIN public.transcription_plans tp ON ttc.plan_id_fk = tp.id
+      LEFT JOIN public.tenant_applications ta ON ta.tenant_id_fk = ttc.tenant_id_fk
+        AND ta.application_id_fk = (SELECT id FROM public.applications WHERE slug = 'tq')
       WHERE ttc.tenant_id_fk = $1
     `;
 
@@ -83,9 +88,12 @@ class TenantTranscriptionConfig {
         tp.allows_overage as plan_allows_overage,
         tp.language_detection_enabled as plan_language_detection_enabled,
         tp.is_trial as plan_is_trial,
-        tp.trial_days as plan_trial_days
+        tp.trial_days as plan_trial_days,
+        ta.expires_at as license_expires_at
       FROM public.tenant_transcription_config ttc
       INNER JOIN public.transcription_plans tp ON ttc.plan_id_fk = tp.id
+      LEFT JOIN public.tenant_applications ta ON ta.tenant_id_fk = ttc.tenant_id_fk
+        AND ta.application_id_fk = (SELECT id FROM public.applications WHERE slug = 'tq')
       WHERE ttc.id = $1
     `;
 
@@ -243,16 +251,36 @@ class TenantTranscriptionConfig {
   }
 
   /**
-   * Calculate expiration date for trial plans
-   * Returns null for non-trial plans
+   * Get expiration date for trial/subscription
+   * Priority: 1) licenseExpiresAt from tenant_applications (Stripe trial_end)
+   *           2) Calculated from plan metadata (fallback for legacy)
+   * Returns null for non-trial plans without license expiration
    */
   getExpiresAt() {
+    // Priority 1: Use license expiration from tenant_applications (Stripe trial_end)
+    if (this.licenseExpiresAt) {
+      return new Date(this.licenseExpiresAt);
+    }
+    // Priority 2: Fallback to plan-based calculation for legacy
     if (!this.plan?.isTrial || !this.plan?.trialDays || !this.planActivatedAt) {
       return null;
     }
     const activatedAt = new Date(this.planActivatedAt);
     const expiresAt = new Date(activatedAt.getTime() + this.plan.trialDays * 24 * 60 * 60 * 1000);
     return expiresAt;
+  }
+
+  /**
+   * Check if tenant is currently in a trial period
+   * True if has license expiration (from Stripe trial_end) or plan is trial type
+   */
+  isInTrial() {
+    // Has Stripe trial expiration
+    if (this.licenseExpiresAt) {
+      return !this.isTrialExpired();
+    }
+    // Legacy: plan-based trial
+    return this.plan?.isTrial === true && !this.isTrialExpired();
   }
 
   /**
@@ -290,11 +318,13 @@ class TenantTranscriptionConfig {
       planActivatedAt: this.planActivatedAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
+      licenseExpiresAt: this.licenseExpiresAt,
       ...(this.plan && {
         plan: this.plan
       }),
       effectiveMonthlyLimit: this.getEffectiveMonthlyLimit(),
       canCustomizeLimits: this.canCustomizeLimits(),
+      isInTrial: this.isInTrial(),
       expiresAt: this.getExpiresAt(),
       isTrialExpired: this.isTrialExpired(),
       remainingTrialDays: this.getRemainingTrialDays()

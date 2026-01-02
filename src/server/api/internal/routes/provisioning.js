@@ -255,7 +255,9 @@ router.post('/signup', async (req, res) => {
       trialDays,
       stripeCustomerId,
       stripeSubscriptionId,
-      address // { line1, line2, city, state, postalCode, country }
+      address, // { line1, line2, city, state, postalCode, country }
+      isTrialing = false, // From Stripe subscription.status === 'trialing'
+      trialEnd = null // From Stripe subscription.trial_end (ISO string)
     } = req.body;
 
     // Validate required fields
@@ -408,8 +410,13 @@ router.post('/signup', async (req, res) => {
       });
 
       // 5. Calculate license expiration
+      // Use Stripe's trial end date if trialing, otherwise check plan's isTrial flag
       let expiresAt = null;
-      if (transcriptionPlan.isTrial) {
+      if (isTrialing && trialEnd) {
+        // Use exact trial end from Stripe
+        expiresAt = new Date(trialEnd);
+      } else if (transcriptionPlan.isTrial) {
+        // Fallback to plan's trial days (legacy behavior)
         const days = trialDays || transcriptionPlan.trialDays || 7;
         expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + days);
@@ -521,7 +528,8 @@ router.post('/signup', async (req, res) => {
             planSlug: transcriptionPlan.slug,
             planName: transcriptionPlan.name,
             monthlyMinutesLimit: transcriptionPlan.monthlyMinutesLimit,
-            isTrial: transcriptionPlan.isTrial
+            isTrial: isTrialing || transcriptionPlan.isTrial,
+            trialEnd: expiresAt ? expiresAt.toISOString() : null
           },
           hubUrl: `https://hub.livocare.ai`,
           loginUrl: `https://hub.livocare.ai/login`

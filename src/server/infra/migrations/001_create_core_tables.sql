@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS tenant_applications (
     expires_at TIMESTAMPTZ, -- NULL for perpetual licenses, set for trials
     seats_purchased INTEGER DEFAULT 1, -- Seats purchased in the plan
     seats_used INTEGER DEFAULT 0, -- Current seats used
+    trial_used BOOLEAN NOT NULL DEFAULT false, -- Indicates if tenant has used trial for this app
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -112,6 +113,7 @@ COMMENT ON COLUMN tenant_applications.tenant_id_fk IS 'Numeric FK to tenants.id 
 COMMENT ON COLUMN tenant_applications.seats_purchased IS 'Number of seats purchased in the plan';
 COMMENT ON COLUMN tenant_applications.seats_used IS 'Currently used seats (tracked by system)';
 COMMENT ON COLUMN tenant_applications.expires_at IS 'License expiration date - NULL for perpetual, set for trials';
+COMMENT ON COLUMN tenant_applications.trial_used IS 'Indicates if tenant has already used trial period for this app - prevents repeat trials';
 
 -- User application access (granular permissions per user per app)
 CREATE TABLE IF NOT EXISTS user_application_access (

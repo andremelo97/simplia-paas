@@ -20,6 +20,7 @@ class TenantApplication {
     this.expiresAt = data.expires_at;
     this.seatsPurchased = data.seats_purchased || 1;
     this.seatsUsed = data.seats_used || 0;
+    this.trialUsed = data.trial_used || false;
     this.active = data.active !== false;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
@@ -147,7 +148,7 @@ class TenantApplication {
    * This method also provisions app-specific database schemas when needed
    */
   static async grantLicense(licenseData) {
-    const { tenantId, applicationId, seatsPurchased = 1, expiresAt = null, status = 'active' } = licenseData;
+    const { tenantId, applicationId, seatsPurchased = 1, expiresAt = null, status = 'active', trialUsed = false } = licenseData;
 
     console.log('🔄 [TenantApplication.grantLicense] Starting license creation:', { tenantId, applicationId, seatsPurchased, expiresAt, status });
 
@@ -178,8 +179,8 @@ class TenantApplication {
 
     console.log('🔄 [TenantApplication.grantLicense] Inserting new license...');
     const query = `
-      INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, seats_purchased)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, seats_purchased, trial_used)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
 
@@ -189,7 +190,8 @@ class TenantApplication {
         applicationId,
         status,
         expiresAt,
-        seatsPurchased
+        seatsPurchased,
+        trialUsed
       ]);
 
       console.log('✅ [TenantApplication.grantLicense] License inserted successfully:', result.rows[0].id);
@@ -228,7 +230,7 @@ class TenantApplication {
    * Update tenant application license
    */
   async update(updates) {
-    const allowedUpdates = ['status', 'expires_at', 'seats_purchased'];
+    const allowedUpdates = ['status', 'expires_at', 'seats_purchased', 'trial_used'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -458,6 +460,7 @@ class TenantApplication {
       seatsPurchased: this.seatsPurchased,
       seatsUsed: this.seatsUsed,
       seatsAvailable: this.seatsPurchased ? (this.seatsPurchased - this.seatsUsed) : null,
+      trialUsed: this.trialUsed,
       active: this.active,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,

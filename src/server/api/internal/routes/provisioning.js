@@ -348,9 +348,27 @@ router.post('/signup', async (req, res) => {
       });
     }
 
+    // Check if this Stripe customer has already used trial before
+    let hasUsedTrialBefore = false;
+    if (stripeCustomerId) {
+      const trialCheckQuery = `
+        SELECT ta.trial_used
+        FROM tenant_applications ta
+        INNER JOIN tenants t ON ta.tenant_id_fk = t.id
+        WHERE t.stripe_customer_id = $1
+          AND ta.application_id_fk = $2
+          AND ta.trial_used = true
+        LIMIT 1
+      `;
+      const trialCheckResult = await database.query(trialCheckQuery, [stripeCustomerId, tqApp.id]);
+      hasUsedTrialBefore = trialCheckResult.rows.length > 0;
+    }
+
     // Get transcription plan
-    // If Stripe subscription is trialing, use "trial" plan regardless of planSlug
-    const effectivePlanSlug = isTrialing ? 'trial' : planSlug;
+    // If Stripe subscription is trialing AND customer hasn't used trial before, use "trial" plan
+    // Otherwise use planSlug (early-access)
+    const canUseTrial = isTrialing && !hasUsedTrialBefore;
+    const effectivePlanSlug = canUseTrial ? 'trial' : planSlug;
     let transcriptionPlan;
     try {
       transcriptionPlan = await TranscriptionPlan.findBySlug(effectivePlanSlug);
@@ -430,7 +448,8 @@ router.post('/signup', async (req, res) => {
         applicationId: tqApp.id,
         seatsPurchased,
         expiresAt,
-        status: 'active'
+        status: 'active',
+        trialUsed: canUseTrial // Mark trial as used if this is a trial signup
       });
 
       // 7. Grant admin user access to TQ
@@ -530,7 +549,7 @@ router.post('/signup', async (req, res) => {
             planSlug: transcriptionPlan.slug,
             planName: transcriptionPlan.name,
             monthlyMinutesLimit: transcriptionPlan.monthlyMinutesLimit,
-            isTrial: transcriptionPlan.isTrial,
+            isTrial: canUseTrial,
             trialEnd: expiresAt ? expiresAt.toISOString() : null
           },
           hubUrl: `https://hub.livocare.ai`,

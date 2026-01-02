@@ -97,137 +97,51 @@ ON CONFLICT (email) DO NOTHING;
 -- TRANSCRIPTION PLANS (Required for TQ app)
 -- =============================================
 
--- TQ Pricing Plans (from docs/tq-pricing.md):
---   Trial: 7h/7dias (Grátis) - 1 Admin - Free trial
---   Starter: 40h/mês (R$ 119) - 1 Admin
---   Solo: 80h/mês (R$ 189) - 1 Admin + 1 Operations [Popular]
---   Duo: 160h/mês (R$ 349) - 1 Admin + 1 Manager, multilingual [Popular]
---   Practice: 240h/mês (R$ 469) - 1 Admin + 1 Manager + 1 Operations, multilingual, allows overage
---   VIP: Custom - unlimited licenses, allows overage
+-- TQ Pricing Plans (Validation Phase - Single Plan):
+--   Trial: 20h/7dias (Grátis) - 1 Admin - Free trial, no credit card
+--   Early Access: 60h/mês (R$ 119) - 1 Admin, multilingual, allows overage
 --
--- Transcription strategies:
---   1. Monolingual (language_detection_enabled=false): Nova-3 with language parameter - $0.0043/min
---   2. Multilingual (language_detection_enabled=true): Nova-3 with detect_language=true - $0.0052/min
+-- Transcription strategy:
+--   Multilingual (language_detection_enabled=true): Nova-3 with detect_language=true - $0.0052/min
 INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, language_detection_enabled, cost_per_minute_usd, is_trial, trial_days, active, description)
 VALUES
   (
     'trial',
     'Trial',
-    420,
+    1200,
     false,
     false,
     'nova-3',
-    false,
-    0.0043,
+    true,
+    0.0052,
     true,
     7,
     true,
-    '• 7 horas de transcrição (durante 7 dias)
+    '• 20 horas de transcrição (durante 7 dias)
 • 1 licença Admin inclusa
-• Transcrição monolíngue
+• Transcrição multilíngue (PT-BR e EN-US)
 • Acesso a todas as funcionalidades
+• Sem cartão de crédito
 • Sem compromisso'
   ),
   (
-    'starter',
-    'Starter',
-    2400,
+    'early-access',
+    'Early Access',
+    3600,
     false,
-    false,
+    true,
     'nova-3',
-    false,
-    0.0043,
+    true,
+    0.0052,
     false,
     NULL,
     true,
-    '• 40 horas de transcrição/mês (~2h/dia)
+    '• 60 horas de transcrição/mês (~3h/dia)
 • 1 licença Admin inclusa
-• Transcrição monolíngue
-• Até 3 templates de landing page
-• Setup inicial incluso
-• Suporte padrão'
-  ),
-  (
-    'solo',
-    'Solo',
-    4800,
-    false,
-    false,
-    'nova-3',
-    false,
-    0.0043,
-    false,
-    NULL,
-    true,
-    '• 80 horas de transcrição/mês (~4h/dia)
-• 1 Admin + 1 Operations inclusos
-• Transcrição monolíngue
-• Até 3 templates de landing page
-• Setup inicial incluso
-• Suporte para criação de templates
-• Suporte padrão'
-  ),
-  (
-    'duo',
-    'Duo',
-    9600,
-    false,
-    false,
-    'nova-3',
-    true,
-    0.0052,
-    false,
-    NULL,
-    true,
-    '• 160 horas de transcrição/mês (~8h/dia)
-• 1 Admin + 1 Manager inclusos
-• Transcrição multilíngue automática
-• Até 3 templates de landing page
-• Setup inicial incluso
-• Suporte para criação de templates
-• Suporte prioritário'
-  ),
-  (
-    'practice',
-    'Practice',
-    14400,
-    false,
-    true,
-    'nova-3',
-    true,
-    0.0052,
-    false,
-    NULL,
-    true,
-    '• 240 horas de transcrição/mês (~12h/dia)
-• 1 Admin + 1 Manager + 1 Ops inclusos
-• Licenças adicionais disponíveis (veja preços abaixo)
+• Transcrição multilíngue (PT-BR e EN-US)
+• Suporte completo (criação/alteração de templates)
 • Permite exceder limite mensal
-• Transcrição multilíngue automática
-• Até 3 templates de landing page
-• Setup inicial incluso
-• Suporte para criação de templates
-• Suporte prioritário'
-  ),
-  (
-    'vip',
-    'VIP',
-    2400,
-    true,
-    true,
-    'nova-3',
-    true,
-    0.0052,
-    false,
-    NULL,
-    true,
-    '• Horas de transcrição personalizadas
-• Permite exceder limite mensal
-• Sem limite de licenças
-• Templates ilimitados
-• Setup inicial incluso
-• Suporte para criação de templates
-• Suporte prioritário'
+• Cancelamento a qualquer momento'
   )
 ON CONFLICT (slug) DO NOTHING;
 
@@ -239,4 +153,4 @@ COMMENT ON TABLE tenants IS 'Seeded with minimal default tenant for clean testin
 COMMENT ON TABLE user_types IS 'Seeded with operations (R$10) / manager (R$20) / admin (R$50) hierarchy';
 COMMENT ON TABLE applications IS 'Seeded with TQ app only';
 COMMENT ON TABLE application_pricing IS 'Seeded with TQ pricing matrix for all user_type combinations';
-COMMENT ON TABLE transcription_plans IS 'Seeded with Starter (40h) / Solo (80h) / Practice (240h) / VIP (custom) plans';
+COMMENT ON TABLE transcription_plans IS 'Seeded with Trial (20h/7dias) and Early Access (60h/mês R$119) plans';

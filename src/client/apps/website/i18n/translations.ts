@@ -67,179 +67,108 @@ export const translations = {
     },
     tqPage: {
       hero: {
-        badge: 'App LivoCare',
-        title: 'TQ - Transcription & Quote',
-        description: 'Transforme consultas em cotações profissionais. Grave áudios diretamente no navegador, transcreva com precisão médica e deixe nosso Agente de IA preencher automaticamente seus templates. Envie cotações personalizadas com link seguro, senha e rastreamento de visualizações.',
-        cta1: 'Ver Planos',
+        badge: 'Para Dentistas',
+        title: 'Transforme consultas em planos de tratamento e cotações em minutos.',
+        description: 'Grave a consulta. A IA organiza tudo. Seu paciente recebe a cotação pronta para decidir.',
+        cta1: 'Testar grátis por 7 dias',
         cta2: 'Acessar TQ',
+        ctaSubtext: 'Sem cartão de crédito',
         videoPlaceholder: 'Vídeo em breve'
       },
-      howItWorks: {
-        badge: 'Como Funciona',
-        title: 'Do áudio à cotação em 4 passos',
-        subtitle: 'Um fluxo simples e intuitivo que economiza horas do seu dia. Grave consultas, transcreva automaticamente e envie cotações profissionais em minutos.',
-        videoPlaceholder: 'Vídeo demonstrativo em breve',
-        steps: [
-          { title: 'Grave a consulta', description: 'Grave diretamente no navegador ou faça upload de arquivos de áudio. Suporta diversos formatos e funciona em qualquer dispositivo com microfone.' },
-          { title: 'Transcrição automática', description: 'Nossa tecnologia converte o áudio em texto com precisão médica em segundos. Detecta automaticamente o idioma.' },
-          { title: 'IA preenche o template', description: 'Nosso Agente de IA analisa a transcrição e preenche automaticamente seu template de cotação ou relatório clínico com as informações relevantes.' },
-          { title: 'Envie ao paciente', description: 'A cotação vira um mini-site com sua marca: logo, cores e layout personalizados. Envie o link por e-mail e acompanhe visualizações para converter mais pacientes.' }
-        ]
-      },
-      features: {
-        badge: 'Recursos',
-        title: 'Tudo que você precisa para criar cotações profissionais',
-        subtitle: 'Ferramentas poderosas para otimizar seu fluxo de trabalho clínico.',
+      problem: {
+        badge: 'O Problema',
+        title: 'Depois da consulta, começa o trabalho que ninguém vê.',
+        description: 'Você explica o tratamento, atende o paciente, mas depois precisa:',
         items: [
-          { title: 'Transcrição Automática', description: 'Nossa tecnologia de transcrição com precisão médica. Grave no navegador ou faça upload de arquivos.' },
-          { title: 'Templates Inteligentes', description: 'Crie templates com placeholders. Nosso Agente de IA preenche usando o contexto da transcrição.' },
-          { title: 'Cotação vira Site', description: 'Cada cotação se torna um mini-site com sua identidade visual: logo, cores e layout personalizados. Seu paciente acessa um link exclusivo e profissional - você ganha um site grátis para cada tratamento.' },
-          { title: 'Relatórios Clínicos', description: 'Gere documentação clínica padronizada. Exporte em PDF ou imprima diretamente.' },
-          { title: 'Gestão de Pacientes', description: 'Cadastro completo de pacientes com histórico de sessões, cotações e relatórios.' },
-          { title: 'IA Configurável', description: 'Personalize o comportamento do Agente de IA com prompts customizados para sua clínica.' }
-        ]
+          'Escrever tudo de novo',
+          'Montar plano de tratamento',
+          'Formatar orçamento',
+          'Enviar por e-mail'
+        ],
+        conclusion: 'Enquanto isso, o paciente esfria.'
       },
-      forWhom: {
-        badge: 'Para Quem',
-        title: 'Feito para profissionais de saúde',
-        segments: [
-          { emoji: '💉', title: 'Clínicas de Estética', description: 'Agilize orçamentos de procedimentos e tratamentos estéticos.' },
-          { emoji: '🩺', title: 'Médicos e Consultórios', description: 'Documente consultas e gere relatórios clínicos em minutos.' },
-          { emoji: '👤', title: 'Profissionais Autônomos', description: 'Profissionalize seus orçamentos sem precisar de uma equipe.' }
+      solution: {
+        badge: 'A Solução',
+        title: 'O TQ faz isso por você, automaticamente.',
+        steps: [
+          { title: 'Grave a consulta', description: 'No celular ou computador' },
+          { title: 'A IA transcreve', description: 'E organiza as informações' },
+          { title: 'Plano de tratamento', description: 'Gerado automaticamente' },
+          { title: 'Cotação profissional', description: 'Vira um link para enviar ao paciente' }
         ]
       },
       benefits: {
         badge: 'Benefícios',
-        title: 'Resultados que fazem a diferença',
+        title: 'Resultados orientados a conversão',
         items: [
-          { stat: '10x', label: 'Mais rápido que digitar manualmente' },
-          { stat: '5h', label: 'Economizadas por semana em média' },
-          { stat: '0', label: 'Erros de digitação' },
-          { stat: '100%', label: 'Na nuvem, acesse de qualquer lugar' }
+          'Economize até 10 horas por semana',
+          'Padronize planos de tratamento',
+          'Envie orçamentos claros e profissionais',
+          'Reduza retrabalho da equipe',
+          'Aumente a taxa de fechamento'
         ]
       },
-      cta: {
-        title: 'Pronto para transformar suas consultas em cotações?',
-        subtitle: 'Comece agora e veja a diferença na produtividade da sua clínica.',
-        button: 'Agendar Demonstração'
+      forWhom: {
+        badge: 'Para Quem',
+        title: 'O TQ é ideal para dentistas que:',
+        items: [
+          { emoji: '✨', text: 'Trabalham com estética, implantes ou harmonização' },
+          { emoji: '💳', text: 'Atendem pacientes particulares' },
+          { emoji: '📋', text: 'Precisam explicar e vender planos complexos' },
+          { emoji: '⏱️', text: 'Querem ganhar tempo sem perder qualidade' }
+        ]
+      },
+      roi: {
+        badge: 'Faça as Contas',
+        title: 'O investimento se paga sozinho',
+        calculation: {
+          line1: 'Se você economiza 10 horas por semana',
+          line2: 'e sua hora vale R$ 200',
+          line3: 'isso são R$ 8.000 por mês.',
+          conclusion: 'O TQ custa R$ 119/mês.'
+        }
       },
       pricing: {
-        badge: 'Planos',
-        title: 'Escolha o plano ideal para sua clínica',
-        subtitle: 'Pacotes de transcrição + licenças de usuário. Comece pequeno e escale conforme cresce.',
+        badge: 'Preço',
+        title: 'Plano único, sem surpresas',
+        subtitle: 'Tudo que você precisa para transformar consultas em conversões.',
         monthly: '/mês',
-        popular: 'Mais Popular',
-        bestValue: 'Melhor Custo-Benefício',
-        hours: 'horas',
-        hoursSuffix: 'h/mês',
-        exceeding: 'Excedente',
-        exceedingPrice: 'R$ 2/hora',
         trial: {
           badge: 'Teste Grátis',
           title: 'Experimente por 7 dias grátis',
-          description: 'Teste todos os recursos do TQ sem compromisso. Sem cartão de crédito.',
+          description: '20 horas de transcrição para testar. Sem cartão de crédito.',
           cta: 'Começar Teste Grátis',
-          features: ['7 dias grátis', 'Todos os recursos', 'Sem cartão']
+          features: ['7 dias grátis', '20h de transcrição', 'Sem cartão']
         },
-        selectPlan: 'Selecionar Plano',
-        contactSales: 'Falar com Vendas',
-        plans: [
-          {
-            name: 'Starter',
-            price: 'R$ 119',
-            description: 'Perfeito para começar',
-            hours: '40',
-            hoursPerDay: '~2h/dia',
-            users: '1 Admin',
-            features: [
-              '40 horas de transcrição/mês (~2h/dia)',
-              '1 licença Admin inclusa',
-              'Transcrição monolíngue',
-              'Até 3 templates de landing page',
-              'Setup inicial incluso',
-              'Suporte padrão'
-            ]
-          },
-          {
-            name: 'Solo',
-            price: 'R$ 189',
-            description: 'Profissional individual',
-            hours: '80',
-            hoursPerDay: '~4h/dia',
-            users: '1 Admin + 1 Ops',
-            featured: 'purple',
-            features: [
-              '80 horas de transcrição/mês (~4h/dia)',
-              '1 Admin + 1 Operations inclusos',
-              'Transcrição monolíngue',
-              'Até 3 templates de landing page',
-              'Setup inicial incluso',
-              'Suporte para criação de templates',
-              'Suporte padrão'
-            ]
-          },
-          {
-            name: 'Duo',
-            price: 'R$ 349',
-            description: 'Pequenas clínicas',
-            hours: '160',
-            hoursPerDay: '~8h/dia',
-            users: '1 Admin + 1 Manager',
-            featured: 'black',
-            features: [
-              '160 horas de transcrição/mês (~8h/dia)',
-              '1 Admin + 1 Manager inclusos',
-              'Licenças adicionais disponíveis (veja preços abaixo)',
-              'Transcrição multilíngue automática',
-              'Até 3 templates de landing page',
-              'Setup inicial incluso',
-              'Suporte para criação de templates',
-              'Suporte prioritário'
-            ]
-          },
-          {
-            name: 'Practice',
-            price: 'R$ 469',
-            description: 'Clínicas em crescimento',
-            hours: '240',
-            hoursPerDay: '~12h/dia',
-            users: '3 licenças',
-            featured: 'bestValue',
-            features: [
-              '240 horas de transcrição/mês (~12h/dia)',
-              '1 Admin + 1 Manager + 1 Ops inclusos',
-              'Licenças adicionais disponíveis (veja preços abaixo)',
-              'Permite exceder limite mensal',
-              'Transcrição multilíngue automática',
-              'Até 3 templates de landing page',
-              'Setup inicial incluso',
-              'Suporte para criação de templates',
-              'Suporte prioritário'
-            ]
-          },
-          {
-            name: 'VIP',
-            price: 'Sob consulta',
-            description: 'Clínicas com equipes maiores',
-            hours: 'Custom',
-            users: 'Ilimitado',
-            features: [
-              'Tudo que o Practice inclui',
-              'Horas de transcrição personalizadas',
-              'Permite exceder limite mensal',
-              'Sem limite de licenças',
-              'Templates ilimitados'
-            ]
-          }
-        ],
+        plan: {
+          name: 'Early Access',
+          price: 'R$ 119',
+          description: 'Plano completo para validação',
+          hours: '60',
+          hoursPerDay: '~3h/dia',
+          users: '1 Admin',
+          features: [
+            '60 horas de transcrição/mês',
+            '1 licença Admin inclusa',
+            'Transcrição multilíngue (PT-BR e EN)',
+            'Suporte completo (criação de templates)',
+            'Permite exceder limite mensal',
+            'Cancelamento a qualquer momento'
+          ]
+        },
+        selectPlan: 'Começar Agora',
         licenses: {
           title: 'Licenças Adicionais',
           subtitle: 'Adicione mais usuários conforme sua necessidade',
-          operations: { name: 'Operations', price: 'R$ 10', description: 'Acesso de leitura aos registros' },
-          manager: { name: 'Manager', price: 'R$ 20', description: 'Edição de registros e transcrição' },
-          admin: { name: 'Admin', price: 'R$ 50', description: 'Acesso total ao sistema' }
-        },
-        cta: 'Começar agora'
+          operations: { name: 'Operations', price: 'R$ 10', description: 'Acesso de leitura' },
+          manager: { name: 'Manager', price: 'R$ 20', description: 'Edição e transcrição' },
+          admin: { name: 'Admin', price: 'R$ 50', description: 'Acesso total' }
+        }
+      },
+      finalCta: {
+        title: 'Teste o TQ por 7 dias e veja na prática.',
+        cta: 'Começar teste grátis',
+        subtext: 'Sem cartão, sem compromisso'
       }
     },
     licenses: {
@@ -281,7 +210,7 @@ export const translations = {
       badge: 'Roadmap',
       title: 'Mais apps em breve',
       description: 'Estamos expandindo o ecossistema LivoCare com novos aplicativos especializados para atender todas as necessidades da sua clínica.',
-      apps: ['CRM Clínico', 'Agendamento', 'Financeiro', 'Marketing Automation']
+      apps: ['CRM Clínico', 'Agendamento', 'Agentes de I.A', 'Marketing Automation']
     },
     automation: {
       badge: 'Automação & Integração',
@@ -452,179 +381,108 @@ export const translations = {
     },
     tqPage: {
       hero: {
-        badge: 'LivoCare App',
-        title: 'TQ - Transcription & Quote',
-        description: 'Transform consultations into professional quotes. Record audio directly in the browser, transcribe with medical-grade accuracy, and let our AI Agent automatically fill your templates. Send personalized quotes with secure links, passwords, and view tracking.',
-        cta1: 'View Plans',
+        badge: 'For Dentists',
+        title: 'Transform consultations into treatment plans and quotes in minutes.',
+        description: 'Record the consultation. AI organizes everything. Your patient receives the quote ready to decide.',
+        cta1: 'Try free for 7 days',
         cta2: 'Access TQ',
+        ctaSubtext: 'No credit card required',
         videoPlaceholder: 'Video coming soon'
       },
-      howItWorks: {
-        badge: 'How It Works',
-        title: 'From audio to quote in 4 steps',
-        subtitle: 'A simple and intuitive workflow that saves hours of your day. Record consultations, transcribe automatically, and send professional quotes in minutes.',
-        videoPlaceholder: 'Demo video coming soon',
-        steps: [
-          { title: 'Record the consultation', description: 'Record directly in the browser or upload audio files. Supports multiple formats and works on any device with a microphone.' },
-          { title: 'Automatic transcription', description: 'Our technology converts audio to text with medical-grade accuracy in seconds. Automatically detects language.' },
-          { title: 'AI fills the template', description: 'Our AI Agent analyzes the transcription and automatically fills your quote or clinical report template with relevant information.' },
-          { title: 'Send to patient', description: 'The quote becomes a mini-site with your brand: logo, colors, and personalized layout. Send the link via email and track views to convert more patients.' }
-        ]
-      },
-      features: {
-        badge: 'Features',
-        title: 'Everything you need to create professional quotes',
-        subtitle: 'Powerful tools to optimize your clinical workflow.',
+      problem: {
+        badge: 'The Problem',
+        title: 'After the consultation, the invisible work begins.',
+        description: 'You explain the treatment, attend the patient, but then you need to:',
         items: [
-          { title: 'Automatic Transcription', description: 'Our transcription technology with medical-grade accuracy. Record in browser or upload files.' },
-          { title: 'Smart Templates', description: 'Create templates with placeholders. Our AI Agent fills them using transcription context.' },
-          { title: 'Quote becomes a Website', description: 'Each quote becomes a mini-site with your visual identity: logo, colors, and personalized layout. Your patient accesses an exclusive, professional link - you get a free website for each treatment.' },
-          { title: 'Clinical Reports', description: 'Generate standardized clinical documentation. Export to PDF or print directly.' },
-          { title: 'Patient Management', description: 'Complete patient registry with session history, quotes, and reports.' },
-          { title: 'Configurable AI', description: 'Customize the AI Agent behavior with custom prompts for your clinic.' }
-        ]
+          'Write everything again',
+          'Create the treatment plan',
+          'Format the quote',
+          'Send via email'
+        ],
+        conclusion: 'Meanwhile, the patient cools off.'
       },
-      forWhom: {
-        badge: 'For Whom',
-        title: 'Made for healthcare professionals',
-        segments: [
-          { emoji: '💉', title: 'Aesthetic Clinics', description: 'Streamline quotes for procedures and aesthetic treatments.' },
-          { emoji: '🩺', title: 'Doctors & Offices', description: 'Document consultations and generate clinical reports in minutes.' },
-          { emoji: '👤', title: 'Independent Professionals', description: 'Professionalize your quotes without needing a team.' }
+      solution: {
+        badge: 'The Solution',
+        title: 'TQ does this for you, automatically.',
+        steps: [
+          { title: 'Record the consultation', description: 'On mobile or computer' },
+          { title: 'AI transcribes', description: 'And organizes the information' },
+          { title: 'Treatment plan', description: 'Generated automatically' },
+          { title: 'Professional quote', description: 'Becomes a link to send to the patient' }
         ]
       },
       benefits: {
         badge: 'Benefits',
-        title: 'Results that make a difference',
+        title: 'Conversion-oriented results',
         items: [
-          { stat: '10x', label: 'Faster than typing manually' },
-          { stat: '5h', label: 'Saved per week on average' },
-          { stat: '0', label: 'Typing errors' },
-          { stat: '100%', label: 'Cloud-based, access from anywhere' }
+          'Save up to 10 hours per week',
+          'Standardize treatment plans',
+          'Send clear, professional quotes',
+          'Reduce team rework',
+          'Increase closing rate'
         ]
       },
-      cta: {
-        title: 'Ready to transform your consultations into quotes?',
-        subtitle: 'Start now and see the difference in your clinic productivity.',
-        button: 'Schedule Demo'
+      forWhom: {
+        badge: 'For Whom',
+        title: 'TQ is ideal for dentists who:',
+        items: [
+          { emoji: '✨', text: 'Work with aesthetics, implants, or harmonization' },
+          { emoji: '💳', text: 'Serve private patients' },
+          { emoji: '📋', text: 'Need to explain and sell complex plans' },
+          { emoji: '⏱️', text: 'Want to save time without losing quality' }
+        ]
+      },
+      roi: {
+        badge: 'Do the Math',
+        title: 'The investment pays for itself',
+        calculation: {
+          line1: 'If you save 10 hours per week',
+          line2: 'and your hour is worth R$ 200',
+          line3: 'that\'s R$ 8,000 per month.',
+          conclusion: 'TQ costs R$ 119/month.'
+        }
       },
       pricing: {
-        badge: 'Plans',
-        title: 'Choose the perfect plan for your clinic',
-        subtitle: 'Transcription packages + user licenses. Start small and scale as you grow.',
+        badge: 'Pricing',
+        title: 'Single plan, no surprises',
+        subtitle: 'Everything you need to transform consultations into conversions.',
         monthly: '/month',
-        popular: 'Most Popular',
-        bestValue: 'Best Value',
-        hours: 'hours',
-        hoursSuffix: 'h/month',
-        exceeding: 'Exceeding',
-        exceedingPrice: 'R$ 2/hour',
         trial: {
           badge: 'Free Trial',
           title: 'Try it free for 7 days',
-          description: 'Test all TQ features with no commitment. No credit card required.',
+          description: '20 hours of transcription to test. No credit card required.',
           cta: 'Start Free Trial',
-          features: ['7 days free', 'All features', 'No credit card']
+          features: ['7 days free', '20h transcription', 'No credit card']
         },
-        selectPlan: 'Select Plan',
-        contactSales: 'Contact Sales',
-        plans: [
-          {
-            name: 'Starter',
-            price: 'R$ 119',
-            description: 'Perfect to get started',
-            hours: '40',
-            hoursPerDay: '~2h/day',
-            users: '1 Admin',
-            features: [
-              '40 transcription hours/month (~2h/day)',
-              '1 Admin license included',
-              'Monolingual transcription',
-              'Up to 3 landing page templates',
-              'Initial setup included',
-              'Standard support'
-            ]
-          },
-          {
-            name: 'Solo',
-            price: 'R$ 189',
-            description: 'Individual professional',
-            hours: '80',
-            hoursPerDay: '~4h/day',
-            users: '1 Admin + 1 Ops',
-            featured: 'purple',
-            features: [
-              '80 transcription hours/month (~4h/day)',
-              '1 Admin + 1 Operations included',
-              'Monolingual transcription',
-              'Up to 3 landing page templates',
-              'Initial setup included',
-              'Template creation support',
-              'Standard support'
-            ]
-          },
-          {
-            name: 'Duo',
-            price: 'R$ 349',
-            description: 'Clinical partners',
-            hours: '160',
-            hoursPerDay: '~8h/day',
-            users: '1 Admin + 1 Manager',
-            featured: 'black',
-            features: [
-              '160 transcription hours/month (~8h/day)',
-              '1 Admin + 1 Manager included',
-              'Additional licenses available (see prices below)',
-              'Automatic multilingual transcription',
-              'Up to 3 landing page templates',
-              'Initial setup included',
-              'Template creation support',
-              'Priority support'
-            ]
-          },
-          {
-            name: 'Practice',
-            price: 'R$ 469',
-            description: 'Growing clinics',
-            hours: '240',
-            hoursPerDay: '~12h/day',
-            users: '3 licenses',
-            featured: 'bestValue',
-            features: [
-              '240 transcription hours/month (~12h/day)',
-              '1 Admin + 1 Manager + 1 Ops included',
-              'Additional licenses available (see prices below)',
-              'Allows exceeding monthly limit',
-              'Automatic multilingual transcription',
-              'Up to 3 landing page templates',
-              'Initial setup included',
-              'Template creation support',
-              'Priority support'
-            ]
-          },
-          {
-            name: 'VIP',
-            price: 'Contact us',
-            description: 'Clinics with larger teams',
-            hours: 'Custom',
-            users: 'Unlimited',
-            features: [
-              'Everything Practice includes',
-              'Custom transcription hours',
-              'Allows exceeding monthly limit',
-              'Unlimited licenses',
-              'Unlimited templates'
-            ]
-          }
-        ],
+        plan: {
+          name: 'Early Access',
+          price: 'R$ 119',
+          description: 'Complete plan for validation',
+          hours: '60',
+          hoursPerDay: '~3h/day',
+          users: '1 Admin',
+          features: [
+            '60 transcription hours/month',
+            '1 Admin license included',
+            'Multilingual transcription (PT-BR and EN)',
+            'Full support (template creation)',
+            'Allows exceeding monthly limit',
+            'Cancel anytime'
+          ]
+        },
+        selectPlan: 'Get Started',
         licenses: {
           title: 'Additional Licenses',
           subtitle: 'Add more users as needed',
-          operations: { name: 'Operations', price: 'R$ 10', description: 'Read-only access to records' },
-          manager: { name: 'Manager', price: 'R$ 20', description: 'Record editing and transcription' },
-          admin: { name: 'Admin', price: 'R$ 50', description: 'Full system access' }
-        },
-        cta: 'Get started'
+          operations: { name: 'Operations', price: 'R$ 10', description: 'Read-only access' },
+          manager: { name: 'Manager', price: 'R$ 20', description: 'Editing and transcription' },
+          admin: { name: 'Admin', price: 'R$ 50', description: 'Full access' }
+        }
+      },
+      finalCta: {
+        title: 'Try TQ for 7 days and see it in action.',
+        cta: 'Start free trial',
+        subtext: 'No credit card, no commitment'
       }
     },
     licenses: {
@@ -666,7 +524,7 @@ export const translations = {
       badge: 'Roadmap',
       title: 'More apps coming soon',
       description: 'We are expanding the LivoCare ecosystem with new specialized applications to meet all your clinic needs.',
-      apps: ['Clinical CRM', 'Scheduling', 'Financial', 'Marketing Automation']
+      apps: ['Clinical CRM', 'Scheduling', 'AI Agents', 'Marketing Automation']
     },
     automation: {
       badge: 'Automation & Integration',

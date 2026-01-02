@@ -83,12 +83,6 @@ export function Header() {
                   {t.nav.howItWorks}
                 </button>
                 <button
-                  onClick={() => scrollTo('features')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
-                >
-                  {t.nav.features}
-                </button>
-                <button
                   onClick={() => scrollTo('for-whom')}
                   className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
                 >
@@ -232,12 +226,6 @@ export function Header() {
                     className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.howItWorks}
-                  </button>
-                  <button
-                    onClick={() => scrollTo('features')}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
-                  >
-                    {t.nav.features}
                   </button>
                   <button
                     onClick={() => scrollTo('for-whom')}

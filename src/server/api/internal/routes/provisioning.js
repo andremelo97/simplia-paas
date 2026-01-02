@@ -349,14 +349,16 @@ router.post('/signup', async (req, res) => {
     }
 
     // Get transcription plan
+    // If Stripe subscription is trialing, use "trial" plan regardless of planSlug
+    const effectivePlanSlug = isTrialing ? 'trial' : planSlug;
     let transcriptionPlan;
     try {
-      transcriptionPlan = await TranscriptionPlan.findBySlug(planSlug);
+      transcriptionPlan = await TranscriptionPlan.findBySlug(effectivePlanSlug);
     } catch (error) {
       return res.status(400).json({
         error: {
           code: 'INVALID_PLAN',
-          message: `Transcription plan '${planSlug}' not found`
+          message: `Transcription plan '${effectivePlanSlug}' not found`
         }
       });
     }
@@ -528,7 +530,7 @@ router.post('/signup', async (req, res) => {
             planSlug: transcriptionPlan.slug,
             planName: transcriptionPlan.name,
             monthlyMinutesLimit: transcriptionPlan.monthlyMinutesLimit,
-            isTrial: isTrialing || transcriptionPlan.isTrial,
+            isTrial: transcriptionPlan.isTrial,
             trialEnd: expiresAt ? expiresAt.toISOString() : null
           },
           hubUrl: `https://hub.livocare.ai`,

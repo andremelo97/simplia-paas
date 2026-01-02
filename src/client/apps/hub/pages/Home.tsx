@@ -180,7 +180,7 @@ export const Home: React.FC = () => {
                 className={`p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
                   app.slug === 'tq' && tqTrialState?.isTrialExpired
                     ? 'ring-2 ring-red-300 bg-red-50/50'
-                    : ''
+                    : 'ring-2 ring-[#5ED6CE]/30 hover:ring-[#5ED6CE]'
                 }`}
                 onClick={() => handleAppClick(app)}
               >
@@ -193,9 +193,10 @@ export const Home: React.FC = () => {
                       {getAppIcon(app)}
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-1">
-                    <ExternalLink className="w-4 h-4 text-gray-400" />
+
+                  <div className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#5ED6CE] transition-colors">
+                    <span className="hidden sm:inline">{t('home.access_app', 'Acessar')}</span>
+                    <ExternalLink className="w-4 h-4" />
                   </div>
                 </div>
 

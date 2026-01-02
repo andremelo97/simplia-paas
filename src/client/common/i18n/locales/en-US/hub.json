@@ -49,7 +49,8 @@
     "your_applications": "Your Applications",
     "view_apps_team_access": "View your applications and team members access",
     "no_apps_available": "No applications available",
-    "no_apps_description": "No applications are currently available for your organization."
+    "no_apps_description": "No applications are currently available for your organization.",
+    "access_app": "Access"
   },
   "sidebar": {
     "home": "Home",

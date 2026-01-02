@@ -49,7 +49,8 @@
     "your_applications": "Seus aplicativos",
     "view_apps_team_access": "Veja seus aplicativos e o acesso dos membros da equipe",
     "no_apps_available": "Nenhum aplicativo disponível",
-    "no_apps_description": "Nenhum aplicativo está disponível no momento para a sua organização."
+    "no_apps_description": "Nenhum aplicativo está disponível no momento para a sua organização.",
+    "access_app": "Acessar"
   },
   "sidebar": {
     "home": "Início",

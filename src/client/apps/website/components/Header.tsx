@@ -89,16 +89,16 @@ export function Header() {
                   {t.nav.forWhom}
                 </button>
                 <button
-                  onClick={() => scrollTo('pricing')}
-                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
-                >
-                  {t.nav.pricing}
-                </button>
-                <button
                   onClick={() => scrollTo('integrations')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.integrations}
+                </button>
+                <button
+                  onClick={() => scrollTo('pricing')}
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
+                >
+                  {t.nav.pricing}
                 </button>
                 <button
                   onClick={() => scrollTo('contact')}
@@ -246,16 +246,16 @@ export function Header() {
                     {t.nav.forWhom}
                   </button>
                   <button
-                    onClick={() => scrollTo('pricing')}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
-                  >
-                    {t.nav.pricing}
-                  </button>
-                  <button
                     onClick={() => scrollTo('integrations')}
                     className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.integrations}
+                  </button>
+                  <button
+                    onClick={() => scrollTo('pricing')}
+                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  >
+                    {t.nav.pricing}
                   </button>
                   <button
                     onClick={() => scrollTo('contact')}

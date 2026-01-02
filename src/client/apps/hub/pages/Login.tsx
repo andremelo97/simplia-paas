@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Eye, EyeOff, AlertCircle, HelpCircle, Globe } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Eye, EyeOff, AlertCircle, HelpCircle, Globe, Plug, ArrowRight, Instagram } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../store/auth'
 import { Button, Input, Alert, AlertDescription, Checkbox } from '@client/common/ui'
@@ -30,6 +30,7 @@ export const Login: React.FC = () => {
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false)
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore()
 
@@ -69,6 +70,14 @@ export const Login: React.FC = () => {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showLanguageMenu])
+
+  // Auto-rotate slides every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % 3)
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   const validateForm = () => {
     const errors: Record<string, string> = {}
@@ -433,40 +442,140 @@ export const Login: React.FC = () => {
           }}
         />
 
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-center relative z-10"
-        >
-          {/* Logo */}
-          <div className="mb-8">
-            <img
-              src="/logo-512x256.png"
-              alt="LivoCare"
-              className="h-20 mx-auto brightness-0 invert"
-            />
+        {/* Slider Container */}
+        <div className="relative z-10 w-full max-w-md">
+          <AnimatePresence mode="wait">
+            {currentSlide === 0 && (
+              <motion.div
+                key="slide-0"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.5 }}
+                className="text-center"
+              >
+                {/* Logo */}
+                <div className="mb-8">
+                  <img
+                    src="/logo-512x256.png"
+                    alt="LivoCare"
+                    className="h-20 mx-auto brightness-0 invert"
+                  />
+                </div>
+
+                {/* Slogan */}
+                <h2 className="text-2xl font-light text-white mb-4">
+                  {t('login.slogan')}
+                </h2>
+                <p className="text-white/80 max-w-md mx-auto mb-8">
+                  {t('login.slogan_description')}
+                </p>
+
+                {/* Website Link */}
+                <a
+                  href="https://www.livocare.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium backdrop-blur-sm"
+                >
+                  {t('login.visit_website')}
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </motion.div>
+            )}
+
+            {currentSlide === 1 && (
+              <motion.div
+                key="slide-1"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.5 }}
+                className="text-center"
+              >
+                {/* Integration Icon */}
+                <div className="mb-8">
+                  <div className="w-24 h-24 mx-auto bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center">
+                    <Plug className="w-12 h-12 text-white" />
+                  </div>
+                </div>
+
+                {/* Integration Title */}
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  {t('login.integration_title')}
+                </h2>
+                <p className="text-white/80 max-w-md mx-auto mb-8">
+                  {t('login.integration_description')}
+                </p>
+
+                {/* Contact CTA */}
+                <a
+                  href="https://www.livocare.ai/products/tq#contact"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium backdrop-blur-sm"
+                >
+                  {t('login.integration_cta')}
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </motion.div>
+            )}
+
+            {currentSlide === 2 && (
+              <motion.div
+                key="slide-2"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.5 }}
+                className="text-center"
+              >
+                {/* Instagram Icon */}
+                <div className="mb-8">
+                  <div className="w-24 h-24 mx-auto bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center">
+                    <Instagram className="w-12 h-12 text-white" />
+                  </div>
+                </div>
+
+                {/* Instagram Title */}
+                <h2 className="text-2xl font-bold text-white mb-4">
+                  {t('login.instagram_title')}
+                </h2>
+                <p className="text-white/80 max-w-md mx-auto mb-8">
+                  {t('login.instagram_description')}
+                </p>
+
+                {/* Instagram CTA */}
+                <a
+                  href="https://www.instagram.com/livocare.ai/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium backdrop-blur-sm"
+                >
+                  {t('login.instagram_cta')}
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Slide Indicators */}
+          <div className="flex justify-center gap-2 mt-10">
+            {[0, 1, 2].map((index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all duration-300",
+                  currentSlide === index
+                    ? "w-8 bg-white"
+                    : "bg-white/40 hover:bg-white/60"
+                )}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
-
-          {/* Slogan */}
-          <h2 className="text-2xl font-light text-white mb-4">
-            {t('login.slogan')}
-          </h2>
-          <p className="text-white/80 max-w-md mx-auto mb-8">
-            {t('login.slogan_description')}
-          </p>
-
-          {/* Website Link */}
-          <a
-            href="https://www.livocare.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium backdrop-blur-sm"
-          >
-            {t('login.visit_website')}
-            <span className="text-white/80">→</span>
-          </a>
-        </motion.div>
+        </div>
 
         {/* Help Link - Bottom */}
         <div className="absolute bottom-8 left-0 right-0 text-center z-10">

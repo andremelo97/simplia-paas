@@ -4,7 +4,7 @@ export const translations = {
   'pt-BR': {
     nav: {
       features: 'Recursos',
-      pricing: 'Preços',
+      pricing: 'Preço',
       contact: 'Contato',
       howItWorks: 'Como Funciona',
       forWhom: 'Para Quem',
@@ -178,7 +178,7 @@ export const translations = {
         solutionTitle: 'O TQ faz isso por você, automaticamente.'
       },
       integrations: {
-        badge: 'Integrações',
+        badge: 'Integrações & Automações',
         title: 'Conecte com seus sistemas',
         description: 'Nossa plataforma possui API própria, facilitando criar integrações personalizadas. Conte com nosso time de desenvolvedores experientes para automações sob medida.',
         cards: [
@@ -510,7 +510,7 @@ export const translations = {
         solutionTitle: 'TQ does this for you, automatically.'
       },
       integrations: {
-        badge: 'Integrations',
+        badge: 'Integrations & Automations',
         title: 'Connect with your systems',
         description: 'Our platform has its own API, making it easy to create custom integrations. Count on our team of experienced developers for tailored automations.',
         cards: [

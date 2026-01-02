@@ -36,7 +36,13 @@
     "need_help": "Precisa de ajuda?",
     "contact_email": "Envie um e-mail para {{email}}",
     "visit_website": "Conheça a LivoCare.ai",
-    "email_not_registered": "E-mail não cadastrado. Conheça mais em"
+    "email_not_registered": "E-mail não cadastrado. Conheça mais em",
+    "integration_title": "Quer conectar o LivoCare aos seus sistemas?",
+    "integration_description": "Desenvolvemos integrações e automações personalizadas para sua operação. API própria + time especializado.",
+    "integration_cta": "Entre em contato",
+    "instagram_title": "Siga a LivoCare no Instagram",
+    "instagram_description": "Acompanhe novidades, dicas e conteúdos exclusivos sobre automação e tecnologia para clínicas.",
+    "instagram_cta": "Seguir @livocare.ai"
   },
   "home": {
     "welcome_back": "Bem-vindo de volta",

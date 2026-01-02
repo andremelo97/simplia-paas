@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { Contact } from '../../components/Contact'
-import { Mic, FileText, Link2, Sparkles, Play, Check, ArrowRight, Gift, X, Calculator, Clock, ClipboardList, Send, TrendingUp, Users, Code, Plug, Wrench, ChevronLeft, ChevronRight, MessageCircle } from 'lucide-react'
+import { Mic, FileText, Link2, Sparkles, Play, Check, ArrowRight, Gift, X, Calculator, Clock, ClipboardList, Send, TrendingUp, Users, Code, Plug, Wrench, ChevronLeft, ChevronRight, MessageCircle, Zap, ShieldCheck, ThumbsUp, Globe } from 'lucide-react'
 
 // Stripe Checkout URL (Production) - Single product with 7-day trial built-in
 const CHECKOUT_URL = 'https://buy.stripe.com/9B600icG5eRJ9Vh8G9awo01'
@@ -11,9 +11,13 @@ const CHECKOUT_URL = 'https://buy.stripe.com/9B600icG5eRJ9Vh8G9awo01'
 const benefitsCards = [
   { icon: Clock, gradient: 'from-[#5ED6CE] to-[#0a8a80]', metric: '10h', label: 'economizadas por semana' },
   { icon: ClipboardList, gradient: 'from-[#B725B7] to-[#E91E63]', metric: '100%', label: 'planos padronizados' },
+  { icon: Zap, gradient: 'from-[#8B5CF6] to-[#6D28D9]', metric: '3min', label: 'para criar orçamento' },
   { icon: Send, gradient: 'from-[#3B82F6] to-[#1D4ED8]', metric: '2x', label: 'mais orçamentos enviados' },
+  { icon: ShieldCheck, gradient: 'from-[#EC4899] to-[#BE185D]', metric: '-90%', label: 'erros em orçamentos' },
   { icon: Users, gradient: 'from-[#F59E0B] to-[#D97706]', metric: '-50%', label: 'retrabalho da equipe' },
+  { icon: ThumbsUp, gradient: 'from-[#14B8A6] to-[#0D9488]', metric: '+45%', label: 'aprovação de pacientes' },
   { icon: TrendingUp, gradient: 'from-[#10B981] to-[#059669]', metric: '+30%', label: 'taxa de fechamento' },
+  { icon: Globe, gradient: 'from-[#6366F1] to-[#4F46E5]', metric: '24/7', label: 'acesso do paciente' },
 ]
 
 // Integrations icons mapping
@@ -358,6 +362,36 @@ export function TQPage() {
         </div>
       </section>
 
+      {/* ROI Section - Purple Background */}
+      <section className="py-24 bg-gradient-to-br from-[#1a0a1a] via-[#2d1035] to-[#1a0a2e]">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="w-24 h-24 bg-gradient-to-br from-[#5ED6CE] to-[#0a8a80] rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-2xl">
+              <Calculator className="w-12 h-12 text-white" />
+            </div>
+
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-12">
+              {t.tqPage.roi.title}
+            </h2>
+
+            <div className="space-y-6 mb-12">
+              <p className="text-2xl md:text-3xl text-gray-300">{t.tqPage.roi.calculation.line1}</p>
+              <p className="text-2xl md:text-3xl text-gray-300">{t.tqPage.roi.calculation.line2}</p>
+              <p className="text-4xl md:text-5xl font-black text-[#5ED6CE]">{t.tqPage.roi.calculation.line3}</p>
+            </div>
+
+            <div className="inline-block px-12 py-6 bg-gradient-to-r from-[#5ED6CE]/20 to-[#B725B7]/20 rounded-2xl border-2 border-[#5ED6CE]/30">
+              <p className="text-3xl md:text-4xl font-black text-white">{t.tqPage.roi.calculation.conclusion}</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Integrations Section - 3 Cards */}
       <section id="integrations" className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
@@ -370,7 +404,7 @@ export function TQPage() {
             transition={{ duration: 0.6 }}
           >
             <span className="inline-block px-4 py-2 bg-[#B725B7]/10 text-[#B725B7] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
-              {t.tqPage.integrations?.badge || 'Integrações'}
+              {t.tqPage.integrations?.badge || 'Integrações & Automações'}
             </span>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6">
               {t.tqPage.integrations?.title || 'Conecte com seus sistemas'}
@@ -430,36 +464,6 @@ export function TQPage() {
             >
               {t.tqPage.integrations?.cta || 'Falar com especialista'}
             </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ROI Section - Purple Background */}
-      <section className="py-24 bg-gradient-to-br from-[#1a0a1a] via-[#2d1035] to-[#1a0a2e]">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="w-24 h-24 bg-gradient-to-br from-[#5ED6CE] to-[#0a8a80] rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-2xl">
-              <Calculator className="w-12 h-12 text-white" />
-            </div>
-
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-12">
-              {t.tqPage.roi.title}
-            </h2>
-
-            <div className="space-y-6 mb-12">
-              <p className="text-2xl md:text-3xl text-gray-300">{t.tqPage.roi.calculation.line1}</p>
-              <p className="text-2xl md:text-3xl text-gray-300">{t.tqPage.roi.calculation.line2}</p>
-              <p className="text-4xl md:text-5xl font-black text-[#5ED6CE]">{t.tqPage.roi.calculation.line3}</p>
-            </div>
-
-            <div className="inline-block px-12 py-6 bg-gradient-to-r from-[#5ED6CE]/20 to-[#B725B7]/20 rounded-2xl border-2 border-[#5ED6CE]/30">
-              <p className="text-3xl md:text-4xl font-black text-white">{t.tqPage.roi.calculation.conclusion}</p>
-            </div>
           </motion.div>
         </div>
       </section>

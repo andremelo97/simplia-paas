@@ -173,15 +173,19 @@ export const HubOnboardingWizard: React.FC = () => {
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
-                {t('onboarding.branding.feature1', 'Company logo')}
+                {t('onboarding.branding.feature1', 'Company logo and brand colors')}
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
-                {t('onboarding.branding.feature2', 'Primary and secondary colors')}
+                {t('onboarding.branding.feature2', 'Company name, phone and address')}
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
-                {t('onboarding.branding.feature3', 'Company name display')}
+                {t('onboarding.branding.feature3', 'Social media links (WhatsApp, Instagram, etc.)')}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                {t('onboarding.branding.feature4', 'Background video for public pages')}
               </li>
             </ul>
           </div>
@@ -253,18 +257,47 @@ export const HubOnboardingWizard: React.FC = () => {
       id: 'complete',
       title: t('onboarding.steps.complete', 'Ready!'),
       content: (
-        <div className="text-center py-8">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-green-100 flex items-center justify-center">
-            <CheckCircle2 className="w-10 h-10 text-green-500" />
+        <div className="py-6">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 text-green-500" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              {t('onboarding.complete.title', 'You\'re All Set!')}
+            </h3>
+            <p className="text-gray-600 text-sm">
+              {t('onboarding.complete.description',
+                'Your Hub is ready to use. You can always access these settings from the Configurations menu in the sidebar.'
+              )}
+            </p>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-3">
-            {t('onboarding.complete.title', 'You\'re All Set!')}
-          </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-8">
-            {t('onboarding.complete.description',
-              'Your Hub is ready to use. You can always access these settings from the Configurations menu in the sidebar.'
-            )}
-          </p>
+
+          {/* How to access TQ */}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-6">
+            <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-[#B725B7]" />
+              {t('onboarding.complete.access_tq_title', 'How to access TQ')}
+            </h4>
+            <p className="text-sm text-gray-600 mb-3">
+              {t('onboarding.complete.access_tq_description',
+                'On the home page, you\'ll see application cards at the top. Click on the TQ card to open the application.'
+              )}
+            </p>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                {t('onboarding.complete.access_tq_feature1', 'Login is automatic — no need to enter credentials again')}
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                {t('onboarding.complete.access_tq_feature2', 'TQ opens in a new tab, ready to use')}
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                {t('onboarding.complete.access_tq_feature3', 'You can always return to Hub from the TQ menu')}
+              </li>
+            </ul>
+          </div>
 
           <div className="flex items-center justify-center gap-3">
             <button

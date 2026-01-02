@@ -420,6 +420,11 @@
     "complete": {
       "title": "Tudo Pronto!",
       "description": "Seu Hub está pronto para uso. Você pode acessar essas configurações a qualquer momento no menu Configurações na barra lateral.",
+      "access_tq_title": "Como acessar o TQ",
+      "access_tq_description": "Na página inicial, você verá os cards dos aplicativos no topo. Clique no card do TQ para abrir a aplicação.",
+      "access_tq_feature1": "O login é automático — não precisa digitar credenciais novamente",
+      "access_tq_feature2": "O TQ abre em uma nova aba, pronto para usar",
+      "access_tq_feature3": "Você pode voltar ao Hub a qualquer momento pelo menu do TQ",
       "go_settings": "Ir para Configurações",
       "go_home": "Ir para Início"
     },

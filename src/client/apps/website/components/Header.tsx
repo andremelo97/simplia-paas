@@ -78,31 +78,31 @@ export function Header() {
               <>
                 <button
                   onClick={() => scrollTo('how-it-works')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.howItWorks}
                 </button>
                 <button
                   onClick={() => scrollTo('for-whom')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.forWhom}
                 </button>
                 <button
                   onClick={() => scrollTo('pricing')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.pricing}
                 </button>
                 <button
-                  onClick={() => scrollTo('automation')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                  onClick={() => scrollTo('integrations')}
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
-                  {t.nav.automation}
+                  {t.nav.integrations}
                 </button>
                 <button
                   onClick={() => scrollTo('contact')}
-                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.contact}
                 </button>
@@ -171,13 +171,17 @@ export function Header() {
             {/* Language Toggle - Always visible */}
             <button
               onClick={toggleLanguage}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-sm font-medium"
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${
+                isScrolled || !isProductPage
+                  ? 'bg-gray-100 hover:bg-gray-200'
+                  : 'bg-white/10 hover:bg-white/20'
+              }`}
             >
-              <span className={language === 'pt-BR' ? 'text-gray-900' : 'text-gray-400'}>
+              <span className={`${isScrolled || !isProductPage ? (language === 'pt-BR' ? 'text-gray-900' : 'text-gray-400') : (language === 'pt-BR' ? 'text-white' : 'text-white/50')}`}>
                 PT
               </span>
-              <span className="text-gray-300">|</span>
-              <span className={language === 'en' ? 'text-gray-900' : 'text-gray-400'}>
+              <span className={isScrolled || !isProductPage ? 'text-gray-300' : 'text-white/30'}>|</span>
+              <span className={`${isScrolled || !isProductPage ? (language === 'en' ? 'text-gray-900' : 'text-gray-400') : (language === 'en' ? 'text-white' : 'text-white/50')}`}>
                 EN
               </span>
             </button>
@@ -187,7 +191,11 @@ export function Header() {
               href="https://hub.livocare.ai"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden lg:block px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+              className={`hidden lg:block px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                isScrolled || !isProductPage
+                  ? 'border border-gray-300 text-gray-700 hover:bg-gray-100'
+                  : 'border border-white/30 text-white hover:bg-white/10'
+              }`}
             >
               {t.nav.access}
             </a>
@@ -203,13 +211,17 @@ export function Header() {
             {/* Hamburger Menu - Mobile and Tablet (below lg) */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className={`lg:hidden p-2 rounded-lg transition-colors ${
+                isScrolled || isMobileMenuOpen || !isProductPage
+                  ? 'hover:bg-gray-100'
+                  : 'hover:bg-white/10'
+              }`}
               aria-label="Menu"
             >
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6 text-gray-700" />
               ) : (
-                <Menu className="w-6 h-6 text-gray-700" />
+                <Menu className={`w-6 h-6 ${isScrolled || !isProductPage ? 'text-gray-700' : 'text-white'}`} />
               )}
             </button>
           </div>
@@ -240,10 +252,10 @@ export function Header() {
                     {t.nav.pricing}
                   </button>
                   <button
-                    onClick={() => scrollTo('automation')}
+                    onClick={() => scrollTo('integrations')}
                     className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
-                    {t.nav.automation}
+                    {t.nav.integrations}
                   </button>
                   <button
                     onClick={() => scrollTo('contact')}

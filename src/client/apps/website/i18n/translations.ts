@@ -12,6 +12,7 @@ export const translations = {
       app: 'App',
       licenses: 'Licenças',
       automation: 'Automações',
+      integrations: 'Integrações',
       tqDescription: 'Transcreva consultas e gere cotações automaticamente',
       access: 'Acessar',
       knowApp: 'Conhecer App'
@@ -67,9 +68,9 @@ export const translations = {
     },
     tqPage: {
       hero: {
-        badge: 'Para Dentistas',
+        badge: 'Produto',
         title: 'Transforme consultas em planos de tratamento e cotações em minutos.',
-        description: 'Grave a consulta. A IA organiza tudo. Seu paciente recebe a cotação pronta para decidir.',
+        description: 'Grave a consulta. O TQ transcreve e organiza tudo. Seu paciente recebe a cotação pronta para decidir.',
         cta1: 'Testar grátis por 7 dias',
         cta2: 'Acessar TQ',
         ctaSubtext: 'Sem cartão de crédito',
@@ -92,8 +93,8 @@ export const translations = {
         title: 'O TQ faz isso por você, automaticamente.',
         steps: [
           { title: 'Grave a consulta', description: 'No celular ou computador' },
-          { title: 'A IA transcreve', description: 'E organiza as informações' },
-          { title: 'Plano de tratamento', description: 'Gerado automaticamente' },
+          { title: 'Transcrição automática', description: 'O áudio vira texto em segundos' },
+          { title: 'Plano de tratamento', description: 'Gerado com templates inteligentes' },
           { title: 'Cotação profissional', description: 'Vira um link para enviar ao paciente' }
         ]
       },
@@ -169,6 +170,23 @@ export const translations = {
         title: 'Teste o TQ por 7 dias e veja na prática.',
         cta: 'Começar teste grátis',
         subtext: 'Sem cartão, sem compromisso'
+      },
+      howItWorks: {
+        title: 'Como funciona?',
+        problemTitle: 'Depois da consulta, começa o trabalho que ninguém vê.',
+        problemDescription: 'Você explica o tratamento, atende o paciente, mas depois precisa escrever tudo de novo, montar o plano e formatar orçamento. Enquanto isso, o paciente esfria.',
+        solutionTitle: 'O TQ faz isso por você, automaticamente.'
+      },
+      integrations: {
+        badge: 'Integrações',
+        title: 'Conecte com seus sistemas',
+        description: 'Nossa plataforma possui API própria, facilitando criar integrações personalizadas. Conte com nosso time de desenvolvedores experientes para automações sob medida.',
+        cards: [
+          { title: 'API Própria', description: 'API REST + Webhooks prontos para integrações.' },
+          { title: 'Qualquer Sistema', description: 'Conecte com seu ERP, CRM, agenda ou qualquer ferramenta.' },
+          { title: 'Nós Desenvolvemos', description: 'Nosso time cria automações e integrações sob medida.' }
+        ],
+        cta: 'Falar com especialista'
       }
     },
     licenses: {
@@ -298,8 +316,8 @@ export const translations = {
       preferWhatsApp: 'Prefere WhatsApp?',
       whatsAppButton: 'Conversar agora',
       reasons: {
-        vip: 'Conhecer o plano VIP com recursos ilimitados',
-        automation: 'Solicitar automações e integrações personalizadas',
+        demo: 'Agendar uma demonstração do produto',
+        automation: 'Solicitar integrações personalizadas',
         questions: 'Tirar dúvidas sobre a plataforma'
       }
     },
@@ -326,6 +344,7 @@ export const translations = {
       app: 'App',
       licenses: 'Licenses',
       automation: 'Automation',
+      integrations: 'Integrations',
       tqDescription: 'Transcribe consultations and generate quotes automatically',
       access: 'Sign In',
       knowApp: 'Discover App'
@@ -381,9 +400,9 @@ export const translations = {
     },
     tqPage: {
       hero: {
-        badge: 'For Dentists',
+        badge: 'Product',
         title: 'Transform consultations into treatment plans and quotes in minutes.',
-        description: 'Record the consultation. AI organizes everything. Your patient receives the quote ready to decide.',
+        description: 'Record the consultation. TQ transcribes and organizes everything. Your patient receives the quote ready to decide.',
         cta1: 'Try free for 7 days',
         cta2: 'Access TQ',
         ctaSubtext: 'No credit card required',
@@ -406,8 +425,8 @@ export const translations = {
         title: 'TQ does this for you, automatically.',
         steps: [
           { title: 'Record the consultation', description: 'On mobile or computer' },
-          { title: 'AI transcribes', description: 'And organizes the information' },
-          { title: 'Treatment plan', description: 'Generated automatically' },
+          { title: 'Automatic transcription', description: 'Audio becomes text in seconds' },
+          { title: 'Treatment plan', description: 'Generated with smart templates' },
           { title: 'Professional quote', description: 'Becomes a link to send to the patient' }
         ]
       },
@@ -483,6 +502,23 @@ export const translations = {
         title: 'Try TQ for 7 days and see it in action.',
         cta: 'Start free trial',
         subtext: 'No credit card, no commitment'
+      },
+      howItWorks: {
+        title: 'How it works?',
+        problemTitle: 'After the consultation, the invisible work begins.',
+        problemDescription: 'You explain the treatment, attend the patient, but then you need to write everything again, create the plan and format the quote. Meanwhile, the patient cools off.',
+        solutionTitle: 'TQ does this for you, automatically.'
+      },
+      integrations: {
+        badge: 'Integrations',
+        title: 'Connect with your systems',
+        description: 'Our platform has its own API, making it easy to create custom integrations. Count on our team of experienced developers for tailored automations.',
+        cards: [
+          { title: 'Built-in API', description: 'REST API + Webhooks ready for integrations.' },
+          { title: 'Any System', description: 'Connect with your ERP, CRM, calendar, or any tool.' },
+          { title: 'We Develop It', description: 'Our team creates custom automations and integrations.' }
+        ],
+        cta: 'Talk to a specialist'
       }
     },
     licenses: {
@@ -612,8 +648,8 @@ export const translations = {
       preferWhatsApp: 'Prefer WhatsApp?',
       whatsAppButton: 'Chat now',
       reasons: {
-        vip: 'Learn about the VIP plan with unlimited resources',
-        automation: 'Request custom automations and integrations',
+        demo: 'Schedule a product demo',
+        automation: 'Request custom integrations',
         questions: 'Ask questions about the platform'
       }
     },

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext'
-import { Send, CheckCircle, Loader2, Star, Zap, Users } from 'lucide-react'
+import { Send, CheckCircle, Loader2, CalendarCheck, Zap, Users } from 'lucide-react'
 
 // WhatsApp icon component
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -73,7 +73,7 @@ export function Contact() {
   }
 
   const reasons = [
-    { icon: Star, text: t.contact.reasons.vip },
+    { icon: CalendarCheck, text: t.contact.reasons.demo },
     { icon: Zap, text: t.contact.reasons.automation },
     { icon: Users, text: t.contact.reasons.questions }
   ]

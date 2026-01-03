@@ -1153,7 +1153,9 @@ router.put('/subscription-status', async (req, res) => {
 
           // 2. Upgrade from trial plan to early-access plan
           const earlyAccessPlan = await TranscriptionPlan.findBySlug('early-access');
-          if (earlyAccessPlan && currentConfig?.planSlug === 'trial') {
+          // Check if current plan is trial (by slug or by isTrial flag)
+          const isCurrentPlanTrial = currentConfig?.plan?.slug === 'trial' || currentConfig?.plan?.isTrial === true;
+          if (earlyAccessPlan && isCurrentPlanTrial) {
             await TenantTranscriptionConfig.upsert(tenant.id, {
               planId: earlyAccessPlan.id,
               customMonthlyLimit: null,

@@ -43,7 +43,6 @@ const validateApiKey = async (req, res, next) => {
     req.apiKey = validKey;
     next();
   } catch (error) {
-    console.error('[Provisioning] API key validation error:', error);
     return res.status(500).json({
       error: {
         code: 'AUTH_ERROR',
@@ -568,7 +567,6 @@ router.post('/signup', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('❌ [Provisioning] Error:', error);
 
     // Handle specific error types
     if (error.name === 'DuplicateUserError') {
@@ -832,7 +830,6 @@ router.put('/plan-change', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('❌ [Provisioning] Plan change error:', error);
     res.status(500).json({
       error: {
         code: 'PLAN_CHANGE_FAILED',
@@ -1005,11 +1002,294 @@ router.put('/cancel', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('❌ [Provisioning] Cancellation error:', error);
     res.status(500).json({
       error: {
         code: 'CANCELLATION_FAILED',
         message: error.message || 'Failed to cancel subscription'
+      }
+    });
+  } finally {
+    client.release();
+  }
+});
+
+/**
+ * @openapi
+ * /provisioning/subscription-status:
+ *   put:
+ *     tags: [Provisioning]
+ *     summary: Update tenant subscription status based on Stripe events
+ *     description: |
+ *       **Scope:** External (API Key required)
+ *
+ *       Unified endpoint to handle all subscription status transitions from Stripe.
+ *       Handles trial endings, payment failures, and status changes.
+ *       Called by N8N after receiving customer.subscription.updated webhook from Stripe.
+ *
+ *       Status transitions handled:
+ *       - trialing → active: Trial ended successfully, activate full access
+ *       - trialing → paused: Trial ended without payment method
+ *       - trialing → past_due: Trial ended but payment failed
+ *       - active → past_due: Monthly payment failed
+ *       - active → paused: Subscription paused
+ *       - any → canceled: Subscription cancelled (use /cancel endpoint instead)
+ *     security:
+ *       - apiKeyAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [stripeCustomerId, subscriptionStatus]
+ *             properties:
+ *               stripeCustomerId:
+ *                 type: string
+ *                 description: Stripe customer ID
+ *                 example: "cus_xxxxxxxxxxxxx"
+ *               stripeSubscriptionId:
+ *                 type: string
+ *                 description: Stripe subscription ID
+ *                 example: "sub_xxxxxxxxxxxxx"
+ *               subscriptionStatus:
+ *                 type: string
+ *                 enum: [active, paused, past_due, canceled, unpaid]
+ *                 description: Current subscription status from Stripe
+ *               previousStatus:
+ *                 type: string
+ *                 enum: [trialing, active, paused, past_due]
+ *                 description: Previous subscription status (from previous_attributes)
+ *     responses:
+ *       200:
+ *         description: Subscription status updated successfully
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Tenant not found
+ *       500:
+ *         description: Update failed
+ */
+router.put('/subscription-status', async (req, res) => {
+  const client = await database.getClient();
+
+  try {
+    const {
+      stripeCustomerId,
+      stripeSubscriptionId,
+      subscriptionStatus,
+      previousStatus
+    } = req.body;
+
+    // Validate required fields
+    if (!stripeCustomerId || !subscriptionStatus) {
+      return res.status(400).json({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'stripeCustomerId and subscriptionStatus are required'
+        }
+      });
+    }
+
+    // Find tenant by Stripe customer ID
+    const tenantQuery = 'SELECT * FROM public.tenants WHERE stripe_customer_id = $1';
+    const tenantResult = await database.query(tenantQuery, [stripeCustomerId]);
+
+    if (tenantResult.rows.length === 0) {
+      return res.status(404).json({
+        error: {
+          code: 'TENANT_NOT_FOUND',
+          message: `No tenant found with Stripe customer ID: ${stripeCustomerId}`
+        }
+      });
+    }
+
+    const tenant = tenantResult.rows[0];
+
+    // Get TQ application
+    const tqApp = await Application.findBySlug('tq');
+    if (!tqApp) {
+      return res.status(500).json({
+        error: {
+          code: 'TQ_APP_NOT_FOUND',
+          message: 'TQ application not found in database'
+        }
+      });
+    }
+
+    // Get admin user for response
+    const adminQuery = `
+      SELECT id, email, first_name, last_name
+      FROM public.users
+      WHERE tenant_id_fk = $1 AND role = 'admin'
+      ORDER BY created_at ASC
+      LIMIT 1
+    `;
+    const adminResult = await database.query(adminQuery, [tenant.id]);
+    const adminUser = adminResult.rows.length > 0 ? adminResult.rows[0] : null;
+
+    // Get current transcription config
+    const currentConfig = await TenantTranscriptionConfig.findByTenantId(tenant.id);
+
+    // Start transaction
+    await client.query('BEGIN');
+
+    try {
+      let action = 'none';
+      let newPlanSlug = null;
+
+      // Handle transitions from trialing
+      if (previousStatus === 'trialing') {
+        if (subscriptionStatus === 'active') {
+          // Trial ended successfully - activate full access
+          action = 'trial_to_active';
+
+          // 1. Clear expires_at for permanent access
+          const clearExpirationQuery = `
+            UPDATE public.tenant_applications
+            SET expires_at = NULL, status = 'active', updated_at = NOW()
+            WHERE tenant_id_fk = $1 AND application_id_fk = $2
+          `;
+          await client.query(clearExpirationQuery, [tenant.id, tqApp.id]);
+
+          // 2. Upgrade from trial plan to early-access plan
+          const earlyAccessPlan = await TranscriptionPlan.findBySlug('early-access');
+          if (earlyAccessPlan && currentConfig?.planSlug === 'trial') {
+            await TenantTranscriptionConfig.upsert(tenant.id, {
+              planId: earlyAccessPlan.id,
+              customMonthlyLimit: null,
+              overageAllowed: earlyAccessPlan.allowsOverage || false
+            });
+            newPlanSlug = 'early-access';
+          }
+
+        } else if (subscriptionStatus === 'paused') {
+          // Trial ended without payment method - suspend access
+          action = 'trial_to_paused';
+
+          // Update status to suspended (expires_at already blocks access)
+          const suspendQuery = `
+            UPDATE public.tenant_applications
+            SET status = 'suspended', updated_at = NOW()
+            WHERE tenant_id_fk = $1 AND application_id_fk = $2
+          `;
+          await client.query(suspendQuery, [tenant.id, tqApp.id]);
+
+        } else if (subscriptionStatus === 'past_due') {
+          // Trial ended but payment failed - mark as past_due
+          action = 'trial_to_past_due';
+
+          // Give grace period: extend expires_at by 3 days
+          const gracePeriodQuery = `
+            UPDATE public.tenant_applications
+            SET status = 'past_due',
+                expires_at = GREATEST(expires_at, NOW()) + INTERVAL '3 days',
+                updated_at = NOW()
+            WHERE tenant_id_fk = $1 AND application_id_fk = $2
+          `;
+          await client.query(gracePeriodQuery, [tenant.id, tqApp.id]);
+        }
+      }
+      // Handle transitions from active
+      else if (previousStatus === 'active') {
+        if (subscriptionStatus === 'past_due') {
+          // Monthly payment failed - mark as past_due with grace period
+          action = 'active_to_past_due';
+
+          const pastDueQuery = `
+            UPDATE public.tenant_applications
+            SET status = 'past_due',
+                expires_at = NOW() + INTERVAL '7 days',
+                updated_at = NOW()
+            WHERE tenant_id_fk = $1 AND application_id_fk = $2
+          `;
+          await client.query(pastDueQuery, [tenant.id, tqApp.id]);
+
+        } else if (subscriptionStatus === 'paused') {
+          // Subscription paused
+          action = 'active_to_paused';
+
+          const pauseQuery = `
+            UPDATE public.tenant_applications
+            SET status = 'suspended', updated_at = NOW()
+            WHERE tenant_id_fk = $1 AND application_id_fk = $2
+          `;
+          await client.query(pauseQuery, [tenant.id, tqApp.id]);
+        }
+      }
+      // Handle recovery from past_due
+      else if (previousStatus === 'past_due' && subscriptionStatus === 'active') {
+        // Payment recovered - restore access
+        action = 'past_due_to_active';
+
+        const restoreQuery = `
+          UPDATE public.tenant_applications
+          SET status = 'active', expires_at = NULL, updated_at = NOW()
+          WHERE tenant_id_fk = $1 AND application_id_fk = $2
+        `;
+        await client.query(restoreQuery, [tenant.id, tqApp.id]);
+      }
+      // Handle recovery from paused
+      else if (previousStatus === 'paused' && subscriptionStatus === 'active') {
+        // Subscription resumed - restore access
+        action = 'paused_to_active';
+
+        const resumeQuery = `
+          UPDATE public.tenant_applications
+          SET status = 'active', expires_at = NULL, updated_at = NOW()
+          WHERE tenant_id_fk = $1 AND application_id_fk = $2
+        `;
+        await client.query(resumeQuery, [tenant.id, tqApp.id]);
+      }
+
+      // Update Stripe subscription ID if provided
+      if (stripeSubscriptionId) {
+        const updateStripeQuery = `
+          UPDATE public.tenants
+          SET stripe_subscription_id = $1, updated_at = NOW()
+          WHERE id = $2
+        `;
+        await client.query(updateStripeQuery, [stripeSubscriptionId, tenant.id]);
+      }
+
+      // Commit transaction
+      await client.query('COMMIT');
+
+      // Return success response
+      res.status(200).json({
+        data: {
+          tenant: {
+            id: tenant.id,
+            name: tenant.name,
+            subdomain: tenant.subdomain
+          },
+          admin: adminUser ? {
+            id: adminUser.id,
+            email: adminUser.email,
+            firstName: adminUser.first_name,
+            lastName: adminUser.last_name
+          } : null,
+          action,
+          previousStatus,
+          newStatus: subscriptionStatus,
+          newPlanSlug,
+          loginUrl: 'https://hub.livocare.ai/login'
+        },
+        meta: {
+          code: 'SUBSCRIPTION_STATUS_UPDATED',
+          message: `Subscription status updated: ${previousStatus || 'unknown'} → ${subscriptionStatus}`
+        }
+      });
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    }
+
+  } catch (error) {
+    res.status(500).json({
+      error: {
+        code: 'STATUS_UPDATE_FAILED',
+        message: error.message || 'Failed to update subscription status'
       }
     });
   } finally {

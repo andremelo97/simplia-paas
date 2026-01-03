@@ -150,20 +150,14 @@ class TenantApplication {
   static async grantLicense(licenseData) {
     const { tenantId, applicationId, seatsPurchased = 1, expiresAt = null, status = 'active', trialUsed = false } = licenseData;
 
-    console.log('🔄 [TenantApplication.grantLicense] Starting license creation:', { tenantId, applicationId, seatsPurchased, expiresAt, status });
-
     // Verify application exists and get app details
     const application = await Application.findById(applicationId);
-    console.log('✅ [TenantApplication.grantLicense] Application verified:', application.slug);
 
     // Check if license already exists
     const existing = await TenantApplication.findByTenantAndApplication(tenantId, applicationId);
-    console.log('🔍 [TenantApplication.grantLicense] Existing check result:', existing);
     if (existing && existing.id) {
-      console.log('❌ [TenantApplication.grantLicense] License already exists:', existing.id);
       throw new Error(`License already exists for tenant ${tenantId} and application ${applicationId}`);
     }
-    console.log('✅ [TenantApplication.grantLicense] No existing license found, proceeding with creation');
 
     // Get tenant schema for app provisioning
     const tenantQuery = 'SELECT subdomain, timezone FROM tenants WHERE id = $1 AND active = true';
@@ -175,9 +169,7 @@ class TenantApplication {
 
     const tenantSlug = tenantResult.rows[0].subdomain;
     const schemaName = `tenant_${tenantSlug.replace(/-/g, '_')}`;
-    console.log('🔍 [TenantApplication.grantLicense] Tenant schema:', schemaName);
 
-    console.log('🔄 [TenantApplication.grantLicense] Inserting new license...');
     const query = `
       INSERT INTO public.tenant_applications (tenant_id_fk, application_id_fk, status, expires_at, seats_purchased, trial_used)
       VALUES ($1, $2, $3, $4, $5, $6)
@@ -194,11 +186,8 @@ class TenantApplication {
         trialUsed
       ]);
 
-      console.log('✅ [TenantApplication.grantLicense] License inserted successfully:', result.rows[0].id);
-
       // Provision app-specific schemas based on application slug
       if (application.slug === 'tq') {
-        console.log('🔄 [TenantApplication.grantLicense] Provisioning TQ app schema...');
 
         const client = await database.getClient();
         try {
@@ -210,9 +199,6 @@ class TenantApplication {
             const tenantTimezone = tenantResult.rows[0].timezone || 'UTC';
             // Pass tenantSlug for bucket creation and tenantId for communication settings
             await provisionTQAppSchema(client, schemaName, tenantTimezone, tenantSlug, tenantId);
-            console.log('✅ [TenantApplication.grantLicense] TQ app schema provisioned successfully');
-          } else {
-            console.log('ℹ️  [TenantApplication.grantLicense] TQ app schema already provisioned, skipping');
           }
         } finally {
           client.release();
@@ -221,7 +207,6 @@ class TenantApplication {
 
       return await TenantApplication.findById(result.rows[0].id);
     } catch (insertError) {
-      console.log('❌ [TenantApplication.grantLicense] Insert failed:', insertError.message);
       throw insertError;
     }
   }

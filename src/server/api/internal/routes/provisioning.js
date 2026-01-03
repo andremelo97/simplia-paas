@@ -987,12 +987,11 @@ router.put('/cancel', async (req, res) => {
             name: currentConfig.planName
           } : null,
           cancelledAt: cancelledAt.toISOString(),
-          dataRetentionDays: 30,
           reactivationUrl: 'https://hub.livocare.ai/plans'
         },
         meta: {
           code: 'SUBSCRIPTION_CANCELLED',
-          message: 'Subscription cancelled successfully. Data will be retained for 30 days.'
+          message: 'Subscription cancelled successfully.'
         }
       });
 

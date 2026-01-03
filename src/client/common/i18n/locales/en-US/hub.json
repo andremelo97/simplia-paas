@@ -420,7 +420,6 @@
       "description": "Set up your SMTP server to send emails to clients. This allows you to send quotes and reports directly from the system.",
       "features": "Email features:",
       "feature1": "Send quotes via email",
-      "feature2": "Send clinical reports",
       "feature3": "Custom sender name and email",
       "configure_now": "Configure Email Now"
     },
@@ -431,7 +430,6 @@
       "access_tq_description": "On the home page, you'll see application cards at the top. Click on the TQ card to open the application.",
       "access_tq_feature1": "Login is automatic — no need to enter credentials again",
       "access_tq_feature2": "TQ opens in a new tab, ready to use",
-      "access_tq_feature3": "You can always return to Hub from the TQ menu",
       "go_settings": "Go to Settings",
       "go_home": "Go to Home"
     },

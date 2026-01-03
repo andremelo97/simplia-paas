@@ -233,10 +233,6 @@ export const HubOnboardingWizard: React.FC = () => {
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500" />
-                {t('onboarding.communication.feature2', 'Send clinical reports')}
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
                 {t('onboarding.communication.feature3', 'Custom sender name and email')}
               </li>
             </ul>
@@ -291,10 +287,6 @@ export const HubOnboardingWizard: React.FC = () => {
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                 {t('onboarding.complete.access_tq_feature2', 'TQ opens in a new tab, ready to use')}
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                {t('onboarding.complete.access_tq_feature3', 'You can always return to Hub from the TQ menu')}
               </li>
             </ul>
           </div>

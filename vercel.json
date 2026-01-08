@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/website/:path*",
+      "destination": "https://api.livocare.ai/api/website/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

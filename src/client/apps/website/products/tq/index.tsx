@@ -7,17 +7,17 @@ import { Sparkles, Play, Check, ArrowRight, Gift, X, Clock, ClipboardList, Send,
 // Stripe Checkout URL (Production) - Single product with 7-day trial built-in
 const CHECKOUT_URL = 'https://buy.stripe.com/9B600icG5eRJ9Vh8G9awo01'
 
-// Benefits cards with gradients and icons
-const benefitsCards = [
-  { icon: Clock, gradient: 'from-[#5ED6CE] to-[#0a8a80]', metric: '10h', label: 'economizadas por semana' },
-  { icon: ClipboardList, gradient: 'from-[#B725B7] to-[#E91E63]', metric: '100%', label: 'planos padronizados' },
-  { icon: Zap, gradient: 'from-[#8B5CF6] to-[#6D28D9]', metric: '3min', label: 'para criar orçamento' },
-  { icon: Send, gradient: 'from-[#3B82F6] to-[#1D4ED8]', metric: '2x', label: 'mais orçamentos enviados' },
-  { icon: ShieldCheck, gradient: 'from-[#EC4899] to-[#BE185D]', metric: '-90%', label: 'erros em orçamentos' },
-  { icon: Users, gradient: 'from-[#F59E0B] to-[#D97706]', metric: '-50%', label: 'retrabalho da equipe' },
-  { icon: ThumbsUp, gradient: 'from-[#14B8A6] to-[#0D9488]', metric: '+45%', label: 'aprovação de pacientes' },
-  { icon: TrendingUp, gradient: 'from-[#10B981] to-[#059669]', metric: '+30%', label: 'taxa de fechamento' },
-  { icon: Globe, gradient: 'from-[#6366F1] to-[#4F46E5]', metric: '24/7', label: 'acesso do paciente' },
+// Benefits cards icons and gradients (labels come from translations)
+const benefitsCardStyles = [
+  { icon: Clock, gradient: 'from-[#5ED6CE] to-[#0a8a80]' },
+  { icon: ClipboardList, gradient: 'from-[#B725B7] to-[#E91E63]' },
+  { icon: Zap, gradient: 'from-[#8B5CF6] to-[#6D28D9]' },
+  { icon: Send, gradient: 'from-[#3B82F6] to-[#1D4ED8]' },
+  { icon: ShieldCheck, gradient: 'from-[#EC4899] to-[#BE185D]' },
+  { icon: Users, gradient: 'from-[#F59E0B] to-[#D97706]' },
+  { icon: ThumbsUp, gradient: 'from-[#14B8A6] to-[#0D9488]' },
+  { icon: TrendingUp, gradient: 'from-[#10B981] to-[#059669]' },
+  { icon: Globe, gradient: 'from-[#6366F1] to-[#4F46E5]' },
 ]
 
 // Integrations icons mapping
@@ -129,19 +129,19 @@ export function TQPage() {
                 {t.tqPage.hero.badge}
               </span>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 leading-[1.1]">
-                Transcreva consultas.<br />
-                <span className="text-[#5ED6CE]">Envie orçamentos em 2 min.</span>
+                {t.tqPage.hero.headline1}<br />
+                <span className="text-[#5ED6CE]">{t.tqPage.hero.headline2}</span>
               </h1>
               <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-xl">
-                O TQ grava, transcreve e gera cotações profissionais automaticamente. Sem digitação manual.
+                {t.tqPage.hero.subtitle}
               </p>
 
               {/* Price highlight */}
               <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-lg mb-8">
-                <span className="text-sm text-gray-400">a partir de</span>
+                <span className="text-sm text-gray-400">{t.tqPage.hero.priceFrom}</span>
                 <span className="text-2xl font-black text-white">R$119</span>
-                <span className="text-gray-400">/mês</span>
-                <span className="px-2 py-1 bg-[#5ED6CE]/20 text-[#5ED6CE] text-xs font-bold rounded">7 dias grátis</span>
+                <span className="text-gray-400">{t.tqPage.pricing.monthly}</span>
+                <span className="px-2 py-1 bg-[#5ED6CE]/20 text-[#5ED6CE] text-xs font-bold rounded">{t.tqPage.hero.trialBadge}</span>
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
@@ -151,14 +151,14 @@ export function TQPage() {
                   rel="noopener noreferrer"
                   className="px-8 py-4 bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
                 >
-                  Começar teste grátis
+                  {t.tqPage.hero.ctaStart}
                 </a>
                 <button
                   onClick={() => setExpandedVideo('6a_-qRhVnPw')}
                   className="flex items-center gap-2 px-6 py-3 border border-white/30 rounded-lg text-white hover:bg-white/10 transition-colors font-medium"
                 >
                   <Play className="w-5 h-5" />
-                  Ver Demo
+                  {t.tqPage.hero.ctaDemo}
                 </button>
               </div>
             </motion.div>
@@ -202,10 +202,10 @@ export function TQPage() {
               transition={{ duration: 0.6 }}
             >
               <span className="inline-block px-4 py-2 bg-[#B725B7]/10 text-[#B725B7] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
-                Depoimentos
+                {t.tqPage.testimonials.badge}
               </span>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900">
-                O que dizem nossos clientes
+                {t.tqPage.testimonials.title}
               </h2>
             </motion.div>
 
@@ -234,113 +234,44 @@ export function TQPage() {
             className="flex gap-6 overflow-x-auto px-6 md:px-[calc((100vw-1280px)/2+24px)] pb-4 pt-4 snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {/* Testimonial 1 */}
-            <motion.div
-              className="flex-shrink-0 w-[320px] md:w-[600px] min-h-[320px] md:min-h-[320px] p-6 md:p-10 rounded-3xl bg-white border-4 border-[#B725B7] snap-start shadow-lg hover:shadow-2xl transition-shadow duration-300"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="h-full flex flex-col justify-between">
-                <div>
-                  <Quote className="w-10 h-10 text-[#B725B7]/30 mb-4" />
-                  <blockquote className="text-lg md:text-xl text-gray-800 leading-relaxed">
-                    "Antes eu levava 40 minutos depois de cada consulta para montar o orçamento. Agora faço em 3 minutos. O paciente recebe na hora e fica impressionado."
-                  </blockquote>
-                </div>
-                <div className="flex items-center gap-4 mt-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#B725B7] to-[#E91E63] rounded-full flex items-center justify-center text-white font-bold">
-                    DF
+            {t.tqPage.testimonials.items.map((testimonial: { quote: string; name: string; role: string; initials: string }, i: number) => {
+              const borderColors = ['border-[#B725B7]', 'border-[#5ED6CE]', 'border-[#8B5CF6]', 'border-[#3B82F6]']
+              const quoteColors = ['text-[#B725B7]/30', 'text-[#5ED6CE]/30', 'text-[#8B5CF6]/30', 'text-[#3B82F6]/30']
+              const gradients = [
+                'from-[#B725B7] to-[#E91E63]',
+                'from-[#5ED6CE] to-[#0a8a80]',
+                'from-[#8B5CF6] to-[#6D28D9]',
+                'from-[#3B82F6] to-[#1D4ED8]'
+              ]
+              return (
+                <motion.div
+                  key={i}
+                  className={`flex-shrink-0 w-[320px] md:w-[600px] min-h-[320px] md:min-h-[320px] p-6 md:p-10 rounded-3xl bg-white border-4 ${borderColors[i]} snap-start shadow-lg hover:shadow-2xl transition-shadow duration-300`}
+                  initial={{ opacity: 0, x: 50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                >
+                  <div className="h-full flex flex-col justify-between">
+                    <div>
+                      <Quote className={`w-10 h-10 ${quoteColors[i]} mb-4`} />
+                      <blockquote className="text-lg md:text-xl text-gray-800 leading-relaxed">
+                        "{testimonial.quote}"
+                      </blockquote>
+                    </div>
+                    <div className="flex items-center gap-4 mt-6">
+                      <div className={`w-12 h-12 bg-gradient-to-br ${gradients[i]} rounded-full flex items-center justify-center text-white font-bold`}>
+                        {testimonial.initials}
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">{testimonial.name}</p>
+                        <p className="text-gray-500 text-sm">{testimonial.role}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Dra. Fernanda Costa</p>
-                    <p className="text-gray-500 text-sm">Implantodontista • São Paulo</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 2 */}
-            <motion.div
-              className="flex-shrink-0 w-[320px] md:w-[600px] min-h-[320px] md:min-h-[320px] p-6 md:p-10 rounded-3xl bg-white border-4 border-[#5ED6CE] snap-start shadow-lg hover:shadow-2xl transition-shadow duration-300"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <div className="h-full flex flex-col justify-between">
-                <div>
-                  <Quote className="w-10 h-10 text-[#5ED6CE]/30 mb-4" />
-                  <blockquote className="text-lg md:text-xl text-gray-800 leading-relaxed">
-                    "Minha secretária não precisa mais transcrever nada. A consulta acaba, o áudio vai pro TQ e em minutos o orçamento está pronto. Dobramos nossos fechamentos."
-                  </blockquote>
-                </div>
-                <div className="flex items-center gap-4 mt-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#5ED6CE] to-[#0a8a80] rounded-full flex items-center justify-center text-white font-bold">
-                    DR
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Dr. Roberto Almeida</p>
-                    <p className="text-gray-500 text-sm">Ortodontista • Campinas</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 3 */}
-            <motion.div
-              className="flex-shrink-0 w-[320px] md:w-[600px] min-h-[320px] md:min-h-[320px] p-6 md:p-10 rounded-3xl bg-white border-4 border-[#8B5CF6] snap-start shadow-lg hover:shadow-2xl transition-shadow duration-300"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <div className="h-full flex flex-col justify-between">
-                <div>
-                  <Quote className="w-10 h-10 text-[#8B5CF6]/30 mb-4" />
-                  <blockquote className="text-lg md:text-xl text-gray-800 leading-relaxed">
-                    "O link que o paciente recebe é muito profissional. Eles conseguem ver tudo, comparar opções e aprovar direto pelo celular. Reduziu muito as ligações."
-                  </blockquote>
-                </div>
-                <div className="flex items-center gap-4 mt-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] rounded-full flex items-center justify-center text-white font-bold">
-                    DM
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Dra. Marina Santos</p>
-                    <p className="text-gray-500 text-sm">Odontologia Estética • Santos</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Testimonial 4 */}
-            <motion.div
-              className="flex-shrink-0 w-[320px] md:w-[600px] min-h-[320px] md:min-h-[320px] p-6 md:p-10 rounded-3xl bg-white border-4 border-[#3B82F6] snap-start shadow-lg hover:shadow-2xl transition-shadow duration-300"
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <div className="h-full flex flex-col justify-between">
-                <div>
-                  <Quote className="w-10 h-10 text-[#3B82F6]/30 mb-4" />
-                  <blockquote className="text-lg md:text-xl text-gray-800 leading-relaxed">
-                    "Tenho 3 consultórios e agora todos seguem o mesmo padrão de orçamento. Acabou aquela bagunça de cada um fazer do seu jeito. Os pacientes notam."
-                  </blockquote>
-                </div>
-                <div className="flex items-center gap-4 mt-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#3B82F6] to-[#1D4ED8] rounded-full flex items-center justify-center text-white font-bold">
-                    DC
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900">Dr. Carlos Ribeiro</p>
-                    <p className="text-gray-500 text-sm">Cirurgião Bucomaxilofacial • SP</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
@@ -402,7 +333,7 @@ export function TQPage() {
               transition={{ duration: 0.6 }}
             >
               <span className="inline-block px-4 py-2 bg-[#5ED6CE]/10 text-[#5ED6CE] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
-                Resultados
+                {t.tqPage.results.badge}
               </span>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900">
                 {t.tqPage.benefits.title}
@@ -434,12 +365,13 @@ export function TQPage() {
             className="flex gap-6 overflow-x-auto px-6 md:px-[calc((100vw-1280px)/2+24px)] pb-8 pt-4 snap-x snap-mandatory"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {benefitsCards.map((card, i) => {
-              const CardIcon = card.icon
+            {t.tqPage.results.cards.map((card: { metric: string; label: string }, i: number) => {
+              const CardIcon = benefitsCardStyles[i]?.icon || Clock
+              const gradient = benefitsCardStyles[i]?.gradient || 'from-[#5ED6CE] to-[#0a8a80]'
               return (
                 <motion.div
                   key={i}
-                  className={`flex-shrink-0 w-[340px] md:w-[400px] h-[280px] md:h-[320px] p-8 md:p-10 rounded-3xl bg-gradient-to-br ${card.gradient} snap-start cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-300`}
+                  className={`flex-shrink-0 w-[340px] md:w-[400px] h-[280px] md:h-[320px] p-8 md:p-10 rounded-3xl bg-gradient-to-br ${gradient} snap-start cursor-pointer shadow-lg hover:shadow-2xl transition-shadow duration-300`}
                   initial={{ opacity: 0, x: 50 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
@@ -553,7 +485,7 @@ export function TQPage() {
             transition={{ duration: 0.6 }}
           >
             <span className="inline-block px-4 py-2 bg-[#5ED6CE]/10 text-[#5ED6CE] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
-              Preço
+              {t.tqPage.pricing.badge}
             </span>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6">
               {t.tqPage.pricing.title}
@@ -737,7 +669,7 @@ export function TQPage() {
           whileTap={{ scale: 0.95 }}
         >
           <Sparkles className="w-6 h-6" />
-          <span className="text-lg">Começar</span>
+          <span className="text-lg">{t.tqPage.floatingButtons.start}</span>
         </motion.a>
 
         {/* Contact Button */}
@@ -754,7 +686,7 @@ export function TQPage() {
           whileTap={{ scale: 0.95 }}
         >
           <MessageCircle className="w-6 h-6" />
-          <span className="text-lg">Contato</span>
+          <span className="text-lg">{t.tqPage.floatingButtons.contact}</span>
         </motion.button>
       </div>
     </div>

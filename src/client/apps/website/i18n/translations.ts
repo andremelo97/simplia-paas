@@ -70,12 +70,19 @@ export const translations = {
     tqPage: {
       hero: {
         badge: 'Produto',
+        headline1: 'Transcreva consultas.',
+        headline2: 'Envie orçamentos em 2 min.',
+        subtitle: 'O TQ grava, transcreve e gera cotações profissionais automaticamente. Sem digitação manual.',
         title: 'Transforme consultas em planos de tratamento e cotações em minutos.',
         description: 'Grave a consulta. O TQ transcreve e organiza tudo. Seu paciente recebe a cotação pronta para decidir.',
         cta1: 'Testar grátis por 7 dias',
         cta2: 'Acessar TQ',
         ctaSubtext: 'Sem cartão de crédito',
-        videoPlaceholder: 'Vídeo em breve'
+        videoPlaceholder: 'Vídeo em breve',
+        priceFrom: 'a partir de',
+        trialBadge: '7 dias grátis',
+        ctaStart: 'Começar teste grátis',
+        ctaDemo: 'Ver Demo'
       },
       problem: {
         badge: 'O Problema',
@@ -188,6 +195,54 @@ export const translations = {
           { title: 'Nós Desenvolvemos', description: 'Automações sob medida para você.' }
         ],
         cta: 'Falar com especialista'
+      },
+      testimonials: {
+        badge: 'Depoimentos',
+        title: 'O que dizem nossos clientes',
+        items: [
+          {
+            quote: 'Antes eu levava 40 minutos depois de cada consulta para montar o orçamento. Agora faço em 3 minutos. O paciente recebe na hora e fica impressionado.',
+            name: 'Dra. Fernanda Costa',
+            role: 'Implantodontista • São Paulo',
+            initials: 'DF'
+          },
+          {
+            quote: 'Minha secretária não precisa mais transcrever nada. A consulta acaba, o áudio vai pro TQ e em minutos o orçamento está pronto. Dobramos nossos fechamentos.',
+            name: 'Dr. Roberto Almeida',
+            role: 'Ortodontista • Campinas',
+            initials: 'DR'
+          },
+          {
+            quote: 'O link que o paciente recebe é muito profissional. Eles conseguem ver tudo, comparar opções e aprovar direto pelo celular. Reduziu muito as ligações.',
+            name: 'Dra. Marina Santos',
+            role: 'Odontologia Estética • Santos',
+            initials: 'DM'
+          },
+          {
+            quote: 'Tenho 3 consultórios e agora todos seguem o mesmo padrão de orçamento. Acabou aquela bagunça de cada um fazer do seu jeito. Os pacientes notam.',
+            name: 'Dr. Carlos Ribeiro',
+            role: 'Cirurgião Bucomaxilofacial • SP',
+            initials: 'DC'
+          }
+        ]
+      },
+      results: {
+        badge: 'Resultados',
+        cards: [
+          { metric: '10h', label: 'economizadas por semana' },
+          { metric: '100%', label: 'planos padronizados' },
+          { metric: '2min', label: 'para criar orçamento' },
+          { metric: '2x', label: 'mais orçamentos enviados' },
+          { metric: '-90%', label: 'erros em orçamentos' },
+          { metric: '-50%', label: 'retrabalho da equipe' },
+          { metric: '+45%', label: 'aprovação de pacientes' },
+          { metric: '+30%', label: 'taxa de fechamento' },
+          { metric: '24/7', label: 'acesso do paciente' }
+        ]
+      },
+      floatingButtons: {
+        start: 'Começar',
+        contact: 'Contato'
       }
     },
     licenses: {
@@ -403,12 +458,19 @@ export const translations = {
     tqPage: {
       hero: {
         badge: 'Product',
+        headline1: 'Transcribe consultations.',
+        headline2: 'Send quotes in 2 min.',
+        subtitle: 'TQ records, transcribes, and generates professional quotes automatically. No manual typing.',
         title: 'Transform consultations into treatment plans and quotes in minutes.',
         description: 'Record the consultation. TQ transcribes and organizes everything. Your patient receives the quote ready to decide.',
         cta1: 'Try free for 7 days',
         cta2: 'Access TQ',
         ctaSubtext: 'No credit card required',
-        videoPlaceholder: 'Video coming soon'
+        videoPlaceholder: 'Video coming soon',
+        priceFrom: 'starting at',
+        trialBadge: '7 days free',
+        ctaStart: 'Start free trial',
+        ctaDemo: 'Watch Demo'
       },
       problem: {
         badge: 'The Problem',
@@ -514,13 +576,61 @@ export const translations = {
       integrations: {
         badge: 'Integrations & Automations',
         title: 'Connect with your systems',
-        description: 'Our platform has its own API, making it easy to create custom integrations. Count on our team of experienced developers for tailored automations.',
+        description: 'Connect TQ with your tools. Our team develops custom integrations.',
         cards: [
-          { title: 'Built-in API', description: 'REST API + Webhooks ready for integrations.' },
-          { title: 'Any System', description: 'Connect with your ERP, CRM, calendar, or any tool.' },
-          { title: 'We Develop It', description: 'Our team creates custom automations and integrations.' }
+          { title: 'Built-in API', description: 'Easily integrate with any system.' },
+          { title: 'Any System', description: 'Connect with your ERP, CRM, or calendar.' },
+          { title: 'We Develop It', description: 'Custom automations for you.' }
         ],
         cta: 'Talk to a specialist'
+      },
+      testimonials: {
+        badge: 'Testimonials',
+        title: 'What our customers say',
+        items: [
+          {
+            quote: 'I used to spend 40 minutes after each consultation to create the quote. Now I do it in 3 minutes. The patient receives it immediately and is impressed.',
+            name: 'Dr. Fernanda Costa',
+            role: 'Implant Dentist • São Paulo',
+            initials: 'DF'
+          },
+          {
+            quote: 'My secretary no longer needs to transcribe anything. The consultation ends, the audio goes to TQ and in minutes the quote is ready. We doubled our closings.',
+            name: 'Dr. Roberto Almeida',
+            role: 'Orthodontist • Campinas',
+            initials: 'DR'
+          },
+          {
+            quote: 'The link the patient receives is very professional. They can see everything, compare options and approve directly from their phone. It greatly reduced calls.',
+            name: 'Dr. Marina Santos',
+            role: 'Aesthetic Dentistry • Santos',
+            initials: 'DM'
+          },
+          {
+            quote: 'I have 3 offices and now they all follow the same quote standard. No more mess of everyone doing it their own way. Patients notice.',
+            name: 'Dr. Carlos Ribeiro',
+            role: 'Oral Surgeon • SP',
+            initials: 'DC'
+          }
+        ]
+      },
+      results: {
+        badge: 'Results',
+        cards: [
+          { metric: '10h', label: 'saved per week' },
+          { metric: '100%', label: 'standardized plans' },
+          { metric: '2min', label: 'to create a quote' },
+          { metric: '2x', label: 'more quotes sent' },
+          { metric: '-90%', label: 'quote errors' },
+          { metric: '-50%', label: 'team rework' },
+          { metric: '+45%', label: 'patient approval' },
+          { metric: '+30%', label: 'closing rate' },
+          { metric: '24/7', label: 'patient access' }
+        ]
+      },
+      floatingButtons: {
+        start: 'Start',
+        contact: 'Contact'
       }
     },
     licenses: {

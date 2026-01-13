@@ -8,6 +8,7 @@ export const translations = {
       contact: 'Contato',
       howItWorks: 'Como Funciona',
       forWhom: 'Para Quem',
+      testimonials: 'Depoimentos',
       products: 'Produtos',
       app: 'App',
       licenses: 'Licenças',
@@ -111,12 +112,12 @@ export const translations = {
       },
       forWhom: {
         badge: 'Para Quem',
-        title: 'O TQ é ideal para dentistas que:',
+        title: 'O TQ é ideal para quem:',
         items: [
-          { emoji: '✨', text: 'Trabalham com estética, implantes ou harmonização' },
-          { emoji: '💳', text: 'Atendem pacientes particulares' },
-          { emoji: '📋', text: 'Precisam explicar e vender planos complexos' },
-          { emoji: '⏱️', text: 'Querem ganhar tempo sem perder qualidade' }
+          { emoji: '✨', text: 'Trabalha com estética, implantes ou harmonização' },
+          { emoji: '💳', text: 'Atende pacientes particulares' },
+          { emoji: '📋', text: 'Precisa explicar e vender planos complexos' },
+          { emoji: '⏱️', text: 'Quer ganhar tempo sem perder qualidade' }
         ]
       },
       roi: {
@@ -340,6 +341,7 @@ export const translations = {
       contact: 'Contact',
       howItWorks: 'How It Works',
       forWhom: 'For Whom',
+      testimonials: 'Testimonials',
       products: 'Products',
       app: 'App',
       licenses: 'Licenses',
@@ -443,7 +445,7 @@ export const translations = {
       },
       forWhom: {
         badge: 'For Whom',
-        title: 'TQ is ideal for dentists who:',
+        title: 'TQ is ideal for those who:',
         items: [
           { emoji: '✨', text: 'Work with aesthetics, implants, or harmonization' },
           { emoji: '💳', text: 'Serve private patients' },

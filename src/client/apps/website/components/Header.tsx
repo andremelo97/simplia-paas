@@ -77,10 +77,16 @@ export function Header() {
             {isProductPage ? (
               <>
                 <button
-                  onClick={() => scrollTo('how-it-works')}
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.howItWorks}
+                </button>
+                <button
+                  onClick={() => scrollTo('testimonials')}
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
+                >
+                  {t.nav.testimonials}
                 </button>
                 <button
                   onClick={() => scrollTo('for-whom')}
@@ -234,10 +240,16 @@ export function Header() {
               {isProductPage ? (
                 <>
                   <button
-                    onClick={() => scrollTo('how-it-works')}
+                    onClick={() => { setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                     className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.howItWorks}
+                  </button>
+                  <button
+                    onClick={() => scrollTo('testimonials')}
+                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  >
+                    {t.nav.testimonials}
                   </button>
                   <button
                     onClick={() => scrollTo('for-whom')}

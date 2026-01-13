@@ -230,13 +230,13 @@ export const EditTenantPage: React.FC = () => {
     }
     
 
-    // Validate addresses - at least one required
-    if (addresses.length === 0) {
-      errors.addresses = 'At least one address is required'
-    } else {
-      addresses.forEach((address, index) => {
-        const addressErrors: Partial<Record<keyof AddressFormValues, string>> = {}
-        
+    // Validate addresses - optional, but if provided, validate fields
+    addresses.forEach((address, index) => {
+      const addressErrors: Partial<Record<keyof AddressFormValues, string>> = {}
+
+      // Only validate if any field has content
+      const hasContent = address.line1?.trim() || address.city?.trim() || address.country_code?.trim()
+      if (hasContent) {
         if (!address.line1?.trim()) {
           addressErrors.line1 = 'Address line 1 is required'
         }
@@ -246,12 +246,12 @@ export const EditTenantPage: React.FC = () => {
         if (!address.country_code?.trim()) {
           addressErrors.country_code = 'Country is required'
         }
-        
-        if (Object.keys(addressErrors).length > 0) {
-          addrErrors[address.id || `temp-${index}`] = addressErrors
-        }
-      })
-    }
+      }
+
+      if (Object.keys(addressErrors).length > 0) {
+        addrErrors[address.id || `temp-${index}`] = addressErrors
+      }
+    })
 
     // Validate contacts
     contacts.forEach((contact, index) => {

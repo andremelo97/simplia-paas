@@ -87,7 +87,7 @@ export const AddressesRepeater: React.FC<AddressesRepeaterProps> = ({
   return (
     <FormSection
       title="Addresses"
-      description="Add tenant addresses for billing, shipping, and other purposes. At least one address is required."
+      description="Add tenant addresses for billing, shipping, and other purposes (optional)."
       onAdd={handleAdd}
       addButtonText="Add Address"
       addButtonDisabled={false}

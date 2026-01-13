@@ -181,11 +181,11 @@ export const translations = {
       integrations: {
         badge: 'Integrações & Automações',
         title: 'Conecte com seus sistemas',
-        description: 'Nossa plataforma possui API própria, facilitando criar integrações personalizadas. Conte com nosso time de desenvolvedores experientes para automações sob medida.',
+        description: 'Conecte o TQ com suas ferramentas. Nosso time desenvolve integrações sob medida.',
         cards: [
-          { title: 'API Própria', description: 'API REST + Webhooks prontos para integrações.' },
-          { title: 'Qualquer Sistema', description: 'Conecte com seu ERP, CRM, agenda ou qualquer ferramenta.' },
-          { title: 'Nós Desenvolvemos', description: 'Nosso time cria automações e integrações sob medida.' }
+          { title: 'API Própria', description: 'Integre facilmente com qualquer sistema.' },
+          { title: 'Qualquer Sistema', description: 'Conecte com seu ERP, CRM ou agenda.' },
+          { title: 'Nós Desenvolvemos', description: 'Automações sob medida para você.' }
         ],
         cta: 'Falar com especialista'
       }

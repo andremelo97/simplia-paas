@@ -136,12 +136,11 @@ export function TQPage() {
                 {t.tqPage.hero.subtitle}
               </p>
 
-              {/* Price highlight */}
-              <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/10 rounded-lg mb-8">
-                <span className="text-sm text-gray-400">{t.tqPage.hero.priceFrom}</span>
-                <span className="text-2xl font-black text-white">R$119</span>
-                <span className="text-gray-400">{t.tqPage.pricing.monthly}</span>
-                <span className="px-2 py-1 bg-[#5ED6CE]/20 text-[#5ED6CE] text-xs font-bold rounded">{t.tqPage.hero.trialBadge}</span>
+              {/* Trial highlight */}
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#5ED6CE]/20 rounded-lg mb-8">
+                <span className="text-lg font-bold text-[#5ED6CE]">{t.tqPage.hero.trialBadge}</span>
+                <span className="text-white/60">•</span>
+                <span className="text-white/80">{t.tqPage.hero.ctaSubtext}</span>
               </div>
 
               <div className="flex flex-wrap items-center gap-4">

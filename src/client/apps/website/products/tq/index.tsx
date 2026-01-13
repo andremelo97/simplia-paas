@@ -130,7 +130,7 @@ export function TQPage() {
               </span>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 leading-[1.1]">
                 Transcreva consultas.<br />
-                <span className="text-[#5ED6CE]">Envie orçamentos em 3 min.</span>
+                <span className="text-[#5ED6CE]">Envie orçamentos em 2 min.</span>
               </h1>
               <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-xl">
                 O TQ grava, transcreve e gera cotações profissionais automaticamente. Sem digitação manual.

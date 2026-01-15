@@ -53,6 +53,22 @@ export function Header() {
     }
   }
 
+  // Handle anchor link clicks with smooth scroll
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault()
+    setIsMobileMenuOpen(false)
+    if (id === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      window.history.pushState(null, '', window.location.pathname)
+    } else {
+      const element = document.getElementById(id)
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' })
+        window.history.pushState(null, '', `#${id}`)
+      }
+    }
+  }
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -76,42 +92,48 @@ export function Header() {
           <div className="hidden lg:flex items-center gap-8">
             {isProductPage ? (
               <>
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                <a
+                  href="#"
+                  onClick={(e) => handleAnchorClick(e, 'top')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.howItWorks}
-                </button>
-                <button
-                  onClick={() => scrollTo('testimonials')}
+                </a>
+                <a
+                  href="#testimonials"
+                  onClick={(e) => handleAnchorClick(e, 'testimonials')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.testimonials}
-                </button>
-                <button
-                  onClick={() => scrollTo('for-whom')}
+                </a>
+                <a
+                  href="#for-whom"
+                  onClick={(e) => handleAnchorClick(e, 'for-whom')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.forWhom}
-                </button>
-                <button
-                  onClick={() => scrollTo('integrations')}
+                </a>
+                <a
+                  href="#integrations"
+                  onClick={(e) => handleAnchorClick(e, 'integrations')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.integrations}
-                </button>
-                <button
-                  onClick={() => scrollTo('pricing')}
+                </a>
+                <a
+                  href="#pricing"
+                  onClick={(e) => handleAnchorClick(e, 'pricing')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.pricing}
-                </button>
-                <button
-                  onClick={() => scrollTo('contact')}
+                </a>
+                <a
+                  href="#contact"
+                  onClick={(e) => handleAnchorClick(e, 'contact')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
                   {t.nav.contact}
-                </button>
+                </a>
               </>
             ) : (
               <>
@@ -239,42 +261,48 @@ export function Header() {
             <div className="flex flex-col gap-2">
               {isProductPage ? (
                 <>
-                  <button
-                    onClick={() => { setIsMobileMenuOpen(false); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  <a
+                    href="#"
+                    onClick={(e) => handleAnchorClick(e, 'top')}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.howItWorks}
-                  </button>
-                  <button
-                    onClick={() => scrollTo('testimonials')}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  </a>
+                  <a
+                    href="#testimonials"
+                    onClick={(e) => handleAnchorClick(e, 'testimonials')}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.testimonials}
-                  </button>
-                  <button
-                    onClick={() => scrollTo('for-whom')}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  </a>
+                  <a
+                    href="#for-whom"
+                    onClick={(e) => handleAnchorClick(e, 'for-whom')}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.forWhom}
-                  </button>
-                  <button
-                    onClick={() => scrollTo('integrations')}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  </a>
+                  <a
+                    href="#integrations"
+                    onClick={(e) => handleAnchorClick(e, 'integrations')}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.integrations}
-                  </button>
-                  <button
-                    onClick={() => scrollTo('pricing')}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  </a>
+                  <a
+                    href="#pricing"
+                    onClick={(e) => handleAnchorClick(e, 'pricing')}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.pricing}
-                  </button>
-                  <button
-                    onClick={() => scrollTo('contact')}
-                    className="text-left px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  </a>
+                  <a
+                    href="#contact"
+                    onClick={(e) => handleAnchorClick(e, 'contact')}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
                     {t.nav.contact}
-                  </button>
+                  </a>
                 </>
               ) : (
                 <>

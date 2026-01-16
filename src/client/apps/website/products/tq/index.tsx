@@ -130,7 +130,7 @@ export function TQPage() {
               </span>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 leading-[1.1]">
                 {t.tqPage.hero.headline1}<br />
-                <span className="text-[#5ED6CE]">{t.tqPage.hero.headline2}</span>
+                <span className="text-white border-b-4 border-[#E91E63] pb-1">{t.tqPage.hero.headline2}</span>
               </h1>
               <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-xl">
                 {t.tqPage.hero.subtitle}

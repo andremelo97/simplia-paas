@@ -71,7 +71,7 @@ export const translations = {
       hero: {
         badge: 'Produto',
         headline1: 'Transcreva consultas.',
-        headline2: 'Envie orçamentos em 2 min.',
+        headline2: 'Envie orçamentos em 2 minutos.',
         subtitle: 'O TQ grava, transcreve e gera cotações profissionais automaticamente. Sem digitação manual.',
         title: 'Transforme consultas em planos de tratamento e cotações em minutos.',
         description: 'Grave a consulta. O TQ transcreve e organiza tudo. Seu paciente recebe a cotação pronta para decidir.',
@@ -459,7 +459,7 @@ export const translations = {
       hero: {
         badge: 'Product',
         headline1: 'Transcribe consultations.',
-        headline2: 'Send quotes in 2 min.',
+        headline2: 'Send quotes in 2 minutes.',
         subtitle: 'TQ records, transcribes, and generates professional quotes automatically. No manual typing.',
         title: 'Transform consultations into treatment plans and quotes in minutes.',
         description: 'Record the consultation. TQ transcribes and organizes everything. Your patient receives the quote ready to decide.',

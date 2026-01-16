@@ -1319,4 +1319,160 @@ router.get('/health', (req, res) => {
   });
 });
 
+/**
+ * @openapi
+ * /provisioning/users/all:
+ *   get:
+ *     tags: [Provisioning]
+ *     summary: List all users with filters (for automation)
+ *     description: |
+ *       **Scope:** External (API Key required)
+ *
+ *       Returns all users across all tenants with optional filters.
+ *       Designed for n8n/automation workflows (e.g., onboarding emails).
+ *     security:
+ *       - apiKeyAuth: []
+ *     parameters:
+ *       - name: role
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [admin, manager, operations]
+ *         description: Filter by user role
+ *       - name: createdAfter
+ *         in: query
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter users created after this date (ISO 8601)
+ *       - name: createdBefore
+ *         in: query
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter users created before this date (ISO 8601)
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *         description: Maximum number of users to return
+ *       - name: offset
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of users to skip
+ *     responses:
+ *       200:
+ *         description: List of users
+ *       401:
+ *         description: Missing API key
+ *       403:
+ *         description: Invalid API key
+ */
+router.get('/users/all', async (req, res) => {
+  try {
+    const {
+      role,
+      createdAfter,
+      createdBefore,
+      limit = 100,
+      offset = 0
+    } = req.query;
+
+    // Build query conditions
+    const conditions = [];
+    const params = [];
+    let paramIndex = 1;
+
+    if (role) {
+      conditions.push(`u.role = $${paramIndex++}`);
+      params.push(role);
+    }
+
+    if (createdAfter) {
+      conditions.push(`u.created_at >= $${paramIndex++}`);
+      params.push(new Date(createdAfter));
+    }
+
+    if (createdBefore) {
+      conditions.push(`u.created_at <= $${paramIndex++}`);
+      params.push(new Date(createdBefore));
+    }
+
+    const whereClause = conditions.length > 0
+      ? `WHERE ${conditions.join(' AND ')}`
+      : '';
+
+    // Query users with tenant info
+    const query = `
+      SELECT
+        u.id,
+        u.email,
+        u.first_name,
+        u.last_name,
+        u.role,
+        u.active,
+        u.created_at,
+        u.tenant_id_fk as tenant_id,
+        t.name as tenant_name,
+        t.subdomain as tenant_subdomain
+      FROM platform.users u
+      LEFT JOIN platform.tenants t ON t.id = u.tenant_id_fk
+      ${whereClause}
+      ORDER BY u.created_at DESC
+      LIMIT $${paramIndex++} OFFSET $${paramIndex++}
+    `;
+
+    params.push(parseInt(limit), parseInt(offset));
+
+    const result = await database.query(query, params);
+
+    // Get total count
+    const countQuery = `
+      SELECT COUNT(*) as total
+      FROM platform.users u
+      ${whereClause}
+    `;
+    const countResult = await database.query(countQuery, params.slice(0, -2));
+    const total = parseInt(countResult.rows[0].total);
+
+    res.json({
+      success: true,
+      data: {
+        users: result.rows.map(row => ({
+          id: row.id,
+          email: row.email,
+          firstName: row.first_name,
+          lastName: row.last_name,
+          name: `${row.first_name || ''} ${row.last_name || ''}`.trim() || row.email,
+          role: row.role,
+          active: row.active,
+          createdAt: row.created_at,
+          tenant: {
+            id: row.tenant_id,
+            name: row.tenant_name,
+            subdomain: row.tenant_subdomain
+          }
+        })),
+        pagination: {
+          total,
+          limit: parseInt(limit),
+          offset: parseInt(offset),
+          hasMore: parseInt(offset) + result.rows.length < total
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get all users for automation error:', error);
+    res.status(500).json({
+      error: {
+        code: 'QUERY_ERROR',
+        message: 'Failed to get users'
+      }
+    });
+  }
+});
+
 module.exports = router;

@@ -7,8 +7,8 @@ import { Header as CommonHeader } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
 import { UserSettingsModal } from './UserSettingsModal'
 import { BugReportModal } from './BugReportModal'
-import { HelpCircle, Bug } from 'lucide-react'
-import { Button, Tooltip } from '@client/common/ui'
+import { HelpCircle, Bug, Headphones } from 'lucide-react'
+import { Button, Tooltip, SupportModal } from '@client/common/ui'
 
 interface BreadcrumbItem {
   label: string
@@ -68,6 +68,7 @@ export const Header: React.FC = () => {
   const { t } = useTranslation('hub')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isBugReportOpen, setIsBugReportOpen] = useState(false)
+  const [isSupportOpen, setIsSupportOpen] = useState(false)
 
   const localizedBreadcrumbs = useCallback(
     (pathname: string) => buildBreadcrumbs(pathname, t),
@@ -95,9 +96,21 @@ export const Header: React.FC = () => {
   // Only show help button for admin users
   const showHelpButton = user?.role === 'admin'
 
-  // Right actions for the header (bug report + help)
+  // Right actions for the header (support + bug report + help)
   const rightActions = (
     <div className="flex items-center gap-1">
+      {/* Support Button */}
+      <Tooltip content={t('header.support_tooltip', 'Suporte')} side="bottom">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSupportOpen(true)}
+          className="text-gray-500 hover:text-[#5ED6CE] transition-colors"
+        >
+          <Headphones className="w-5 h-5" />
+        </Button>
+      </Tooltip>
+
       {/* Bug Report Button */}
       <Tooltip content={t('header.bug_report_tooltip', 'Report a Bug')} side="bottom">
         <Button
@@ -149,6 +162,11 @@ export const Header: React.FC = () => {
       <BugReportModal
         isOpen={isBugReportOpen}
         onClose={() => setIsBugReportOpen(false)}
+      />
+
+      <SupportModal
+        isOpen={isSupportOpen}
+        onClose={() => setIsSupportOpen(false)}
       />
     </>
   )

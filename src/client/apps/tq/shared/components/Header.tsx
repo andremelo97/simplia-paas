@@ -10,8 +10,8 @@ import { clinicalReportsService, ClinicalReport } from '../../services/clinicalR
 import { templatesService, Template } from '../../services/templates'
 import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
 import { useTranslation } from 'react-i18next'
-import { HelpCircle } from 'lucide-react'
-import { Tooltip, Button } from '@client/common/ui'
+import { HelpCircle, Headphones } from 'lucide-react'
+import { Tooltip, Button, SupportModal } from '@client/common/ui'
 
 const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
   const segments = pathname.split('/').filter(Boolean)
@@ -121,6 +121,7 @@ export const Header: React.FC = () => {
   const [clinicalReports, setClinicalReports] = useState<ClinicalReport[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
   const [publicQuoteTemplates, setPublicQuoteTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [isSupportOpen, setIsSupportOpen] = useState(false)
 
   // Load data for search
   useEffect(() => {
@@ -151,39 +152,63 @@ export const Header: React.FC = () => {
 
   // Only show help button for admin users
   const isAdmin = user?.role === 'admin'
-  const helpButton = isAdmin ? (
-    <Tooltip content={t('header.help_tooltip', 'Setup Assistant')} side="bottom">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={openWizard}
-        className="text-gray-500 hover:text-[#B725B7] transition-colors"
-      >
-        <HelpCircle className="w-5 h-5" />
-      </Button>
-    </Tooltip>
-  ) : null
+  const rightActions = (
+    <div className="flex items-center gap-1">
+      {/* Support Button */}
+      <Tooltip content={t('header.support_tooltip', 'Suporte')} side="bottom">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsSupportOpen(true)}
+          className="text-gray-500 hover:text-[#5ED6CE] transition-colors"
+        >
+          <Headphones className="w-5 h-5" />
+        </Button>
+      </Tooltip>
+
+      {/* Help Button (admin only) */}
+      {isAdmin && (
+        <Tooltip content={t('header.help_tooltip', 'Setup Assistant')} side="bottom">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={openWizard}
+            className="text-gray-500 hover:text-[#B725B7] transition-colors"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </Button>
+        </Tooltip>
+      )}
+    </div>
+  )
 
   return (
-    <CommonHeader
-      user={user}
-      tenant={null}
-      getBreadcrumbs={(pathname) => getBreadcrumbs(pathname, t)}
-      getDisplayRole={getDisplayRole}
-      showSearch={true}
-      showNotifications={false}
-      showLogout={false}
-      searchComponent={
-        <QuickSearchBar
-          patients={patients}
-          sessions={sessions}
-          quotes={quotes}
-          clinicalReports={clinicalReports}
-          templates={templates}
-          publicQuoteTemplates={publicQuoteTemplates}
-        />
-      }
-      rightActions={helpButton}
-    />
+    <>
+      <CommonHeader
+        user={user}
+        tenant={null}
+        getBreadcrumbs={(pathname) => getBreadcrumbs(pathname, t)}
+        getDisplayRole={getDisplayRole}
+        showSearch={true}
+        showNotifications={false}
+        showLogout={false}
+        searchComponent={
+          <QuickSearchBar
+            patients={patients}
+            sessions={sessions}
+            quotes={quotes}
+            clinicalReports={clinicalReports}
+            templates={templates}
+            publicQuoteTemplates={publicQuoteTemplates}
+          />
+        }
+        rightActions={rightActions}
+      />
+
+      <SupportModal
+        isOpen={isSupportOpen}
+        onClose={() => setIsSupportOpen(false)}
+      />
+    </>
   )
 }

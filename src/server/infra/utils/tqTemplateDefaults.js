@@ -130,6 +130,7 @@ const PUBLIC_QUOTE_TEMPLATE_BASE = {
       type: 'Footer',
       props: {
         id: 'Footer-b9f91ec2-b959-4d14-b9b9-b2fe927fb36d',
+        contactSource: 'branding',
         textColor: '#ffffff',
         socialTitle: '',
         quickLinksTitle: '',
@@ -140,6 +141,9 @@ const PUBLIC_QUOTE_TEMPLATE_BASE = {
           { url: '#contact', label: '' }
         ],
         showContact: true,
+        showEmail: true,
+        showPhone: true,
+        showAddress: true,
         socialLinks: [
           { url: 'https://facebook.com', platform: 'facebook' },
           { url: 'https://instagram.com', platform: 'instagram' },

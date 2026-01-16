@@ -149,14 +149,15 @@ router.post('/pq/:accessToken', async (req, res) => {
 
     const contentPackage = contentResult.rows[0].content;
     
-    // Get branding from global tenant_branding table
+    // Get branding from global tenant_branding table (including social links and contact info)
     const brandingQuery = `
-      SELECT primary_color, secondary_color, tertiary_color, logo_url, background_video_url
+      SELECT primary_color, secondary_color, tertiary_color, logo_url, background_video_url,
+             social_links, email, phone, address, company_name
       FROM public.tenant_branding
       WHERE tenant_id_fk = $1
       LIMIT 1
     `;
-    
+
     const brandingResult = await database.query(brandingQuery, [tenantId]);
     const brandingData = brandingResult.rows[0] || {};
 
@@ -173,7 +174,12 @@ router.post('/pq/:accessToken', async (req, res) => {
           secondaryColor: brandingData.secondary_color || '#1E40AF',
           tertiaryColor: brandingData.tertiary_color || '#60A5FA',
           logo: brandingData.logo_url || null,
-          backgroundVideoUrl: brandingData.background_video_url || null
+          backgroundVideoUrl: brandingData.background_video_url || null,
+          socialLinks: brandingData.social_links || null,
+          email: brandingData.email || null,
+          phone: brandingData.phone || null,
+          address: brandingData.address || null,
+          companyName: brandingData.company_name || null
         }
       }
     });

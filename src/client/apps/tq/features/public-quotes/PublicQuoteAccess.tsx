@@ -19,6 +19,11 @@ interface PublicQuoteData {
     tertiaryColor: string
     logo: string | null
     backgroundVideoUrl?: string | null
+    socialLinks?: Record<string, string> | null
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    companyName?: string | null
   }
 }
 
@@ -158,7 +163,11 @@ export const PublicQuoteAccess: React.FC = () => {
       tertiaryColor: quoteData.branding.tertiaryColor,
       logoUrl: quoteData.branding.logo || null,
       backgroundVideoUrl: quoteData.branding.backgroundVideoUrl || null,
-      companyName: null
+      companyName: quoteData.branding.companyName || null,
+      socialLinks: quoteData.branding.socialLinks || null,
+      email: quoteData.branding.email || null,
+      phone: quoteData.branding.phone || null,
+      address: quoteData.branding.address || null
     }
 
     // Use createConfigWithResolvedData directly with the saved resolvedData

@@ -5,6 +5,16 @@ import { textColorOptions, resolveColor } from './color-options'
 const withFallback = (value: string | undefined, fallback: string) =>
   (typeof value === 'string' && value.trim().length > 0) ? value : fallback
 
+// Ensure URL has protocol (https:// by default)
+const ensureProtocol = (url: string): string => {
+  if (!url) return url
+  const trimmed = url.trim()
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed
+  }
+  return `https://${trimmed}`
+}
+
 export const createHeaderFooterComponents = (branding: BrandingData) => ({
   Header: {
     fields: {
@@ -200,7 +210,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
               )}
               {showButton && buttonLabel && (
                 <a
-                  href={buttonUrl}
+                  href={ensureProtocol(buttonUrl)}
                   className={headerButtonId}
                   style={getButtonStyles()}
                 >
@@ -499,16 +509,23 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       }
 
       // Build effective contact items based on source
+      // Default to 'branding' if contactSource is undefined (for backwards compatibility with saved templates)
+      const effectiveContactSource = contactSource || 'branding'
+      // Default show flags to true if undefined (for backwards compatibility with saved templates)
+      const effectiveShowEmail = showEmail !== false
+      const effectiveShowPhone = showPhone !== false
+      const effectiveShowAddress = showAddress !== false
+
       const getEffectiveContactItems = () => {
-        if (contactSource === 'branding') {
+        if (effectiveContactSource === 'branding') {
           const items: Array<{ type: string; value: string }> = []
-          if (showEmail && branding.email) {
+          if (effectiveShowEmail && branding.email) {
             items.push({ type: 'email', value: branding.email })
           }
-          if (showPhone && branding.phone) {
+          if (effectiveShowPhone && branding.phone) {
             items.push({ type: 'phone', value: branding.phone })
           }
-          if (showAddress && branding.address) {
+          if (effectiveShowAddress && branding.address) {
             items.push({ type: 'address', value: branding.address })
           }
           return items
@@ -518,7 +535,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
 
       // Build effective social links based on source
       const getEffectiveSocialLinks = () => {
-        if (contactSource === 'branding' && branding.socialLinks) {
+        if (effectiveContactSource === 'branding' && branding.socialLinks) {
           const links: Array<{ platform: string; url: string }> = []
           const socialData = branding.socialLinks as Record<string, string | undefined>
           const platforms = ['facebook', 'instagram', 'twitter', 'linkedin', 'whatsapp', 'website']
@@ -589,7 +606,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                       {effectiveSocialLinks.map((link: any, index: number) => (
                         <a
                           key={index}
-                          href={link.url}
+                          href={ensureProtocol(link.url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
@@ -643,7 +660,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                       {quickLinks.map((link: any, index: number) => (
                         <a
                           key={index}
-                          href={link.url}
+                          href={ensureProtocol(link.url)}
                           style={{
                             color: getTextColor(),
                             textDecoration: 'none',

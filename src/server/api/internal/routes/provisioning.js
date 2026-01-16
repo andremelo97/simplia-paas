@@ -1418,8 +1418,8 @@ router.get('/users/all', async (req, res) => {
         u.tenant_id_fk as tenant_id,
         t.name as tenant_name,
         t.subdomain as tenant_subdomain
-      FROM platform.users u
-      LEFT JOIN platform.tenants t ON t.id = u.tenant_id_fk
+      FROM public.users u
+      LEFT JOIN public.tenants t ON t.id = u.tenant_id_fk
       ${whereClause}
       ORDER BY u.created_at DESC
       LIMIT $${paramIndex++} OFFSET $${paramIndex++}
@@ -1432,7 +1432,7 @@ router.get('/users/all', async (req, res) => {
     // Get total count
     const countQuery = `
       SELECT COUNT(*) as total
-      FROM platform.users u
+      FROM public.users u
       ${whereClause}
     `;
     const countResult = await database.query(countQuery, params.slice(0, -2));

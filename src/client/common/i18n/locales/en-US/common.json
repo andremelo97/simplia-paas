@@ -286,5 +286,20 @@
       "title": "Bug Report Sent",
       "message": "Your bug report has been submitted successfully. Thank you!"
     }
+  },
+  "support_modal": {
+    "title": "Support & Assistance",
+    "description": "Support included in your plan. Contact us whenever you need.",
+    "how_we_help": "How we can help:",
+    "help_templates": "Template creation and customization",
+    "help_questions": "Questions about the system",
+    "help_integrations": "Settings and integrations",
+    "help_feedback": "Suggestions and feedback",
+    "business_hours": "Monday to Friday, business hours",
+    "outside_hours": "Outside these hours, response time may be longer",
+    "whatsapp": "WhatsApp",
+    "email": "Email",
+    "copy": "Copy",
+    "contact_channels": "Contact channels"
   }
 }

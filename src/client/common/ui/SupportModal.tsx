@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
 import { MessageCircle, Mail, Copy, Check } from 'lucide-react'
 
@@ -8,6 +9,7 @@ interface SupportModalProps {
 }
 
 export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useTranslation('common')
   const whatsappNumber = '5511966874759'
   const whatsappDisplay = '+55 11 96687-4759'
   const email = 'admin@livocare.ai'
@@ -30,11 +32,46 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
     <Modal
       open={isOpen}
       onClose={onClose}
-      title="Suporte"
-      description="Entre em contato conosco por WhatsApp ou e-mail"
-      size="sm"
+      title={t('support_modal.title')}
+      description={t('support_modal.description')}
+      size="md"
     >
       <div className="p-6 space-y-4">
+        {/* What we help with */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-2">
+          <p className="text-sm font-medium text-gray-700 mb-2">{t('support_modal.how_we_help')}</p>
+          <ul className="text-sm text-gray-600 space-y-1">
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#B725B7] rounded-full"></span>
+              {t('support_modal.help_templates')}
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#B725B7] rounded-full"></span>
+              {t('support_modal.help_questions')}
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#B725B7] rounded-full"></span>
+              {t('support_modal.help_integrations')}
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#B725B7] rounded-full"></span>
+              {t('support_modal.help_feedback')}
+            </li>
+          </ul>
+          <div className="mt-3 pt-3 border-t border-gray-200">
+            <p className="text-xs text-gray-600 flex items-center gap-1">
+              <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+              {t('support_modal.business_hours')}
+            </p>
+            <p className="text-xs text-gray-400 mt-1 ml-3">
+              {t('support_modal.outside_hours')}
+            </p>
+          </div>
+        </div>
+
+        {/* Contact channels label */}
+        <p className="text-sm font-medium text-gray-700 pt-2">{t('support_modal.contact_channels')}</p>
+
         {/* WhatsApp */}
         <div className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-green-500 hover:bg-green-50 transition-all group">
           <a
@@ -47,7 +84,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
               <MessageCircle className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <p className="font-medium text-gray-900">WhatsApp</p>
+              <p className="font-medium text-gray-900">{t('support_modal.whatsapp')}</p>
               <p className="text-sm text-gray-600">{whatsappDisplay}</p>
             </div>
           </a>
@@ -57,7 +94,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
               handleCopy(whatsappDisplay, 'whatsapp')
             }}
             className="p-2 rounded-md hover:bg-green-100 transition-colors"
-            title="Copiar"
+            title={t('support_modal.copy')}
           >
             {copiedWhatsapp ? (
               <Check className="w-5 h-5 text-green-600" />
@@ -77,7 +114,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
               <Mail className="w-6 h-6 text-[#B725B7]" />
             </div>
             <div>
-              <p className="font-medium text-gray-900">E-mail</p>
+              <p className="font-medium text-gray-900">{t('support_modal.email')}</p>
               <p className="text-sm text-gray-600">{email}</p>
             </div>
           </a>
@@ -87,7 +124,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
               handleCopy(email, 'email')
             }}
             className="p-2 rounded-md hover:bg-purple-100 transition-colors"
-            title="Copiar"
+            title={t('support_modal.copy')}
           >
             {copiedEmail ? (
               <Check className="w-5 h-5 text-[#B725B7]" />

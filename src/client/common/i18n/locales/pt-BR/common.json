@@ -302,5 +302,20 @@
       "title": "Bug Reportado",
       "message": "Seu relatório de bug foi enviado com sucesso. Obrigado!"
     }
+  },
+  "support_modal": {
+    "title": "Suporte e Atendimento",
+    "description": "Suporte incluso no seu plano. Entre em contato sempre que precisar.",
+    "how_we_help": "Como podemos ajudar:",
+    "help_templates": "Criação e personalização de templates",
+    "help_questions": "Dúvidas sobre o sistema",
+    "help_integrations": "Configurações e integrações",
+    "help_feedback": "Sugestões e feedback",
+    "business_hours": "Segunda a sexta, horário comercial",
+    "outside_hours": "Fora desse horário, o tempo de resposta pode ser maior",
+    "whatsapp": "WhatsApp",
+    "email": "E-mail",
+    "copy": "Copiar",
+    "contact_channels": "Canais de atendimento"
   }
 }

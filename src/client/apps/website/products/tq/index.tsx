@@ -136,27 +136,26 @@ export function TQPage() {
                 {t.tqPage.hero.subtitle}
               </p>
 
-              {/* Trial highlight - clickable card */}
-              <a
-                href={CHECKOUT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-4 bg-[#5ED6CE]/20 hover:bg-[#5ED6CE]/30 rounded-lg mb-8 transition-all cursor-pointer group border border-[#5ED6CE]/30 hover:border-[#5ED6CE]/50"
-              >
-                <Gift className="w-6 h-6 text-[#5ED6CE]" />
-                <span className="text-lg font-bold text-[#5ED6CE]">{t.tqPage.hero.trialBadge}</span>
-                <span className="text-white/60">•</span>
-                <span className="text-white/80">{t.tqPage.hero.ctaSubtext}</span>
-                <ArrowRight className="w-5 h-5 text-[#5ED6CE] group-hover:translate-x-1 transition-transform" />
-              </a>
+              {/* CTA buttons stacked */}
+              <div className="flex flex-col gap-3 mb-8">
+                <a
+                  href={CHECKOUT_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#5ED6CE]/20 hover:bg-[#5ED6CE]/30 rounded-lg transition-all cursor-pointer group w-fit"
+                >
+                  <span className="text-sm md:text-base font-bold text-[#5ED6CE]">{t.tqPage.hero.trialBadge}</span>
+                  <span className="text-white/60">•</span>
+                  <span className="text-sm md:text-base text-white/80">{t.tqPage.hero.ctaSubtext}</span>
+                  <ArrowRight className="w-4 h-4 text-[#5ED6CE] group-hover:translate-x-1 transition-transform" />
+                </a>
 
-              <div className="flex flex-wrap items-center gap-4">
                 <button
                   onClick={() => setExpandedVideo('6a_-qRhVnPw')}
-                  className="flex items-center gap-2 px-6 py-3 border border-white/30 rounded-lg text-white hover:bg-white/10 transition-colors font-medium"
+                  className="inline-flex items-center gap-2 px-4 py-2 border border-white/30 rounded-lg text-white hover:bg-white/10 transition-colors w-fit"
                 >
-                  <Play className="w-5 h-5" />
-                  {t.tqPage.hero.ctaDemo}
+                  <Play className="w-4 h-4" />
+                  <span className="text-sm md:text-base font-medium">{t.tqPage.hero.ctaDemo}</span>
                 </button>
               </div>
             </motion.div>

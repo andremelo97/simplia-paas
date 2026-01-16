@@ -1035,6 +1035,8 @@
     "complete": {
       "title": "Você está Pronto!",
       "description": "Agora você conhece o básico do TQ. Comece criando sua primeira transcrição ou adicionando pacientes.",
+      "support_title": "Precisa de ajuda?",
+      "support_description": "Clique no ícone de suporte no menu superior para entrar em contato conosco a qualquer momento.",
       "start_transcription": "Iniciar Transcrição",
       "add_patient": "Adicionar Paciente"
     },

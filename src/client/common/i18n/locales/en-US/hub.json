@@ -430,6 +430,8 @@
       "access_tq_description": "On the home page, you'll see application cards at the top. Click on the TQ card to open the application.",
       "access_tq_feature1": "Login is automatic — no need to enter credentials again",
       "access_tq_feature2": "TQ opens in a new tab, ready to use",
+      "support_title": "Need help?",
+      "support_description": "Click the support icon in the top menu to contact us anytime.",
       "go_settings": "Go to Settings",
       "go_home": "Go to Home"
     },

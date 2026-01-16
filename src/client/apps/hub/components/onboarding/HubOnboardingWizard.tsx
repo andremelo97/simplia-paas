@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   ArrowRight,
   Settings,
-  Rocket
+  Rocket,
+  Headphones
 } from 'lucide-react'
 
 export const HubOnboardingWizard: React.FC = () => {
@@ -269,7 +270,7 @@ export const HubOnboardingWizard: React.FC = () => {
           </div>
 
           {/* How to access TQ */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-6">
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-4">
             <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <Rocket className="w-5 h-5 text-[#B725B7]" />
               {t('onboarding.complete.access_tq_title', 'How to access TQ')}
@@ -289,6 +290,23 @@ export const HubOnboardingWizard: React.FC = () => {
                 {t('onboarding.complete.access_tq_feature2', 'TQ opens in a new tab, ready to use')}
               </li>
             </ul>
+          </div>
+
+          {/* Support */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#5ED6CE]/20 flex items-center justify-center flex-shrink-0">
+                <Headphones className="w-5 h-5 text-[#5ED6CE]" />
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-900 text-sm">
+                  {t('onboarding.complete.support_title', 'Need help?')}
+                </h4>
+                <p className="text-xs text-gray-600">
+                  {t('onboarding.complete.support_description', 'Click the support icon in the top menu to contact us anytime.')}
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="flex items-center justify-center gap-3">

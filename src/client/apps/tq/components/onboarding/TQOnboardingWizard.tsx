@@ -19,7 +19,8 @@ import {
   Palette,
   ExternalLink,
   Rocket,
-  Bot
+  Bot,
+  Headphones
 } from 'lucide-react'
 
 export const TQOnboardingWizard: React.FC = () => {
@@ -586,11 +587,28 @@ export const TQOnboardingWizard: React.FC = () => {
           <h3 className="text-xl font-bold text-gray-900 mb-2">
             {t('onboarding.complete.title', 'You\'re Ready!')}
           </h3>
-          <p className="text-gray-600 max-w-md mx-auto mb-6 text-sm">
+          <p className="text-gray-600 max-w-md mx-auto mb-4 text-sm">
             {t('onboarding.complete.description',
               'You now know the basics of TQ. Start by creating your first transcription or adding patients.'
             )}
           </p>
+
+          {/* Support */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 max-w-md mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#5ED6CE]/20 flex items-center justify-center flex-shrink-0">
+                <Headphones className="w-5 h-5 text-[#5ED6CE]" />
+              </div>
+              <div className="text-left">
+                <h4 className="font-medium text-gray-900 text-sm">
+                  {t('onboarding.complete.support_title', 'Need help?')}
+                </h4>
+                <p className="text-xs text-gray-600">
+                  {t('onboarding.complete.support_description', 'Click the support icon in the top menu to contact us anytime.')}
+                </p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex items-center justify-center gap-3">
             <button

@@ -37,6 +37,8 @@
     "contact_email": "Envie um e-mail para {{email}}",
     "visit_website": "Conheça a LivoCare.ai",
     "email_not_registered": "E-mail não cadastrado. Conheça mais em",
+    "subscription_cancelled": "Sua assinatura foi cancelada.",
+    "renew_subscription": "Renovar assinatura",
     "integration_title": "Quer conectar o LivoCare aos seus sistemas?",
     "integration_description": "Desenvolvemos integrações e automações personalizadas para sua operação. API própria + time especializado.",
     "integration_cta": "Entre em contato",

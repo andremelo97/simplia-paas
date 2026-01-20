@@ -14,6 +14,13 @@ class InvalidTenantError extends Error {
   }
 }
 
+class TenantCancelledError extends Error {
+  constructor(tenantId) {
+    super(`Tenant subscription cancelled: ${tenantId}`);
+    this.name = 'TenantCancelledError';
+  }
+}
+
 class TenantMiddleware {
   constructor(options = {}) {
     this.options = {
@@ -186,30 +193,43 @@ class TenantMiddleware {
    */
   async resolveTenant(identifier, source, userAgent = 'unknown') {
     const inputFormat = /^\d+$/.test(identifier) ? 'numeric' : 'slug';
-    
+
     // Check if identifier is numeric (preferred)
     if (inputFormat === 'numeric') {
       const numericId = parseInt(identifier, 10);
-      const query = 'SELECT * FROM tenants WHERE id = $1 AND active = true';
+      // First check if tenant exists at all (including cancelled)
+      const query = 'SELECT * FROM tenants WHERE id = $1';
       const result = await database.query(query, [numericId]);
-      
+
       if (result.rows.length === 0) {
         throw new TenantNotFoundError(`Tenant not found by ID: ${numericId}`);
       }
-      
-      return { tenant: result.rows[0], inputFormat, source };
+
+      const tenant = result.rows[0];
+      // Check if tenant is cancelled
+      if (tenant.status === 'cancelled' || !tenant.active) {
+        throw new TenantCancelledError(numericId);
+      }
+
+      return { tenant, inputFormat, source };
     }
-    
+
     // String identifier (slug/subdomain) - resolve to numeric ID
-    // Always resolve slug to ID via query for compatibility, no warnings
-    const query = 'SELECT * FROM tenants WHERE subdomain = $1 AND active = true';
+    // First check if tenant exists at all (including cancelled)
+    const query = 'SELECT * FROM tenants WHERE subdomain = $1';
     const result = await database.query(query, [identifier]);
-    
+
     if (result.rows.length === 0) {
       throw new TenantNotFoundError(`Tenant not found by slug: ${identifier}`);
     }
-    
-    return { tenant: result.rows[0], inputFormat, source };
+
+    const tenant = result.rows[0];
+    // Check if tenant is cancelled
+    if (tenant.status === 'cancelled' || !tenant.active) {
+      throw new TenantCancelledError(identifier);
+    }
+
+    return { tenant, inputFormat, source };
   }
 
   /**
@@ -350,7 +370,16 @@ class TenantMiddleware {
       next();
     } catch (error) {
       console.error('Tenant resolution error:', error);
-      
+
+      // Handle cancelled tenant specifically
+      if (error instanceof TenantCancelledError) {
+        return res.status(403).json({
+          error: 'SUBSCRIPTION_CANCELLED',
+          message: 'Your subscription has been cancelled. Please renew to continue.',
+          code: 'TENANT_CANCELLED'
+        });
+      }
+
       if (error instanceof TenantNotFoundError || error instanceof InvalidTenantError) {
         // Enhanced error responses with helpful guidance
         const errorResponse = {
@@ -393,3 +422,4 @@ module.exports = tenantMiddleware.middleware;
 module.exports.TenantMiddleware = TenantMiddleware;
 module.exports.TenantNotFoundError = TenantNotFoundError;
 module.exports.InvalidTenantError = InvalidTenantError;
+module.exports.TenantCancelledError = TenantCancelledError;

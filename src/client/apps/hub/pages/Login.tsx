@@ -381,6 +381,18 @@ export const Login: React.FC = () => {
                         livocare.ai
                       </a>
                     </span>
+                  ) : error?.code === 'TENANT_CANCELLED' ? (
+                    <span>
+                      {t('login.subscription_cancelled')}{' '}
+                      <a
+                        href="https://www.livocare.ai/tq"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline font-medium hover:text-red-800"
+                      >
+                        {t('login.renew_subscription')}
+                      </a>
+                    </span>
                   ) : (
                     error?.message
                   )}

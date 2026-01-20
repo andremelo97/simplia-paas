@@ -37,6 +37,8 @@
     "contact_email": "Send an email to {{email}}",
     "visit_website": "Discover LivoCare",
     "email_not_registered": "Email not registered. Learn more at",
+    "subscription_cancelled": "Your subscription has been cancelled.",
+    "renew_subscription": "Renew subscription",
     "integration_title": "Want to connect LivoCare to your systems?",
     "integration_description": "We develop custom integrations and automations for your operation. Built-in API + expert team.",
     "integration_cta": "Get in touch",

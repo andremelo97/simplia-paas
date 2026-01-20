@@ -385,12 +385,10 @@ export const Login: React.FC = () => {
                     <span>
                       {t('login.subscription_cancelled')}{' '}
                       <a
-                        href="https://www.livocare.ai/tq"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="mailto:admin@livocare.ai"
                         className="underline font-medium hover:text-red-800"
                       >
-                        {t('login.renew_subscription')}
+                        admin@livocare.ai
                       </a>
                     </span>
                   ) : (

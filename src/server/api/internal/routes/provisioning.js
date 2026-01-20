@@ -957,14 +957,6 @@ router.put('/cancel', async (req, res) => {
       `;
       await client.query(deactivateAccessQuery, [tenant.id]);
 
-      // 4. Disable transcription config
-      const disableConfigQuery = `
-        UPDATE public.tenant_transcription_config
-        SET enabled = false, updated_at = NOW()
-        WHERE tenant_id_fk = $1
-      `;
-      await client.query(disableConfigQuery, [tenant.id]);
-
       // Commit transaction
       await client.query('COMMIT');
 

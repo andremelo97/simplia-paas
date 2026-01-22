@@ -616,38 +616,22 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    // If status changed to 'active', reactivate users, apps, and access
+    // If status changed to 'active', reactivate users only
+    // Apps and access are managed separately via /tenants/:id/licenses
     const wasReactivated = status === 'active' && currentTenant.status !== 'active';
     if (wasReactivated) {
-      // Reactivate all users
       const reactivateUsersQuery = `
         UPDATE public.users
         SET status = 'active', active = true, updated_at = NOW()
         WHERE tenant_id_fk = $1
       `;
       await database.query(reactivateUsersQuery, [tenantId]);
-
-      // Reactivate all tenant applications
-      const reactivateAppsQuery = `
-        UPDATE public.tenant_applications
-        SET active = true, updated_at = NOW()
-        WHERE tenant_id_fk = $1
-      `;
-      await database.query(reactivateAppsQuery, [tenantId]);
-
-      // Reactivate all user application access
-      const reactivateAccessQuery = `
-        UPDATE public.user_application_access
-        SET active = true
-        WHERE tenant_id_fk = $1
-      `;
-      await database.query(reactivateAccessQuery, [tenantId]);
     }
 
     res.json({
       meta: {
         code: wasReactivated ? "TENANT_REACTIVATED" : "TENANT_UPDATED",
-        message: wasReactivated ? "Tenant reactivated successfully. All users, applications, and access have been restored." : "Tenant updated successfully."
+        message: wasReactivated ? "Tenant reactivated successfully. Users have been reactivated. Manage app licenses separately." : "Tenant updated successfully."
       },
       data: tenant.toJSON()
     });
@@ -2405,7 +2389,7 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
     try {
       // Find license with lock to prevent race conditions
       const license = await TenantApplication.findByTenantAndApplicationWithLock(tenantId, application.id);
-      if (!license || license.status !== 'active') {
+      if (!license || license.status !== 'active' || !license.active) {
         await database.query('ROLLBACK');
         return res.status(422).json({
           error: 'Validation Error',
@@ -2413,7 +2397,8 @@ router.post('/:id/users/:userId/applications/:appSlug/grant', async (req, res) =
           details: {
             reason: 'LICENSE_INACTIVE',
             applicationSlug: appSlug,
-            status: license?.status || 'not_found'
+            status: license?.status || 'not_found',
+            active: license?.active ?? false
           }
         });
       }
@@ -2840,11 +2825,11 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
     // Calculate usage statistics
     const usedSeats = users.filter(user => user.granted).length;
     
-    // Get license info for seat limits
+    // Get license info for seat limits (don't filter by active - we want to show all licenses for display)
     const licenseQuery = `
-      SELECT seats_purchased, seats_used
+      SELECT seats_purchased, seats_used, status, active
       FROM tenant_applications
-      WHERE tenant_id_fk = $1 AND application_id_fk = $2 AND active = true
+      WHERE tenant_id_fk = $1 AND application_id_fk = $2
     `;
     const licenseResult = await database.query(licenseQuery, [tenantId, application.id]);
     const license = licenseResult.rows[0];
@@ -2855,11 +2840,18 @@ router.get('/:id/applications/:appSlug/users', async (req, res) => {
       available: license && license.seats_purchased ? Math.max(0, license.seats_purchased - license.seats_used) : null
     };
 
+    // Include license status for frontend display
+    const licenseInfo = license ? {
+      status: license.status,
+      active: license.active
+    } : null;
+
     res.json({
       success: true,
       data: {
         users,
         usage,
+        license: licenseInfo,
         pagination: {
           total,
           limit,
@@ -2978,10 +2970,25 @@ router.put('/:id/users/:userId/applications/:appSlug/reactivate', async (req, re
       });
     }
 
+    // Verify license is active before allowing reactivation
+    const license = await TenantApplication.findByTenantAndApplication(tenantId, application.id);
+    if (!license || license.status !== 'active' || !license.active) {
+      return res.status(422).json({
+        error: 'Validation Error',
+        message: `License for '${appSlug}' is not active for this tenant`,
+        details: {
+          reason: 'LICENSE_INACTIVE',
+          applicationSlug: appSlug,
+          status: license?.status || 'not_found',
+          active: license?.active ?? false
+        }
+      });
+    }
+
     // Find existing access record
     const existingAccess = await UserApplicationAccess.findByUserAndApp(
-      targetUserId, 
-      application.id, 
+      targetUserId,
+      application.id,
       tenantId
     );
 

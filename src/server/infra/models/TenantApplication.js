@@ -215,11 +215,17 @@ class TenantApplication {
    * Update tenant application license
    */
   async update(updates) {
-    const allowedUpdates = ['status', 'expires_at', 'seats_purchased', 'trial_used'];
+    const allowedUpdates = ['status', 'expires_at', 'seats_purchased', 'trial_used', 'active'];
+
+    // Auto-sync active field based on status
+    if (updates.status) {
+      updates.active = updates.status === 'active';
+    }
+
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
-    
+
     for (const [key, value] of Object.entries(updates)) {
       if (allowedUpdates.includes(key) && value !== undefined) {
         updateFields.push(`${key} = $${paramIndex}`);

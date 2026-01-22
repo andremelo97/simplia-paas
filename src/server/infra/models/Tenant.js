@@ -87,7 +87,7 @@ class Tenant {
   static async findById(id) {
     const query = `
       SELECT * FROM tenants
-      WHERE id = $1 AND active = true
+      WHERE id = $1
     `;
     const result = await database.query(query, [id]);
     return result.rows[0] ? new Tenant(result.rows[0]) : null;
@@ -224,7 +224,7 @@ class Tenant {
       FROM tenants t
       LEFT JOIN tenant_applications ta ON t.id = ta.tenant_id_fk AND ta.active = true
       LEFT JOIN applications a ON ta.application_id_fk = a.id
-      WHERE t.id = $1 AND t.active = true
+      WHERE t.id = $1
       GROUP BY t.id
     `;
     const result = await database.query(query, [id]);

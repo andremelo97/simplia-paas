@@ -151,7 +151,7 @@ export function TQPage() {
                 </a>
 
                 <button
-                  onClick={() => setExpandedVideo('6a_-qRhVnPw')}
+                  onClick={() => setExpandedVideo('m6tJfyuh-_Q')}
                   className="inline-flex items-center gap-2 px-4 py-2 border border-white/30 rounded-lg text-white hover:bg-white/10 transition-colors w-fit"
                 >
                   <Play className="w-4 h-4" />
@@ -169,10 +169,10 @@ export function TQPage() {
             >
               <div
                 className="aspect-video bg-black rounded-xl border border-white/10 overflow-hidden cursor-pointer group relative shadow-2xl"
-                onClick={() => setExpandedVideo('6a_-qRhVnPw')}
+                onClick={() => setExpandedVideo('m6tJfyuh-_Q')}
               >
                 <img
-                  src="https://img.youtube.com/vi/6a_-qRhVnPw/maxresdefault.jpg"
+                  src="https://img.youtube.com/vi/m6tJfyuh-_Q/maxresdefault.jpg"
                   alt="TQ Tutorial"
                   className="w-full h-full object-cover"
                   loading="lazy"

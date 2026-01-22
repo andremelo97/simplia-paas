@@ -166,7 +166,7 @@ router.get('/users', async (req, res) => {
  *         name: status
  *         schema:
  *           type: string
- *           enum: [active, trial, expired, suspended, inactive]
+ *           enum: [active, trial, expired, suspended, inactive, cancelled]
  *         description: Filter by tenant status
  *       - in: query
  *         name: limit
@@ -547,7 +547,7 @@ router.post('/', async (req, res) => {
  *                 example: "Acme Corporation Updated"
  *               status:
  *                 type: string
- *                 enum: [active, trial, expired, suspended, inactive]
+ *                 enum: [active, trial, expired, suspended, inactive, cancelled]
  *                 example: "active"
  *     responses:
  *       200:
@@ -576,12 +576,22 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, status, description, timezone } = req.body;
+    const tenantId = parseInt(id);
 
     // Reject timezone changes explicitly
     if (timezone !== undefined) {
       return res.status(400).json({
         error: 'Validation Error',
         message: 'Timezone cannot be changed after tenant creation'
+      });
+    }
+
+    // Get current tenant to check if status is changing
+    const currentTenant = await Tenant.findById(tenantId);
+    if (!currentTenant) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Tenant not found'
       });
     }
 
@@ -597,8 +607,8 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    const tenant = await Tenant.update(parseInt(id), updateData);
-    
+    const tenant = await Tenant.update(tenantId, updateData);
+
     if (!tenant) {
       return res.status(404).json({
         error: 'Not Found',
@@ -606,10 +616,21 @@ router.put('/:id', async (req, res) => {
       });
     }
 
+    // If status changed to 'active', reactivate all users
+    const wasReactivated = status === 'active' && currentTenant.status !== 'active';
+    if (wasReactivated) {
+      const reactivateUsersQuery = `
+        UPDATE public.users
+        SET status = 'active', active = true, updated_at = NOW()
+        WHERE tenant_id_fk = $1
+      `;
+      await database.query(reactivateUsersQuery, [tenantId]);
+    }
+
     res.json({
       meta: {
-        code: "TENANT_UPDATED",
-        message: "Tenant updated successfully."
+        code: wasReactivated ? "TENANT_REACTIVATED" : "TENANT_UPDATED",
+        message: wasReactivated ? "Tenant reactivated successfully. All users have been reactivated." : "Tenant updated successfully."
       },
       data: tenant.toJSON()
     });

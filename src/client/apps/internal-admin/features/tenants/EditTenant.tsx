@@ -11,7 +11,7 @@ import { AddressFormValues, ContactFormValues } from './types'
 
 interface TenantFormData {
   name: string
-  status: 'active' | 'inactive'
+  status: 'active' | 'inactive' | 'cancelled'
   timezone?: string  // Read-only display
 }
 
@@ -133,7 +133,7 @@ export const EditTenantPage: React.FC = () => {
         // Initialize form data
         const coreData: TenantFormData = {
           name: tenant.name || '',
-          status: (tenant.status === 'active' || tenant.status === 'inactive') ? tenant.status : 'active',
+          status: (tenant.status === 'active' || tenant.status === 'inactive' || tenant.status === 'cancelled') ? tenant.status : 'active',
           timezone: tenant.timezone || undefined
         }
 
@@ -558,13 +558,23 @@ export const EditTenantPage: React.FC = () => {
               </div>
 
               <div className="pt-4 border-t border-gray-200">
-                <Checkbox
+                <Select
                   id="tenant-status"
-                  checked={formData.status === 'active'}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.checked ? 'active' : 'inactive' }))}
-                  label="Active"
+                  label="Status"
+                  value={formData.status}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' | 'cancelled' }))}
+                  options={[
+                    { value: 'active', label: 'Active' },
+                    { value: 'inactive', label: 'Inactive' },
+                    { value: 'cancelled', label: 'Cancelled' }
+                  ]}
                   disabled={isSubmitting}
                 />
+                {formData.status === 'cancelled' && (
+                  <p className="text-sm text-amber-600 mt-2">
+                    ⚠️ Changing status to Active will reactivate this tenant's access
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

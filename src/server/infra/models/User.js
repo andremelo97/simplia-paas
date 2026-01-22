@@ -232,11 +232,17 @@ class User {
    * Update user (using numeric tenant FK)
    */
   async update(updates) {
-    const allowedUpdates = ['first_name', 'last_name', 'role', 'status'];
+    const allowedUpdates = ['first_name', 'last_name', 'role', 'status', 'active'];
+
+    // Auto-sync active field based on status
+    if (updates.status) {
+      updates.active = updates.status === 'active';
+    }
+
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
-    
+
     for (const [key, value] of Object.entries(updates)) {
       if (allowedUpdates.includes(key) && value !== undefined) {
         updateFields.push(`${key} = $${paramIndex}`);
@@ -244,11 +250,11 @@ class User {
         paramIndex++;
       }
     }
-    
+
     if (updateFields.length === 0) {
       return this;
     }
-    
+
     updateFields.push(`updated_at = NOW()`);
     
     const query = `

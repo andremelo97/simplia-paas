@@ -151,9 +151,15 @@ class Tenant {
 
   // Atualizar tenant
   static async update(id, updates) {
-    const allowedFields = ['name', 'subdomain', 'schema_name', 'status'];
+    const allowedFields = ['name', 'subdomain', 'schema_name', 'status', 'active'];
+
+    // Auto-sync active field based on status
+    if (updates.status) {
+      updates.active = updates.status === 'active';
+    }
+
     const fields = Object.keys(updates).filter(key => allowedFields.includes(key));
-    
+
     if (fields.length === 0) {
       throw new Error('No valid fields to update');
     }
@@ -162,14 +168,14 @@ class Tenant {
     const values = [id, ...fields.map(field => updates[field])];
 
     const query = `
-      UPDATE tenants 
-      SET ${setClause}
-      WHERE id = $1 AND active = true
+      UPDATE tenants
+      SET ${setClause}, updated_at = NOW()
+      WHERE id = $1
       RETURNING *
     `;
-    
+
     const result = await database.query(query, values);
-    return result.rows[0];
+    return result.rows[0] ? new Tenant(result.rows[0]) : null;
   }
 
   // Desativar tenant (soft delete)

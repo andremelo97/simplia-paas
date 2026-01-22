@@ -43,7 +43,8 @@
     "inactive": "Inativo",
     "suspended": "Suspenso",
     "revoked": "Revogado",
-    "expired": "Expirado"
+    "expired": "Expirado",
+    "cancelled": "Cancelado"
   },
   "feedback": {
     "LOGIN_SUCCESS": {

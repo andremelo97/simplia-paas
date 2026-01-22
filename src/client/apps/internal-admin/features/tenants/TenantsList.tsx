@@ -20,7 +20,7 @@ export const TenantsList: React.FC = () => {
   const [tenants, setTenants] = useState<Tenant[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive' | 'cancelled'>('all')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   
@@ -110,7 +110,7 @@ export const TenantsList: React.FC = () => {
   }
 
   const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')
+    setStatusFilter(e.target.value as 'all' | 'active' | 'inactive' | 'cancelled')
     setCurrentPage(1)
   }
 
@@ -162,7 +162,8 @@ export const TenantsList: React.FC = () => {
                   options={[
                     { value: 'all', label: 'All' },
                     { value: 'active', label: 'Active' },
-                    { value: 'inactive', label: 'Inactive' }
+                    { value: 'inactive', label: 'Inactive' },
+                    { value: 'cancelled', label: 'Cancelled' }
                   ]}
                 />
               </div>

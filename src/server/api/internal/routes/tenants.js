@@ -616,21 +616,38 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    // If status changed to 'active', reactivate all users
+    // If status changed to 'active', reactivate users, apps, and access
     const wasReactivated = status === 'active' && currentTenant.status !== 'active';
     if (wasReactivated) {
+      // Reactivate all users
       const reactivateUsersQuery = `
         UPDATE public.users
         SET status = 'active', active = true, updated_at = NOW()
         WHERE tenant_id_fk = $1
       `;
       await database.query(reactivateUsersQuery, [tenantId]);
+
+      // Reactivate all tenant applications
+      const reactivateAppsQuery = `
+        UPDATE public.tenant_applications
+        SET active = true, updated_at = NOW()
+        WHERE tenant_id_fk = $1
+      `;
+      await database.query(reactivateAppsQuery, [tenantId]);
+
+      // Reactivate all user application access
+      const reactivateAccessQuery = `
+        UPDATE public.user_application_access
+        SET active = true
+        WHERE tenant_id_fk = $1
+      `;
+      await database.query(reactivateAccessQuery, [tenantId]);
     }
 
     res.json({
       meta: {
         code: wasReactivated ? "TENANT_REACTIVATED" : "TENANT_UPDATED",
-        message: wasReactivated ? "Tenant reactivated successfully. All users have been reactivated." : "Tenant updated successfully."
+        message: wasReactivated ? "Tenant reactivated successfully. All users, applications, and access have been restored." : "Tenant updated successfully."
       },
       data: tenant.toJSON()
     });

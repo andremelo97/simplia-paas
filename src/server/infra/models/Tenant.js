@@ -96,23 +96,23 @@ class Tenant {
   // Listar todos os tenants com filtros e paginação
   static async findAll(options = {}) {
     const { status, limit = 50, offset = 0, search } = options;
-    
-    let query = 'SELECT * FROM tenants WHERE active = true';
+
+    let query = 'SELECT * FROM tenants WHERE 1=1';
     const params = [];
-    
+
     if (status) {
       query += ' AND status = $' + (params.length + 1);
       params.push(status);
     }
-    
+
     if (search) {
       query += ' AND (name ILIKE $' + (params.length + 1) + ' OR subdomain ILIKE $' + (params.length + 1) + ')';
       params.push(`%${search}%`);
     }
-    
+
     query += ' ORDER BY created_at DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
     params.push(limit, offset);
-    
+
     const result = await database.query(query, params);
     return result.rows.map(row => new Tenant(row));
   }
@@ -120,20 +120,20 @@ class Tenant {
   // Contar tenants com filtros
   static async count(options = {}) {
     const { status, search } = options;
-    
-    let query = 'SELECT COUNT(*) as count FROM tenants WHERE active = true';
+
+    let query = 'SELECT COUNT(*) as count FROM tenants WHERE 1=1';
     const params = [];
-    
+
     if (status) {
       query += ' AND status = $' + (params.length + 1);
       params.push(status);
     }
-    
+
     if (search) {
       query += ' AND (name ILIKE $' + (params.length + 1) + ' OR subdomain ILIKE $' + (params.length + 1) + ')';
       params.push(`%${search}%`);
     }
-    
+
     const result = await database.query(query, params);
     return parseInt(result.rows[0].count);
   }

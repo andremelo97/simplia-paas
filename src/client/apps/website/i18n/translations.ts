@@ -18,7 +18,8 @@ export const translations = {
       integrations: 'Integrações',
       tqDescription: 'Transcreva consultas e gere cotações automaticamente',
       access: 'Acessar',
-      knowApp: 'Conhecer App'
+      knowApp: 'Conhecer App',
+      startTrial: 'Testar Grátis'
     },
     hero: {
       tagline: 'Onde cuidado encontra conversão',
@@ -404,7 +405,8 @@ export const translations = {
       integrations: 'Integrations',
       tqDescription: 'Transcribe consultations and generate quotes automatically',
       access: 'Sign In',
-      knowApp: 'Discover App'
+      knowApp: 'Discover App',
+      startTrial: 'Try Free'
     },
     hero: {
       tagline: 'Where care meets conversion',

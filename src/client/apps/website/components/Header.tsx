@@ -203,10 +203,10 @@ export function Header() {
 
           {/* Right side buttons */}
           <div className="flex items-center gap-3">
-            {/* Language Toggle - Always visible */}
+            {/* Language Toggle - Desktop only */}
             <button
               onClick={toggleLanguage}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${
+              className={`hidden lg:flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${
                 isScrolled || !isProductPage
                   ? 'bg-gray-100 hover:bg-gray-200'
                   : 'bg-white/10 hover:bg-white/20'
@@ -243,6 +243,18 @@ export function Header() {
               >
                 {t.nav.knowApp}
               </button>
+            )}
+
+            {/* CTA button - Product pages only (visible on all sizes) */}
+            {isProductPage && (
+              <a
+                href="https://buy.stripe.com/9B600icG5eRJ9Vh8G9awo01"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 rounded-full bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg"
+              >
+                {t.nav.startTrial}
+              </a>
             )}
 
             {/* Hamburger Menu - Mobile and Tablet (below lg) */}
@@ -379,6 +391,17 @@ export function Header() {
                   </button>
                 </>
               )}
+
+              {/* Language Toggle - Mobile */}
+              <div className="border-t border-gray-100 my-2" />
+              <button
+                onClick={toggleLanguage}
+                className="mx-4 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+              >
+                <span className={language === 'pt-BR' ? 'text-gray-900' : 'text-gray-400'}>PT</span>
+                <span className="text-gray-300">|</span>
+                <span className={language === 'en' ? 'text-gray-900' : 'text-gray-400'}>EN</span>
+              </button>
             </div>
           </div>
         )}

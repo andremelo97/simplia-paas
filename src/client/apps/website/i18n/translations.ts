@@ -6,9 +6,11 @@ export const translations = {
       features: 'Recursos',
       pricing: 'Preço',
       contact: 'Contato',
+      demo: 'Demonstração',
       howItWorks: 'Como Funciona',
       forWhom: 'Para Quem',
       testimonials: 'Depoimentos',
+      results: 'Resultados',
       products: 'Produtos',
       app: 'App',
       licenses: 'Licenças',
@@ -77,7 +79,7 @@ export const translations = {
         description: 'Grave a consulta. O TQ transcreve e organiza tudo. Seu paciente recebe a cotação pronta para decidir.',
         cta1: 'Testar grátis por 7 dias',
         cta2: 'Acessar TQ',
-        ctaSubtext: 'Sem cartão de crédito',
+        ctaSubtext: 'sem compromisso',
         videoPlaceholder: 'Vídeo em breve',
         priceFrom: 'a partir de',
         trialBadge: '7 dias grátis',
@@ -144,7 +146,7 @@ export const translations = {
         monthly: '/mês',
         trial: {
           badge: 'Teste Grátis',
-          title: 'Experimente por 7 dias grátis',
+          title: 'Teste grátis por 7 dias',
           description: '20 horas de transcrição para testar. Sem cartão de crédito.',
           cta: 'Começar Teste Grátis',
           features: ['7 dias grátis', '20h de transcrição', 'Sem cartão']
@@ -158,10 +160,10 @@ export const translations = {
           users: '1 Admin',
           features: [
             '60 horas de transcrição/mês',
-            '1 licença Admin inclusa',
-            'Transcrição multilíngue (PT-BR e EN)',
-            'Suporte completo (criação de templates)',
             'Permite exceder limite mensal',
+            '1 licença Admin inclusa (licenças adicionais disponíveis)',
+            'Transcrição multilíngue',
+            'Suporte completo (criação de templates)',
             'Cancelamento a qualquer momento'
           ]
         },
@@ -180,10 +182,9 @@ export const translations = {
         subtext: 'Sem cartão, sem compromisso'
       },
       howItWorks: {
-        title: 'Como funciona?',
-        problemTitle: 'Depois da consulta, começa o trabalho que ninguém vê.',
-        problemDescription: 'Você explica o tratamento, atende o paciente, mas depois precisa escrever tudo de novo, montar o plano e formatar orçamento. Enquanto isso, o paciente esfria.',
-        solutionTitle: 'O TQ faz isso por você, automaticamente.'
+        badge: 'Como Funciona',
+        title: 'Veja o TQ em ação',
+        description: 'Cada funcionalidade foi pensada para economizar seu tempo e aumentar suas conversões.'
       },
       integrations: {
         badge: 'Integrações & Automações',
@@ -230,12 +231,9 @@ export const translations = {
         badge: 'Resultados',
         cards: [
           { metric: '10h', label: 'economizadas por semana' },
-          { metric: '100%', label: 'planos padronizados' },
           { metric: '2min', label: 'para criar orçamento' },
           { metric: '2x', label: 'mais orçamentos enviados' },
           { metric: '-90%', label: 'erros em orçamentos' },
-          { metric: '-50%', label: 'retrabalho da equipe' },
-          { metric: '+45%', label: 'aprovação de pacientes' },
           { metric: '+30%', label: 'taxa de fechamento' },
           { metric: '24/7', label: 'acesso do paciente' }
         ]
@@ -394,9 +392,11 @@ export const translations = {
       features: 'Features',
       pricing: 'Pricing',
       contact: 'Contact',
+      demo: 'Demo',
       howItWorks: 'How It Works',
       forWhom: 'For Whom',
       testimonials: 'Testimonials',
+      results: 'Results',
       products: 'Products',
       app: 'App',
       licenses: 'Licenses',
@@ -465,7 +465,7 @@ export const translations = {
         description: 'Record the consultation. TQ transcribes and organizes everything. Your patient receives the quote ready to decide.',
         cta1: 'Try free for 7 days',
         cta2: 'Access TQ',
-        ctaSubtext: 'No credit card required',
+        ctaSubtext: 'no commitment',
         videoPlaceholder: 'Video coming soon',
         priceFrom: 'starting at',
         trialBadge: '7 days free',
@@ -546,10 +546,10 @@ export const translations = {
           users: '1 Admin',
           features: [
             '60 transcription hours/month',
-            '1 Admin license included',
-            'Multilingual transcription (PT-BR and EN)',
-            'Full support (template creation)',
             'Allows exceeding monthly limit',
+            '1 Admin license included (additional licenses available)',
+            'Multilingual transcription',
+            'Full support (template creation)',
             'Cancel anytime'
           ]
         },
@@ -568,10 +568,9 @@ export const translations = {
         subtext: 'No credit card, no commitment'
       },
       howItWorks: {
-        title: 'How it works?',
-        problemTitle: 'After the consultation, the invisible work begins.',
-        problemDescription: 'You explain the treatment, attend the patient, but then you need to write everything again, create the plan and format the quote. Meanwhile, the patient cools off.',
-        solutionTitle: 'TQ does this for you, automatically.'
+        badge: 'How It Works',
+        title: 'See TQ in action',
+        description: 'Each feature was designed to save your time and increase your conversions.'
       },
       integrations: {
         badge: 'Integrations & Automations',
@@ -618,12 +617,9 @@ export const translations = {
         badge: 'Results',
         cards: [
           { metric: '10h', label: 'saved per week' },
-          { metric: '100%', label: 'standardized plans' },
           { metric: '2min', label: 'to create a quote' },
           { metric: '2x', label: 'more quotes sent' },
           { metric: '-90%', label: 'quote errors' },
-          { metric: '-50%', label: 'team rework' },
-          { metric: '+45%', label: 'patient approval' },
           { metric: '+30%', label: 'closing rate' },
           { metric: '24/7', label: 'patient access' }
         ]

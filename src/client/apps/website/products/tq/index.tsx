@@ -2,22 +2,19 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '../../i18n/LanguageContext'
 import { Contact } from '../../components/Contact'
-import { Sparkles, Play, Check, ArrowRight, Gift, X, Clock, ClipboardList, Send, TrendingUp, Users, Code, Plug, Wrench, ChevronLeft, ChevronRight, MessageCircle, Zap, ShieldCheck, ThumbsUp, Globe, Quote } from 'lucide-react'
+import { Sparkles, Play, Check, ArrowRight, Gift, X, Clock, ClipboardList, Send, TrendingUp, Users, Code, Plug, Wrench, ChevronLeft, ChevronRight, Zap, ShieldCheck, ThumbsUp, Globe, Quote, Mic, FileText, Receipt, Maximize2 } from 'lucide-react'
 
 // Stripe Checkout URL (Production) - Single product with 7-day trial built-in
 const CHECKOUT_URL = 'https://buy.stripe.com/9B600icG5eRJ9Vh8G9awo01'
 
-// Benefits cards icons and gradients (labels come from translations)
+// Benefits cards icons and gradients (purple and pink alternating - green is tertiary)
 const benefitsCardStyles = [
-  { icon: Clock, gradient: 'from-[#5ED6CE] to-[#0a8a80]' },
-  { icon: ClipboardList, gradient: 'from-[#B725B7] to-[#E91E63]' },
-  { icon: Zap, gradient: 'from-[#8B5CF6] to-[#6D28D9]' },
-  { icon: Send, gradient: 'from-[#3B82F6] to-[#1D4ED8]' },
-  { icon: ShieldCheck, gradient: 'from-[#EC4899] to-[#BE185D]' },
-  { icon: Users, gradient: 'from-[#F59E0B] to-[#D97706]' },
-  { icon: ThumbsUp, gradient: 'from-[#14B8A6] to-[#0D9488]' },
-  { icon: TrendingUp, gradient: 'from-[#10B981] to-[#059669]' },
-  { icon: Globe, gradient: 'from-[#6366F1] to-[#4F46E5]' },
+  { icon: Clock, gradient: 'from-[#B725B7] to-[#8B1A8B]' },
+  { icon: Zap, gradient: 'from-[#E91E63] to-[#C2185B]' },
+  { icon: Send, gradient: 'from-[#B725B7] to-[#8B1A8B]' },
+  { icon: ShieldCheck, gradient: 'from-[#E91E63] to-[#C2185B]' },
+  { icon: TrendingUp, gradient: 'from-[#B725B7] to-[#8B1A8B]' },
+  { icon: Globe, gradient: 'from-[#E91E63] to-[#C2185B]' },
 ]
 
 // Integrations icons mapping
@@ -102,13 +99,26 @@ export function TQPage() {
                 <X className="w-8 h-8" />
               </button>
               <div className="aspect-video w-full">
-                <iframe
-                  className="w-full h-full rounded-lg"
-                  src={`https://www.youtube.com/embed/${expandedVideo}?autoplay=1`}
-                  title="TQ Tutorial"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+                {expandedVideo.startsWith('video-') ? (
+                  <video
+                    className="w-full h-full rounded-lg"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls
+                  >
+                    <source src={`/${expandedVideo}.mp4`} type="video/mp4" />
+                  </video>
+                ) : (
+                  <iframe
+                    className="w-full h-full rounded-lg"
+                    src={`https://www.youtube.com/embed/${expandedVideo}?autoplay=1`}
+                    title="TQ Tutorial"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -116,7 +126,7 @@ export function TQPage() {
       </AnimatePresence>
 
       {/* Hero Section */}
-      <section className="pt-24 pb-16 bg-gradient-to-br from-[#1a0a1a] via-[#2d1035] to-[#1a0a2e]">
+      <section className="pt-24 pb-24 bg-gradient-to-br from-[#1a0a1a] via-[#2d1035] to-[#1a0a2e]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left - Text Content */}
@@ -137,12 +147,12 @@ export function TQPage() {
               </p>
 
               {/* CTA buttons stacked */}
-              <div className="flex flex-col gap-3 mb-8">
+              <div className="flex flex-col gap-3 mb-8 w-fit">
                 <a
                   href={CHECKOUT_URL}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#5ED6CE]/20 hover:bg-[#5ED6CE]/30 rounded-lg transition-all cursor-pointer group w-fit"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#5ED6CE]/20 hover:bg-[#5ED6CE]/30 rounded-lg transition-all cursor-pointer group"
                 >
                   <span className="text-sm md:text-base font-bold text-[#5ED6CE]">{t.tqPage.hero.trialBadge}</span>
                   <span className="text-white/60">•</span>
@@ -152,7 +162,7 @@ export function TQPage() {
 
                 <button
                   onClick={() => setExpandedVideo('m6tJfyuh-_Q')}
-                  className="inline-flex items-center gap-2 px-4 py-2 border border-white/30 rounded-lg text-white hover:bg-white/10 transition-colors w-fit"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-white/30 rounded-lg text-white hover:bg-white/10 transition-colors"
                 >
                   <Play className="w-4 h-4" />
                   <span className="text-sm md:text-base font-medium">{t.tqPage.hero.ctaDemo}</span>
@@ -188,8 +198,179 @@ export function TQPage() {
         </div>
       </section>
 
+      {/* How It Works Section - Feature Cards */}
+      <section id="how-it-works" className="py-24 bg-gradient-to-b from-[#0a0a0f] to-[#12121a]">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <span className="inline-block px-4 py-2 bg-[#5ED6CE]/20 text-[#5ED6CE] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
+              {t.tqPage.howItWorks?.badge || 'Como Funciona'}
+            </span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6">
+              {t.tqPage.howItWorks?.title || 'Veja o TQ em ação'}
+            </h2>
+            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
+              {t.tqPage.howItWorks?.description || 'Cada funcionalidade foi pensada para economizar seu tempo e aumentar suas conversões.'}
+            </p>
+          </motion.div>
+
+          {/* TQ Features Grid */}
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            {/* Feature 1 - Transcription */}
+            <motion.div
+              className="group relative bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+            >
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative cursor-pointer"
+                onClick={() => setExpandedVideo('video-home-01')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-01.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-[#B725B7]/20 rounded-lg flex items-center justify-center">
+                    <Mic className="w-5 h-5 text-[#B725B7]" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{t.tqApp.features.transcription.title}</h3>
+                </div>
+                <p className="text-gray-400">{t.tqApp.features.transcription.description}</p>
+              </div>
+            </motion.div>
+
+            {/* Feature 2 - Templates */}
+            <motion.div
+              className="group relative bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative cursor-pointer"
+                onClick={() => setExpandedVideo('video-home-02')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-02.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-[#E91E63]/20 rounded-lg flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-[#E91E63]" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{t.tqApp.features.templates.title}</h3>
+                </div>
+                <p className="text-gray-400">{t.tqApp.features.templates.description}</p>
+              </div>
+            </motion.div>
+
+            {/* Feature 3 - Quotes */}
+            <motion.div
+              className="group relative bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative cursor-pointer"
+                onClick={() => setExpandedVideo('video-home-03')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-03.mp4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-[#5ED6CE]/20 rounded-lg flex items-center justify-center">
+                    <Receipt className="w-5 h-5 text-[#5ED6CE]" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{t.tqApp.features.quotes.title}</h3>
+                </div>
+                <p className="text-gray-400">{t.tqApp.features.quotes.description}</p>
+              </div>
+            </motion.div>
+
+            {/* Feature 4 - Reports */}
+            <motion.div
+              className="group relative bg-white/5 backdrop-blur border border-white/10 rounded-2xl overflow-hidden"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <div
+                className="aspect-video bg-black flex items-center justify-center relative cursor-pointer"
+                onClick={() => setExpandedVideo('video-home-04')}
+              >
+                <video
+                  className="w-full h-full object-contain"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                >
+                  <source src="/video-home-04.MP4" type="video/mp4" />
+                </video>
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                  <Maximize2 className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-[#B725B7]/20 rounded-lg flex items-center justify-center">
+                    <ClipboardList className="w-5 h-5 text-[#B725B7]" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white">{t.tqApp.features.reports.title}</h3>
+                </div>
+                <p className="text-gray-400">{t.tqApp.features.reports.description}</p>
+              </div>
+            </motion.div>
+          </div>
+
+        </div>
+      </section>
+
       {/* Testimonials Carousel Section */}
-      <section id="testimonials" className="pt-24 pb-12 bg-white">
+      <section id="testimonials" className="py-24 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           {/* Header with Navigation */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-6">
@@ -233,13 +414,14 @@ export function TQPage() {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {t.tqPage.testimonials.items.map((testimonial: { quote: string; name: string; role: string; initials: string }, i: number) => {
-              const borderColors = ['border-[#B725B7]', 'border-[#5ED6CE]', 'border-[#8B5CF6]', 'border-[#3B82F6]']
-              const quoteColors = ['text-[#B725B7]/30', 'text-[#5ED6CE]/30', 'text-[#8B5CF6]/30', 'text-[#3B82F6]/30']
+              // Brand colors: purple and pink alternating (green is tertiary)
+              const borderColors = ['border-[#B725B7]', 'border-[#E91E63]', 'border-[#B725B7]', 'border-[#E91E63]']
+              const quoteColors = ['text-[#B725B7]/30', 'text-[#E91E63]/30', 'text-[#B725B7]/30', 'text-[#E91E63]/30']
               const gradients = [
-                'from-[#B725B7] to-[#E91E63]',
-                'from-[#5ED6CE] to-[#0a8a80]',
-                'from-[#8B5CF6] to-[#6D28D9]',
-                'from-[#3B82F6] to-[#1D4ED8]'
+                'from-[#B725B7] to-[#8B1A8B]',
+                'from-[#E91E63] to-[#C2185B]',
+                'from-[#B725B7] to-[#8B1A8B]',
+                'from-[#E91E63] to-[#C2185B]'
               ]
               return (
                 <motion.div
@@ -274,7 +456,7 @@ export function TQPage() {
         </div>
       </section>
 
-      {/* For Whom Section */}
+      {/* For Whom Section - COMMENTED OUT FOR NOW
       <section id="for-whom" className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           <motion.div
@@ -318,9 +500,10 @@ export function TQPage() {
           </div>
         </div>
       </section>
+      */}
 
       {/* Benefits Section - Carousel with Large Gradient Cards */}
-      <section className="py-24 bg-gradient-to-br from-gray-50 to-gray-100">
+      <section id="results" className="py-24 bg-gradient-to-br from-gray-50 to-gray-100">
         <div className="max-w-7xl mx-auto px-6">
           {/* Header with Navigation */}
           <div className="flex flex-col md:flex-row md:items-end md:justify-between mb-12 gap-6">
@@ -330,7 +513,7 @@ export function TQPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <span className="inline-block px-4 py-2 bg-[#5ED6CE]/10 text-[#5ED6CE] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
+              <span className="inline-block px-4 py-2 bg-[#B725B7]/10 text-[#B725B7] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
                 {t.tqPage.results.badge}
               </span>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900">
@@ -450,178 +633,140 @@ export function TQPage() {
               )
             })}
           </div>
-
-          {/* CTA Button */}
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <button
-              onClick={() => {
-                const element = document.getElementById('contact')
-                if (element) element.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="px-10 py-5 bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-bold text-lg rounded-xl hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl"
-            >
-              {t.tqPage.integrations?.cta || 'Falar com especialista'}
-            </button>
-          </motion.div>
         </div>
       </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-24 bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="max-w-4xl mx-auto px-6">
+        <div className="max-w-6xl mx-auto px-6">
+          {/* Header */}
           <motion.div
-            className="text-center mb-16"
+            className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-block px-4 py-2 bg-[#5ED6CE]/10 text-[#5ED6CE] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
+            <span className="inline-block px-4 py-2 bg-[#B725B7]/10 text-[#B725B7] text-sm font-bold uppercase tracking-wider rounded-full mb-4">
               {t.tqPage.pricing.badge}
             </span>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6">
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4">
               {t.tqPage.pricing.title}
             </h2>
-            <p className="text-xl md:text-2xl text-gray-600">
+            <p className="text-xl text-gray-600">
               {t.tqPage.pricing.subtitle}
             </p>
           </motion.div>
 
-          {/* Trial Banner */}
-          <motion.div
-            className="mb-10"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-[#5ED6CE] via-[#0a8a80] to-[#5ED6CE] p-[2px]">
-              <div className="relative rounded-xl bg-white px-6 py-6 md:px-8">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-[#5ED6CE] to-[#0a8a80] rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Gift className="w-6 h-6 text-white" />
+          {/* Two Column Layout - Desktop/Tablet (65/35) */}
+          <div className="grid lg:grid-cols-[2fr_1fr] gap-8 items-stretch">
+            {/* Left Column - Plan Card (65%) */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="h-full"
+            >
+              <div className="relative h-full p-8 rounded-3xl bg-gradient-to-br from-[#B725B7] to-[#E91E63] text-white shadow-2xl">
+                {/* Two columns inside the card */}
+                <div className="grid md:grid-cols-[1fr_auto_1.2fr] gap-8 h-full">
+                  {/* Left - Plan Info */}
+                  <div className="flex flex-col">
+                    <div className="mb-6">
+                      <h3 className="text-3xl font-black mb-1">{t.tqPage.pricing.plan.name}</h3>
+                      <p className="text-white/80">{t.tqPage.pricing.plan.description}</p>
                     </div>
-                    <div>
-                      <span className="px-3 py-0.5 bg-[#5ED6CE]/20 text-[#0a8a80] text-sm font-bold rounded-full">
-                        {t.tqPage.pricing.trial.badge}
-                      </span>
-                      <h3 className="text-lg font-bold text-gray-900 mt-1">
-                        {t.tqPage.pricing.trial.title}
-                      </h3>
-                      <p className="text-gray-600 text-sm">
-                        {t.tqPage.pricing.trial.description}
-                      </p>
+
+                    {/* Price with Trial Info */}
+                    <div className="mb-8">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Gift className="w-5 h-5 text-[#5ED6CE]" />
+                        <span className="text-lg font-bold text-[#5ED6CE]">{t.tqPage.pricing.trial.title}</span>
+                      </div>
+                      <p className="text-white/80 text-sm mb-4">{t.tqPage.pricing.trial.description}</p>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-white/70">depois,</span>
+                        <span className="text-4xl font-black">{t.tqPage.pricing.plan.price}</span>
+                        <span className="text-white/70">{t.tqPage.pricing.monthly}</span>
+                      </div>
                     </div>
+
+                    {/* CTA */}
+                    <a
+                      href={CHECKOUT_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-3 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2 mt-auto"
+                    >
+                      {t.tqPage.pricing.selectPlan}
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
                   </div>
-                  <a
-                    href={CHECKOUT_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-6 py-3 bg-gradient-to-r from-[#5ED6CE] to-[#0a8a80] text-white font-semibold rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap flex items-center gap-2"
-                  >
-                    {t.tqPage.pricing.trial.cta}
-                    <ArrowRight className="w-4 h-4" />
-                  </a>
+
+                  {/* Divider */}
+                  <div className="hidden md:block w-px bg-white/20" />
+
+                  {/* Right - Features */}
+                  <div className="flex flex-col justify-center">
+                    <h4 className="text-lg font-bold text-white/70 uppercase tracking-wider mb-4">Incluso</h4>
+                    <ul className="space-y-4">
+                      {t.tqPage.pricing.plan.features.map((feature: string, i: number) => (
+                        <li key={i} className="flex items-start gap-3 text-white">
+                          <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                          <span className="text-base">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* Single Plan Card */}
-          <motion.div
-            className="max-w-xl mx-auto"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <div className="relative p-10 md:p-12 rounded-3xl bg-gradient-to-br from-[#B725B7] to-[#E91E63] text-white shadow-2xl">
-              {/* Plan Header */}
-              <div className="text-center mb-8">
-                <h3 className="text-3xl font-black mb-3">{t.tqPage.pricing.plan.name}</h3>
-                <p className="text-xl text-white/80">{t.tqPage.pricing.plan.description}</p>
-              </div>
-
-              {/* Price */}
-              <div className="text-center mb-8">
-                <span className="text-6xl md:text-7xl font-black">{t.tqPage.pricing.plan.price}</span>
-                <span className="text-xl text-white/80">{t.tqPage.pricing.monthly}</span>
-              </div>
-
-              {/* Badges */}
-              <div className="flex justify-center gap-4 mb-6">
-                <div className="px-3 py-1 rounded-full text-sm font-medium bg-white/20">
-                  {t.tqPage.pricing.plan.hours}h/mês
+            {/* Right Column - Licenses (35%) */}
+            <motion.div
+              className="h-full"
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              {/* Licenses */}
+              <div className="p-8 bg-white rounded-2xl border-2 border-gray-200 shadow-lg h-full flex flex-col">
+                <div className="mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">{t.tqPage.pricing.licenses.title}</h3>
+                  <p className="text-gray-600">{t.tqPage.pricing.licenses.subtitle}</p>
                 </div>
-                <div className="px-3 py-1 rounded-full text-sm font-medium bg-white/20">
-                  {t.tqPage.pricing.plan.users}
+                <div className="space-y-4 flex-grow flex flex-col justify-center">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-[#B725B7] transition-colors">
+                    <div>
+                      <p className="font-bold text-gray-900">{t.tqPage.pricing.licenses.operations.name}</p>
+                      <p className="text-sm text-gray-500">{t.tqPage.pricing.licenses.operations.description}</p>
+                    </div>
+                    <p className="text-2xl font-black text-[#B725B7]">{t.tqPage.pricing.licenses.operations.price}</p>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-[#B725B7] transition-colors">
+                    <div>
+                      <p className="font-bold text-gray-900">{t.tqPage.pricing.licenses.manager.name}</p>
+                      <p className="text-sm text-gray-500">{t.tqPage.pricing.licenses.manager.description}</p>
+                    </div>
+                    <p className="text-2xl font-black text-[#B725B7]">{t.tqPage.pricing.licenses.manager.price}</p>
+                  </div>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-[#E91E63] transition-colors">
+                    <div>
+                      <p className="font-bold text-gray-900">{t.tqPage.pricing.licenses.admin.name}</p>
+                      <p className="text-sm text-gray-500">{t.tqPage.pricing.licenses.admin.description}</p>
+                    </div>
+                    <p className="text-2xl font-black text-[#E91E63]">{t.tqPage.pricing.licenses.admin.price}</p>
+                  </div>
                 </div>
               </div>
-
-              {/* Features */}
-              <ul className="space-y-3 mb-8">
-                {t.tqPage.pricing.plan.features.map((feature: string, i: number) => (
-                  <li key={i} className="flex items-start gap-3 text-white/90">
-                    <Check className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA */}
-              <a
-                href={CHECKOUT_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-4 bg-white text-gray-900 font-semibold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
-              >
-                {t.tqPage.pricing.selectPlan}
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
-          </motion.div>
-
-          {/* Licenses */}
-          <motion.div
-            className="mt-12"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900">{t.tqPage.pricing.licenses.title}</h3>
-              <p className="text-gray-600 text-sm">{t.tqPage.pricing.licenses.subtitle}</p>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="p-4 bg-gray-50 rounded-xl text-center">
-                <p className="text-sm text-gray-500 mb-1">{t.tqPage.pricing.licenses.operations.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{t.tqPage.pricing.licenses.operations.price}</p>
-                <p className="text-xs text-gray-500">{t.tqPage.pricing.licenses.operations.description}</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-xl text-center">
-                <p className="text-sm text-gray-500 mb-1">{t.tqPage.pricing.licenses.manager.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{t.tqPage.pricing.licenses.manager.price}</p>
-                <p className="text-xs text-gray-500">{t.tqPage.pricing.licenses.manager.description}</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-xl text-center">
-                <p className="text-sm text-gray-500 mb-1">{t.tqPage.pricing.licenses.admin.name}</p>
-                <p className="text-2xl font-bold text-gray-900">{t.tqPage.pricing.licenses.admin.price}</p>
-                <p className="text-xs text-gray-500">{t.tqPage.pricing.licenses.admin.description}</p>
-              </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Final CTA Section - LivoCare Gradient */}
+      {/* Final CTA Section - COMMENTED OUT
       <section className="py-24 bg-gradient-to-r from-[#5ED6CE] to-[#0a8a80]">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
@@ -648,45 +793,13 @@ export function TQPage() {
           </motion.div>
         </div>
       </section>
+      */}
 
       {/* Contact Form Section */}
-      <Contact />
-
-      {/* Floating Buttons - Desktop & Tablet only */}
-      <div className="hidden md:flex fixed bottom-8 right-8 z-40 flex-col gap-3">
-        {/* Start Button */}
-        <motion.a
-          href={CHECKOUT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-[#5ED6CE] to-[#0a8a80] text-white font-bold rounded-full shadow-2xl hover:shadow-[#5ED6CE]/40 transition-all duration-300"
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Sparkles className="w-6 h-6" />
-          <span className="text-lg">{t.tqPage.floatingButtons.start}</span>
-        </motion.a>
-
-        {/* Contact Button */}
-        <motion.button
-          onClick={() => {
-            const element = document.getElementById('contact')
-            if (element) element.scrollIntoView({ behavior: 'smooth' })
-          }}
-          className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white font-bold rounded-full shadow-2xl hover:shadow-[#B725B7]/40 transition-all duration-300"
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.5 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <MessageCircle className="w-6 h-6" />
-          <span className="text-lg">{t.tqPage.floatingButtons.contact}</span>
-        </motion.button>
+      <div className="bg-white">
+        <Contact />
       </div>
+
     </div>
   )
 }

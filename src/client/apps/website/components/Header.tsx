@@ -97,6 +97,13 @@ export function Header() {
                   onClick={(e) => handleAnchorClick(e, 'top')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
+                  {t.nav.demo}
+                </a>
+                <a
+                  href="#how-it-works"
+                  onClick={(e) => handleAnchorClick(e, 'how-it-works')}
+                  className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
+                >
                   {t.nav.howItWorks}
                 </a>
                 <a
@@ -107,11 +114,11 @@ export function Header() {
                   {t.nav.testimonials}
                 </a>
                 <a
-                  href="#for-whom"
-                  onClick={(e) => handleAnchorClick(e, 'for-whom')}
+                  href="#results"
+                  onClick={(e) => handleAnchorClick(e, 'results')}
                   className={`transition-colors text-sm font-medium ${isScrolled ? 'text-gray-600 hover:text-gray-900' : 'text-white/90 hover:text-white'}`}
                 >
-                  {t.nav.forWhom}
+                  {t.nav.results}
                 </a>
                 <a
                   href="#integrations"
@@ -268,6 +275,13 @@ export function Header() {
                     onClick={(e) => handleAnchorClick(e, 'top')}
                     className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
+                    {t.nav.demo}
+                  </a>
+                  <a
+                    href="#how-it-works"
+                    onClick={(e) => handleAnchorClick(e, 'how-it-works')}
+                    className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
+                  >
                     {t.nav.howItWorks}
                   </a>
                   <a
@@ -278,11 +292,11 @@ export function Header() {
                     {t.nav.testimonials}
                   </a>
                   <a
-                    href="#for-whom"
-                    onClick={(e) => handleAnchorClick(e, 'for-whom')}
+                    href="#results"
+                    onClick={(e) => handleAnchorClick(e, 'results')}
                     className="block px-4 py-3 text-gray-700 hover:bg-gradient-to-r hover:from-[#B725B7]/10 hover:to-[#E91E63]/10 hover:text-[#B725B7] active:scale-[0.98] rounded-lg transition-all duration-200 font-medium"
                   >
-                    {t.nav.forWhom}
+                    {t.nav.results}
                   </a>
                   <a
                     href="#integrations"

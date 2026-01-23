@@ -251,7 +251,7 @@ export function Header() {
                 href="https://buy.stripe.com/9B600icG5eRJ9Vh8G9awo01"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 rounded-full bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg"
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#B725B7] to-[#E91E63] text-white text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 {t.nav.startTrial}
               </a>

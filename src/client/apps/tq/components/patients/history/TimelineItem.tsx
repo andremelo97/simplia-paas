@@ -28,6 +28,16 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   isLast = false
 }) => {
   const { t } = useTranslation('tq')
+
+  const getTranslatedStatus = (status: string, type: string) => {
+    if (type === 'session') {
+      return t(`sessions.status.${status}`)
+    } else if (type === 'quote') {
+      return t(`quotes.status.${status}`)
+    }
+    return status
+  }
+
   return (
     <div className="relative flex gap-4 pb-4 last:pb-0">
       {/* Spine Column */}
@@ -89,7 +99,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                         : 'bg-blue-100 text-blue-700'
                     }`}
                   >
-                    {status}
+                    {getTranslatedStatus(status, type)}
                   </span>
                 )}
               </div>

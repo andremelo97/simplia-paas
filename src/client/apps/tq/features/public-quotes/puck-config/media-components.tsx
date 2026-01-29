@@ -394,8 +394,8 @@ export const createMediaComponents = (branding: BrandingData) => ({
     fields: {
       images: {
         type: 'array' as const,
-        label: 'Images (max 6)',
-        max: 6,
+        label: 'Images (max 10)',
+        max: 10,
         arrayFields: {
           url: {
             type: 'text' as const,
@@ -411,6 +411,26 @@ export const createMediaComponents = (branding: BrandingData) => ({
           alt: 'Image',
         },
       },
+      imagesPerSlide: {
+        type: 'select' as const,
+        label: 'Images Per Slide',
+        options: [
+          { label: '1 image', value: 1 },
+          { label: '2 images side by side', value: 2 },
+          { label: '3 images side by side', value: 3 },
+        ],
+      },
+      imageGap: {
+        type: 'select' as const,
+        label: 'Gap Between Images',
+        options: [
+          { label: 'None (0px)', value: 0 },
+          { label: 'Small (8px)', value: 8 },
+          { label: 'Medium (16px)', value: 16 },
+          { label: 'Large (24px)', value: 24 },
+          { label: 'X-Large (32px)', value: 32 },
+        ],
+      },
       transitionTime: {
         type: 'select' as const,
         label: 'Transition Time (seconds)',
@@ -425,14 +445,6 @@ export const createMediaComponents = (branding: BrandingData) => ({
       autoPlay: {
         type: 'radio' as const,
         label: 'Auto Play',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No', value: false },
-        ],
-      },
-      showIndicators: {
-        type: 'radio' as const,
-        label: 'Show Indicators',
         options: [
           { label: 'Yes', value: true },
           { label: 'No', value: false },
@@ -479,9 +491,10 @@ export const createMediaComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       images: [],
+      imagesPerSlide: 1,
+      imageGap: 8,
       transitionTime: 5,
       autoPlay: true,
-      showIndicators: true,
       showArrows: true,
       height: 'md',
       borderRadius: 8,
@@ -489,9 +502,19 @@ export const createMediaComponents = (branding: BrandingData) => ({
       alignment: 'center',
       padding: 24,
     },
-    render: ({ images, transitionTime, autoPlay, showIndicators, showArrows, height, borderRadius, maxWidth, alignment, padding }: any) => {
+    render: ({ images, imagesPerSlide = 1, imageGap = 8, transitionTime, autoPlay, showArrows, height, borderRadius, maxWidth, alignment, padding }: any) => {
+      const containerRef = React.useRef<HTMLDivElement>(null)
       const [currentIndex, setCurrentIndex] = React.useState(0)
       const [isPaused, setIsPaused] = React.useState(false)
+      const [containerWidth, setContainerWidth] = React.useState(1024)
+
+      // Convert to number to handle string values from Puck
+      const configuredPerSlide = typeof imagesPerSlide === 'string' ? parseInt(imagesPerSlide) : (imagesPerSlide || 1)
+      const gap = typeof imageGap === 'string' ? parseInt(imageGap) : (imageGap || 0)
+
+      // Convert string booleans to actual booleans (Puck radio fields can return strings)
+      const shouldShowArrows = showArrows === true || showArrows === 'true'
+      const shouldAutoPlay = autoPlay === true || autoPlay === 'true'
 
       const heightMap: Record<string, string> = {
         sm: '200px',
@@ -499,6 +522,31 @@ export const createMediaComponents = (branding: BrandingData) => ({
         lg: '400px',
         xl: '500px',
       }
+
+      // Detect container size (works in Puck preview and actual page)
+      React.useEffect(() => {
+        const checkContainerSize = () => {
+          if (containerRef.current) {
+            setContainerWidth(containerRef.current.offsetWidth)
+          }
+        }
+
+        checkContainerSize()
+
+        // Use ResizeObserver for container size changes
+        const resizeObserver = new ResizeObserver(checkContainerSize)
+        if (containerRef.current) {
+          resizeObserver.observe(containerRef.current)
+        }
+
+        // Also listen to window resize as fallback
+        window.addEventListener('resize', checkContainerSize)
+
+        return () => {
+          resizeObserver.disconnect()
+          window.removeEventListener('resize', checkContainerSize)
+        }
+      }, [])
 
       const getAlignmentStyle = (): React.CSSProperties => {
         switch (alignment) {
@@ -514,32 +562,62 @@ export const createMediaComponents = (branding: BrandingData) => ({
 
       const validImages = Array.isArray(images) ? images.filter((img: any) => img && img.url) : []
 
+      // Calculate responsive images per slide based on container width
+      // Mobile (< 640px): always 1 | Tablet (640-1024px): max 2 | Desktop (> 1024px): as configured
+      const getResponsivePerSlide = () => {
+        if (containerWidth < 640) return 1
+        if (containerWidth < 1024) return Math.min(configuredPerSlide, 2)
+        return configuredPerSlide
+      }
+
+      const responsivePerSlide = getResponsivePerSlide()
+
+      // Effective images per slide (can't show more images than we have)
+      const effectivePerSlide = Math.min(responsivePerSlide, validImages.length)
+
+      // Calculate max index (how many positions we can slide to)
+      const maxIndex = Math.max(0, validImages.length - effectivePerSlide)
+
+      // Total number of slide positions (for indicators)
+      const totalPositions = maxIndex + 1
+
+      // Reset currentIndex if it exceeds maxIndex (can happen on resize)
+      React.useEffect(() => {
+        if (currentIndex > maxIndex) {
+          setCurrentIndex(maxIndex)
+        }
+      }, [currentIndex, maxIndex])
+
       // Auto-play effect
       React.useEffect(() => {
-        if (!autoPlay || isPaused || validImages.length <= 1) return
+        if (!shouldAutoPlay || isPaused || maxIndex === 0) return
 
         const interval = setInterval(() => {
-          setCurrentIndex((prev) => (prev + 1) % validImages.length)
+          setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
         }, transitionTime * 1000)
 
         return () => clearInterval(interval)
-      }, [autoPlay, isPaused, transitionTime, validImages.length])
+      }, [shouldAutoPlay, isPaused, transitionTime, maxIndex])
 
       const goToPrev = () => {
-        setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length)
+        setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1))
       }
 
       const goToNext = () => {
-        setCurrentIndex((prev) => (prev + 1) % validImages.length)
+        setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1))
       }
 
       const goToSlide = (index: number) => {
         setCurrentIndex(index)
       }
 
+      // Check if navigation should be shown
+      const hasMultipleSlides = maxIndex > 0
+
       if (validImages.length === 0) {
         return (
           <div
+            ref={containerRef}
             style={{
               width: '100%',
               paddingTop: `${padding}px`,
@@ -563,14 +641,20 @@ export const createMediaComponents = (branding: BrandingData) => ({
                 fontSize: '14px',
               }}
             >
-              Add images to the carousel (max 6)
+              Add images to the carousel (max 10)
             </div>
           </div>
         )
       }
 
+      // Calculate the width of each image as a percentage of the visible area
+      const imageWidthPercent = 100 / effectivePerSlide
+      // Calculate the translate amount (one image width per step)
+      const translatePercent = currentIndex * imageWidthPercent
+
       return (
         <div
+          ref={containerRef}
           style={{
             width: '100%',
             paddingTop: `${padding}px`,
@@ -588,7 +672,6 @@ export const createMediaComponents = (branding: BrandingData) => ({
               height: heightMap[height] || '300px',
               borderRadius: `${borderRadius}px`,
               overflow: 'hidden',
-              backgroundColor: '#f3f4f6',
             }}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
@@ -597,9 +680,8 @@ export const createMediaComponents = (branding: BrandingData) => ({
             <div
               style={{
                 display: 'flex',
-                width: `${validImages.length * 100}%`,
                 height: '100%',
-                transform: `translateX(-${currentIndex * (100 / validImages.length)}%)`,
+                transform: `translateX(-${translatePercent}%)`,
                 transition: 'transform 0.5s ease-in-out',
               }}
             >
@@ -607,9 +689,12 @@ export const createMediaComponents = (branding: BrandingData) => ({
                 <div
                   key={index}
                   style={{
-                    width: `${100 / validImages.length}%`,
+                    width: `${imageWidthPercent}%`,
                     height: '100%',
                     flexShrink: 0,
+                    paddingLeft: effectivePerSlide > 1 && index > 0 ? `${gap / 2}px` : '0',
+                    paddingRight: effectivePerSlide > 1 && index < validImages.length - 1 ? `${gap / 2}px` : '0',
+                    boxSizing: 'border-box',
                   }}
                 >
                   <img
@@ -619,6 +704,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
+                      borderRadius: effectivePerSlide > 1 && gap > 0 ? '4px' : '0',
                     }}
                   />
                 </div>
@@ -626,7 +712,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
             </div>
 
             {/* Navigation Arrows */}
-            {showArrows && validImages.length > 1 && (
+            {shouldShowArrows && hasMultipleSlides && (
               <>
                 <button
                   onClick={goToPrev}
@@ -683,8 +769,8 @@ export const createMediaComponents = (branding: BrandingData) => ({
               </>
             )}
 
-            {/* Indicators */}
-            {showIndicators && validImages.length > 1 && (
+            {/* Indicators - always visible when there are multiple slides */}
+            {hasMultipleSlides && (
               <div
                 style={{
                   position: 'absolute',
@@ -696,7 +782,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
                   zIndex: 10,
                 }}
               >
-                {validImages.map((_: any, index: number) => (
+                {Array.from({ length: totalPositions }).map((_, index: number) => (
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}

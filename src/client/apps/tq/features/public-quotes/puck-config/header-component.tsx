@@ -18,6 +18,14 @@ const ensureProtocol = (url: string): string => {
 export const createHeaderFooterComponents = (branding: BrandingData) => ({
   Header: {
     fields: {
+      showLogo: {
+        type: 'radio' as const,
+        label: 'Show Logo',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
       backgroundColor: {
         type: 'radio' as const,
         label: 'Background Color',
@@ -79,6 +87,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       },
     },
     defaultProps: {
+      showLogo: true,
       backgroundColor: 'white',
       height: '80',
       showButton: false,
@@ -88,7 +97,10 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       buttonTextColor: '#ffffff',
       buttonAction: 'none',
     },
-    render: ({ backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor }: any) => {
+    render: ({ showLogo, backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor }: any) => {
+      // Convert string booleans to actual booleans
+      const shouldShowLogo = showLogo === true || showLogo === 'true'
+      const shouldShowButton = showButton === true || showButton === 'true'
       const headerButtonId = `header-btn-${Math.random().toString(36).substr(2, 9)}`
       
       const getBackgroundColor = () => {
@@ -187,28 +199,31 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 justifyContent: 'space-between',
               }}
             >
-              {branding.logoUrl ? (
-                <img
-                  src={branding.logoUrl}
-                  alt="Logo"
-                  style={{
-                    maxHeight: `${parseInt(height) * 0.6}px`,
-                    maxWidth: '200px',
-                    objectFit: 'contain',
-                  }}
-                />
-              ) : (
-                <span
-                  style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: getTextColor(),
-                  }}
-                >
-                  LOGO
-                </span>
+              {shouldShowLogo && (
+                branding.logoUrl ? (
+                  <img
+                    src={branding.logoUrl}
+                    alt="Logo"
+                    style={{
+                      maxHeight: `${parseInt(height) * 0.6}px`,
+                      maxWidth: '200px',
+                      objectFit: 'contain',
+                    }}
+                  />
+                ) : (
+                  <span
+                    style={{
+                      fontSize: '24px',
+                      fontWeight: 'bold',
+                      color: getTextColor(),
+                    }}
+                  >
+                    LOGO
+                  </span>
+                )
               )}
-              {showButton && buttonLabel && (
+              {!shouldShowLogo && <div />}
+              {shouldShowButton && buttonLabel && (
                 <a
                   href={ensureProtocol(buttonUrl)}
                   className={headerButtonId}

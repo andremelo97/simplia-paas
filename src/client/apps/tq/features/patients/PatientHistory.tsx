@@ -104,7 +104,7 @@ export const PatientHistory: React.FC = () => {
       events.push({
         id: report.id,
         type: 'clinical',
-        title: `Clinical Report ${report.number}`,
+        title: t('patients.history.clinical_report_title', { number: report.number }),
         preview: report.content ? report.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined,
         date: formatDateTime(report.created_at),
         timestamp: new Date(report.created_at).getTime()
@@ -353,7 +353,11 @@ export const PatientHistory: React.FC = () => {
               {sessions.length > 0 && (
                 <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
                   <p className="text-sm text-gray-600">
-                    Showing {Math.min((sessionsPage - 1) * pageSize + 1, sessions.length)} to {Math.min(sessionsPage * pageSize, sessions.length)} of {sessions.length} results
+                    {t('patients.history.showing_results', {
+                      from: Math.min((sessionsPage - 1) * pageSize + 1, sessions.length),
+                      to: Math.min(sessionsPage * pageSize, sessions.length),
+                      total: sessions.length
+                    })}
                   </p>
                 </div>
               )}
@@ -366,7 +370,7 @@ export const PatientHistory: React.FC = () => {
                         key={session.id}
                         id=""
                         type="session"
-                        title={`Session ${session.number}`}
+                        title={t('patients.history.session_title', { number: session.number })}
                         preview={session.transcription_text ? session.transcription_text.substring(0, 150) + '...' : undefined}
                         status={session.status}
                         date={formatDateTime(session.created_at)}
@@ -376,7 +380,7 @@ export const PatientHistory: React.FC = () => {
                     ))
                 ) : (
                   <div className="text-center py-12 text-gray-500">
-                    No sessions found for this patient
+                    {t('patients.history.no_sessions')}
                   </div>
                 )}
               </div>
@@ -400,7 +404,11 @@ export const PatientHistory: React.FC = () => {
               {quotes.length > 0 && (
                 <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
                   <p className="text-sm text-gray-600">
-                    Showing {Math.min((quotesPage - 1) * pageSize + 1, quotes.length)} to {Math.min(quotesPage * pageSize, quotes.length)} of {quotes.length} results
+                    {t('patients.history.showing_results', {
+                      from: Math.min((quotesPage - 1) * pageSize + 1, quotes.length),
+                      to: Math.min(quotesPage * pageSize, quotes.length),
+                      total: quotes.length
+                    })}
                   </p>
                 </div>
               )}
@@ -413,8 +421,8 @@ export const PatientHistory: React.FC = () => {
                         key={quote.id}
                         id=""
                         type="quote"
-                        title={`Quote ${quote.number}`}
-                        preview={`Total: $${quote.total.toFixed(2)}`}
+                        title={t('patients.history.quote_title', { number: quote.number })}
+                        preview={t('patients.history.quote_total', { total: quote.total.toFixed(2) })}
                         status={quote.status}
                         date={formatDateTime(quote.created_at)}
                         icon={getEventIcon('quote')}
@@ -423,7 +431,7 @@ export const PatientHistory: React.FC = () => {
                     ))
                 ) : (
                   <div className="text-center py-12 text-gray-500">
-                    No quotes found for this patient
+                    {t('patients.history.no_quotes')}
                   </div>
                 )}
               </div>
@@ -447,7 +455,11 @@ export const PatientHistory: React.FC = () => {
               {clinicalReports.length > 0 && (
                 <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
                   <p className="text-sm text-gray-600">
-                    Showing {Math.min((clinicalPage - 1) * pageSize + 1, clinicalReports.length)} to {Math.min(clinicalPage * pageSize, clinicalReports.length)} of {clinicalReports.length} results
+                    {t('patients.history.showing_results', {
+                      from: Math.min((clinicalPage - 1) * pageSize + 1, clinicalReports.length),
+                      to: Math.min(clinicalPage * pageSize, clinicalReports.length),
+                      total: clinicalReports.length
+                    })}
                   </p>
                 </div>
               )}
@@ -460,7 +472,7 @@ export const PatientHistory: React.FC = () => {
                         key={report.id}
                         id=""
                         type="clinical"
-                        title={`Clinical Report ${report.number}`}
+                        title={t('patients.history.clinical_report_title', { number: report.number })}
                         preview={report.content ? report.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined}
                         date={formatDateTime(report.created_at)}
                         icon={getEventIcon('clinical')}
@@ -469,7 +481,7 @@ export const PatientHistory: React.FC = () => {
                     ))
                 ) : (
                   <div className="text-center py-12 text-gray-500">
-                    No clinical reports found for this patient
+                    {t('patients.history.no_clinical_reports')}
                   </div>
                 )}
               </div>
@@ -493,7 +505,11 @@ export const PatientHistory: React.FC = () => {
               {timelineEvents.length > 0 && (
                 <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
                   <p className="text-sm text-gray-600">
-                    Showing {Math.min((timelinePage - 1) * pageSize + 1, timelineEvents.length)} to {Math.min(timelinePage * pageSize, timelineEvents.length)} of {timelineEvents.length} results
+                    {t('patients.history.showing_results', {
+                      from: Math.min((timelinePage - 1) * pageSize + 1, timelineEvents.length),
+                      to: Math.min(timelinePage * pageSize, timelineEvents.length),
+                      total: timelineEvents.length
+                    })}
                   </p>
                 </div>
               )}
@@ -535,7 +551,7 @@ export const PatientHistory: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-center py-12 text-gray-500">
-                    No events found for this patient
+                    {t('patients.history.no_events')}
                   </div>
                 )}
               </div>

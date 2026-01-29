@@ -11,6 +11,14 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       label: {
         type: 'text' as const
       },
+      showNumber: {
+        type: 'radio' as const,
+        label: 'Show Quote Number',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false }
+        ]
+      },
       size: {
         type: 'select' as const,
         label: 'Size',
@@ -27,9 +35,10 @@ export const createQuoteComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       label: 'Quote #',
+      showNumber: true,
       size: 'm'
     },
-    render: ({ label, size }: any) => {
+    render: ({ label, showNumber, size }: any) => {
       const baseSizeStyles = {
         xs: { label: '12px', number: '14px' },
         s: { label: '14px', number: '16px' },
@@ -61,9 +70,11 @@ export const createQuoteComponents = (branding: BrandingData) => ({
             <span className={`${uniqueId}-label`} style={{ fontSize: sizeStyle.label, fontWeight: '500', color: '#4b5563' }}>
               {effectiveLabel}
             </span>
-            <span className={`${uniqueId}-number`} style={{ fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
-              {'{{quote.number}}'}
-            </span>
+            {showNumber !== false && (
+              <span className={`${uniqueId}-number`} style={{ fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
+                {'{{quote.number}}'}
+              </span>
+            )}
           </div>
           <style>{`
             @media (min-width: 640px) {

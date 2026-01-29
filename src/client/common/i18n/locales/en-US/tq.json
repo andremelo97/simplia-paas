@@ -238,7 +238,14 @@
       "session_title": "Session {{number}}",
       "quote_title": "Quote {{number}}",
       "quote_preview_total": "Total: ${{total}}",
-      "report_title": "Report {{number}}"
+      "quote_total": "Total: ${{total}}",
+      "report_title": "Report {{number}}",
+      "clinical_report_title": "Clinical Report {{number}}",
+      "showing_results": "Showing {{from}} to {{to}} of {{total}} results",
+      "no_sessions": "No sessions found for this patient",
+      "no_quotes": "No quotes found for this patient",
+      "no_clinical_reports": "No clinical reports found for this patient",
+      "no_events": "No events found for this patient"
     },
     "empty": {
       "no_patients": "No patients yet",

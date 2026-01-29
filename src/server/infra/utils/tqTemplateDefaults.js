@@ -7,6 +7,7 @@ const PUBLIC_QUOTE_TEMPLATE_BASE = {
       props: {
         id: 'Header-32d3066b-ce78-4fd1-87ac-bcecc4ee286d',
         height: '80',
+        showLogo: true,
         buttonUrl: '#',
         showButton: true,
         buttonLabel: '', // to be filled per locale
@@ -96,7 +97,8 @@ const PUBLIC_QUOTE_TEMPLATE_BASE = {
             props: {
               id: 'QuoteNumber-a34fcf01-14f0-4ec7-b2e6-9424be452a83',
               size: 'l',
-              label: ''
+              label: '',
+              showNumber: true
             }
           },
           {

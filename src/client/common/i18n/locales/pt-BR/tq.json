@@ -210,7 +210,14 @@
       "session_title": "Sessão {{number}}",
       "quote_title": "Cotação {{number}}",
       "quote_preview_total": "Total: ${{total}}",
-      "report_title": "Relatório {{number}}"
+      "quote_total": "Total: R$ {{total}}",
+      "report_title": "Relatório {{number}}",
+      "clinical_report_title": "Relatório Clínico {{number}}",
+      "showing_results": "Exibindo {{from}} a {{to}} de {{total}} resultados",
+      "no_sessions": "Nenhuma sessão encontrada para este paciente",
+      "no_quotes": "Nenhuma cotação encontrada para este paciente",
+      "no_clinical_reports": "Nenhum relatório clínico encontrado para este paciente",
+      "no_events": "Nenhum evento encontrado para este paciente"
     },
     "empty": {
       "no_patients": "Nenhum paciente ainda",
@@ -906,7 +913,7 @@
       "not_configured": "Não configurado",
       "configured": "configurado(s)",
       "hidden": "oculto",
-      "contact_info_hint": "Configure telefone, endereço e redes sociais em Hub > Configurações > Branding"
+      "contact_info_hint": "Configure telefone, endereço e redes sociais em Hub > Configurações > Marca"
     }
   },
   "link_toast": {

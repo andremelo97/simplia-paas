@@ -79,6 +79,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [bodyError, setBodyError] = useState<string | null>(null);
   const previewTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -152,13 +153,16 @@ export const EmailTemplateConfiguration: React.FC = () => {
       return;
     }
 
+    // Clear any previous body error
+    setBodyError(null);
+
     if (!trimmedBody.includes('$PUBLIC_LINK$')) {
-      setError(t('configurations.email_template.public_link_required'));
+      setBodyError(t('configurations.email_template.public_link_required'));
       return;
     }
 
     if (!trimmedBody.includes('$PASSWORD_BLOCK$')) {
-      setError(t('configurations.email_template.password_block_required'));
+      setBodyError(t('configurations.email_template.password_block_required'));
       return;
     }
 
@@ -170,6 +174,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
         body: trimmedBody,
         settings
       });
+      setBodyError(null);
     } catch (err) {
       setError(t('configurations.email_template.failed_to_save'));
     } finally {
@@ -237,18 +242,6 @@ export const EmailTemplateConfiguration: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column - Configuration */}
         <div className="space-y-6">
-          {/* Subject */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              {t('configurations.email_template.subject')}
-            </h2>
-            <Input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              placeholder={t('configurations.email_template.subject_placeholder')}
-            />
-          </Card>
-
           {/* Settings */}
           <Card className="p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -496,18 +489,43 @@ export const EmailTemplateConfiguration: React.FC = () => {
             </div>
           </Card>
 
+          {/* Subject */}
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              {t('configurations.email_template.subject')}
+            </h2>
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder={t('configurations.email_template.subject_placeholder')}
+            />
+          </Card>
+
           {/* Body Template */}
           <Card className="p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
               {t('configurations.email_template.body')}
+              <span className="ml-1 text-red-500" aria-hidden="true">*</span>
             </h2>
             <Textarea
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={(e) => {
+                setBody(e.target.value);
+                // Clear body error when user edits
+                if (bodyError) {
+                  const trimmedValue = e.target.value.trim();
+                  if (trimmedValue.includes('$PUBLIC_LINK$') && trimmedValue.includes('$PASSWORD_BLOCK$')) {
+                    setBodyError(null);
+                  }
+                }
+              }}
               placeholder={t('configurations.email_template.body_placeholder')}
               rows={8}
-              className="font-mono text-sm"
+              className={`font-mono text-sm ${bodyError ? 'border-red-500' : ''}`}
             />
+            {bodyError && (
+              <p className="text-sm text-red-600 mt-1">{bodyError}</p>
+            )}
 
             {/* Variables help */}
             <div className="relative overflow-hidden bg-white border border-[#B725B7] rounded-md p-4 mt-4">

@@ -27,6 +27,7 @@ class TranscriptionPlan {
     this.costPerMinuteUsd = parseFloat(data.cost_per_minute_usd);
     this.isTrial = data.is_trial;
     this.trialDays = data.trial_days ? parseInt(data.trial_days) : null;
+    this.showCost = data.show_cost;
     this.active = data.active;
     this.description = data.description;
     this.createdAt = data.created_at;
@@ -108,6 +109,7 @@ class TranscriptionPlan {
       costPerMinuteUsd,
       isTrial = false,
       trialDays = null,
+      showCost = false,
       active,
       description = null
     } = planData;
@@ -134,10 +136,11 @@ class TranscriptionPlan {
         cost_per_minute_usd,
         is_trial,
         trial_days,
+        show_cost,
         active,
         description
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `;
 
@@ -152,6 +155,7 @@ class TranscriptionPlan {
       costPerMinuteUsd,
       isTrial,
       trialDays,
+      showCost,
       active,
       description
     ]);
@@ -174,6 +178,7 @@ class TranscriptionPlan {
       'cost_per_minute_usd',
       'is_trial',
       'trial_days',
+      'show_cost',
       'active',
       'description'
     ];
@@ -302,6 +307,7 @@ class TranscriptionPlan {
       costPerMinuteUsd: this.costPerMinuteUsd,
       isTrial: this.isTrial,
       trialDays: this.trialDays,
+      showCost: this.showCost,
       active: this.active,
       description: this.description,
       createdAt: this.createdAt,

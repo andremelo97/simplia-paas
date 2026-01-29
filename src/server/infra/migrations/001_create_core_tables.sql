@@ -447,6 +447,7 @@ CREATE TABLE IF NOT EXISTS public.transcription_plans (
   cost_per_minute_usd NUMERIC(10, 6) NOT NULL,
   is_trial BOOLEAN NOT NULL DEFAULT false,
   trial_days INTEGER NULL,
+  show_cost BOOLEAN NOT NULL DEFAULT false,
   active BOOLEAN NOT NULL,
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
@@ -463,6 +464,7 @@ COMMENT ON COLUMN public.transcription_plans.language_detection_enabled IS 'If t
 COMMENT ON COLUMN public.transcription_plans.cost_per_minute_usd IS 'Cost per minute in USD (calculated based on stt_model + language_detection_enabled)';
 COMMENT ON COLUMN public.transcription_plans.is_trial IS 'Whether this is a trial plan that expires after trial_days';
 COMMENT ON COLUMN public.transcription_plans.trial_days IS 'Number of days the trial lasts (only applicable when is_trial = true)';
+COMMENT ON COLUMN public.transcription_plans.show_cost IS 'If true, shows cost-related fields in Hub transcription configuration page';
 
 -- Tenant transcription configuration
 CREATE TABLE IF NOT EXISTS public.tenant_transcription_config (

@@ -32,6 +32,7 @@ export const CreateTranscriptionPlan: React.FC = () => {
     sttModel: 'nova-3',
     languageDetectionEnabled: false,
     costPerMinuteUsd: 0.0043,
+    showCost: false,
     active: true,
     description: ''
   })
@@ -226,6 +227,17 @@ export const CreateTranscriptionPlan: React.FC = () => {
               }
               label="Allow overage"
               description="If enabled, users can enable usage beyond monthly limits in Hub"
+            />
+
+            {/* Show Cost */}
+            <Checkbox
+              id="showCost"
+              checked={formData.showCost}
+              onChange={(e) =>
+                setFormData({ ...formData, showCost: e.target.checked })
+              }
+              label="Show cost"
+              description="If enabled, shows cost-related fields (total cost, cost per transcription) in Hub"
             />
 
             {/* Active */}

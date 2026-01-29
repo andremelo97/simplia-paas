@@ -12,6 +12,7 @@ export interface TranscriptionPlan {
   costPerMinuteUsd: number
   isTrial: boolean
   trialDays: number | null
+  showCost: boolean
   active: boolean
   description: string | null
   createdAt: string
@@ -29,6 +30,7 @@ export interface CreateTranscriptionPlanInput {
   costPerMinuteUsd: number
   isTrial?: boolean
   trialDays?: number | null
+  showCost?: boolean
   active: boolean
   description?: string
 }
@@ -44,6 +46,7 @@ export interface UpdateTranscriptionPlanInput {
   costPerMinuteUsd?: number
   isTrial?: boolean
   trialDays?: number | null
+  showCost?: boolean
   active?: boolean
   description?: string
 }

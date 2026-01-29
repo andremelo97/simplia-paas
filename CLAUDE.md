@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Guidance for Claude Code when working with this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Critical Rules (Breaking These Causes Bugs)
 
@@ -28,9 +28,11 @@ Guidance for Claude Code when working with this repository.
 
 ```bash
 npm install && cp .env.example .env && npm run migrate  # Initial setup
-npm run dev                # All services (ports 3001-3005)
-npm run dev:tq-api         # TQ API only (3004)
-npm run dev:tq-front       # TQ frontend only (3005)
+npm run dev                # Internal API (3001) + Internal-Admin (3002)
+npm run dev:hub            # Hub frontend (3003)
+npm run dev:tq-api         # TQ API (3004)
+npm run dev:tq-front       # TQ frontend (3005)
+npm run dev:website        # Website (3006)
 npm test                   # Run tests
 npx tsc --noEmit --project src/client/  # Type check frontend
 ```
@@ -42,6 +44,7 @@ npx tsc --noEmit --project src/client/  # Type check frontend
 3003 - Hub Frontend
 3004 - TQ API Server
 3005 - TQ Frontend
+3006 - Website
 ```
 
 ## Project Structure
@@ -56,6 +59,11 @@ src/
 │   └── common/      # Shared UI components, i18n
 └── shared/          # Shared utilities (.js)
 ```
+
+## Two API Servers
+- **Internal API** (`src/server/index.js` → port 3001): Platform management, tenants, users, licensing
+- **TQ API** (`src/server/tq-api.js` → port 3004): Transcription Quote product endpoints
+- Public routes (webhooks, public quotes) are registered BEFORE auth middleware in tq-api.js
 
 ## SSO Flow (Hub → TQ)
 1. Hub opens TQ: `http://localhost:3005/login?token={JWT}&tenantId={ID}`
@@ -122,9 +130,13 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 ## Testing
 ```bash
-npm test                    # All tests
-npm run test:watch          # Watch mode
+npm test                              # All tests
+npm run test:watch                    # Watch mode
 npx jest tests/integration/internal/  # Specific folder
+npx jest tests/api/tq/sessions.test.js  # Single test file
+npm run test:e2e                      # Playwright E2E tests
+npm run test:e2e:hub                  # Hub E2E only
+npm run test:e2e:tq                   # TQ E2E only
 ```
 
 ## Common Issues

@@ -137,30 +137,9 @@ export const EditTenantPage: React.FC = () => {
           timezone: tenant.timezone || undefined
         }
 
-        // If no addresses/contacts exist, start with default primary items
-        const finalAddresses = mappedAddresses.length > 0 ? mappedAddresses : [{
-          id: undefined,
-          type: 'HQ' as const,
-          label: 'Headquarters',
-          line1: '',
-          line2: '',
-          city: '',
-          state: '',
-          postal_code: '',
-          country_code: '',
-          is_primary: true
-        }]
-
-        const finalContacts = mappedContacts.length > 0 ? mappedContacts : [{
-          id: undefined,
-          type: 'ADMIN' as const,
-          name: '',
-          title: '',
-          email: '',
-          phone_number: '',
-          notes: '',
-          is_primary: true
-        }]
+        // Addresses and contacts are optional - use empty arrays if none exist
+        const finalAddresses = mappedAddresses
+        const finalContacts = mappedContacts
 
         setFormData(coreData)
         setAddresses(finalAddresses)
@@ -253,17 +232,21 @@ export const EditTenantPage: React.FC = () => {
       }
     })
 
-    // Validate contacts
+    // Validate contacts - optional, but if provided, validate fields
     contacts.forEach((contact, index) => {
       const contactErrors: Partial<Record<keyof ContactFormValues, string>> = {}
-      
-      if (!contact.name?.trim()) {
-        contactErrors.name = 'Contact name is required'
+
+      // Only validate if any field has content
+      const hasContent = contact.name?.trim() || contact.email?.trim() || contact.phone_number?.trim()
+      if (hasContent) {
+        if (!contact.name?.trim()) {
+          contactErrors.name = 'Contact name is required when other fields are filled'
+        }
+        if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
+          contactErrors.email = 'Invalid email format'
+        }
       }
-      if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)) {
-        contactErrors.email = 'Invalid email format'
-      }
-      
+
       if (Object.keys(contactErrors).length > 0) {
         contErrors[contact.id || `temp-${index}`] = contactErrors
       }

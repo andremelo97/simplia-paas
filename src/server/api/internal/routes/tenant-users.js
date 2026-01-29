@@ -93,7 +93,7 @@ const router = express.Router();
 router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('internal_admin'), async (req, res) => {
   try {
     const { tenantId } = req.params;
-    const { email, password, firstName, lastName, role = 'operations', status = 'active' } = req.body;
+    const { email, password, firstName, lastName, role = 'operations', status = 'active', platformRole = null } = req.body;
 
     // Validation
     if (!email || !password || !firstName || !lastName) {
@@ -114,6 +114,16 @@ router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('intern
       });
     }
 
+    // Validate platformRole if provided
+    if (platformRole && !['internal_admin', 'support'].includes(platformRole)) {
+      return res.status(400).json({
+        error: {
+          code: 400,
+          message: 'platformRole must be one of: internal_admin, support'
+        }
+      });
+    }
+
     // Hash password
     const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS) || 12;
     const passwordHash = await bcrypt.hash(password, saltRounds);
@@ -122,7 +132,7 @@ router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('intern
     const userTypeQuery = `SELECT id FROM user_types WHERE slug = $1`;
     const database = require('../../../infra/db/database');
     const userTypeResult = await database.query(userTypeQuery, [role]);
-    
+
     if (userTypeResult.rows.length === 0) {
       return res.status(400).json({
         error: {
@@ -142,7 +152,8 @@ router.post('/tenants/:tenantId/users', requireAuth, requirePlatformRole('intern
       lastName,
       role,
       status,
-      userTypeId
+      userTypeId,
+      platformRole
     };
 
     const user = await User.create(userData);

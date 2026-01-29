@@ -47,6 +47,7 @@ export const EditTranscriptionPlan: React.FC = () => {
           costPerMinuteUsd: data.costPerMinuteUsd,
           isTrial: data.isTrial,
           trialDays: data.trialDays,
+          showCost: data.showCost ?? false,
           active: data.active,
           description: data.description || ''
         })
@@ -114,8 +115,9 @@ export const EditTranscriptionPlan: React.FC = () => {
 
     try {
       setSaving(true)
-      await transcriptionPlansService.updatePlan(parseInt(id!), formData)
-      navigate('/transcription-plans')
+      const updatedPlan = await transcriptionPlansService.updatePlan(parseInt(id!), formData)
+      // Update local state with saved data
+      setPlan(updatedPlan)
     } catch (err: any) {
       // Error handled by HTTP interceptor
     } finally {
@@ -241,6 +243,16 @@ export const EditTranscriptionPlan: React.FC = () => {
               }
               label="Allow overage"
               description="If enabled, users can enable usage beyond monthly limits in Hub"
+            />
+
+            <Checkbox
+              id="showCost"
+              checked={formData.showCost}
+              onChange={(e) =>
+                setFormData({ ...formData, showCost: e.target.checked })
+              }
+              label="Show cost"
+              description="If enabled, shows cost-related fields (total cost, cost per transcription) in Hub"
             />
 
             {/* Trial Plan Configuration */}

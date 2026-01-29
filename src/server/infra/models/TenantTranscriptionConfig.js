@@ -45,6 +45,7 @@ class TenantTranscriptionConfig {
         tp.language_detection_enabled as plan_language_detection_enabled,
         tp.is_trial as plan_is_trial,
         tp.trial_days as plan_trial_days,
+        tp.show_cost as plan_show_cost,
         ta.expires_at as license_expires_at
       FROM public.tenant_transcription_config ttc
       INNER JOIN public.transcription_plans tp ON ttc.plan_id_fk = tp.id
@@ -68,7 +69,8 @@ class TenantTranscriptionConfig {
       allowsOverage: result.rows[0].plan_allows_overage,
       languageDetectionEnabled: result.rows[0].plan_language_detection_enabled,
       isTrial: result.rows[0].plan_is_trial,
-      trialDays: result.rows[0].plan_trial_days ? parseInt(result.rows[0].plan_trial_days) : null
+      trialDays: result.rows[0].plan_trial_days ? parseInt(result.rows[0].plan_trial_days) : null,
+      showCost: result.rows[0].plan_show_cost ?? false
     };
 
     return config;
@@ -89,6 +91,7 @@ class TenantTranscriptionConfig {
         tp.language_detection_enabled as plan_language_detection_enabled,
         tp.is_trial as plan_is_trial,
         tp.trial_days as plan_trial_days,
+        tp.show_cost as plan_show_cost,
         ta.expires_at as license_expires_at
       FROM public.tenant_transcription_config ttc
       INNER JOIN public.transcription_plans tp ON ttc.plan_id_fk = tp.id
@@ -112,7 +115,8 @@ class TenantTranscriptionConfig {
       allowsOverage: result.rows[0].plan_allows_overage,
       languageDetectionEnabled: result.rows[0].plan_language_detection_enabled,
       isTrial: result.rows[0].plan_is_trial,
-      trialDays: result.rows[0].plan_trial_days ? parseInt(result.rows[0].plan_trial_days) : null
+      trialDays: result.rows[0].plan_trial_days ? parseInt(result.rows[0].plan_trial_days) : null,
+      showCost: result.rows[0].plan_show_cost ?? false
     };
 
     return config;

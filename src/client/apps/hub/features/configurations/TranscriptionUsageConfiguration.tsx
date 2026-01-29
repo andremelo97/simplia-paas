@@ -52,6 +52,7 @@ interface UsageData {
     languageDetectionEnabled: boolean
     isTrial: boolean
     trialDays: number | null
+    showCost: boolean
   }
   config?: {
     customMonthlyLimit: number | null
@@ -250,6 +251,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
 
   const canCustomizeLimits = usage.plan.allowsCustomLimits
   const canEnableOverage = usage.plan.allowsOverage
+  const showCostFields = usage.plan.showCost
   const hasAnyPremiumFeature = canCustomizeLimits || canEnableOverage
   const isFullVIP = canCustomizeLimits && canEnableOverage
   const hasOverage = usage.current.overage > 0
@@ -396,7 +398,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
         )}
 
         {/* Metrics Grid */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${canEnableOverage ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${showCostFields ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
           <div className="bg-gray-50 rounded-lg p-4">
             <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.used')}</div>
             <div className="text-2xl font-bold text-gray-900">
@@ -417,8 +419,8 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
               {usage.current.remaining > 0 ? usage.current.remaining.toLocaleString() : '0'}
             </div>
           </div>
-          {/* Only show cost if plan allows overage */}
-          {canEnableOverage && (
+          {/* Only show cost if plan has showCost enabled */}
+          {showCostFields && (
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="text-sm text-gray-600 mb-1">{t('transcription_usage.total_cost')}</div>
               <div className="text-2xl font-bold text-[#B725B7]">
@@ -622,8 +624,8 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.date')}</th>
                     <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.duration')}</th>
-                    {/* Only show cost column if plan allows overage */}
-                    {canEnableOverage && (
+                    {/* Only show cost column if plan has showCost enabled */}
+                    {showCostFields && (
                       <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.cost')}</th>
                     )}
                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.model')}</th>
@@ -636,8 +638,8 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
                       <td className="py-3 px-4 text-sm text-right text-gray-900 font-mono">
                         {formatDuration(record.audioDurationSeconds)}
                       </td>
-                      {/* Only show cost if plan allows overage */}
-                      {canEnableOverage && (
+                      {/* Only show cost if plan has showCost enabled */}
+                      {showCostFields && (
                         <td className="py-3 px-4 text-sm text-right text-[#B725B7] font-semibold">
                           {formatCost(record.costUsd)}
                         </td>

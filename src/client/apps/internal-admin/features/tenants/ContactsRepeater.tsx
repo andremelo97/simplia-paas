@@ -85,7 +85,7 @@ export const ContactsRepeater: React.FC<ContactsRepeaterProps> = ({
   return (
     <FormSection
       title="Contacts"
-      description="Add tenant contacts for different departments and purposes. Having at least one contact is recommended."
+      description="Add tenant contacts for different departments and purposes (optional)."
       onAdd={handleAdd}
       addButtonText="Add Contact"
       addButtonDisabled={false}
@@ -106,7 +106,7 @@ export const ContactsRepeater: React.FC<ContactsRepeaterProps> = ({
               onChange={handleFieldChange}
               onRemove={handleRemove}
               onSetPrimary={handleSetPrimary}
-              canRemove={items.length > 1}
+              canRemove={true}
             />
           ))}
         </div>

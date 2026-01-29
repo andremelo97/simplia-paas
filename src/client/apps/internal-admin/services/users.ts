@@ -130,13 +130,18 @@ export class UsersService {
     }
 
     // Prepare payload matching backend expectations (uses numeric tenant_id_fk)
-    const payload = {
+    const payload: Record<string, any> = {
       email: userData.email.trim().toLowerCase(),
       firstName: userData.firstName.trim(),
       lastName: userData.lastName?.trim() || '',
       role: userData.role || 'operations',
       status: userData.status || 'active',
       password: userData.password.trim()
+    }
+
+    // Include platformRole if provided (for internal admin users)
+    if (userData.platformRole) {
+      payload.platformRole = userData.platformRole
     }
 
     const endpoint = `${this.tenantEndpoint}/${tenantId}/users`

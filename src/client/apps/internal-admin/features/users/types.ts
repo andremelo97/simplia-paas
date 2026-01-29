@@ -33,6 +33,7 @@ export interface CreateUserDto {
   role: UserRole;
   status: UserStatus;
   password: string;
+  platformRole?: string;
 }
 
 // User update form values

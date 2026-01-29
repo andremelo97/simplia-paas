@@ -103,7 +103,7 @@ ON CONFLICT (email) DO NOTHING;
 --
 -- Transcription strategy:
 --   Multilingual (language_detection_enabled=true): Nova-3 with detect_language=true - $0.0052/min
-INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, language_detection_enabled, cost_per_minute_usd, is_trial, trial_days, active, description)
+INSERT INTO public.transcription_plans (slug, name, monthly_minutes_limit, allows_custom_limits, allows_overage, stt_model, language_detection_enabled, cost_per_minute_usd, is_trial, trial_days, show_cost, active, description)
 VALUES
   (
     'trial',
@@ -116,6 +116,7 @@ VALUES
     0.0052,
     true,
     7,
+    false,
     true,
     '• 20 horas de transcrição (durante 7 dias)
 • 1 licença Admin inclusa
@@ -135,6 +136,7 @@ VALUES
     0.0052,
     false,
     NULL,
+    true,
     true,
     '• 60 horas de transcrição/mês (~3h/dia)
 • 1 licença Admin inclusa

@@ -30,7 +30,9 @@ export const CreateUser: React.FC = () => {
   const [loadingTenants, setLoadingTenants] = useState(true)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
+  const [isInternalAdmin, setIsInternalAdmin] = useState(false)
+  const [livocareTenanId, setLivocareTenanId] = useState<string>('')
+
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const preSelectedTenantId = searchParams.get('tenantId')
@@ -47,6 +49,12 @@ export const CreateUser: React.FC = () => {
         }))
 
         setTenants(tenantOptions)
+
+        // Find LivoCare Demo tenant for internal admin creation
+        const livocareTenant = response.data.tenants.find(t => t.subdomain === 'livocare')
+        if (livocareTenant) {
+          setLivocareTenanId(livocareTenant.id.toString())
+        }
 
         // Pre-select tenant if provided via URL parameter
         if (preSelectedTenantId) {
@@ -96,6 +104,17 @@ export const CreateUser: React.FC = () => {
     }))
   }
 
+  const handleInternalAdminChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked
+    setIsInternalAdmin(checked)
+
+    if (checked && livocareTenanId) {
+      // Set tenant to LivoCare Demo and role to admin
+      setSelectedTenantId(livocareTenanId)
+      setFormData(prev => ({ ...prev, role: 'admin' }))
+    }
+  }
+
   const handleGeneratePassword = () => {
     const password = generateRandomPassword(12)
     setFormData(prev => ({ ...prev, password }))
@@ -136,11 +155,17 @@ export const CreateUser: React.FC = () => {
     }
 
     setIsSubmitting(true)
-    
+
     try {
       const numericTenantId = parseInt(selectedTenantId)
-      await usersService.create(numericTenantId, formData)
-      
+
+      // Include platformRole if creating internal admin
+      const userData = isInternalAdmin
+        ? { ...formData, platformRole: 'internal_admin' }
+        : formData
+
+      await usersService.create(numericTenantId, userData)
+
       // Navigate back to users list with tenant filter
       navigate(`/users?tenantId=${selectedTenantId}`)
     } catch (error: any) {
@@ -184,24 +209,37 @@ export const CreateUser: React.FC = () => {
         
         <CardContent className="p-6 pt-0">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Tenant Selection - Full Width */}
-            <div>
-              <Label htmlFor="tenant" required>Tenant</Label>
-              <div className="mt-1">
-                <Select
-                  id="tenant"
-                  value={selectedTenantId}
-                  onChange={handleTenantChange}
-                  options={tenants}
-                  placeholder="Select a tenant..."
-                  required
-                  disabled={isSubmitting || loadingTenants}
-                  error={validationErrors.tenant}
+            {/* Tenant Selection + Internal Admin Checkbox */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="tenant" required>Tenant</Label>
+                <div className="mt-1">
+                  <Select
+                    id="tenant"
+                    value={selectedTenantId}
+                    onChange={handleTenantChange}
+                    options={tenants}
+                    placeholder="Select a tenant..."
+                    required
+                    disabled={isSubmitting || loadingTenants || isInternalAdmin}
+                    error={validationErrors.tenant}
+                  />
+                </div>
+                {loadingTenants && (
+                  <p className="mt-1 text-xs text-gray-500">Loading tenants...</p>
+                )}
+              </div>
+
+              <div className="flex items-center">
+                <Checkbox
+                  id="isInternalAdmin"
+                  checked={isInternalAdmin}
+                  onChange={handleInternalAdminChange}
+                  disabled={isSubmitting || !livocareTenanId}
+                  label="Internal Admin"
+                  description="Platform administrator (LivoCare Demo)"
                 />
               </div>
-              {loadingTenants && (
-                <p className="mt-1 text-xs text-gray-500">Loading tenants...</p>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -230,7 +268,7 @@ export const CreateUser: React.FC = () => {
                     id="role"
                     value={formData.role}
                     onChange={handleRoleChange}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isInternalAdmin}
                     error={validationErrors.role}
                     required
                   />

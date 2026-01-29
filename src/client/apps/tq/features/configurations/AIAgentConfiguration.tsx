@@ -158,15 +158,60 @@ export const AIAgentConfiguration: React.FC = () => {
               {t('configurations.ai_agent.variables_explanation')}
             </p>
             <ul className="text-sm text-gray-700 space-y-1">
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.first_name$</code> - {t('configurations.ai_agent.var_patient_first_name')}</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.last_name$</code> - {t('configurations.ai_agent.var_patient_last_name')}</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$patient.fullName$</code> - {t('configurations.ai_agent.var_patient_full_name')}</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$date.now$</code> - {t('configurations.ai_agent.var_date_now')}</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$session.created_at$</code> - {t('configurations.ai_agent.var_session_created_at')}</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$transcription$</code> - {t('configurations.ai_agent.var_transcription')} <span className="text-red-600 font-semibold">*</span></li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.first_name$</code> - {t('configurations.ai_agent.var_me_first_name')}</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.last_name$</code> - {t('configurations.ai_agent.var_me_last_name')}</li>
-              <li><code className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded">$me.fullName$</code> - {t('configurations.ai_agent.var_me_full_name')}</li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$patient.first_name$')}
+                >$patient.first_name$</code> - {t('configurations.ai_agent.var_patient_first_name')}
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$patient.last_name$')}
+                >$patient.last_name$</code> - {t('configurations.ai_agent.var_patient_last_name')}
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$patient.fullName$')}
+                >$patient.fullName$</code> - {t('configurations.ai_agent.var_patient_full_name')}
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$date.now$')}
+                >$date.now$</code> - {t('configurations.ai_agent.var_date_now')}
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$session.created_at$')}
+                >$session.created_at$</code> - {t('configurations.ai_agent.var_session_created_at')}
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$transcription$')}
+                >$transcription$</code> - {t('configurations.ai_agent.var_transcription')} <span className="text-red-600 font-semibold">*</span>
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$me.first_name$')}
+                >$me.first_name$</code> - {t('configurations.ai_agent.var_me_first_name')}
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$me.last_name$')}
+                >$me.last_name$</code> - {t('configurations.ai_agent.var_me_last_name')}
+              </li>
+              <li>
+                <code
+                  className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                  onClick={() => setSystemMessage(prev => prev + '$me.fullName$')}
+                >$me.fullName$</code> - {t('configurations.ai_agent.var_me_full_name')}
+              </li>
             </ul>
             <p className="text-xs text-gray-600 mt-2">
               <span className="text-red-600 font-semibold">*</span> {t('configurations.ai_agent.transcription_required')}

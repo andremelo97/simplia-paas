@@ -172,17 +172,18 @@ class User {
    * Create new user (using numeric tenant FK)
    */
   static async create(userData) {
-    const { 
-      tenantIdFk, 
-      email, 
-      passwordHash, 
-      firstName, 
-      lastName, 
-      role = 'operations', 
+    const {
+      tenantIdFk,
+      email,
+      passwordHash,
+      firstName,
+      lastName,
+      role = 'operations',
       status = 'active',
-      userTypeId
+      userTypeId,
+      platformRole = null
     } = userData;
-    
+
     // Check if user already exists globally (email is unique)
     try {
       await User.findByEmailGlobal(email);
@@ -192,39 +193,40 @@ class User {
         throw error;
       }
     }
-    
+
     // Get tenant subdomain and name for legacy compatibility and denormalization
     const tenantQuery = `SELECT subdomain, name FROM tenants WHERE id = $1 AND active = true`;
     const tenantResult = await database.query(tenantQuery, [tenantIdFk]);
-    
+
     if (tenantResult.rows.length === 0) {
       throw new Error(`Tenant not found with ID: ${tenantIdFk}`);
     }
-    
+
     const tenantSubdomain = tenantResult.rows[0].subdomain;
     const tenantName = tenantResult.rows[0].name;
-    
+
     const query = `
       INSERT INTO public.users (
-        tenant_id_fk, tenant_name, email, password_hash, 
-        first_name, last_name, role, status, user_type_id_fk
+        tenant_id_fk, tenant_name, email, password_hash,
+        first_name, last_name, role, status, user_type_id_fk, platform_role
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `;
-    
+
     const result = await database.query(query, [
       tenantIdFk, // Primary numeric FK
       tenantName, // Denormalized tenant name
-      email, 
-      passwordHash, 
+      email,
+      passwordHash,
       firstName,
       lastName,
-      role, 
+      role,
       status,
-      userTypeId
+      userTypeId,
+      platformRole
     ]);
-    
+
     return new User(result.rows[0]);
   }
 

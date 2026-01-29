@@ -208,6 +208,7 @@ router.post('/', async (req, res) => {
       sttModel,
       languageDetectionEnabled,
       costPerMinuteUsd,
+      showCost,
       active,
       description
     } = req.body;
@@ -231,6 +232,7 @@ router.post('/', async (req, res) => {
       sttModel,
       languageDetectionEnabled,
       costPerMinuteUsd,
+      showCost,
       active,
       description
     });
@@ -334,6 +336,7 @@ router.put('/:id', async (req, res) => {
     if (body.costPerMinuteUsd !== undefined) {
       updates.cost_per_minute_usd = body.costPerMinuteUsd;
     }
+    if (body.showCost !== undefined) updates.show_cost = body.showCost;
     if (body.active !== undefined) updates.active = body.active;
     if (body.description !== undefined) updates.description = body.description;
 

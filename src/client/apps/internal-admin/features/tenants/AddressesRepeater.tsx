@@ -108,7 +108,7 @@ export const AddressesRepeater: React.FC<AddressesRepeaterProps> = ({
               onChange={handleFieldChange}
               onRemove={handleRemove}
               onSetPrimary={handleSetPrimary}
-              canRemove={items.length > 1}
+              canRemove={true}
             />
           ))}
         </div>

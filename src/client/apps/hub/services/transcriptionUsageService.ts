@@ -31,6 +31,7 @@ interface TranscriptionUsageResponse {
       languageDetectionEnabled: boolean
       isTrial: boolean
       trialDays: number | null
+      showCost: boolean
     }
     config: {
       customMonthlyLimit: number | null

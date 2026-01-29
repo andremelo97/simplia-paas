@@ -140,7 +140,8 @@ router.get('/transcription-usage', requireAdmin, async (req, res) => {
           allowsOverage: config.plan?.allowsOverage || false,
           languageDetectionEnabled: config.plan?.languageDetectionEnabled || false,
           isTrial: config.plan?.isTrial || false,
-          trialDays: config.plan?.trialDays || null
+          trialDays: config.plan?.trialDays || null,
+          showCost: config.plan?.showCost || false
         },
         config: {
           customMonthlyLimit: config.customMonthlyLimit,

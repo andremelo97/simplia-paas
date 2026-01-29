@@ -24,7 +24,7 @@ export const createConfig = (branding: BrandingData) => ({
     },
     typography: {
       title: 'Typography',
-      components: ['Heading', 'Text'],
+      components: ['Heading', 'Title', 'Text'],
     },
     actions: {
       title: 'Actions',

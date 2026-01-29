@@ -169,10 +169,16 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       },
       size: {
         type: 'select' as const,
-        label: 'size',
+        label: 'Font Size',
         options: [
-          { label: 'M', value: 'm' },
-          { label: 'S', value: 's' },
+          { label: '12px', value: 12 },
+          { label: '14px', value: 14 },
+          { label: '16px', value: 16 },
+          { label: '18px', value: 18 },
+          { label: '20px', value: 20 },
+          { label: '24px', value: 24 },
+          { label: '28px', value: 28 },
+          { label: '32px', value: 32 },
         ],
       },
       align: {
@@ -206,7 +212,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       text: 'Text',
-      size: 'm',
+      size: 16,
       align: 'left',
       color: 'default',
       maxWidth: '',
@@ -214,11 +220,6 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       verticalPadding: 0,
     },
     render: ({ text, size, align, color, maxWidth, horizontalPadding, verticalPadding }: any) => {
-      const baseSizeStyles = {
-        m: { fontSize: '14px' },
-        s: { fontSize: '12px' },
-      }
-
       const alignStyles = {
         left: 'left' as const,
         center: 'center' as const,
@@ -227,9 +228,10 @@ export const createTypographyComponents = (branding: BrandingData) => ({
 
       const textColor = resolveColor(color, branding)
       const uniqueId = `text-${Math.random().toString(36).substr(2, 9)}`
+      const fontSize = typeof size === 'number' ? size : parseInt(size) || 16
 
       const styles: any = {
-        ...baseSizeStyles[size as keyof typeof baseSizeStyles],
+        fontSize: `${fontSize}px`,
         textAlign: alignStyles[align as keyof typeof alignStyles],
         wordBreak: 'break-word',
         paddingLeft: `${horizontalPadding}px`,
@@ -253,8 +255,110 @@ export const createTypographyComponents = (branding: BrandingData) => ({
               .${uniqueId} {
                 padding-left: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
                 padding-right: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
-                ${size === 'm' ? 'font-size: 16px;' : ''}
-                ${size === 's' ? 'font-size: 14px;' : ''}
+              }
+            }
+          `}</style>
+        </>
+      )
+    },
+  },
+  Title: {
+    fields: {
+      text: {
+        type: 'textarea' as const,
+        label: 'text',
+      },
+      level: {
+        type: 'select' as const,
+        label: 'Hierarchy',
+        options: [
+          { label: 'H1', value: 'h1' },
+          { label: 'H2', value: 'h2' },
+          { label: 'H3', value: 'h3' },
+          { label: 'H4', value: 'h4' },
+          { label: 'H5', value: 'h5' },
+          { label: 'H6', value: 'h6' },
+        ],
+      },
+      align: {
+        type: 'radio' as const,
+        label: 'align',
+        options: [
+          { label: 'Left', value: 'left' },
+          { label: 'Center', value: 'center' },
+          { label: 'Right', value: 'right' },
+        ],
+      },
+      color: {
+        type: 'select' as const,
+        label: 'Text Color',
+        options: textColorOptions,
+      },
+      horizontalPadding: {
+        type: 'select' as const,
+        label: 'Horizontal Padding',
+        options: verticalPaddingOptions,
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+    },
+    defaultProps: {
+      text: 'Title',
+      level: 'h2',
+      align: 'left',
+      color: 'default',
+      horizontalPadding: 16,
+      verticalPadding: 8,
+    },
+    render: ({ text, level, align, color, horizontalPadding, verticalPadding }: any) => {
+      const Tag = level || 'h2'
+
+      // Font size based on hierarchy level
+      const levelSizes: Record<string, number> = {
+        h1: 48,
+        h2: 36,
+        h3: 28,
+        h4: 24,
+        h5: 20,
+        h6: 16,
+      }
+
+      const alignStyles = {
+        left: 'left' as const,
+        center: 'center' as const,
+        right: 'right' as const,
+      }
+
+      const textColor = resolveColor(color, branding)
+      const uniqueId = `title-${Math.random().toString(36).substr(2, 9)}`
+      const fontSize = levelSizes[level] || 36
+
+      return (
+        <>
+          <Tag
+            className={uniqueId}
+            style={{
+              fontWeight: '700',
+              fontSize: `${fontSize}px`,
+              textAlign: alignStyles[align as keyof typeof alignStyles],
+              wordBreak: 'break-word',
+              paddingLeft: `${horizontalPadding}px`,
+              paddingRight: `${horizontalPadding}px`,
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              color: textColor,
+            }}
+          >
+            {text}
+          </Tag>
+          <style>{`
+            @media (min-width: 640px) {
+              .${uniqueId} {
+                padding-left: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
+                padding-right: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
               }
             }
           `}</style>

@@ -450,14 +450,6 @@ export const createMediaComponents = (branding: BrandingData) => ({
           { label: 'No', value: false },
         ],
       },
-      showArrows: {
-        type: 'radio' as const,
-        label: 'Show Arrows',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No', value: false },
-        ],
-      },
       height: {
         type: 'select' as const,
         label: 'Height',

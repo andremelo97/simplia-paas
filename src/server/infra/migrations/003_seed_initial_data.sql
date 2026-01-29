@@ -136,7 +136,7 @@ VALUES
     0.0052,
     false,
     NULL,
-    true,
+    false,
     true,
     '• 60 horas de transcrição/mês (~3h/dia)
 • 1 licença Admin inclusa

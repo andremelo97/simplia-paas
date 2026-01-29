@@ -280,6 +280,24 @@ export const createTypographyComponents = (branding: BrandingData) => ({
           { label: 'H6', value: 'h6' },
         ],
       },
+      size: {
+        type: 'select' as const,
+        label: 'Font Size',
+        options: [
+          { label: 'Auto (based on hierarchy)', value: 'auto' },
+          { label: '16px', value: 16 },
+          { label: '18px', value: 18 },
+          { label: '20px', value: 20 },
+          { label: '24px', value: 24 },
+          { label: '28px', value: 28 },
+          { label: '32px', value: 32 },
+          { label: '36px', value: 36 },
+          { label: '40px', value: 40 },
+          { label: '48px', value: 48 },
+          { label: '56px', value: 56 },
+          { label: '64px', value: 64 },
+        ],
+      },
       align: {
         type: 'radio' as const,
         label: 'align',
@@ -308,15 +326,16 @@ export const createTypographyComponents = (branding: BrandingData) => ({
     defaultProps: {
       text: 'Title',
       level: 'h2',
+      size: 'auto',
       align: 'left',
       color: 'default',
       horizontalPadding: 16,
       verticalPadding: 8,
     },
-    render: ({ text, level, align, color, horizontalPadding, verticalPadding }: any) => {
+    render: ({ text, level, size, align, color, horizontalPadding, verticalPadding }: any) => {
       const Tag = level || 'h2'
 
-      // Font size based on hierarchy level
+      // Font size based on hierarchy level (used when size is 'auto')
       const levelSizes: Record<string, number> = {
         h1: 48,
         h2: 36,
@@ -334,7 +353,11 @@ export const createTypographyComponents = (branding: BrandingData) => ({
 
       const textColor = resolveColor(color, branding)
       const uniqueId = `title-${Math.random().toString(36).substr(2, 9)}`
-      const fontSize = levelSizes[level] || 36
+
+      // Use manual size if set, otherwise use hierarchy-based size
+      const fontSize = size === 'auto' || size === undefined
+        ? levelSizes[level] || 36
+        : (typeof size === 'number' ? size : parseInt(size) || 36)
 
       return (
         <>

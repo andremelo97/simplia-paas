@@ -770,6 +770,15 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Background Color',
         options: backgroundColorOptions,
       },
+      videoObjectFit: {
+        type: 'select' as const,
+        label: 'Video Fit',
+        options: [
+          { label: 'Cover (fill area, crop if needed)', value: 'cover' },
+          { label: 'Contain (fit inside, show all)', value: 'contain' },
+          { label: 'Fill (stretch to fill)', value: 'fill' },
+        ],
+      },
     },
     defaultProps: {
       title: 'Hero Title',
@@ -797,8 +806,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
       titleColor: '#111827',
       descriptionColor: '#374151',
       backgroundColor: 'none',
+      videoObjectFit: 'cover',
     },
-    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleSize, descriptionSize, titleColor, descriptionColor, backgroundColor }: any) => {
+    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleSize, descriptionSize, titleColor, descriptionColor, backgroundColor, videoObjectFit }: any) => {
       const alignClasses = {
         left: 'text-left',
         center: 'text-center',
@@ -968,7 +978,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    objectFit: (videoObjectFit || 'cover') as 'cover' | 'contain' | 'fill',
                     opacity: backgroundOpacity || 0.3,
                     zIndex: 0,
                   }}

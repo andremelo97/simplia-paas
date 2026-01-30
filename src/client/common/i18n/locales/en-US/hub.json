@@ -217,7 +217,7 @@
     "current_plan": "Current Plan:",
     "current_month": "Current Month",
     "of": "of",
-    "used": "used",
+    "used": "Used",
     "remaining": "Remaining",
     "overage": "Overage",
     "overage_warning": "You have exceeded your monthly quota by {{overage}}",

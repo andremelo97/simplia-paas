@@ -98,15 +98,15 @@ router.get('/', async (req, res) => {
       paramIndex++;
     }
 
-    // Filter by created_at range
+    // Filter by created_at range (accepts ISO timestamp UTC from frontend)
     if (created_from) {
-      conditions.push(`pq.created_at >= $${paramIndex}`);
+      conditions.push(`pq.created_at >= $${paramIndex}::timestamptz`);
       params.push(created_from);
       paramIndex++;
     }
 
     if (created_to) {
-      conditions.push(`pq.created_at <= $${paramIndex}`);
+      conditions.push(`pq.created_at <= $${paramIndex}::timestamptz`);
       params.push(created_to);
       paramIndex++;
     }

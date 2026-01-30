@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Eye, EyeOff, AlertCircle, HelpCircle, Globe, Plug, ArrowRight, Instagram } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -31,11 +31,25 @@ export const Login: React.FC = () => {
   const [forgotPasswordSent, setForgotPasswordSent] = useState(false)
   const [showLanguageMenu, setShowLanguageMenu] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [sessionInvalidatedMessage, setSessionInvalidatedMessage] = useState<string | null>(null)
 
+  const [searchParams, setSearchParams] = useSearchParams()
   const { login, isAuthenticated, isLoading, error, clearError } = useAuthStore()
 
   // Get current language
   const currentLanguage = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0]
+
+  // Check for session invalidated redirect
+  useEffect(() => {
+    const reason = searchParams.get('reason')
+    if (reason === 'session_invalidated') {
+      // Use English message as default (tenant language may differ from Hub language)
+      setSessionInvalidatedMessage('Your session was ended because you signed in on another device. Please sign in again.')
+      // Clear the reason param from URL without reloading
+      searchParams.delete('reason')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, [searchParams, setSearchParams])
 
   // Load remembered email and language on mount
   useEffect(() => {
@@ -252,6 +266,20 @@ export const Login: React.FC = () => {
               {t('login.subtitle')}
             </p>
           </div>
+
+          {/* Session Invalidated Banner */}
+          {sessionInvalidatedMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-700"
+            >
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 flex-shrink-0 text-amber-500 mt-0.5" />
+                <div className="text-sm">{sessionInvalidatedMessage}</div>
+              </div>
+            </motion.div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">

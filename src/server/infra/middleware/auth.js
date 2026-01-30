@@ -69,12 +69,25 @@ async function requireAuth(req, res, next) {
       status: user.status,
       platformRole: user.platformRole
     });
-    
+
     if (user.status !== 'active') {
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'User account is inactive'
       });
+    }
+
+    // Single session enforcement: check if token was issued before the last login
+    // If user.tokenIssuedAt exists and token's iat is older, the session is invalidated
+    if (user.tokenIssuedAt && payload.iat) {
+      const tokenIssuedAtSeconds = Math.floor(new Date(user.tokenIssuedAt).getTime() / 1000);
+      if (payload.iat < tokenIssuedAtSeconds) {
+        console.log('🚫 [AUTH] Session invalidated - token issued before last login');
+        return res.status(401).json({
+          error: 'SESSION_INVALIDATED',
+          message: 'Your session has been invalidated because you logged in on another device'
+        });
+      }
     }
     
     // Verify tenant matches (security check) - skip for platform admin tokens
@@ -181,6 +194,15 @@ async function optionalAuth(req, res, next) {
       user = await User.findById(payload.userId, payload.tenantId);
     }
     
+    // Single session enforcement for optional auth
+    if (user.tokenIssuedAt && payload.iat) {
+      const tokenIssuedAtSeconds = Math.floor(new Date(user.tokenIssuedAt).getTime() / 1000);
+      if (payload.iat < tokenIssuedAtSeconds) {
+        // For optional auth, just don't set the user context (treat as unauthenticated)
+        return next();
+      }
+    }
+
     if (user.status === 'active') {
       // Create user context only if user is active
       let userContext;

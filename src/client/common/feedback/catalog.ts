@@ -235,6 +235,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     title: "Session Expired",
     message: "Your session has expired. Please sign in again."
   },
+  SESSION_INVALIDATED: {
+    title: "Session Ended",
+    message: "Your session was ended because you signed in on another device."
+  },
 
   // TQ - Quote operations
   QUOTE_CREATED: {

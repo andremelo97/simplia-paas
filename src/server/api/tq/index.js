@@ -11,6 +11,7 @@ const publicQuotesRoutes = require('./routes/public-quotes');
 const publicQuoteTemplatesRoutes = require('./routes/public-quote-templates');
 const aiAgentConfigurationRoutes = require('./routes/ai-agent-configuration');
 const emailTemplatesRoutes = require('./routes/email-templates');
+const usersRoutes = require('./routes/users');
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router.use('/templates', templatesRoutes);
 router.use('/clinical-reports', clinicalReportsRoutes);
 router.use('/public-quotes', publicQuotesRoutes);
 router.use('/public-quote-templates', publicQuoteTemplatesRoutes);
+router.use('/users', usersRoutes);
 
 // Mount transcription routes (Deepgram integration)
 router.use('/transcriptions', transcriptionRoutes);

@@ -157,7 +157,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('SES' || LPAD(nextval('session_number_seq')::text, 6, '0')),
         patient_id UUID NOT NULL REFERENCES patient(id) ON DELETE RESTRICT,
         transcription_id UUID REFERENCES transcription(id) ON DELETE SET NULL,
-        status session_status_enum NOT NULL DEFAULT 'draft'
+        status session_status_enum NOT NULL DEFAULT 'draft',
+        created_by_user_id_fk INTEGER REFERENCES public.users(id) ON DELETE SET NULL
       )
     `);
 
@@ -184,7 +185,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         session_id UUID NOT NULL REFERENCES session(id) ON DELETE RESTRICT,
         content TEXT,
         total NUMERIC(12, 2) DEFAULT 0.00,
-        status quote_status_enum NOT NULL DEFAULT 'draft'
+        status quote_status_enum NOT NULL DEFAULT 'draft',
+        created_by_user_id_fk INTEGER REFERENCES public.users(id) ON DELETE SET NULL
       )
     `);
 
@@ -228,7 +230,8 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         updated_at TIMESTAMPTZ DEFAULT now(),
         number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('CLR' || LPAD(nextval('clinical_report_number_seq')::text, 6, '0')),
         session_id UUID NOT NULL REFERENCES session(id) ON DELETE RESTRICT,
-        content TEXT NOT NULL
+        content TEXT NOT NULL,
+        created_by_user_id_fk INTEGER REFERENCES public.users(id) ON DELETE SET NULL
       )
     `);
 

@@ -202,6 +202,10 @@ class AuthService {
       throw new InvalidCredentialsError();
     }
 
+    // Update token_issued_at for single session enforcement
+    // This invalidates all previous tokens for this user
+    await user.updateTokenIssuedAt();
+
     // Update last_login timestamp (side effect for platform login tracking)
     await user.updateLastLogin();
 
@@ -266,6 +270,10 @@ class AuthService {
     if (!isPasswordValid) {
       throw new InvalidCredentialsError();
     }
+
+    // Update token_issued_at for single session enforcement
+    // This invalidates all previous tokens for this user
+    await user.updateTokenIssuedAt();
 
     // Get user entitlements (pass tenant ID if available)
     const tenantIdFk = tenantContext.id || tenantContext.tenantId;

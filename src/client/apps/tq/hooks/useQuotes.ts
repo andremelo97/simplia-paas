@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { quotesService, Quote, QuotesListParams, QuotesListResponse } from '../services/quotes'
 import { getQuoteStatusLabel, QuoteStatus } from '../types/quoteStatus'
+import { useDateFilterParams } from '@client/common/utils/dateFilters'
 
 interface UseQuotesListState {
   data: Quote[]
@@ -15,19 +16,33 @@ interface UseQuotesListParams {
   query: string
   statusFilter: QuoteStatus | 'all'
   sessionId?: string
+  patientId?: string
+  createdByUserId?: number
+  createdFrom?: string
+  createdTo?: string
 }
 
 interface UseQuotesListReturn extends UseQuotesListState {
   currentPage: number
   totalPages: number
+  patientId?: string
+  createdByUserId?: number
+  createdFrom?: string
+  createdTo?: string
   setPage: (page: number) => void
   setPageSize: (pageSize: number) => void
   setQuery: (query: string) => void
   setStatusFilter: (status: QuoteStatus | 'all') => void
+  setPatientId: (patientId?: string) => void
+  setCreatedByUserId: (userId?: number) => void
+  setCreatedFrom: (date?: string) => void
+  setCreatedTo: (date?: string) => void
   refresh: () => void
 }
 
 export const useQuotesList = (initialParams?: Partial<UseQuotesListParams>): UseQuotesListReturn => {
+  const { convertDateRange } = useDateFilterParams()
+
   const [state, setState] = useState<UseQuotesListState>({
     data: [],
     total: 0,
@@ -47,16 +62,23 @@ export const useQuotesList = (initialParams?: Partial<UseQuotesListParams>): Use
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
+      // Convert local dates to UTC timestamps
+      const dateParams = convertDateRange(params.createdFrom, params.createdTo)
+
       const apiParams: QuotesListParams = {
-        sessionId: params.sessionId
+        sessionId: params.sessionId,
+        patient_id: params.patientId,
+        created_by_user_id: params.createdByUserId,
+        status: params.statusFilter !== 'all' ? params.statusFilter : undefined,
+        created_from: dateParams.created_from_utc,
+        created_to: dateParams.created_to_utc
       }
 
       const response: QuotesListResponse = await quotesService.list(apiParams)
 
-      // Filtrar por busca (quote number OU patient name) e status
+      // Client-side search filtering (quote number OU patient name)
       let filteredData = response.data
 
-      // Filtrar por query (quote number OU patient name)
       if (params.query) {
         const query = params.query.toLowerCase()
         filteredData = filteredData.filter(quote => {
@@ -67,12 +89,7 @@ export const useQuotesList = (initialParams?: Partial<UseQuotesListParams>): Use
         })
       }
 
-      // Filtrar por status
-      if (params.statusFilter !== 'all') {
-        filteredData = filteredData.filter(quote => quote.status === params.statusFilter)
-      }
-
-      // Fazer paginação no frontend
+      // Client-side pagination
       const startIndex = (params.page - 1) * params.pageSize
       const endIndex = startIndex + params.pageSize
       const paginatedData = filteredData.slice(startIndex, endIndex)
@@ -91,7 +108,7 @@ export const useQuotesList = (initialParams?: Partial<UseQuotesListParams>): Use
         error: 'Failed to load quotes. Please try again.'
       })
     }
-  }, [params])
+  }, [params, convertDateRange])
 
   useEffect(() => {
     fetchQuotes()
@@ -113,6 +130,22 @@ export const useQuotesList = (initialParams?: Partial<UseQuotesListParams>): Use
     setParams(prev => ({ ...prev, statusFilter, page: 1 }))
   }, [])
 
+  const setPatientId = useCallback((patientId?: string) => {
+    setParams(prev => ({ ...prev, patientId, page: 1 }))
+  }, [])
+
+  const setCreatedByUserId = useCallback((createdByUserId?: number) => {
+    setParams(prev => ({ ...prev, createdByUserId, page: 1 }))
+  }, [])
+
+  const setCreatedFrom = useCallback((createdFrom?: string) => {
+    setParams(prev => ({ ...prev, createdFrom, page: 1 }))
+  }, [])
+
+  const setCreatedTo = useCallback((createdTo?: string) => {
+    setParams(prev => ({ ...prev, createdTo, page: 1 }))
+  }, [])
+
   const refresh = useCallback(() => {
     fetchQuotes()
   }, [fetchQuotes])
@@ -121,10 +154,18 @@ export const useQuotesList = (initialParams?: Partial<UseQuotesListParams>): Use
     ...state,
     currentPage: params.page,
     totalPages: Math.ceil(state.total / params.pageSize),
+    patientId: params.patientId,
+    createdByUserId: params.createdByUserId,
+    createdFrom: params.createdFrom,
+    createdTo: params.createdTo,
     setPage,
     setPageSize,
     setQuery,
     setStatusFilter,
+    setPatientId,
+    setCreatedByUserId,
+    setCreatedFrom,
+    setCreatedTo,
     refresh
   }
 }

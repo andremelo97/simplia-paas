@@ -1557,7 +1557,7 @@ export const NewSession: React.FC = () => {
               className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
-              {t('sessions.new_quote_or_clinical')}
+              {t('sessions.create_documents')}
             </Button>
 
             {/* Call AI Agent - Only enabled after session created */}

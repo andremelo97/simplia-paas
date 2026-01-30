@@ -130,7 +130,11 @@ router.get('/', async (req, res) => {
       status,
       includeSession = 'false',
       limit = 50,
-      offset = 0
+      offset = 0,
+      created_from,
+      created_to,
+      patient_id,
+      created_by_user_id
     } = req.query;
 
     const options = {
@@ -138,13 +142,27 @@ router.get('/', async (req, res) => {
       status,
       includeSession: includeSession === 'true',
       limit: parseInt(limit),
-      offset: parseInt(offset)
+      offset: parseInt(offset),
+      createdFrom: created_from,
+      createdTo: created_to,
+      patientId: patient_id,
+      createdByUserId: created_by_user_id ? parseInt(created_by_user_id) : undefined
     };
 
-    const quotes = await Quote.findAll(schema, options);
+    const [quotes, total] = await Promise.all([
+      Quote.findAll(schema, options),
+      Quote.count(schema, options)
+    ]);
     const quotesJson = quotes.map(quote => quote.toJSON());
 
-    res.json(quotesJson);
+    res.json({
+      data: quotesJson,
+      meta: {
+        total,
+        limit: parseInt(limit),
+        offset: parseInt(offset)
+      }
+    });
   } catch (error) {
     console.error('Error listing quotes:', error);
     res.status(500).json({ error: 'Failed to list quotes' });
@@ -258,7 +276,8 @@ router.post('/', async (req, res) => {
       sessionId,
       content,
       status,
-      expiresAt
+      expiresAt,
+      createdByUserId: req.user?.userId || null
     }, schema);
 
     res.status(201).json(quote.toJSON());

@@ -43,7 +43,8 @@
     "integration_cta": "Entre em contato",
     "instagram_title": "Siga a LivoCare no Instagram",
     "instagram_description": "Acompanhe novidades, dicas e conteúdos exclusivos sobre automação e tecnologia para clínicas.",
-    "instagram_cta": "Seguir @livocare.ai"
+    "instagram_cta": "Seguir @livocare.ai",
+    "session_invalidated": "Sua sessão foi encerrada porque você entrou em outro dispositivo. Faça login novamente."
   },
   "home": {
     "welcome_back": "Bem-vindo de volta",

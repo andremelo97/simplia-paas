@@ -73,6 +73,8 @@
   "common": {
     "created_at": "Criado em",
     "created": "Criado",
+    "created_by": "Criado Por",
+    "created_by_helper": "Usuário que criou este registro",
     "updated_at": "Atualizado em",
     "save": "Salvar",
     "save_changes": "Salvar Alterações",
@@ -108,6 +110,14 @@
     "active": "Ativo",
     "inactive": "Inativo",
     "never": "Nunca"
+  },
+  "filters": {
+    "select_patient": "Selecionar paciente...",
+    "select_user": "Selecionar usuário...",
+    "type_to_search": "Digite para buscar...",
+    "no_results": "Nenhum resultado encontrado",
+    "created_from": "Criado De",
+    "created_to": "Criado Até"
   },
   "home": {
     "welcome_back": "Bem-vindo de volta",
@@ -217,7 +227,12 @@
       "no_sessions": "Nenhuma sessão encontrada para este paciente",
       "no_quotes": "Nenhuma cotação encontrada para este paciente",
       "no_clinical_reports": "Nenhum relatório clínico encontrado para este paciente",
-      "no_events": "Nenhum evento encontrado para este paciente"
+      "no_events": "Nenhum evento encontrado para este paciente",
+      "filters": "Filtros",
+      "active": "Ativo",
+      "clear_filters": "Limpar filtros",
+      "created_from": "De",
+      "created_to": "Até"
     },
     "empty": {
       "no_patients": "Nenhum paciente ainda",
@@ -256,14 +271,14 @@
       "step3_button_desc": "Fica habilitado quando você tem uma transcrição e um paciente selecionado. Clique para criar a sessão. Depois de criada, os outros botões são liberados.",
       "step4_title": "Documento",
       "step4_detail": "Com a sessão criada, você pode gerar documentos de duas formas:",
-      "step4_template_title": "Botão \"+ Nova Cotação ou Relatório\"",
+      "step4_template_title": "Botão \"Criar Documentos\"",
       "step4_template_desc": "Abre uma tela onde você escolhe um template (modelo de documento). A IA preenche o template automaticamente usando as informações da transcrição. Ideal para documentos padronizados.",
       "step4_agent_title": "Botão \"Chamar Agente de IA\"",
       "step4_agent_desc": "Abre uma conversa com a IA onde você pode pedir para criar documentos de forma livre, sem template. Você pode conversar, pedir ajustes e criar cotações ou relatórios clínicos diretamente.",
       "step4_agent_config_hint": "Você pode personalizar a mensagem inicial que enviamos ao agente de IA nas configurações.",
       "step4_agent_config_link": "Configurar Agente de IA",
       "draft_title": "Rascunho Automático",
-      "draft_desc": "Seu trabalho é salvo automaticamente no navegador. Se você fechar a página acidentalmente, a transcrição e o paciente selecionado podem ser recuperados quando você voltar. Use o botão de reset (↺) ao lado do botão \"+ Nova Sessão\" para limpar tudo e começar do zero."
+      "draft_desc": "Seu trabalho é salvo automaticamente no navegador. Se você fechar a página acidentalmente, a transcrição e o paciente selecionado podem ser recuperados quando você voltar. Quando você cria uma sessão, os dados são salvos na sessão e limpos desta tela. Use o botão de reset (↺) para limpar tudo e começar do zero."
     },
     "clear_draft": "Limpar rascunho e começar do zero",
     "session": "Sessão",

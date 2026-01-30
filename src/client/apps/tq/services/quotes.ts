@@ -1,5 +1,11 @@
 import { api } from '@client/config/http'
 
+export interface CreatedByUser {
+  id: number
+  firstName: string
+  lastName: string
+}
+
 export interface Quote {
   id: string // UUID
   number: string // QUO000001, QUO000002, etc
@@ -9,6 +15,8 @@ export interface Quote {
   status: string // 'draft', 'sent', 'approved', 'rejected', 'expired'
   created_at: string
   updated_at: string
+  // Creator data
+  createdBy?: CreatedByUser
   // Session data when includeSession=true
   session_number?: string
   session_status?: string
@@ -45,6 +53,8 @@ interface ApiQuote {
   status: string
   createdAt: string
   updatedAt: string
+  // Creator data
+  createdBy?: CreatedByUser
   // Session data when includeSession=true (API returns snake_case for joined data)
   session_number?: string
   session_status?: string
@@ -63,6 +73,10 @@ export interface QuotesListParams {
   sessionId?: string
   status?: string
   includeSession?: boolean
+  created_from?: string
+  created_to?: string
+  patient_id?: string
+  created_by_user_id?: number
 }
 
 export interface QuotesListResponse {
@@ -98,25 +112,31 @@ export const quotesService = {
     if (params.sessionId) queryParams.append('sessionId', params.sessionId)
     if (params.status) queryParams.append('status', params.status)
     if (params.includeSession) queryParams.append('includeSession', 'true')
+    if (params.created_from) queryParams.append('created_from', params.created_from)
+    if (params.created_to) queryParams.append('created_to', params.created_to)
+    if (params.patient_id) queryParams.append('patient_id', params.patient_id)
+    if (params.created_by_user_id) queryParams.append('created_by_user_id', params.created_by_user_id.toString())
 
     // Always include session data and items for display
     queryParams.append('includeSession', 'true')
     queryParams.append('includeItems', 'true')
 
-
     const url = `/api/tq/v1/quotes${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     const response = await api.get(url)
 
-    // A API retorna o array diretamente no response
+    // API retorna { data: [], meta: { total, limit, offset } }
     const apiResponse = response
 
     let quotesData: ApiQuote[]
     let total: number
 
-    // API retorna todos os registros como array direto
+    // Handle both array and object response formats
     if (Array.isArray(apiResponse)) {
       quotesData = apiResponse
       total = apiResponse.length
+    } else if (apiResponse.data && Array.isArray(apiResponse.data)) {
+      quotesData = apiResponse.data
+      total = apiResponse.meta?.total || apiResponse.data.length
     } else {
       throw new Error('Invalid API response structure')
     }
@@ -131,6 +151,8 @@ export const quotesService = {
       status: apiQuote.status,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
+      // Creator data
+      createdBy: apiQuote.createdBy,
       // Session data (API returns snake_case for joined data)
       session_number: apiQuote.session_number,
       session_status: apiQuote.session_status,
@@ -173,6 +195,8 @@ export const quotesService = {
       status: apiQuote.status,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
+      // Creator data
+      createdBy: apiQuote.createdBy,
       // Session data (API returns snake_case for joined data)
       session_number: apiQuote.session_number,
       session_status: apiQuote.session_status,
@@ -216,6 +240,8 @@ export const quotesService = {
       status: apiQuote.status,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
+      // Creator data
+      createdBy: apiQuote.createdBy,
       // Session data (API returns snake_case for joined data)
       session_number: apiQuote.session_number,
       session_status: apiQuote.session_status,
@@ -255,6 +281,8 @@ export const quotesService = {
       status: apiQuote.status,
       created_at: apiQuote.createdAt,
       updated_at: apiQuote.updatedAt,
+      // Creator data
+      createdBy: apiQuote.createdBy,
       // Session data (API returns snake_case for joined data)
       session_number: apiQuote.session_number,
       session_status: apiQuote.session_status,

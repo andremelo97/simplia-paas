@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS users (
     user_type_id_fk INTEGER NOT NULL REFERENCES user_types(id),
     platform_role VARCHAR(50) NULL, -- internal_admin for LivoCare team
     last_login TIMESTAMPTZ,
+    token_issued_at TIMESTAMPTZ, -- Timestamp of last token issuance (for single session enforcement)
     active BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC'),
     updated_at TIMESTAMPTZ DEFAULT (now() AT TIME ZONE 'UTC')

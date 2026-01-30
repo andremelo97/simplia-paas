@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit } from 'lucide-react'
+import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X } from 'lucide-react'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   Button,
-  Paginator
+  Paginator,
+  DateInput
 } from '@client/common/ui'
 import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
@@ -17,6 +18,7 @@ import { clinicalReportsService, ClinicalReport } from '../../services/clinicalR
 import { HistoryRow } from '../../components/patients/history/HistoryRow'
 import { TimelineItem } from '../../components/patients/history/TimelineItem'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useDateFilterParams } from '@client/common/utils/dateFilters'
 
 // Timeline event type
 interface TimelineEvent {
@@ -34,6 +36,7 @@ export const PatientHistory: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
+  const { convertDateRange } = useDateFilterParams()
 
   const [patient, setPatient] = useState<Patient | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
@@ -48,6 +51,11 @@ export const PatientHistory: React.FC = () => {
   const [clinicalPage, setClinicalPage] = useState(1)
   const [timelinePage, setTimelinePage] = useState(1)
   const pageSize = 10
+
+  // Date filter state
+  const [createdFrom, setCreatedFrom] = useState<string>('')
+  const [createdTo, setCreatedTo] = useState<string>('')
+  const [showFilters, setShowFilters] = useState(false)
 
   // Metrics calculated from real data
   const metrics = {
@@ -163,11 +171,19 @@ export const PatientHistory: React.FC = () => {
         const patientData = await patientsService.getPatient(id)
         setPatient(patientData)
 
+        // Convert local dates to UTC timestamps using tenant timezone
+        const dateParams = convertDateRange(createdFrom || undefined, createdTo || undefined)
+
+        // Build filter params with UTC timestamps
+        const filterParams: { created_from?: string; created_to?: string } = {}
+        if (dateParams.created_from_utc) filterParams.created_from = dateParams.created_from_utc
+        if (dateParams.created_to_utc) filterParams.created_to = dateParams.created_to_utc
+
         // Load sessions, quotes, and clinical reports for this patient
         const [sessionsRes, quotesRes, reportsRes] = await Promise.all([
-          sessionsService.list({}),
-          quotesService.list({}),
-          clinicalReportsService.list({})
+          sessionsService.list(filterParams),
+          quotesService.list(filterParams),
+          clinicalReportsService.list(filterParams)
         ])
 
         // Filter by patient_id
@@ -186,7 +202,7 @@ export const PatientHistory: React.FC = () => {
     }
 
     loadData()
-  }, [id])
+  }, [id, createdFrom, createdTo, convertDateRange])
 
   const handleBack = () => {
     navigate('/patients')
@@ -229,7 +245,7 @@ export const PatientHistory: React.FC = () => {
           </p>
         </div>
         <Button
-          variant="secondary"
+          variant="primary"
           onClick={() => navigate(`/patients/${id}/edit`)}
           className="flex items-center gap-2"
         >
@@ -237,6 +253,60 @@ export const PatientHistory: React.FC = () => {
           {t('common:edit')}
         </Button>
       </div>
+
+      {/* Date Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-[#B725B7] transition-colors"
+            >
+              <Filter className="w-4 h-4" />
+              {t('patients.history.filters')}
+              {(createdFrom || createdTo) && (
+                <span className="bg-[#B725B7] text-white text-xs px-2 py-0.5 rounded-full">
+                  {t('patients.history.active')}
+                </span>
+              )}
+            </button>
+            {(createdFrom || createdTo) && (
+              <button
+                onClick={() => {
+                  setCreatedFrom('')
+                  setCreatedTo('')
+                }}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+                {t('patients.history.clear_filters')}
+              </button>
+            )}
+          </div>
+          {showFilters && (
+            <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('patients.history.created_from')}
+                </label>
+                <DateInput
+                  value={createdFrom}
+                  onChange={(e) => setCreatedFrom(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('patients.history.created_to')}
+                </label>
+                <DateInput
+                  value={createdTo}
+                  onChange={(e) => setCreatedTo(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

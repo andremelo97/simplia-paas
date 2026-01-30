@@ -71,6 +71,16 @@ export const ClinicalReportRow: React.FC<ClinicalReportRowProps> = ({
         </span>
       </div>
 
+      {/* Created By */}
+      <div className="min-w-0 flex-1">
+        <span className="text-gray-600 truncate">
+          {report.createdBy
+            ? `${report.createdBy.firstName || ''} ${report.createdBy.lastName || ''}`.trim()
+            : '—'
+          }
+        </span>
+      </div>
+
       {/* Actions - visible on hover - Fixed width to match header */}
       <div className={`w-24 flex items-center justify-end gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'

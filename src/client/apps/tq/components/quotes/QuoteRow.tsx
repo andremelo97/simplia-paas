@@ -72,6 +72,16 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         </span>
       </div>
 
+      {/* Created By */}
+      <div className="min-w-0 flex-1">
+        <span className="text-gray-600 truncate">
+          {quote.createdBy
+            ? `${quote.createdBy.firstName || ''} ${quote.createdBy.lastName || ''}`.trim()
+            : '—'
+          }
+        </span>
+      </div>
+
       {/* Total */}
       <div className="w-24">
         <span className="text-sm font-medium text-gray-900">

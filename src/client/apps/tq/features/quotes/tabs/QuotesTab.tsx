@@ -30,9 +30,17 @@ export const QuotesTab: React.FC = () => {
     totalPages,
     loading,
     error,
+    patientId,
+    createdByUserId,
+    createdFrom,
+    createdTo,
     setPage,
     setQuery,
     setStatusFilter: setHookStatusFilter,
+    setPatientId,
+    setCreatedByUserId,
+    setCreatedFrom,
+    setCreatedTo,
     refresh
   } = useQuotesList({
     query: searchQuery,
@@ -65,6 +73,14 @@ export const QuotesTab: React.FC = () => {
         onSearchChange={handleSearch}
         statusFilter={statusFilter}
         onStatusFilterChange={handleStatusFilterChange}
+        patientId={patientId}
+        onPatientChange={setPatientId}
+        createdByUserId={createdByUserId}
+        onCreatedByChange={setCreatedByUserId}
+        createdFrom={createdFrom}
+        onCreatedFromChange={setCreatedFrom}
+        createdTo={createdTo}
+        onCreatedToChange={setCreatedTo}
       />
 
       {/* Quote List */}
@@ -120,6 +136,7 @@ export const QuotesTab: React.FC = () => {
                 <div className="flex-1">{t('common.session')}</div>
                 <div className="flex-1">{t('common.status')}</div>
                 <div className="flex-1">{t('common.patient')}</div>
+                <div className="flex-1">{t('common.created_by')}</div>
                 <div className="w-24">{t('common.total')}</div>
                 <div className="w-20"></div> {/* Space for actions */}
               </div>

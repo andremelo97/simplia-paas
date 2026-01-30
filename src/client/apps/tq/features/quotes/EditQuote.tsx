@@ -427,6 +427,16 @@ export const EditQuote: React.FC = () => {
                     readOnly
                   />
                 </div>
+
+                <Input
+                  label={t('common.created_by')}
+                  value={quote.createdBy
+                    ? `${quote.createdBy.firstName || ''} ${quote.createdBy.lastName || ''}`.trim()
+                    : '—'
+                  }
+                  disabled
+                  readOnly
+                />
               </CardContent>
             </Card>
 

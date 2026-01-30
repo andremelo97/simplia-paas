@@ -95,15 +95,22 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const { sessionId, limit = 50, offset = 0 } = req.query;
+    const { sessionId, limit = 50, offset = 0, created_from, created_to, patient_id, created_by_user_id } = req.query;
 
-    const reports = await ClinicalReport.findAll(schema, {
+    const options = {
       sessionId,
       limit: parseInt(limit),
-      offset: parseInt(offset)
-    });
+      offset: parseInt(offset),
+      createdFrom: created_from,
+      createdTo: created_to,
+      patientId: patient_id,
+      createdByUserId: created_by_user_id ? parseInt(created_by_user_id) : undefined
+    };
 
-    const total = await ClinicalReport.count(schema, { sessionId });
+    const [reports, total] = await Promise.all([
+      ClinicalReport.findAll(schema, options),
+      ClinicalReport.count(schema, options)
+    ]);
 
     res.json({
       data: reports.map(r => r.toJSON()),
@@ -240,7 +247,11 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const report = await ClinicalReport.create({ sessionId, content }, schema);
+    const report = await ClinicalReport.create({
+      sessionId,
+      content,
+      createdByUserId: req.user?.userId || null
+    }, schema);
 
     res.status(201).json({
       data: report.toJSON(),

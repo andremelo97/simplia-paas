@@ -162,6 +162,9 @@ class HttpClient {
         const hostname = window.location.hostname
         const isTQ = port === '3005' || hostname.startsWith('tq.')
 
+        // Check for session invalidated (logged in on another device)
+        const isSessionInvalidated = errorData?.error === 'SESSION_INVALIDATED'
+
         // Check for token-specific errors (not general "invalid credentials")
         const isTokenExpired = backendMessage?.toLowerCase().includes('expired') ||
           backendMessage?.toLowerCase().includes('jwt') ||
@@ -169,9 +172,27 @@ class HttpClient {
 
         // TQ: Always redirect on 401 (needs SSO from Hub)
         // Others: Only redirect on explicit token issues
-        if (isTQ || isTokenExpired) {
-          this.handleExpiredToken()
-          return createAppError.auth('SESSION_EXPIRED', status, endpoint)
+        if (isTQ || isTokenExpired || isSessionInvalidated) {
+          // Show toast BEFORE redirect so the message appears in the user's current language
+          if (isSessionInvalidated) {
+            const feedbackMessage = resolveFeedbackMessage('SESSION_INVALIDATED')
+            publishFeedback({
+              kind: 'warning',
+              code: 'SESSION_INVALIDATED',
+              title: feedbackMessage.title,
+              message: feedbackMessage.message,
+              path: endpoint
+            })
+            // 5 second delay to allow user to read the message before redirect
+            // Store reference to avoid losing 'this' context in setTimeout
+            const handleRedirect = this.handleExpiredToken.bind(this)
+            setTimeout(() => {
+              handleRedirect('session_invalidated')
+            }, 5000)
+          } else {
+            this.handleExpiredToken()
+          }
+          return createAppError.auth(isSessionInvalidated ? 'SESSION_INVALIDATED' : 'SESSION_EXPIRED', status, endpoint)
         }
       }
     }
@@ -208,7 +229,7 @@ class HttpClient {
     return appError
   }
 
-  private handleExpiredToken() {
+  private handleExpiredToken(reason?: string) {
     // Clear localStorage auth data
     localStorage.removeItem('auth-storage')
 
@@ -222,16 +243,19 @@ class HttpClient {
     // Hub app detection: port 3003 (dev) or hub subdomain (prod)
     const isHub = port === '3003' || hostname.startsWith('hub.')
 
+    // Build redirect URL with optional reason parameter
+    const reasonParam = reason ? `?reason=${reason}` : ''
+
     if (isTQ) {
       // TQ uses SSO from Hub - redirect to Hub login
       const hubOrigin = (import.meta as any).env?.VITE_HUB_ORIGIN || 'http://localhost:3003'
-      window.location.href = `${hubOrigin}/login`
+      window.location.href = `${hubOrigin}/login${reasonParam}`
     } else if (isHub) {
       // Hub has its own login page
-      window.location.href = '/login'
+      window.location.href = `/login${reasonParam}`
     } else {
       // Internal-Admin or other apps
-      window.location.href = '/auth/login'
+      window.location.href = `/auth/login${reasonParam}`
     }
   }
 

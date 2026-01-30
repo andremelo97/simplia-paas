@@ -1,5 +1,11 @@
 import { api } from '@client/config/http'
 
+export interface CreatedByUser {
+  id: number
+  firstName: string
+  lastName: string
+}
+
 export interface Session {
   id: string // UUID
   number: string // SES000001, SES000002, etc
@@ -8,6 +14,8 @@ export interface Session {
   status: string // 'draft', etc
   created_at: string
   updated_at: string
+  // Creator data
+  createdBy?: CreatedByUser
   // Patient data when includePatient=true
   patient_first_name?: string
   patient_last_name?: string
@@ -26,6 +34,8 @@ interface ApiSession {
   status: string
   createdAt: string
   updatedAt: string
+  // Creator data
+  createdBy?: CreatedByUser
   // Patient data when includePatient=true (API returns snake_case for joined data)
   patient_first_name?: string
   patient_last_name?: string
@@ -39,6 +49,11 @@ export interface SessionsListParams {
   offset?: number
   limit?: number
   q?: string
+  created_from?: string
+  created_to?: string
+  patient_id?: string
+  created_by_user_id?: number
+  status?: string
 }
 
 export interface SessionsListResponse {
@@ -62,6 +77,11 @@ export const sessionsService = {
   async list(params: SessionsListParams = {}): Promise<SessionsListResponse> {
     const queryParams = new URLSearchParams()
     if (params.q) queryParams.append('search', params.q)
+    if (params.created_from) queryParams.append('created_from', params.created_from)
+    if (params.created_to) queryParams.append('created_to', params.created_to)
+    if (params.patient_id) queryParams.append('patientId', params.patient_id)
+    if (params.created_by_user_id) queryParams.append('created_by_user_id', params.created_by_user_id.toString())
+    if (params.status) queryParams.append('status', params.status)
     // Always include patient data
     queryParams.append('includePatient', 'true')
 
@@ -90,6 +110,8 @@ export const sessionsService = {
       status: apiSession.status,
       created_at: apiSession.createdAt,
       updated_at: apiSession.updatedAt,
+      // Creator data
+      createdBy: apiSession.createdBy,
       // Patient data (API returns snake_case for joined data)
       patient_first_name: apiSession.patient_first_name,
       patient_last_name: apiSession.patient_last_name,
@@ -127,6 +149,8 @@ export const sessionsService = {
       status: apiSession.status,
       created_at: apiSession.createdAt,
       updated_at: apiSession.updatedAt,
+      // Creator data
+      createdBy: apiSession.createdBy,
       // Patient data (API returns snake_case for joined data)
       patient_first_name: apiSession.patient_first_name,
       patient_last_name: apiSession.patient_last_name,
@@ -165,6 +189,8 @@ export const sessionsService = {
       status: apiSession.status,
       created_at: apiSession.createdAt,
       updated_at: apiSession.updatedAt,
+      // Creator data
+      createdBy: apiSession.createdBy,
       // Patient data (API returns snake_case for joined data)
       patient_first_name: apiSession.patient_first_name,
       patient_last_name: apiSession.patient_last_name,
@@ -202,6 +228,8 @@ export const sessionsService = {
       status: apiSession.status,
       created_at: apiSession.createdAt,
       updated_at: apiSession.updatedAt,
+      // Creator data
+      createdBy: apiSession.createdBy,
       // Patient data (API returns snake_case for joined data)
       patient_first_name: apiSession.patient_first_name,
       patient_last_name: apiSession.patient_last_name,

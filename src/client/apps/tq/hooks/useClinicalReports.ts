@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { clinicalReportsService, ClinicalReport, ClinicalReportsListParams, ClinicalReportsListResponse } from '../services/clinicalReports'
+import { useDateFilterParams } from '@client/common/utils/dateFilters'
 
 interface UseClinicalReportsListState {
   data: ClinicalReport[]
@@ -12,18 +13,32 @@ interface UseClinicalReportsListParams {
   page: number
   pageSize: number
   query: string
+  patientId?: string
+  createdByUserId?: number
+  createdFrom?: string
+  createdTo?: string
 }
 
 interface UseClinicalReportsListReturn extends UseClinicalReportsListState {
   currentPage: number
   totalPages: number
+  patientId?: string
+  createdByUserId?: number
+  createdFrom?: string
+  createdTo?: string
   setPage: (page: number) => void
   setPageSize: (pageSize: number) => void
   setQuery: (query: string) => void
+  setPatientId: (patientId?: string) => void
+  setCreatedByUserId: (userId?: number) => void
+  setCreatedFrom: (date?: string) => void
+  setCreatedTo: (date?: string) => void
   refresh: () => void
 }
 
 export const useClinicalReportsList = (initialParams?: Partial<UseClinicalReportsListParams>): UseClinicalReportsListReturn => {
+  const { convertDateRange } = useDateFilterParams()
+
   const [state, setState] = useState<UseClinicalReportsListState>({
     data: [],
     total: 0,
@@ -42,12 +57,22 @@ export const useClinicalReportsList = (initialParams?: Partial<UseClinicalReport
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
-      const response: ClinicalReportsListResponse = await clinicalReportsService.list()
+      // Convert local dates to UTC timestamps
+      const dateParams = convertDateRange(params.createdFrom, params.createdTo)
+
+      const apiParams: ClinicalReportsListParams = {
+        patient_id: params.patientId,
+        created_by_user_id: params.createdByUserId,
+        created_from: dateParams.created_from_utc,
+        created_to: dateParams.created_to_utc
+      }
+
+      const response: ClinicalReportsListResponse = await clinicalReportsService.list(apiParams)
 
       // Defensive: ensure we have data array
       const reportsData = response?.data || []
 
-      // Filtrar por busca (report number OU patient name)
+      // Client-side search filtering (report number OU patient name)
       let filteredData = reportsData
 
       if (params.query) {
@@ -60,7 +85,7 @@ export const useClinicalReportsList = (initialParams?: Partial<UseClinicalReport
         })
       }
 
-      // Fazer paginação no frontend
+      // Client-side pagination
       const startIndex = (params.page - 1) * params.pageSize
       const endIndex = startIndex + params.pageSize
       const paginatedData = filteredData.slice(startIndex, endIndex)
@@ -79,7 +104,7 @@ export const useClinicalReportsList = (initialParams?: Partial<UseClinicalReport
         error: 'Failed to load clinical reports. Please try again.'
       })
     }
-  }, [params])
+  }, [params, convertDateRange])
 
   useEffect(() => {
     fetchReports()
@@ -97,6 +122,22 @@ export const useClinicalReportsList = (initialParams?: Partial<UseClinicalReport
     setParams(prev => ({ ...prev, query, page: 1 }))
   }, [])
 
+  const setPatientId = useCallback((patientId?: string) => {
+    setParams(prev => ({ ...prev, patientId, page: 1 }))
+  }, [])
+
+  const setCreatedByUserId = useCallback((createdByUserId?: number) => {
+    setParams(prev => ({ ...prev, createdByUserId, page: 1 }))
+  }, [])
+
+  const setCreatedFrom = useCallback((createdFrom?: string) => {
+    setParams(prev => ({ ...prev, createdFrom, page: 1 }))
+  }, [])
+
+  const setCreatedTo = useCallback((createdTo?: string) => {
+    setParams(prev => ({ ...prev, createdTo, page: 1 }))
+  }, [])
+
   const refresh = useCallback(() => {
     fetchReports()
   }, [fetchReports])
@@ -107,9 +148,17 @@ export const useClinicalReportsList = (initialParams?: Partial<UseClinicalReport
     ...state,
     currentPage: params.page,
     totalPages,
+    patientId: params.patientId,
+    createdByUserId: params.createdByUserId,
+    createdFrom: params.createdFrom,
+    createdTo: params.createdTo,
     setPage,
     setPageSize,
     setQuery,
+    setPatientId,
+    setCreatedByUserId,
+    setCreatedFrom,
+    setCreatedTo,
     refresh
   }
 }

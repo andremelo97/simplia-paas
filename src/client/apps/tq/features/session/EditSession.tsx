@@ -360,12 +360,24 @@ export const EditSession: React.FC = () => {
                 />
               </div>
 
-              <Input
-                label={t('common.patient')}
-                value={patientName}
-                disabled
-                helperText={t('sessions.helper.associated_patient')}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Input
+                  label={t('common.patient')}
+                  value={patientName}
+                  disabled
+                  helperText={t('sessions.helper.associated_patient')}
+                />
+
+                <Input
+                  label={t('common.created_by')}
+                  value={session.createdBy
+                    ? `${session.createdBy.firstName || ''} ${session.createdBy.lastName || ''}`.trim()
+                    : '—'
+                  }
+                  disabled
+                  helperText={t('common.created_by_helper')}
+                />
+              </div>
             </CardContent>
           </Card>
 

@@ -254,6 +254,16 @@ export const EditClinicalReport: React.FC = () => {
                     disabled
                     readOnly
                   />
+
+                  <Input
+                    label={t('common.created_by')}
+                    value={report.createdBy
+                      ? `${report.createdBy.firstName || ''} ${report.createdBy.lastName || ''}`.trim()
+                      : '—'
+                    }
+                    disabled
+                    readOnly
+                  />
                 </div>
               </CardContent>
             </Card>

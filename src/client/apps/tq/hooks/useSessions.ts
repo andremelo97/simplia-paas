@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { sessionsService, Session, SessionsListParams, SessionsListResponse } from '../services/sessions'
 import { getSessionStatusLabel, SessionStatus } from '../types/sessionStatus'
+import { useDateFilterParams } from '@client/common/utils/dateFilters'
 
 interface UseSessionsListState {
   data: Session[]
@@ -14,19 +15,33 @@ interface UseSessionsListParams {
   pageSize: number
   query: string
   statusFilter: SessionStatus | 'all'
+  patientId?: string
+  createdByUserId?: number
+  createdFrom?: string
+  createdTo?: string
 }
 
 interface UseSessionsListReturn extends UseSessionsListState {
   currentPage: number
   totalPages: number
+  patientId?: string
+  createdByUserId?: number
+  createdFrom?: string
+  createdTo?: string
   setPage: (page: number) => void
   setPageSize: (pageSize: number) => void
   setQuery: (query: string) => void
   setStatusFilter: (status: SessionStatus | 'all') => void
+  setPatientId: (patientId?: string) => void
+  setCreatedByUserId: (userId?: number) => void
+  setCreatedFrom: (date?: string) => void
+  setCreatedTo: (date?: string) => void
   refresh: () => void
 }
 
 export const useSessionsList = (initialParams?: Partial<UseSessionsListParams>): UseSessionsListReturn => {
+  const { convertDateRange } = useDateFilterParams()
+
   const [state, setState] = useState<UseSessionsListState>({
     data: [],
     total: 0,
@@ -46,16 +61,23 @@ export const useSessionsList = (initialParams?: Partial<UseSessionsListParams>):
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
+      // Convert local dates to UTC timestamps
+      const dateParams = convertDateRange(params.createdFrom, params.createdTo)
+
       const apiParams: SessionsListParams = {
-        q: params.query || undefined
+        q: params.query || undefined,
+        patient_id: params.patientId,
+        created_by_user_id: params.createdByUserId,
+        status: params.statusFilter !== 'all' ? params.statusFilter : undefined,
+        created_from: dateParams.created_from_utc,
+        created_to: dateParams.created_to_utc
       }
 
       const response: SessionsListResponse = await sessionsService.list(apiParams)
 
-      // Filtrar por busca (session number OU patient name) e status
+      // Client-side search filtering (session number OU patient name)
       let filteredData = response.data
 
-      // Filtrar por query (session number OU patient name)
       if (params.query) {
         const query = params.query.toLowerCase()
         filteredData = filteredData.filter(session => {
@@ -66,12 +88,7 @@ export const useSessionsList = (initialParams?: Partial<UseSessionsListParams>):
         })
       }
 
-      // Filtrar por status
-      if (params.statusFilter !== 'all') {
-        filteredData = filteredData.filter(session => session.status === params.statusFilter)
-      }
-
-      // Fazer paginação no frontend
+      // Client-side pagination
       const startIndex = (params.page - 1) * params.pageSize
       const endIndex = startIndex + params.pageSize
       const paginatedData = filteredData.slice(startIndex, endIndex)
@@ -90,7 +107,7 @@ export const useSessionsList = (initialParams?: Partial<UseSessionsListParams>):
         error: 'Failed to load sessions. Please try again.'
       })
     }
-  }, [params])
+  }, [params, convertDateRange])
 
   useEffect(() => {
     fetchSessions()
@@ -112,6 +129,22 @@ export const useSessionsList = (initialParams?: Partial<UseSessionsListParams>):
     setParams(prev => ({ ...prev, statusFilter, page: 1 }))
   }, [])
 
+  const setPatientId = useCallback((patientId?: string) => {
+    setParams(prev => ({ ...prev, patientId, page: 1 }))
+  }, [])
+
+  const setCreatedByUserId = useCallback((createdByUserId?: number) => {
+    setParams(prev => ({ ...prev, createdByUserId, page: 1 }))
+  }, [])
+
+  const setCreatedFrom = useCallback((createdFrom?: string) => {
+    setParams(prev => ({ ...prev, createdFrom, page: 1 }))
+  }, [])
+
+  const setCreatedTo = useCallback((createdTo?: string) => {
+    setParams(prev => ({ ...prev, createdTo, page: 1 }))
+  }, [])
+
   const refresh = useCallback(() => {
     fetchSessions()
   }, [fetchSessions])
@@ -120,10 +153,18 @@ export const useSessionsList = (initialParams?: Partial<UseSessionsListParams>):
     ...state,
     currentPage: params.page,
     totalPages: Math.ceil(state.total / params.pageSize),
+    patientId: params.patientId,
+    createdByUserId: params.createdByUserId,
+    createdFrom: params.createdFrom,
+    createdTo: params.createdTo,
     setPage,
     setPageSize,
     setQuery,
     setStatusFilter,
+    setPatientId,
+    setCreatedByUserId,
+    setCreatedFrom,
+    setCreatedTo,
     refresh
   }
 }

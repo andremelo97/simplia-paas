@@ -1,5 +1,11 @@
 import { api } from '@client/config/http'
 
+export interface CreatedByUser {
+  id: number
+  firstName: string
+  lastName: string
+}
+
 export interface ClinicalReport {
   id: string // UUID
   number: string // CLR000001, CLR000002, etc
@@ -7,6 +13,8 @@ export interface ClinicalReport {
   content: string
   created_at: string
   updated_at: string
+  // Creator data
+  createdBy?: CreatedByUser
   // Session data when joined
   session_number?: string
   session_status?: string
@@ -22,6 +30,10 @@ export interface ClinicalReportsListParams {
   offset?: number
   limit?: number
   sessionId?: string
+  created_from?: string
+  created_to?: string
+  patient_id?: string
+  created_by_user_id?: number
 }
 
 export interface ClinicalReportsListResponse {
@@ -48,6 +60,10 @@ export const clinicalReportsService = {
     if (params.sessionId) queryParams.append('sessionId', params.sessionId)
     if (params.limit) queryParams.append('limit', params.limit.toString())
     if (params.offset) queryParams.append('offset', params.offset.toString())
+    if (params.created_from) queryParams.append('created_from', params.created_from)
+    if (params.created_to) queryParams.append('created_to', params.created_to)
+    if (params.patient_id) queryParams.append('patient_id', params.patient_id)
+    if (params.created_by_user_id) queryParams.append('created_by_user_id', params.created_by_user_id.toString())
 
     const url = `/api/tq/v1/clinical-reports${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
     const response = await api.get(url)

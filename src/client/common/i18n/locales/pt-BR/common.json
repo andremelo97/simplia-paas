@@ -302,6 +302,10 @@
     "BUG_REPORT_SUBMITTED": {
       "title": "Bug Reportado",
       "message": "Seu relatório de bug foi enviado com sucesso. Obrigado!"
+    },
+    "SESSION_INVALIDATED": {
+      "title": "Sessão Encerrada",
+      "message": "Sua sessão foi encerrada porque você entrou em outro dispositivo."
     }
   },
   "support_modal": {

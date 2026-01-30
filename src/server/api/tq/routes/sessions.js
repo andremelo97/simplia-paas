@@ -101,7 +101,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const { patientId, status, includePatient = false, limit = 50, offset = 0 } = req.query;
+    const { patientId, status, includePatient = false, limit = 50, offset = 0, created_from, created_to, created_by_user_id } = req.query;
 
     // Parse and validate pagination params
     const parsedLimit = Math.min(parseInt(limit) || 50, 100);
@@ -113,7 +113,10 @@ router.get('/', async (req, res) => {
       status,
       includePatient: shouldIncludePatient,
       limit: parsedLimit,
-      offset: parsedOffset
+      offset: parsedOffset,
+      createdFrom: created_from,
+      createdTo: created_to,
+      createdByUserId: created_by_user_id ? parseInt(created_by_user_id) : undefined
     };
 
     // Get sessions and total count
@@ -307,7 +310,8 @@ router.post('/', requireManagerOrAdmin, async (req, res) => {
     const sessionData = {
       patientId,
       transcriptionId,
-      status
+      status,
+      createdByUserId: req.user?.userId || null
     };
 
     const session = await Session.create(sessionData, schema);

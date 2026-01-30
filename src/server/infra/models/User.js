@@ -18,6 +18,7 @@ class User {
     this.userTypeId = data.user_type_id_fk;
     this.platformRole = data.platform_role;
     this.lastLogin = data.last_login;
+    this.tokenIssuedAt = data.token_issued_at;
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
@@ -327,6 +328,29 @@ class User {
     this.lastLogin = result.rows[0].last_login;
     this.updatedAt = result.rows[0].updated_at;
     return this;
+  }
+
+  /**
+   * Update token issued at timestamp (for single session enforcement)
+   * Returns the timestamp that was set
+   */
+  async updateTokenIssuedAt() {
+    const query = `
+      UPDATE public.users
+      SET token_issued_at = NOW(), updated_at = NOW()
+      WHERE id = $1
+      RETURNING token_issued_at, updated_at
+    `;
+
+    const result = await database.query(query, [this.id]);
+
+    if (result.rows.length === 0) {
+      throw new UserNotFoundError(`ID: ${this.id}`);
+    }
+
+    this.tokenIssuedAt = result.rows[0].token_issued_at;
+    this.updatedAt = result.rows[0].updated_at;
+    return this.tokenIssuedAt;
   }
 
   /**

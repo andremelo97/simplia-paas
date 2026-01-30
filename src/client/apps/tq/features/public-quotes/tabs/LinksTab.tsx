@@ -6,11 +6,13 @@ import { LinksEmpty } from '../../../components/public-quotes/LinksEmpty'
 import { PublicQuoteLinksFilters } from '../../../components/public-quotes/PublicQuoteLinksFilters'
 import { PublicQuoteLinkRow } from '../../../components/public-quotes/PublicQuoteLinkRow'
 import { publicQuotesService, PublicQuote } from '../../../services/publicQuotes'
+import { useDateFilterParams } from '@client/common/utils/dateFilters'
 
 export const LinksTab: React.FC = () => {
   const { t } = useTranslation('tq')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { convertDateRange } = useDateFilterParams()
   const [quoteFilter, setQuoteFilter] = useState(searchParams.get('quote') || '')
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [showInactiveOnly, setShowInactiveOnly] = useState(false)
@@ -31,7 +33,7 @@ export const LinksTab: React.FC = () => {
 
   useEffect(() => {
     loadPublicQuotes()
-  }, [showActiveOnly, showInactiveOnly, createdFrom, createdTo])
+  }, [showActiveOnly, showInactiveOnly, createdFrom, createdTo, convertDateRange])
 
   // Update filter when URL params change
   useEffect(() => {
@@ -60,12 +62,15 @@ export const LinksTab: React.FC = () => {
       }
       // If both or neither are checked, don't filter by active status
 
-      if (createdFrom) {
-        filters.created_from = createdFrom
+      // Convert local dates to UTC timestamps using tenant timezone
+      const dateParams = convertDateRange(createdFrom || undefined, createdTo || undefined)
+
+      if (dateParams.created_from_utc) {
+        filters.created_from = dateParams.created_from_utc
       }
 
-      if (createdTo) {
-        filters.created_to = createdTo
+      if (dateParams.created_to_utc) {
+        filters.created_to = dateParams.created_to_utc
       }
 
       const quotes = await publicQuotesService.listAllPublicQuotes(filters)

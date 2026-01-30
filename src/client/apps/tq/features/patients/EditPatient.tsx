@@ -241,7 +241,7 @@ export const EditPatient: React.FC = () => {
           </p>
         </div>
         <Button
-          variant="secondary"
+          variant="primary"
           onClick={() => navigate(`/patients/${id}/history`)}
           className="flex items-center gap-2"
         >

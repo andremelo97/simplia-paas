@@ -17,6 +17,16 @@ class Quote {
     this.content = data.content;
     this.total = data.total;
     this.status = data.status;
+    this.createdByUserId = data.created_by_user_id_fk;
+
+    // Include creator data if joined
+    if (data.creator_first_name !== undefined) {
+      this.createdBy = {
+        id: data.created_by_user_id_fk,
+        firstName: data.creator_first_name,
+        lastName: data.creator_last_name
+      };
+    }
 
     // Include session data if joined
     if (data.session_number) {
@@ -50,10 +60,12 @@ class Quote {
   static async findById(id, schema, includeItems = false, includeSession = true) {
     let query = `
       SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
-             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.quote q
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON q.created_by_user_id_fk = u.id
       WHERE q.id = $1
     `;
 
@@ -93,14 +105,16 @@ class Quote {
    * Find all quotes within a tenant schema
    */
   static async findAll(schema, options = {}) {
-    const { limit = 50, offset = 0, sessionId, status } = options;
+    const { limit = 50, offset = 0, sessionId, status, createdFrom, createdTo, patientId, createdByUserId } = options;
 
     let query = `
       SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
-             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.quote q
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON q.created_by_user_id_fk = u.id
     `;
 
     const params = [];
@@ -114,6 +128,28 @@ class Quote {
     if (status) {
       conditions.push(`q.status = $${params.length + 1}`);
       params.push(status);
+    }
+
+    if (createdFrom) {
+      // Accept ISO timestamp UTC from frontend (timezone-aware)
+      conditions.push(`q.created_at >= $${params.length + 1}::timestamptz`);
+      params.push(createdFrom);
+    }
+
+    if (createdTo) {
+      // Accept ISO timestamp UTC from frontend (includes end of day)
+      conditions.push(`q.created_at <= $${params.length + 1}::timestamptz`);
+      params.push(createdTo);
+    }
+
+    if (patientId) {
+      conditions.push(`s.patient_id = $${params.length + 1}`);
+      params.push(patientId);
+    }
+
+    if (createdByUserId) {
+      conditions.push(`q.created_by_user_id_fk = $${params.length + 1}`);
+      params.push(createdByUserId);
     }
 
     if (conditions.length > 0) {
@@ -131,20 +167,35 @@ class Quote {
    * Count quotes within a tenant schema
    */
   static async count(schema, options = {}) {
-    const { sessionId, status } = options;
+    const { sessionId, status, patientId, createdByUserId } = options;
 
-    let query = `SELECT COUNT(*) as count FROM ${schema}.quote`;
+    let query = `SELECT COUNT(*) as count FROM ${schema}.quote q`;
     const params = [];
     const conditions = [];
 
+    // Join with session if filtering by patientId
+    if (patientId) {
+      query += ` LEFT JOIN ${schema}.session s ON q.session_id = s.id`;
+    }
+
     if (sessionId) {
-      conditions.push(`session_id = $${params.length + 1}`);
+      conditions.push(`q.session_id = $${params.length + 1}`);
       params.push(sessionId);
     }
 
     if (status) {
-      conditions.push(`status = $${params.length + 1}`);
+      conditions.push(`q.status = $${params.length + 1}`);
       params.push(status);
+    }
+
+    if (patientId) {
+      conditions.push(`s.patient_id = $${params.length + 1}`);
+      params.push(patientId);
+    }
+
+    if (createdByUserId) {
+      conditions.push(`q.created_by_user_id_fk = $${params.length + 1}`);
+      params.push(createdByUserId);
     }
 
     if (conditions.length > 0) {
@@ -159,29 +210,32 @@ class Quote {
    * Create a new quote within a tenant schema
    */
   static async create(quoteData, schema) {
-    const { sessionId, content, status = 'draft' } = quoteData;
+    const { sessionId, content, status = 'draft', createdByUserId = null } = quoteData;
 
     const insertQuery = `
-      INSERT INTO ${schema}.quote (session_id, content, status)
-      VALUES ($1, $2, $3)
+      INSERT INTO ${schema}.quote (session_id, content, status, created_by_user_id_fk)
+      VALUES ($1, $2, $3, $4)
       RETURNING id
     `;
 
     const insertResult = await database.query(insertQuery, [
       sessionId,
       content,
-      status
+      status,
+      createdByUserId
     ]);
 
     const quoteId = insertResult.rows[0].id;
 
-    // Fetch the created quote with all joined data (session + patient)
+    // Fetch the created quote with all joined data (session + patient + creator)
     const selectQuery = `
       SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
-             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email, p.phone as patient_phone,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.quote q
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON q.created_by_user_id_fk = u.id
       WHERE q.id = $1
     `;
 
@@ -231,13 +285,15 @@ class Quote {
       throw new QuoteNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    // Fetch the updated quote with all joined data (session + patient)
+    // Fetch the updated quote with all joined data (session + patient + creator)
     const selectQuery = `
       SELECT q.*, s.number as session_number, s.status as session_status, s.patient_id,
-             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+             p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.quote q
       LEFT JOIN ${schema}.session s ON q.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON q.created_by_user_id_fk = u.id
       WHERE q.id = $1
     `;
 
@@ -295,8 +351,14 @@ class Quote {
       sessionId: this.sessionId,
       content: this.content,
       total: this.total ? parseFloat(this.total) : 0,
-      status: this.status
+      status: this.status,
+      createdByUserId: this.createdByUserId
     };
+
+    // Include creator data if available
+    if (this.createdBy) {
+      result.createdBy = this.createdBy;
+    }
 
     // Include session data if available (flat fields for frontend compatibility)
     if (this.session) {

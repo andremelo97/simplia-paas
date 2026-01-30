@@ -286,6 +286,10 @@
     "BUG_REPORT_SUBMITTED": {
       "title": "Bug Report Sent",
       "message": "Your bug report has been submitted successfully. Thank you!"
+    },
+    "SESSION_INVALIDATED": {
+      "title": "Session Ended",
+      "message": "Your session was ended because you signed in on another device."
     }
   },
   "support_modal": {

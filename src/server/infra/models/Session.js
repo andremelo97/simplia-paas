@@ -16,6 +16,16 @@ class Session {
     this.patientId = data.patient_id;
     this.transcriptionId = data.transcription_id;
     this.status = data.status;
+    this.createdByUserId = data.created_by_user_id_fk;
+
+    // Include creator data if joined
+    if (data.creator_first_name !== undefined) {
+      this.createdBy = {
+        id: data.created_by_user_id_fk,
+        firstName: data.creator_first_name,
+        lastName: data.creator_last_name
+      };
+    }
 
     // Include patient data if joined
     if (data.patient_first_name) {
@@ -53,6 +63,9 @@ class Session {
     // Always include transcription data if available
     query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence, t.audio_url as transcription_audio_url, t.audio_deleted_at as transcription_audio_deleted_at`;
 
+    // Always include creator info
+    query += `, u.first_name as creator_first_name, u.last_name as creator_last_name`;
+
     query += ` FROM ${schema}.session s`;
 
     if (includePatient) {
@@ -61,6 +74,9 @@ class Session {
 
     // Always left join transcription
     query += ` LEFT JOIN ${schema}.transcription t ON s.transcription_id = t.id`;
+
+    // Always left join creator user
+    query += ` LEFT JOIN public.users u ON s.created_by_user_id_fk = u.id`;
 
     query += ` WHERE s.id = $1`;
 
@@ -77,7 +93,7 @@ class Session {
    * Find all sessions within a tenant schema
    */
   static async findAll(schema, options = {}) {
-    const { limit = 50, offset = 0, patientId, status, includePatient = false } = options;
+    const { limit = 50, offset = 0, patientId, status, includePatient = false, createdFrom, createdTo, createdByUserId } = options;
 
     let query = `
       SELECT s.*
@@ -90,6 +106,9 @@ class Session {
     // Always include transcription data if available
     query += `, t.transcript as transcription_text, t.confidence_score as transcription_confidence, t.audio_url as transcription_audio_url, t.audio_deleted_at as transcription_audio_deleted_at`;
 
+    // Always include creator info
+    query += `, u.first_name as creator_first_name, u.last_name as creator_last_name`;
+
     query += ` FROM ${schema}.session s`;
 
     if (includePatient) {
@@ -98,6 +117,9 @@ class Session {
 
     // Always left join transcription
     query += ` LEFT JOIN ${schema}.transcription t ON s.transcription_id = t.id`;
+
+    // Always left join creator user
+    query += ` LEFT JOIN public.users u ON s.created_by_user_id_fk = u.id`;
 
     const params = [];
     const conditions = [];
@@ -110,6 +132,23 @@ class Session {
     if (status) {
       conditions.push(`s.status = $${params.length + 1}`);
       params.push(status);
+    }
+
+    if (createdFrom) {
+      // Accept ISO timestamp UTC from frontend (timezone-aware)
+      conditions.push(`s.created_at >= $${params.length + 1}::timestamptz`);
+      params.push(createdFrom);
+    }
+
+    if (createdTo) {
+      // Accept ISO timestamp UTC from frontend (includes end of day)
+      conditions.push(`s.created_at <= $${params.length + 1}::timestamptz`);
+      params.push(createdTo);
+    }
+
+    if (createdByUserId) {
+      conditions.push(`s.created_by_user_id_fk = $${params.length + 1}`);
+      params.push(createdByUserId);
     }
 
     if (conditions.length > 0) {
@@ -127,7 +166,7 @@ class Session {
    * Count sessions within a tenant schema
    */
   static async count(schema, options = {}) {
-    const { patientId, status } = options;
+    const { patientId, status, createdByUserId } = options;
 
     let query = `SELECT COUNT(*) as count FROM ${schema}.session`;
     const params = [];
@@ -143,6 +182,11 @@ class Session {
       params.push(status);
     }
 
+    if (createdByUserId) {
+      conditions.push(`created_by_user_id_fk = $${params.length + 1}`);
+      params.push(createdByUserId);
+    }
+
     if (conditions.length > 0) {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
@@ -155,18 +199,19 @@ class Session {
    * Create a new session within a tenant schema
    */
   static async create(sessionData, schema) {
-    const { patientId, transcriptionId, status = 'draft' } = sessionData;
+    const { patientId, transcriptionId, status = 'draft', createdByUserId = null } = sessionData;
 
     const query = `
-      INSERT INTO ${schema}.session (patient_id, transcription_id, status)
-      VALUES ($1, $2, $3)
+      INSERT INTO ${schema}.session (patient_id, transcription_id, status, created_by_user_id_fk)
+      VALUES ($1, $2, $3, $4)
       RETURNING *
     `;
 
     const result = await database.query(query, [
       patientId,
       transcriptionId,
-      status
+      status,
+      createdByUserId
     ]);
 
     return new Session(result.rows[0]);
@@ -327,9 +372,11 @@ class Session {
     const { limit = 50, offset = 0, status } = options;
 
     let query = `
-      SELECT s.*, p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+      SELECT s.*, p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.session s
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON s.created_by_user_id_fk = u.id
       WHERE s.patient_id = $1
     `;
     const params = [patientId];
@@ -357,8 +404,14 @@ class Session {
       updatedAt: this.updatedAt,
       patientId: this.patientId,
       transcriptionId: this.transcriptionId,
-      status: this.status
+      status: this.status,
+      createdByUserId: this.createdByUserId
     };
+
+    // Include creator data if available
+    if (this.createdBy) {
+      result.createdBy = this.createdBy;
+    }
 
     // Include patient data if available
     if (this.patient) {

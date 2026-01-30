@@ -15,6 +15,16 @@ class ClinicalReport {
     this.number = data.number;
     this.sessionId = data.session_id;
     this.content = data.content;
+    this.createdByUserId = data.created_by_user_id_fk;
+
+    // Include creator data if joined
+    if (data.creator_first_name !== undefined) {
+      this.createdBy = {
+        id: data.created_by_user_id_fk,
+        firstName: data.creator_first_name,
+        lastName: data.creator_last_name
+      };
+    }
 
     // Include session data if joined
     if (data.session_number) {
@@ -44,10 +54,12 @@ class ClinicalReport {
     let query = `
       SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone
+             p.email as patient_email, p.phone as patient_phone,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.clinical_report cr
       LEFT JOIN ${schema}.session s ON cr.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
       WHERE cr.id = $1
     `;
 
@@ -64,15 +76,17 @@ class ClinicalReport {
    * Find all clinical reports within a tenant schema
    */
   static async findAll(schema, options = {}) {
-    const { limit = 50, offset = 0, sessionId } = options;
+    const { limit = 50, offset = 0, sessionId, createdFrom, createdTo, patientId, createdByUserId } = options;
 
     let query = `
       SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone
+             p.email as patient_email, p.phone as patient_phone,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.clinical_report cr
       LEFT JOIN ${schema}.session s ON cr.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
     `;
 
     const params = [];
@@ -81,6 +95,28 @@ class ClinicalReport {
     if (sessionId) {
       conditions.push(`cr.session_id = $${params.length + 1}`);
       params.push(sessionId);
+    }
+
+    if (createdFrom) {
+      // Accept ISO timestamp UTC from frontend (timezone-aware)
+      conditions.push(`cr.created_at >= $${params.length + 1}::timestamptz`);
+      params.push(createdFrom);
+    }
+
+    if (createdTo) {
+      // Accept ISO timestamp UTC from frontend (includes end of day)
+      conditions.push(`cr.created_at <= $${params.length + 1}::timestamptz`);
+      params.push(createdTo);
+    }
+
+    if (patientId) {
+      conditions.push(`s.patient_id = $${params.length + 1}`);
+      params.push(patientId);
+    }
+
+    if (createdByUserId) {
+      conditions.push(`cr.created_by_user_id_fk = $${params.length + 1}`);
+      params.push(createdByUserId);
     }
 
     if (conditions.length > 0) {
@@ -98,15 +134,30 @@ class ClinicalReport {
    * Count clinical reports within a tenant schema
    */
   static async count(schema, options = {}) {
-    const { sessionId } = options;
+    const { sessionId, patientId, createdByUserId } = options;
 
-    let query = `SELECT COUNT(*) as count FROM ${schema}.clinical_report`;
+    let query = `SELECT COUNT(*) as count FROM ${schema}.clinical_report cr`;
     const params = [];
     const conditions = [];
 
+    // Join with session if filtering by patientId
+    if (patientId) {
+      query += ` LEFT JOIN ${schema}.session s ON cr.session_id = s.id`;
+    }
+
     if (sessionId) {
-      conditions.push(`session_id = $${params.length + 1}`);
+      conditions.push(`cr.session_id = $${params.length + 1}`);
       params.push(sessionId);
+    }
+
+    if (patientId) {
+      conditions.push(`s.patient_id = $${params.length + 1}`);
+      params.push(patientId);
+    }
+
+    if (createdByUserId) {
+      conditions.push(`cr.created_by_user_id_fk = $${params.length + 1}`);
+      params.push(createdByUserId);
     }
 
     if (conditions.length > 0) {
@@ -121,29 +172,32 @@ class ClinicalReport {
    * Create a new clinical report within a tenant schema
    */
   static async create(reportData, schema) {
-    const { sessionId, content } = reportData;
+    const { sessionId, content, createdByUserId = null } = reportData;
 
     const insertQuery = `
-      INSERT INTO ${schema}.clinical_report (session_id, content)
-      VALUES ($1, $2)
+      INSERT INTO ${schema}.clinical_report (session_id, content, created_by_user_id_fk)
+      VALUES ($1, $2, $3)
       RETURNING id
     `;
 
     const insertResult = await database.query(insertQuery, [
       sessionId,
-      content
+      content,
+      createdByUserId
     ]);
 
     const reportId = insertResult.rows[0].id;
 
-    // Fetch the created report with all joined data (session + patient)
+    // Fetch the created report with all joined data (session + patient + creator)
     const selectQuery = `
       SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone
+             p.email as patient_email, p.phone as patient_phone,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.clinical_report cr
       LEFT JOIN ${schema}.session s ON cr.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
       WHERE cr.id = $1
     `;
 
@@ -193,14 +247,16 @@ class ClinicalReport {
       throw new ClinicalReportNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    // Fetch the updated report with all joined data (session + patient)
+    // Fetch the updated report with all joined data (session + patient + creator)
     const selectQuery = `
       SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone
+             p.email as patient_email, p.phone as patient_phone,
+             u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.clinical_report cr
       LEFT JOIN ${schema}.session s ON cr.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
+      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
       WHERE cr.id = $1
     `;
 
@@ -238,8 +294,14 @@ class ClinicalReport {
       updated_at: this.updatedAt,
       number: this.number,
       session_id: this.sessionId,
-      content: this.content
+      content: this.content,
+      createdByUserId: this.createdByUserId
     };
+
+    // Include creator data if available
+    if (this.createdBy) {
+      result.createdBy = this.createdBy;
+    }
 
     // Include session data if available (flat fields for frontend compatibility)
     if (this.session) {

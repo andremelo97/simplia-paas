@@ -24,6 +24,17 @@ export const fontOptions = [
   { label: 'Manrope', value: 'Manrope' },
 ]
 
+// Max width options for text components
+export const maxWidthOptions = [
+  { label: 'Full width', value: '100%' },
+  { label: '800px', value: '800px' },
+  { label: '700px', value: '700px' },
+  { label: '600px', value: '600px' },
+  { label: '500px', value: '500px' },
+  { label: '400px', value: '400px' },
+  { label: '300px', value: '300px' },
+]
+
 // Helper to load Google Font dynamically
 export const loadGoogleFont = (fontFamily: string) => {
   if (!fontFamily || fontFamily === 'inherit') return

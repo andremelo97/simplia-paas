@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
-import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
+import { textColorOptions, resolveColor, fontOptions, loadGoogleFont, maxWidthOptions } from './color-options'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -39,18 +39,9 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         options: fontOptions,
       },
       size: {
-        type: 'select' as const,
-        label: 'Font Size',
-        options: [
-          { label: '12px', value: 12 },
-          { label: '14px', value: 14 },
-          { label: '16px', value: 16 },
-          { label: '18px', value: 18 },
-          { label: '20px', value: 20 },
-          { label: '24px', value: 24 },
-          { label: '28px', value: 28 },
-          { label: '32px', value: 32 },
-        ],
+        type: 'text' as const,
+        label: 'Font Size (px)',
+        placeholder: '16',
       },
       align: {
         type: 'radio' as const,
@@ -88,8 +79,9 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         ],
       },
       maxWidth: {
-        type: 'text' as const,
-        label: 'maxWidth',
+        type: 'select' as const,
+        label: 'Max Width',
+        options: maxWidthOptions,
       },
       horizontalPadding: {
         type: 'select' as const,
@@ -116,13 +108,13 @@ export const createTypographyComponents = (branding: BrandingData) => ({
     defaultProps: {
       text: 'Text',
       fontFamily: 'inherit',
-      size: 16,
+      size: '',
       align: 'left',
       color: 'default',
       linkUrl: '',
       openInNewTab: true,
       showUnderline: true,
-      maxWidth: '',
+      maxWidth: '100%',
       horizontalPadding: 16,
       verticalPadding: 0,
     },
@@ -152,8 +144,13 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         color: textColor,
       }
 
-      if (maxWidth) {
+      if (maxWidth && maxWidth !== '100%') {
         styles.maxWidth = maxWidth
+        // Center the element when text is centered and maxWidth is set
+        if (align === 'center') {
+          styles.marginLeft = 'auto'
+          styles.marginRight = 'auto'
+        }
       }
 
       const textContent = linkUrl ? (
@@ -214,22 +211,9 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         ],
       },
       size: {
-        type: 'select' as const,
-        label: 'Font Size',
-        options: [
-          { label: 'Auto (based on hierarchy)', value: 'auto' },
-          { label: '16px', value: 16 },
-          { label: '18px', value: 18 },
-          { label: '20px', value: 20 },
-          { label: '24px', value: 24 },
-          { label: '28px', value: 28 },
-          { label: '32px', value: 32 },
-          { label: '36px', value: 36 },
-          { label: '40px', value: 40 },
-          { label: '48px', value: 48 },
-          { label: '56px', value: 56 },
-          { label: '64px', value: 64 },
-        ],
+        type: 'text' as const,
+        label: 'Font Size (px)',
+        placeholder: 'Auto (based on hierarchy)',
       },
       align: {
         type: 'radio' as const,
@@ -244,6 +228,11 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         type: 'select' as const,
         label: 'Text Color',
         options: textColorOptions,
+      },
+      maxWidth: {
+        type: 'select' as const,
+        label: 'Max Width',
+        options: maxWidthOptions,
       },
       horizontalPadding: {
         type: 'select' as const,
@@ -260,13 +249,14 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       text: 'Title',
       fontFamily: 'inherit',
       level: 'h2',
-      size: 'auto',
+      size: '',
       align: 'left',
       color: 'default',
+      maxWidth: '100%',
       horizontalPadding: 16,
       verticalPadding: 8,
     },
-    render: ({ text, fontFamily, level, size, align, color, horizontalPadding, verticalPadding }: any) => {
+    render: ({ text, fontFamily, level, size, align, color, maxWidth, horizontalPadding, verticalPadding }: any) => {
       useEffect(() => {
         loadGoogleFont(fontFamily)
       }, [fontFamily])
@@ -292,7 +282,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       const uniqueId = `title-${Math.random().toString(36).substr(2, 9)}`
 
       // Use manual size if set, otherwise use hierarchy-based size
-      const fontSize = size === 'auto' || size === undefined
+      const fontSize = !size || size === 'auto'
         ? levelSizes[level] || 36
         : (typeof size === 'number' ? size : parseInt(size) || 36)
 
@@ -311,6 +301,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
               paddingTop: `${verticalPadding}px`,
               paddingBottom: `${verticalPadding}px`,
               color: textColor,
+              ...(maxWidth && maxWidth !== '100%' ? { maxWidth, ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto' } : {}) } : {}),
             }}
           >
             {text}

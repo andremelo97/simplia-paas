@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import * as Icons from './icons'
-import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
+import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor, fontOptions, loadGoogleFont, maxWidthOptions } from './color-options'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -632,34 +632,37 @@ export const createOtherComponents = (branding: BrandingData) => ({
   },
   Hero: {
     fields: {
+      // ═══════════════════════════════════════════════════════════════
+      // CONTENT
+      // ═══════════════════════════════════════════════════════════════
       title: {
         type: 'text' as const,
-        label: 'title',
+        label: 'Title',
       },
       description: {
         type: 'textarea' as const,
-        label: 'description',
+        label: 'Description',
       },
       buttons: {
         type: 'array' as const,
-        label: 'buttons',
+        label: 'Buttons',
         arrayFields: {
           label: {
             type: 'text' as const,
-            label: 'label',
+            label: 'Label',
           },
           href: {
             type: 'text' as const,
-            label: 'href',
+            label: 'Link URL',
           },
           style: {
             type: 'radio' as const,
-            label: 'style',
+            label: 'Style',
             options: [
-              { label: 'primary', value: 'primary' },
-              { label: 'secondary', value: 'secondary' },
-              { label: 'tertiary', value: 'tertiary' },
-              { label: 'outline', value: 'outline' },
+              { label: 'Primary', value: 'primary' },
+              { label: 'Secondary', value: 'secondary' },
+              { label: 'Tertiary', value: 'tertiary' },
+              { label: 'Outline', value: 'outline' },
             ],
           },
           size: {
@@ -685,74 +688,26 @@ export const createOtherComponents = (branding: BrandingData) => ({
           textColor: '#ffffff',
         },
       },
+
+      // ═══════════════════════════════════════════════════════════════
+      // LAYOUT
+      // ═══════════════════════════════════════════════════════════════
       align: {
         type: 'radio' as const,
-        label: 'align',
+        label: 'Alignment',
         options: [
-          { label: 'left', value: 'left' },
-          { label: 'center', value: 'center' },
+          { label: 'Left', value: 'left' },
+          { label: 'Center', value: 'center' },
         ],
-      },
-      backgroundMode: {
-        type: 'radio' as const,
-        label: 'background',
-        options: [
-          { label: 'none', value: 'none' },
-          { label: 'image (custom url)', value: 'image' },
-          { label: 'video (from branding)', value: 'video' },
-        ],
-      },
-      backgroundImageUrl: {
-        type: 'text' as const,
-        label: 'background image url',
-      },
-      showOverlay: {
-        type: 'radio' as const,
-        label: 'Show Color Overlay',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No (original colors)', value: false },
-        ],
-      },
-      backgroundOpacity: {
-        type: 'number' as const,
-        label: 'background opacity (0-1)',
-        min: 0,
-        max: 1,
-        step: 0.1,
-      },
-      disableVideoOnMobile: {
-        type: 'radio' as const,
-        label: 'disable video on mobile',
-        options: [
-          { label: 'yes', value: true },
-          { label: 'no', value: false },
-        ],
-      },
-      showInlineMedia: {
-        type: 'radio' as const,
-        label: 'show inline media',
-        options: [
-          { label: 'yes', value: true },
-          { label: 'no', value: false },
-        ],
-      },
-      inlineMediaType: {
-        type: 'radio' as const,
-        label: 'inline media type',
-        options: [
-          { label: 'image', value: 'image' },
-          { label: 'video (embed)', value: 'video' },
-        ],
-      },
-      inlineMediaUrl: {
-        type: 'text' as const,
-        label: 'inline media url',
       },
       padding: {
         type: 'text' as const,
-        label: 'padding',
+        label: 'Padding (px)',
       },
+
+      // ═══════════════════════════════════════════════════════════════
+      // TITLE STYLING
+      // ═══════════════════════════════════════════════════════════════
       titleFontFamily: {
         type: 'select' as const,
         label: 'Title Font',
@@ -760,7 +715,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
       },
       titleSize: {
         type: 'text' as const,
-        label: 'title font size (px)',
+        label: 'Title Size (px)',
         placeholder: '48',
       },
       titleColor: {
@@ -768,18 +723,27 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Title Color',
         options: textColorOptions,
       },
+      titleMaxWidth: {
+        type: 'select' as const,
+        label: 'Title Max Width',
+        options: maxWidthOptions,
+      },
       titleBgColor: {
         type: 'select' as const,
-        label: 'Title Background Color',
+        label: 'Title Background',
         options: backgroundColorOptions,
       },
       titleBgOpacity: {
         type: 'number' as const,
-        label: 'Title Background Opacity (0-1)',
+        label: 'Title Bg Opacity (0-1)',
         min: 0,
         max: 1,
         step: 0.1,
       },
+
+      // ═══════════════════════════════════════════════════════════════
+      // DESCRIPTION STYLING
+      // ═══════════════════════════════════════════════════════════════
       descriptionFontFamily: {
         type: 'select' as const,
         label: 'Description Font',
@@ -787,7 +751,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
       },
       descriptionSize: {
         type: 'text' as const,
-        label: 'description font size (px)',
+        label: 'Description Size (px)',
         placeholder: '18',
       },
       descriptionColor: {
@@ -795,22 +759,44 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Description Color',
         options: textColorOptions,
       },
+      descriptionMaxWidth: {
+        type: 'select' as const,
+        label: 'Description Max Width',
+        options: maxWidthOptions,
+      },
       descriptionBgColor: {
         type: 'select' as const,
-        label: 'Description Background Color',
+        label: 'Description Background',
         options: backgroundColorOptions,
       },
       descriptionBgOpacity: {
         type: 'number' as const,
-        label: 'Description Background Opacity (0-1)',
+        label: 'Description Bg Opacity (0-1)',
         min: 0,
         max: 1,
         step: 0.1,
       },
+
+      // ═══════════════════════════════════════════════════════════════
+      // BACKGROUND
+      // ═══════════════════════════════════════════════════════════════
       backgroundColor: {
         type: 'select' as const,
         label: 'Background Color',
         options: backgroundColorOptions,
+      },
+      backgroundMode: {
+        type: 'radio' as const,
+        label: 'Background Media',
+        options: [
+          { label: 'None', value: 'none' },
+          { label: 'Image (custom URL)', value: 'image' },
+          { label: 'Video (from branding)', value: 'video' },
+        ],
+      },
+      backgroundImageUrl: {
+        type: 'text' as const,
+        label: 'Background Image URL',
       },
       videoObjectFit: {
         type: 'select' as const,
@@ -821,13 +807,81 @@ export const createOtherComponents = (branding: BrandingData) => ({
           { label: 'Fill (stretch to fill)', value: 'fill' },
         ],
       },
+      disableVideoOnMobile: {
+        type: 'radio' as const,
+        label: 'Disable Video on Mobile',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+
+      // ═══════════════════════════════════════════════════════════════
+      // OVERLAY (on background media)
+      // ═══════════════════════════════════════════════════════════════
+      showOverlay: {
+        type: 'radio' as const,
+        label: 'Show Overlay',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      overlayColor: {
+        type: 'radio' as const,
+        label: 'Overlay Color',
+        options: [
+          { label: 'Light (brighten)', value: 'light' },
+          { label: 'Dark (darken)', value: 'dark' },
+        ],
+      },
+      overlayOpacity: {
+        type: 'number' as const,
+        label: 'Overlay Opacity (0-1)',
+        min: 0,
+        max: 1,
+        step: 0.1,
+      },
+      backgroundOpacity: {
+        type: 'number' as const,
+        label: 'Media Opacity (0-1)',
+        min: 0,
+        max: 1,
+        step: 0.1,
+      },
+
+      // ═══════════════════════════════════════════════════════════════
+      // INLINE MEDIA (image/video next to content)
+      // ═══════════════════════════════════════════════════════════════
+      showInlineMedia: {
+        type: 'radio' as const,
+        label: 'Show Inline Media',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      inlineMediaType: {
+        type: 'radio' as const,
+        label: 'Inline Media Type',
+        options: [
+          { label: 'Image', value: 'image' },
+          { label: 'Video (embed)', value: 'video' },
+        ],
+      },
+      inlineMediaUrl: {
+        type: 'text' as const,
+        label: 'Inline Media URL',
+      },
     },
     resolveFields: (data: any, { fields }: any) => {
       const resolvedFields = { ...fields }
 
-      // Only show backgroundOpacity when showOverlay is true
+      // Only show backgroundOpacity, overlayColor and overlayOpacity when showOverlay is true
       if (data.props.showOverlay !== true && data.props.showOverlay !== 'true') {
         delete resolvedFields.backgroundOpacity
+        delete resolvedFields.overlayColor
+        delete resolvedFields.overlayOpacity
       }
 
       // Only show titleBgOpacity when titleBgColor is set
@@ -876,8 +930,12 @@ export const createOtherComponents = (branding: BrandingData) => ({
       backgroundColor: 'none',
       videoObjectFit: 'cover',
       showOverlay: true,
+      overlayColor: 'light',
+      overlayOpacity: 0.5,
+      titleMaxWidth: '100%',
+      descriptionMaxWidth: '100%',
     },
-    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleFontFamily, titleSize, titleColor, titleBgColor, titleBgOpacity, descriptionFontFamily, descriptionSize, descriptionColor, descriptionBgColor, descriptionBgOpacity, backgroundColor, videoObjectFit, showOverlay }: any) => {
+    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleFontFamily, titleSize, titleColor, titleBgColor, titleBgOpacity, descriptionFontFamily, descriptionSize, descriptionColor, descriptionBgColor, descriptionBgOpacity, backgroundColor, videoObjectFit, showOverlay, overlayColor, overlayOpacity, titleMaxWidth, descriptionMaxWidth }: any) => {
       useEffect(() => {
         loadGoogleFont(titleFontFamily)
         loadGoogleFont(descriptionFontFamily)
@@ -1078,22 +1136,27 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 />
               )}
               
-              {/* Gradient overlay - subtle white for text legibility */}
-              {(showOverlay === true || showOverlay === 'true') && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    left: 0,
-                    background: align === 'center'
-                      ? 'linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25))'
-                      : 'linear-gradient(to right, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0) 100%)',
-                    zIndex: 1,
-                  }}
-                />
-              )}
+              {/* Gradient overlay - light (white) or dark (black) for text legibility */}
+              {(showOverlay === true || showOverlay === 'true') && (() => {
+                const opacity = overlayOpacity ?? 0.5
+                const rgb = overlayColor === 'dark' ? '0, 0, 0' : '255, 255, 255'
+                const gradient = align === 'center'
+                  ? `linear-gradient(to bottom, rgba(${rgb}, ${opacity}), rgba(${rgb}, ${opacity}))`
+                  : `linear-gradient(to right, rgba(${rgb}, ${opacity}) 0%, rgba(${rgb}, ${opacity * 0.5}) 50%, rgba(${rgb}, ${opacity * 0.1}) 70%, rgba(${rgb}, 0) 100%)`
+                return (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      bottom: 0,
+                      left: 0,
+                      background: gradient,
+                      zIndex: 1,
+                    }}
+                  />
+                )
+              })()}
               {/* Content */}
               <div style={{ width: '100%', maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto', position: 'relative', zIndex: 10 }}>
                 <div style={{ width: '100%', maxWidth: '768px', ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' } : { textAlign: 'left' }), paddingLeft: '16px', paddingRight: '16px' }}>
@@ -1104,6 +1167,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                     marginBottom: '16px',
                     wordBreak: 'break-word',
                     color: resolveColor(titleColor, branding),
+                    ...(titleMaxWidth && titleMaxWidth !== '100%' ? { maxWidth: titleMaxWidth, ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto' } : {}) } : {}),
                     ...(titleBgColor && titleBgColor !== 'none' ? {
                       display: 'inline-block',
                       backgroundColor: `${resolveColor(titleBgColor, branding)}${Math.round((titleBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
@@ -1120,6 +1184,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                     lineHeight: '1.625',
                     wordBreak: 'break-word',
                     color: resolveColor(descriptionColor, branding),
+                    ...(descriptionMaxWidth && descriptionMaxWidth !== '100%' ? { maxWidth: descriptionMaxWidth, ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto' } : {}) } : {}),
                     ...(descriptionBgColor && descriptionBgColor !== 'none' ? {
                       display: 'inline-block',
                       backgroundColor: `${resolveColor(descriptionBgColor, branding)}${Math.round((descriptionBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
@@ -1229,6 +1294,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                     marginBottom: '16px',
                     wordBreak: 'break-word',
                     color: resolveColor(titleColor, branding),
+                    ...(titleMaxWidth && titleMaxWidth !== '100%' ? { maxWidth: titleMaxWidth, marginLeft: 'auto', marginRight: 'auto' } : {}),
                     ...(titleBgColor && titleBgColor !== 'none' ? {
                       display: 'inline-block',
                       backgroundColor: `${resolveColor(titleBgColor, branding)}${Math.round((titleBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
@@ -1245,6 +1311,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                     lineHeight: '1.625',
                     wordBreak: 'break-word',
                     color: resolveColor(descriptionColor, branding),
+                    ...(descriptionMaxWidth && descriptionMaxWidth !== '100%' ? { maxWidth: descriptionMaxWidth, marginLeft: 'auto', marginRight: 'auto' } : {}),
                     ...(descriptionBgColor && descriptionBgColor !== 'none' ? {
                       display: 'inline-block',
                       backgroundColor: `${resolveColor(descriptionBgColor, branding)}${Math.round((descriptionBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
@@ -1289,6 +1356,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                       marginBottom: '16px',
                       wordBreak: 'break-word',
                       color: resolveColor(titleColor, branding),
+                      ...(titleMaxWidth && titleMaxWidth !== '100%' ? { maxWidth: titleMaxWidth } : {}),
                       ...(titleBgColor && titleBgColor !== 'none' ? {
                         display: 'inline-block',
                         backgroundColor: `${resolveColor(titleBgColor, branding)}${Math.round((titleBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
@@ -1305,6 +1373,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                       lineHeight: '1.625',
                       wordBreak: 'break-word',
                       color: resolveColor(descriptionColor, branding),
+                      ...(descriptionMaxWidth && descriptionMaxWidth !== '100%' ? { maxWidth: descriptionMaxWidth } : {}),
                       ...(descriptionBgColor && descriptionBgColor !== 'none' ? {
                         display: 'inline-block',
                         backgroundColor: `${resolveColor(descriptionBgColor, branding)}${Math.round((descriptionBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
@@ -1668,13 +1737,14 @@ export const createOtherComponents = (branding: BrandingData) => ({
         ],
       },
       titleSize: {
-        type: 'select' as const,
-        label: 'Title Size',
-        options: [
-          { label: 'Small (16px)', value: 'sm' },
-          { label: 'Medium (20px)', value: 'md' },
-          { label: 'Large (24px)', value: 'lg' },
-        ],
+        type: 'text' as const,
+        label: 'Title Size (px)',
+        placeholder: '20',
+      },
+      textSize: {
+        type: 'text' as const,
+        label: 'Text Size (px)',
+        placeholder: '16',
       },
       gap: {
         type: 'select' as const,
@@ -1713,20 +1783,15 @@ export const createOtherComponents = (branding: BrandingData) => ({
         { title: 'Second Column', text: 'Content for column 2.' },
       ],
       alignment: 'left',
-      titleSize: 'md',
+      titleSize: '',
+      textSize: '',
       gap: 'md',
       verticalPadding: 32,
       backgroundColor: 'none',
       titleColor: '#111827',
       textColor: '#4b5563',
     },
-    render: ({ columns, alignment, titleSize, gap, verticalPadding, backgroundColor, titleColor, textColor }: any) => {
-      const titleSizeMap: Record<string, string> = {
-        sm: '16px',
-        md: '20px',
-        lg: '24px',
-      }
-
+    render: ({ columns, alignment, titleSize, textSize, gap, verticalPadding, backgroundColor, titleColor, textColor }: any) => {
       const gapMap: Record<string, string> = {
         sm: '16px',
         md: '24px',
@@ -1770,64 +1835,76 @@ export const createOtherComponents = (branding: BrandingData) => ({
         )
       }
 
+      const gridId = `textcols-grid-${Math.random().toString(36).substr(2, 9)}`
+
       return (
-        <div
-          style={{
-            width: '100%',
-            paddingTop: `${verticalPadding}px`,
-            paddingBottom: `${verticalPadding}px`,
-            paddingLeft: '16px',
-            paddingRight: '16px',
-            backgroundColor: resolveColor(backgroundColor, branding),
-          }}
-        >
+        <>
           <div
             style={{
-              maxWidth: '1152px',
-              marginLeft: 'auto',
-              marginRight: 'auto',
-              display: 'grid',
-              gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
-              gap: gapMap[gap] || '24px',
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
             }}
           >
-            {validColumns.map((column: any, index: number) => (
-              <div
-                key={index}
-                style={{
-                  textAlign: alignment,
-                }}
-              >
-                {column.title && (
-                  <h3
-                    style={{
-                      fontSize: titleSizeMap[titleSize] || '20px',
-                      fontWeight: '600',
-                      marginBottom: '12px',
-                      wordBreak: 'break-word',
-                      color: resolveColor(titleColor, branding),
-                    }}
-                  >
-                    {column.title}
-                  </h3>
-                )}
-                {column.text && (
-                  <p
-                    style={{
-                      fontSize: '16px',
-                      lineHeight: '1.625',
-                      wordBreak: 'break-word',
-                      whiteSpace: 'pre-wrap',
-                      color: resolveColor(textColor, branding),
-                    }}
-                  >
-                    {column.text}
-                  </p>
-                )}
-              </div>
-            ))}
+            <div
+              className={gridId}
+              style={{
+                maxWidth: '1152px',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+                display: 'grid',
+                gridTemplateColumns: '1fr',
+                gap: gapMap[gap] || '24px',
+              }}
+            >
+              {validColumns.map((column: any, index: number) => (
+                <div
+                  key={index}
+                  style={{
+                    textAlign: alignment,
+                  }}
+                >
+                  {column.title && (
+                    <h3
+                      style={{
+                        fontSize: `${parseInt(titleSize) || 20}px`,
+                        fontWeight: '600',
+                        marginBottom: '12px',
+                        wordBreak: 'break-word',
+                        color: resolveColor(titleColor, branding),
+                      }}
+                    >
+                      {column.title}
+                    </h3>
+                  )}
+                  {column.text && (
+                    <p
+                      style={{
+                        fontSize: `${parseInt(textSize) || 16}px`,
+                        lineHeight: '1.625',
+                        wordBreak: 'break-word',
+                        whiteSpace: 'pre-wrap',
+                        color: resolveColor(textColor, branding),
+                      }}
+                    >
+                      {column.text}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+          <style>{`
+            @media (min-width: 768px) {
+              .${gridId} {
+                grid-template-columns: repeat(${columnCount}, 1fr) !important;
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },
@@ -1861,13 +1938,14 @@ export const createOtherComponents = (branding: BrandingData) => ({
         ],
       },
       titleSize: {
-        type: 'select' as const,
-        label: 'Title Size',
-        options: [
-          { label: 'Small (16px)', value: 'sm' },
-          { label: 'Medium (20px)', value: 'md' },
-          { label: 'Large (24px)', value: 'lg' },
-        ],
+        type: 'text' as const,
+        label: 'Title Size (px)',
+        placeholder: '20',
+      },
+      textSize: {
+        type: 'text' as const,
+        label: 'Text Size (px)',
+        placeholder: '16',
       },
       gap: {
         type: 'select' as const,
@@ -1923,7 +2001,8 @@ export const createOtherComponents = (branding: BrandingData) => ({
         },
       ],
       alignment: 'left',
-      titleSize: 'md',
+      titleSize: '',
+      textSize: '',
       gap: 'md',
       maxWidth: '768px',
       verticalPadding: 32,
@@ -1931,13 +2010,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
       titleColor: '#111827',
       textColor: '#4b5563',
     },
-    render: ({ rows, alignment, titleSize, gap, maxWidth, verticalPadding, backgroundColor, titleColor, textColor }: any) => {
-      const titleSizeMap: Record<string, string> = {
-        sm: '16px',
-        md: '20px',
-        lg: '24px',
-      }
-
+    render: ({ rows, alignment, titleSize, textSize, gap, maxWidth, verticalPadding, backgroundColor, titleColor, textColor }: any) => {
       const gapMap: Record<string, string> = {
         sm: '16px',
         md: '24px',
@@ -2011,7 +2084,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 {row.title && (
                   <h3
                     style={{
-                      fontSize: titleSizeMap[titleSize] || '20px',
+                      fontSize: `${parseInt(titleSize) || 20}px`,
                       fontWeight: '600',
                       marginBottom: '12px',
                       wordBreak: 'break-word',
@@ -2024,7 +2097,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 {row.text && (
                   <p
                     style={{
-                      fontSize: '16px',
+                      fontSize: `${parseInt(textSize) || 16}px`,
                       lineHeight: '1.625',
                       wordBreak: 'break-word',
                       whiteSpace: 'pre-wrap',

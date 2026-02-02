@@ -5,9 +5,7 @@ import { textColorOptions, resolveColor } from './color-options'
 export const createActionComponents = (branding: BrandingData) => ({
   Button: {
     fields: {
-      label: {
-        type: 'text' as const,
-      },
+      // === ACTION SETTINGS (TOP) ===
       action: {
         type: 'select' as const,
         label: 'Action',
@@ -15,11 +13,35 @@ export const createActionComponents = (branding: BrandingData) => ({
           { label: 'None (visual only)', value: 'none' },
           { label: 'Approve Quote', value: 'approve_quote' },
           { label: 'Link (URL)', value: 'link' },
+          { label: 'Open Widget (iframe)', value: 'open_widget' },
         ],
       },
       url: {
         type: 'text' as const,
         label: 'URL (for Link action)',
+      },
+      widgetUrl: {
+        type: 'text' as const,
+        label: 'Widget URL (iframe src)',
+      },
+      widgetTitle: {
+        type: 'text' as const,
+        label: 'Widget Modal Title',
+      },
+      widgetHeight: {
+        type: 'select' as const,
+        label: 'Widget Height',
+        options: [
+          { label: 'Small (400px)', value: '400' },
+          { label: 'Medium (600px)', value: '600' },
+          { label: 'Large (800px)', value: '800' },
+          { label: 'Full Screen', value: '100vh' },
+        ],
+      },
+      // === BUTTON SETTINGS ===
+      text: {
+        type: 'text' as const,
+        label: 'Button Text',
       },
       style: {
         type: 'radio' as const,
@@ -58,12 +80,30 @@ export const createActionComponents = (branding: BrandingData) => ({
       text: 'Click here',
       action: 'none',
       url: '',
+      widgetUrl: '',
+      widgetTitle: 'Widget',
+      widgetHeight: '600',
       style: 'primary',
       size: 'md',
       align: 'left',
       textColor: '#ffffff',
     },
-    render: ({ text, action, url, style, size, align, textColor }: any) => {
+    resolveFields: (data: any, { fields }: any) => {
+      // Show/hide fields based on action type
+      const resolvedFields = { ...fields }
+
+      if (data.props.action !== 'link') {
+        delete resolvedFields.url
+      }
+      if (data.props.action !== 'open_widget') {
+        delete resolvedFields.widgetUrl
+        delete resolvedFields.widgetTitle
+        delete resolvedFields.widgetHeight
+      }
+
+      return resolvedFields
+    },
+    render: ({ text, action, url, widgetUrl, widgetTitle, widgetHeight, style, size, align, textColor }: any) => {
       const getAlignStyle = (align: string) => {
         switch (align) {
           case 'center':
@@ -118,6 +158,11 @@ export const createActionComponents = (branding: BrandingData) => ({
         <div style={{ width: '100%', ...getAlignStyle(align) }}>
           <button
             className={uniqueId}
+            data-action={action}
+            data-url={url}
+            data-widget-url={widgetUrl}
+            data-widget-title={widgetTitle}
+            data-widget-height={widgetHeight}
             style={{
               display: 'inline-block',
               width: 'fit-content',
@@ -125,6 +170,7 @@ export const createActionComponents = (branding: BrandingData) => ({
               fontWeight: '500',
               border: '1px solid',
               wordBreak: 'break-word',
+              cursor: action !== 'none' ? 'pointer' : 'default',
               ...baseSizeStyles[size as keyof typeof baseSizeStyles],
               ...getStyleConfig(style),
               color: buttonTextColor,

@@ -204,6 +204,10 @@
     "from_name_hint": "Name that will appear as sender (e.g., LivoCare.ai)",
     "from_email": "From Email",
     "from_email_hint": "Email address that will appear as sender",
+    "cc_recipients": "CC Recipients",
+    "cc_emails": "CC Emails",
+    "cc_emails_placeholder": "Type an email and press Enter",
+    "cc_emails_hint": "These addresses will receive a copy of all emails sent",
     "save_changes": "Save Changes"
   },
   "configurations": {

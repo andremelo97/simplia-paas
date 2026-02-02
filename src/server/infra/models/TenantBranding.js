@@ -1,4 +1,5 @@
 const database = require('../db/database');
+const SupabaseStorageService = require('../../services/supabaseStorage');
 
 class TenantBrandingNotFoundError extends Error {
   constructor(message) {
@@ -154,12 +155,12 @@ class TenantBranding {
   }
 
   /**
-   * Convert to JSON
+   * Convert to JSON (returns paths as-is, use toJSONWithSignedUrls for URLs)
    */
   toJSON() {
     return {
       id: this.id,
-      tenantId: this.tenantIdFk, // Frontend expects tenantId, not tenantIdFk
+      tenantId: this.tenantIdFk,
       primaryColor: this.primaryColor,
       secondaryColor: this.secondaryColor,
       tertiaryColor: this.tertiaryColor,
@@ -173,6 +174,63 @@ class TenantBranding {
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
+  }
+
+  /**
+   * Check if a value is a storage path (not a full URL)
+   * Paths look like: "branding/logo.png"
+   * URLs look like: "https://xxx.supabase.co/..."
+   */
+  static isStoragePath(value) {
+    if (!value) return false;
+    return !value.startsWith('http://') && !value.startsWith('https://');
+  }
+
+  /**
+   * Convert to JSON with signed URLs for logo and video
+   * Generates fresh signed URLs (7 days expiry) from stored paths
+   *
+   * @param {string} tenantSubdomain - Tenant subdomain for bucket name
+   * @returns {Promise<Object>} JSON with signed URLs
+   */
+  async toJSONWithSignedUrls(tenantSubdomain) {
+    const json = this.toJSON();
+
+    if (!tenantSubdomain) {
+      console.warn('[TenantBranding] No subdomain provided, returning paths as-is');
+      return json;
+    }
+
+    const bucketName = `tenant-${tenantSubdomain}`;
+
+    try {
+      const storage = new SupabaseStorageService(bucketName);
+
+      // Generate signed URL for logo if it's a path
+      if (json.logoUrl && TenantBranding.isStoragePath(json.logoUrl)) {
+        try {
+          json.logoUrl = await storage.getSignedUrl(json.logoUrl);
+        } catch (error) {
+          console.warn(`[TenantBranding] Failed to generate signed URL for logo: ${error.message}`);
+          // Keep the path as fallback
+        }
+      }
+
+      // Generate signed URL for video if it's a path
+      if (json.backgroundVideoUrl && TenantBranding.isStoragePath(json.backgroundVideoUrl)) {
+        try {
+          json.backgroundVideoUrl = await storage.getSignedUrl(json.backgroundVideoUrl);
+        } catch (error) {
+          console.warn(`[TenantBranding] Failed to generate signed URL for video: ${error.message}`);
+          // Keep the path as fallback
+        }
+      }
+    } catch (error) {
+      console.error('[TenantBranding] Failed to initialize storage service:', error);
+      // Return JSON with paths if storage fails
+    }
+
+    return json;
   }
 }
 

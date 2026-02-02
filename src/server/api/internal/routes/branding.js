@@ -45,8 +45,8 @@ const videoUpload = multer({
   }
 });
 
-// Helper function to get tenant-specific storage service
-async function getTenantStorageService(tenantId) {
+// Helper function to get tenant subdomain
+async function getTenantSubdomain(tenantId) {
   const database = require('../../../infra/db/database');
   const result = await database.query('SELECT subdomain FROM tenants WHERE id = $1', [tenantId]);
 
@@ -54,7 +54,12 @@ async function getTenantStorageService(tenantId) {
     throw new Error(`Tenant not found: ${tenantId}`);
   }
 
-  const tenantSubdomain = result.rows[0].subdomain;
+  return result.rows[0].subdomain;
+}
+
+// Helper function to get tenant-specific storage service
+async function getTenantStorageService(tenantId) {
+  const tenantSubdomain = await getTenantSubdomain(tenantId);
   const bucketName = `tenant-${tenantSubdomain}`;
   return new SupabaseStorageService(bucketName);
 }
@@ -118,8 +123,11 @@ router.get('/', requireAdmin, async (req, res) => {
 
     const branding = await TenantBranding.findByTenant(tenantId);
 
+    // Get tenant subdomain for generating signed URLs
+    const tenantSubdomain = await getTenantSubdomain(tenantId);
+
     res.json({
-      data: branding.toJSON()
+      data: await branding.toJSONWithSignedUrls(tenantSubdomain)
     });
   } catch (error) {
     console.error('Get branding error:', error);
@@ -238,8 +246,11 @@ router.put('/', requireAdmin, async (req, res) => {
       socialLinks
     });
 
+    // Get tenant subdomain for generating signed URLs
+    const tenantSubdomain = await getTenantSubdomain(tenantId);
+
     res.json({
-      data: branding.toJSON(),
+      data: await branding.toJSONWithSignedUrls(tenantSubdomain),
       meta: {
         code: 'BRANDING_UPDATED',
         message: 'Branding configuration updated successfully'
@@ -431,12 +442,12 @@ router.post('/upload-logo', requireAdmin, upload.single('image'), async (req, re
       req.file.mimetype
     );
 
-    // Update branding configuration with new logo URL (preserve all existing fields)
+    // Update branding configuration with new logo PATH (preserve all existing fields)
     const updateData = {
       primaryColor: existingBranding.primaryColor,
       secondaryColor: existingBranding.secondaryColor,
       tertiaryColor: existingBranding.tertiaryColor,
-      logoUrl: uploadResult.url,
+      logoUrl: uploadResult.path, // Store path, not URL
       backgroundVideoUrl: existingBranding.backgroundVideoUrl,
       companyName: existingBranding.companyName,
       // Preserve contact information
@@ -446,11 +457,11 @@ router.post('/upload-logo', requireAdmin, upload.single('image'), async (req, re
       socialLinks: existingBranding.socialLinks
     };
 
-    const branding = await TenantBranding.upsert(tenantId, updateData);
+    await TenantBranding.upsert(tenantId, updateData);
 
     res.json({
       data: {
-        logoUrl: uploadResult.url,
+        logoUrl: uploadResult.signedUrl, // Return signed URL for immediate use
         storagePath: uploadResult.path,
         size: uploadResult.size
       },
@@ -561,13 +572,13 @@ router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (r
       req.file.mimetype
     );
 
-    // Update branding configuration with new video URL (preserve all existing fields)
+    // Update branding configuration with new video PATH (preserve all existing fields)
     const updateData = {
       primaryColor: existingBranding.primaryColor,
       secondaryColor: existingBranding.secondaryColor,
       tertiaryColor: existingBranding.tertiaryColor,
       logoUrl: existingBranding.logoUrl,
-      backgroundVideoUrl: uploadResult.url,
+      backgroundVideoUrl: uploadResult.path, // Store path, not URL
       companyName: existingBranding.companyName,
       // Preserve contact information
       email: existingBranding.email,
@@ -576,11 +587,11 @@ router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (r
       socialLinks: existingBranding.socialLinks
     };
 
-    const branding = await TenantBranding.upsert(tenantId, updateData);
+    await TenantBranding.upsert(tenantId, updateData);
 
     res.json({
       data: {
-        backgroundVideoUrl: uploadResult.url,
+        backgroundVideoUrl: uploadResult.signedUrl, // Return signed URL for immediate use
         storagePath: uploadResult.path,
         size: uploadResult.size
       },

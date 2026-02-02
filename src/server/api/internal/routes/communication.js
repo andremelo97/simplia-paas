@@ -120,7 +120,8 @@ router.post('/', async (req, res) => {
       smtpUsername,
       smtpPassword,
       smtpFromEmail,
-      smtpFromName
+      smtpFromName,
+      ccEmails
     } = req.body
 
     const settings = await TenantCommunicationSettings.upsert(tenantId, {
@@ -130,7 +131,8 @@ router.post('/', async (req, res) => {
       smtpUsername,
       smtpPassword,
       smtpFromEmail,
-      smtpFromName
+      smtpFromName,
+      ccEmails
     })
 
     return res.json({

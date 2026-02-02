@@ -17,11 +17,18 @@ interface FooterLabels {
   contactTitle: string
 }
 
+interface WidgetConfig {
+  url: string
+  title: string
+  height: string
+}
+
 interface QuotePreviewOptions {
   labels?: Partial<QuotePreviewLabels>
   footerLabels?: Partial<FooterLabels>
   accessToken?: string
   onApprove?: () => void
+  onOpenWidget?: (config: WidgetConfig) => void
 }
 
 const defaultLabels: QuotePreviewLabels = {
@@ -106,7 +113,7 @@ export const createConfigWithResolvedData = (
       // Override Button to handle actions
       Button: {
         ...baseConfig.components.Button,
-        render: ({ text, action, url, style, size, align, textColor }: any) => {
+        render: ({ text, action, url, widgetUrl, widgetTitle, widgetHeight, style, size, align, textColor }: any) => {
           const getAlignStyle = (a: string) => {
             switch (a) {
               case 'center':
@@ -156,6 +163,12 @@ export const createConfigWithResolvedData = (
               options.onApprove()
             } else if (action === 'link' && url) {
               window.open(ensureProtocol(url), '_blank', 'noopener,noreferrer')
+            } else if (action === 'open_widget' && widgetUrl && options.onOpenWidget) {
+              options.onOpenWidget({
+                url: ensureProtocol(widgetUrl),
+                title: widgetTitle || 'Widget',
+                height: widgetHeight || '600'
+              })
             }
           }
 
@@ -195,8 +208,12 @@ export const createConfigWithResolvedData = (
       // Override Header to handle button actions
       Header: {
         ...baseConfig.components.Header,
-        render: ({ backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor, buttonAction }: any) => {
+        render: ({ backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor, buttonAction, widgetUrl, widgetTitle, widgetHeight, mobileLogoDisplay, mobileButtonAlign }: any) => {
           const headerButtonId = `header-btn-${Math.random().toString(36).substr(2, 9)}`
+          const logoId = `header-logo-${Math.random().toString(36).substr(2, 9)}`
+          const headerContainerId = `header-container-${Math.random().toString(36).substr(2, 9)}`
+          const effectiveMobileLogoDisplay = mobileLogoDisplay || 'normal'
+          const effectiveMobileButtonAlign = mobileButtonAlign || 'center'
 
           const getBackgroundColor = () => {
             switch (backgroundColor) {
@@ -284,6 +301,12 @@ export const createConfigWithResolvedData = (
               options.onApprove()
             } else if (buttonAction === 'link' && buttonUrl) {
               window.open(ensureProtocol(buttonUrl), '_blank', 'noopener,noreferrer')
+            } else if (buttonAction === 'open_widget' && widgetUrl && options.onOpenWidget) {
+              options.onOpenWidget({
+                url: ensureProtocol(widgetUrl),
+                title: widgetTitle || 'Widget',
+                height: widgetHeight || '600'
+              })
             }
           }
 
@@ -304,6 +327,7 @@ export const createConfigWithResolvedData = (
                 }}
               >
                 <div
+                  className={headerContainerId}
                   style={{
                     maxWidth: '1152px',
                     margin: '0 auto',
@@ -315,6 +339,7 @@ export const createConfigWithResolvedData = (
                 >
                   {branding.logoUrl ? (
                     <img
+                      className={logoId}
                       src={branding.logoUrl}
                       alt="Logo"
                       style={{
@@ -325,6 +350,7 @@ export const createConfigWithResolvedData = (
                     />
                   ) : (
                     <span
+                      className={logoId}
                       style={{
                         fontSize: '24px',
                         fontWeight: 'bold',
@@ -356,6 +382,20 @@ export const createConfigWithResolvedData = (
                     padding-bottom: 6px !important;
                     font-size: 12px !important;
                   }
+                  ${effectiveMobileLogoDisplay === 'hidden' ? `
+                  .${logoId} {
+                    display: none !important;
+                  }
+                  .${headerContainerId} {
+                    justify-content: ${effectiveMobileButtonAlign === 'left' ? 'flex-start' : effectiveMobileButtonAlign === 'right' ? 'flex-end' : 'center'} !important;
+                  }
+                  ` : ''}
+                  ${effectiveMobileLogoDisplay === 'smaller' ? `
+                  .${logoId} {
+                    max-height: ${parseInt(height) * 0.4}px !important;
+                    max-width: 120px !important;
+                  }
+                  ` : ''}
                 }
               `}</style>
             </>
@@ -364,7 +404,7 @@ export const createConfigWithResolvedData = (
       },
       QuoteNumber: {
         ...baseConfig.components.QuoteNumber,
-        render: ({ label, size = 'm' }: any) => {
+        render: ({ label, showNumber, size = 'm' }: any) => {
           const baseSizeStyles = {
             xs: { label: '12px', number: '14px' },
             s: { label: '14px', number: '16px' },
@@ -396,9 +436,11 @@ export const createConfigWithResolvedData = (
                 <span className={`${uniqueId}-label`} style={{ fontSize: sizeStyle.label, fontWeight: '500', color: '#4b5563' }}>
                   {effectiveLabel}
                 </span>
-                <span className={`${uniqueId}-number`} style={{ fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
-                  {quoteData?.quote?.number || 'N/A'}
-                </span>
+                {showNumber !== false && (
+                  <span className={`${uniqueId}-number`} style={{ fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
+                    {quoteData?.quote?.number || 'N/A'}
+                  </span>
+                )}
               </div>
               <style>{`
                 @media (min-width: 640px) {

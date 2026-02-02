@@ -56,6 +56,11 @@ class EmailService {
         html: emailData.html
       };
 
+      // Add CC recipients if configured
+      if (settings.ccEmails && settings.ccEmails.length > 0) {
+        mailOptions.cc = settings.ccEmails;
+      }
+
       // Send email
       const info = await transporter.sendMail(mailOptions);
 
@@ -113,6 +118,7 @@ class EmailService {
       const { resolveEmailTemplate } = require('./emailTemplateResolver');
       const Email = require('../infra/models/Email');
       const { TenantBranding } = require('../infra/models/TenantBranding');
+      const { Tenant } = require('../infra/models/Tenant');
 
       // 1. Fetch email template
       const template = await TQEmailTemplate.find(tenantSchema);
@@ -121,8 +127,9 @@ class EmailService {
         throw new Error(`Email template not found for tenant schema: ${tenantSchema}`);
       }
 
-      // 2. Fetch tenant branding for email styling
+      // 2. Fetch tenant branding for email styling (with signed URLs for private bucket)
       const branding = await TenantBranding.findByTenantId(tenantId);
+      const tenant = await Tenant.findById(tenantId);
 
       // 3. Resolve template variables with branding
       const { subject, html } = resolveEmailTemplate(template, {
@@ -132,7 +139,7 @@ class EmailService {
         publicLink,
         password,
         timezone: tenantTimezone,
-        branding: branding ? branding.toJSON() : null
+        branding: branding ? await branding.toJSONWithSignedUrls(tenant?.subdomain) : null
       });
 
       // 4. Send email

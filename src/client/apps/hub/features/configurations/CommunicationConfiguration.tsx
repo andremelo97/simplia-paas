@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Mail } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { Button, Input, Card, Checkbox, FormFieldWrapper, Alert, AlertDescription } from '@client/common/ui'
+import { Button, Input, Card, Checkbox, FormFieldWrapper, Alert, AlertDescription, TagInput } from '@client/common/ui'
 import { communicationService, CommunicationSettings } from '../../services/communicationService'
 
 export const CommunicationConfiguration: React.FC = () => {
@@ -13,7 +13,8 @@ export const CommunicationConfiguration: React.FC = () => {
     smtpUsername: '',
     smtpPassword: '',
     smtpFromEmail: '',
-    smtpFromName: ''
+    smtpFromName: '',
+    ccEmails: []
   })
   const [loading, setLoading] = useState(true)
 
@@ -29,7 +30,8 @@ export const CommunicationConfiguration: React.FC = () => {
             smtpUsername: data.smtpUsername || '',
             smtpPassword: data.smtpPassword || '',
             smtpFromEmail: data.smtpFromEmail || '',
-            smtpFromName: data.smtpFromName || ''
+            smtpFromName: data.smtpFromName || '',
+            ccEmails: data.ccEmails || []
           })
         }
       } catch (error) {
@@ -178,6 +180,18 @@ export const CommunicationConfiguration: React.FC = () => {
             />
           </FormFieldWrapper>
         </div>
+      </Card>
+
+      <Card className="p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('communication.cc_recipients')}</h2>
+        <TagInput
+          label={t('communication.cc_emails')}
+          value={settings.ccEmails}
+          onChange={(emails) => setSettings({ ...settings, ccEmails: emails })}
+          placeholder={t('communication.cc_emails_placeholder')}
+          helperText={t('communication.cc_emails_hint')}
+          validateTag={(email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)}
+        />
       </Card>
 
       <div className="flex gap-3">

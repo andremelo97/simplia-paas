@@ -329,6 +329,7 @@
     "pages": {
       "management_title": "Gerenciamento de Sessões",
       "management_subtitle": "Visualize e gerencie suas sessões de transcrição",
+      "new_session_subtitle": "Grave áudio, transcreva e gere documentação clínica",
       "list_title": "Lista de Sessões",
       "sessions": "sessões"
     },

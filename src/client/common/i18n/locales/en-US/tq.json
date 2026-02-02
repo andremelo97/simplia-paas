@@ -357,6 +357,7 @@
     "pages": {
       "management_title": "Session Management",
       "management_subtitle": "View and manage your transcription sessions",
+      "new_session_subtitle": "Record audio, transcribe, and generate clinical documentation",
       "list_title": "Session List",
       "sessions": "sessions"
     },

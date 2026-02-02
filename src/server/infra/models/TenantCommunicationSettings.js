@@ -16,6 +16,7 @@ class TenantCommunicationSettings {
     this.smtpPassword = data.smtp_password;
     this.smtpFromEmail = data.smtp_from_email;
     this.smtpFromName = data.smtp_from_name;
+    this.ccEmails = data.cc_emails || [];
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
@@ -57,7 +58,8 @@ class TenantCommunicationSettings {
       smtpUsername,
       smtpPassword,
       smtpFromEmail,
-      smtpFromName = null
+      smtpFromName = null,
+      ccEmails = []
     } = data;
 
     // Validate required fields
@@ -69,6 +71,18 @@ class TenantCommunicationSettings {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(smtpFromEmail)) {
       throw new Error('Invalid email format for smtpFromEmail');
+    }
+
+    // Validate ccEmails
+    if (ccEmails && !Array.isArray(ccEmails)) {
+      throw new Error('ccEmails must be an array');
+    }
+    if (ccEmails && ccEmails.length > 0) {
+      ccEmails.forEach(email => {
+        if (!emailRegex.test(email)) {
+          throw new Error(`Invalid CC email format: ${email}`);
+        }
+      });
     }
 
     // Validate port number
@@ -85,8 +99,9 @@ class TenantCommunicationSettings {
         smtp_username,
         smtp_password,
         smtp_from_email,
-        smtp_from_name
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        smtp_from_name,
+        cc_emails
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
       ON CONFLICT (tenant_id_fk)
       DO UPDATE SET
         smtp_host = EXCLUDED.smtp_host,
@@ -96,6 +111,7 @@ class TenantCommunicationSettings {
         smtp_password = EXCLUDED.smtp_password,
         smtp_from_email = EXCLUDED.smtp_from_email,
         smtp_from_name = EXCLUDED.smtp_from_name,
+        cc_emails = EXCLUDED.cc_emails,
         updated_at = NOW()
       RETURNING *
     `;
@@ -116,7 +132,8 @@ class TenantCommunicationSettings {
       smtpUsername.trim(),
       encryptedPassword,
       smtpFromEmail.toLowerCase().trim(),
-      smtpFromName ? smtpFromName.trim() : null
+      smtpFromName ? smtpFromName.trim() : null,
+      JSON.stringify(ccEmails || [])
     ]);
 
     const savedRow = { ...result.rows[0] };
@@ -152,6 +169,7 @@ class TenantCommunicationSettings {
       smtpPassword: this.smtpPassword, // Note: Password is returned decrypted for client usage
       smtpFromEmail: this.smtpFromEmail,
       smtpFromName: this.smtpFromName,
+      ccEmails: this.ccEmails,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

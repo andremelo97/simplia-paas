@@ -49,17 +49,17 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Get branding for preview generation
+    // Get branding for preview generation (with signed URLs)
     const branding = await TenantBranding.findByTenantId(tenantId);
 
-    // Get tenant locale
+    // Get tenant locale and subdomain
     const tenant = await Tenant.findById(tenantId);
     const locale = getLocaleFromTimezone(tenant.timezone);
 
     res.json({
       data: {
         ...template.toJSON(),
-        branding: branding.toJSON(),
+        branding: await branding.toJSONWithSignedUrls(tenant.subdomain),
         locale
       },
       meta: { code: 'EMAIL_TEMPLATE_RETRIEVED' }
@@ -273,17 +273,17 @@ router.post('/preview', async (req, res) => {
       });
     }
 
-    // Get branding data
+    // Get branding data (with signed URLs)
     const branding = await TenantBranding.findByTenantId(tenantId);
 
-    // Get tenant locale
+    // Get tenant locale and subdomain
     const tenant = await Tenant.findById(tenantId);
     const locale = getLocaleFromTimezone(tenant.timezone);
 
     // Generate preview
     const preview = renderPreview({
       template: { subject, body, settings },
-      branding: branding.toJSON(),
+      branding: await branding.toJSONWithSignedUrls(tenant.subdomain),
       locale
     });
 

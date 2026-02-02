@@ -141,7 +141,7 @@ function generateFooterContactInfo(settings, branding, locale) {
   // Social Links - visibility from settings, data from branding
   if (settings.showSocialLinks !== false && branding.socialLinks) {
     const socialParts = [];
-    const { facebook, instagram, linkedin, twitter, whatsapp, website } = branding.socialLinks;
+    const { facebook, instagram, linkedin, twitter, youtube, pinterest, whatsapp, website } = branding.socialLinks;
 
     if (facebook) {
       socialParts.push(`<a href="${facebook}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">Facebook</a>`);
@@ -153,7 +153,13 @@ function generateFooterContactInfo(settings, branding, locale) {
       socialParts.push(`<a href="${linkedin}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">LinkedIn</a>`);
     }
     if (twitter) {
-      socialParts.push(`<a href="${twitter}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">Twitter</a>`);
+      socialParts.push(`<a href="${twitter}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">X</a>`);
+    }
+    if (youtube) {
+      socialParts.push(`<a href="${youtube}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">YouTube</a>`);
+    }
+    if (pinterest) {
+      socialParts.push(`<a href="${pinterest}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">Pinterest</a>`);
     }
     if (whatsapp) {
       socialParts.push(`<a href="${whatsapp}" style="color: #B725B7; text-decoration: none; margin: 0 8px;">WhatsApp</a>`);

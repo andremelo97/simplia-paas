@@ -204,6 +204,10 @@
     "from_name_hint": "Nome que aparecerá como remetente (ex: LivoCare.ai)",
     "from_email": "E-mail do remetente",
     "from_email_hint": "E-mail que aparecerá como remetente",
+    "cc_recipients": "Destinatários em Cópia",
+    "cc_emails": "Emails em CC",
+    "cc_emails_placeholder": "Digite um email e pressione Enter",
+    "cc_emails_hint": "Estes endereços receberão uma cópia de todos os emails enviados",
     "save_changes": "Salvar alterações"
   },
   "configurations": {

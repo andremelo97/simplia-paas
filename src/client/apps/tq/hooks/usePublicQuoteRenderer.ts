@@ -8,6 +8,18 @@ import { createConfigWithResolvedData } from '../features/public-quotes/puck-con
 import { useCurrencyFormatter } from '@client/common/hooks/useCurrencyFormatter'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
+interface WidgetConfig {
+  url: string
+  title: string
+  height: string
+}
+
+interface UsePublicQuoteRendererOptions {
+  onApprove?: () => void
+  onOpenWidget?: (config: WidgetConfig) => void
+  accessToken?: string
+}
+
 /**
  * Reusable hook for rendering public quotes with Puck
  * Used by both authenticated preview and public access pages
@@ -15,7 +27,8 @@ import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 export function usePublicQuoteRenderer(
   template: PublicQuoteTemplate | null,
   quote: Quote | any | null,
-  branding: BrandingData | null
+  branding: BrandingData | null,
+  options: UsePublicQuoteRendererOptions = {}
 ) {
   const { t } = useTranslation('tq')
   const { formatCurrency } = useCurrencyFormatter()
@@ -46,9 +59,12 @@ export function usePublicQuoteRenderer(
     })
     return createConfigWithResolvedData(branding, resolvedData, {
       labels: localizedLabels,
-      footerLabels
+      footerLabels,
+      accessToken: options.accessToken,
+      onApprove: options.onApprove,
+      onOpenWidget: options.onOpenWidget
     })
-  }, [branding, quote, template, localizedLabels, footerLabels, formatCurrency, formatShortDate])
+  }, [branding, quote, template, localizedLabels, footerLabels, formatCurrency, formatShortDate, options.accessToken, options.onApprove, options.onOpenWidget])
 
   return previewConfig
 }

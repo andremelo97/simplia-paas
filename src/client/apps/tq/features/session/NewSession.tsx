@@ -1209,7 +1209,7 @@ export const NewSession: React.FC = () => {
             </button>
           </div>
           <p className="text-gray-600 mt-1">
-            {t('sessions.pages.management_subtitle')}
+            {t('sessions.pages.new_session_subtitle')}
           </p>
         </div>
 

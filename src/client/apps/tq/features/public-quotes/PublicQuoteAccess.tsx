@@ -46,6 +46,14 @@ export const PublicQuoteAccess: React.FC = () => {
   const [isApproved, setIsApproved] = useState(false)
   const [approvalError, setApprovalError] = useState<string | null>(null)
 
+  // Widget modal state
+  const [widgetModal, setWidgetModal] = useState<{
+    isOpen: boolean
+    url: string
+    title: string
+    height: string
+  }>({ isOpen: false, url: '', title: '', height: '600' })
+
   useEffect(() => {
     if (i18n.language !== language) {
       i18n.changeLanguage(language)
@@ -135,6 +143,16 @@ export const PublicQuoteAccess: React.FC = () => {
     }
   }, [accessToken, storedPassword, isApproving, isApproved, t])
 
+  // Handle widget open
+  const handleOpenWidget = useCallback((config: { url: string; title: string; height: string }) => {
+    setWidgetModal({
+      isOpen: true,
+      url: config.url,
+      title: config.title,
+      height: config.height
+    })
+  }, [])
+
   // Create preview config from saved content package
   // Content package has { template, resolvedData } - already resolved on backend
   const quoteLabels = useMemo(() => ({
@@ -175,9 +193,10 @@ export const PublicQuoteAccess: React.FC = () => {
       labels: quoteLabels,
       footerLabels,
       accessToken,
-      onApprove: handleApprove
+      onApprove: handleApprove,
+      onOpenWidget: handleOpenWidget
     })
-  }, [quoteData, quoteLabels, footerLabels, accessToken, handleApprove])
+  }, [quoteData, quoteLabels, footerLabels, accessToken, handleApprove, handleOpenWidget])
 
   // Password entry form
   if (!isAuthenticated) {
@@ -339,6 +358,48 @@ export const PublicQuoteAccess: React.FC = () => {
           <div className="bg-white rounded-lg shadow-xl p-6 flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
             <span className="text-gray-700">{t('public_quotes.approve.loading')}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Widget modal with iframe */}
+      {widgetModal.isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setWidgetModal(prev => ({ ...prev, isOpen: false }))}
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl w-full max-w-4xl relative flex flex-col"
+            style={{ maxHeight: '90vh' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold text-gray-900">
+                {widgetModal.title}
+              </h2>
+              <button
+                onClick={() => setWidgetModal(prev => ({ ...prev, isOpen: false }))}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Iframe container */}
+            <div className="flex-1 overflow-hidden">
+              <iframe
+                src={widgetModal.url}
+                width="100%"
+                height={widgetModal.height === '100vh' ? '100%' : `${widgetModal.height}px`}
+                style={{
+                  border: 'none',
+                  minHeight: widgetModal.height === '100vh' ? 'calc(90vh - 60px)' : undefined
+                }}
+                title={widgetModal.title}
+                allow="payment; clipboard-write"
+              />
+            </div>
           </div>
         </div>
       )}

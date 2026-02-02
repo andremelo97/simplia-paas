@@ -5,6 +5,8 @@ export interface SocialLinks {
   instagram?: string;
   linkedin?: string;
   twitter?: string;
+  youtube?: string;
+  pinterest?: string;
   whatsapp?: string;
   website?: string;
   [key: string]: string | undefined; // Allow additional social networks

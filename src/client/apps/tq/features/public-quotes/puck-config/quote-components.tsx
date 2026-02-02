@@ -35,7 +35,7 @@ export const createQuoteComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       label: 'Quote #',
-      showNumber: true,
+      showNumber: false,
       size: 'm'
     },
     render: ({ label, showNumber, size }: any) => {

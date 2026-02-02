@@ -380,6 +380,9 @@ CREATE TABLE IF NOT EXISTS tenant_communication_settings (
   smtp_from_email VARCHAR(255) NOT NULL,
   smtp_from_name VARCHAR(255) DEFAULT 'LivoCare.ai',
 
+  -- CC recipients for all outgoing emails
+  cc_emails JSONB NOT NULL DEFAULT '[]'::jsonb,
+
   -- Metadata
   created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
@@ -398,6 +401,7 @@ COMMENT ON COLUMN tenant_communication_settings.smtp_username IS 'SMTP authentic
 COMMENT ON COLUMN tenant_communication_settings.smtp_password IS 'SMTP authentication password (stored as plain text for now)';
 COMMENT ON COLUMN tenant_communication_settings.smtp_from_email IS 'Sender email address';
 COMMENT ON COLUMN tenant_communication_settings.smtp_from_name IS 'Sender display name (e.g., "LivoCare.ai")';
+COMMENT ON COLUMN tenant_communication_settings.cc_emails IS 'Array of email addresses to CC on all outgoing emails';
 
 -- Email sending log for audit and troubleshooting (generic, used by all apps)
 CREATE TABLE IF NOT EXISTS email_log (

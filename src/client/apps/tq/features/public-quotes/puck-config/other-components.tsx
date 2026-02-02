@@ -2586,6 +2586,15 @@ export const createOtherComponents = (branding: BrandingData) => ({
     },
     render: ({ title, showTitle, titleLevel, items, allowMultipleOpen, defaultOpen, verticalPadding, maxWidth, backgroundColor, questionColor, answerColor, iconColor, dividerColor }: any) => {
       const TitleTag = titleLevel || 'h2'
+      const titleSizes: Record<string, number> = {
+        h1: 48,
+        h2: 36,
+        h3: 28,
+        h4: 24,
+        h5: 20,
+        h6: 16,
+      }
+      const titleFontSize = titleSizes[titleLevel] || 36
       const [openItems, setOpenItems] = React.useState<number[]>(defaultOpen ? [0] : [])
 
       const validItems = Array.isArray(items) ? items.filter((item: any) => item && item.question) : []
@@ -2650,7 +2659,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
             {showTitle && title && (
               <TitleTag
                 style={{
-                  fontSize: '28px',
+                  fontSize: `${titleFontSize}px`,
                   fontWeight: '700',
                   textAlign: 'center',
                   marginBottom: '40px',

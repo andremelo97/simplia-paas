@@ -36,20 +36,6 @@ export const PreviewPublicQuoteTemplate: React.FC = () => {
     loadTemplateAndBranding()
   }, [id])
 
-  // Set favicon from branding
-  useEffect(() => {
-    if (!branding?.logoUrl) return
-
-    // Create or update favicon
-    let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']")
-    if (!link) {
-      link = document.createElement('link')
-      link.rel = 'icon'
-      document.getElementsByTagName('head')[0].appendChild(link)
-    }
-    link.href = branding.logoUrl
-  }, [branding])
-
   const loadTemplateAndBranding = async () => {
     if (!id) return
 

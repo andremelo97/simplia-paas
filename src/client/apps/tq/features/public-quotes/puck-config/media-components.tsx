@@ -1034,8 +1034,6 @@ export const createMediaComponents = (branding: BrandingData) => ({
                             color: titleColorResolved,
                             textAlign: 'center',
                             margin: 0,
-                            textDecoration: 'underline',
-                            textUnderlineOffset: '4px',
                           }}
                         >
                           {row.video1Title}
@@ -1095,8 +1093,6 @@ export const createMediaComponents = (branding: BrandingData) => ({
                               color: titleColorResolved,
                               textAlign: 'center',
                               margin: 0,
-                              textDecoration: 'underline',
-                              textUnderlineOffset: '4px',
                             }}
                           >
                             {row.video2Title}

@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Receipt, Loader2 } from 'lucide-react'
+import { FileText, Receipt, Loader2, Sparkles } from 'lucide-react'
 import { Modal, Button, Select, Alert, AlertDescription } from '@client/common/ui'
 import { templatesService, Template } from '../../services/templates'
 import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentService'
@@ -176,6 +176,23 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
       className={className}
     >
       <div className="p-6 space-y-6">
+          {/* AI Banner */}
+          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-purple-900">
+                  {t('modals.template_quote.ai_banner_title')}
+                </h4>
+                <p className="text-xs text-purple-700 mt-0.5">
+                  {t('modals.template_quote.ai_banner_description')}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Error Alert */}
           {error && (
             <Alert variant="destructive">

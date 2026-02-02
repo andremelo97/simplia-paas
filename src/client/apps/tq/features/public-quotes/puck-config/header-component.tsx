@@ -873,21 +873,33 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 )}
               </div>
 
-              {/* Copyright */}
-              {copyrightText && (
-                <div
-                  style={{
-                    fontSize: '14px',
-                    color: getTextColor(),
-                    opacity: 0.6,
-                    paddingTop: '16px',
-                    borderTop: `1px solid ${backgroundColor === 'white' ? '#e5e7eb' : 'rgba(255,255,255,0.1)'}`,
-                    textAlign: 'center',
-                  }}
-                >
-                  {copyrightText}
+              {/* Copyright & Partnership */}
+              <div
+                style={{
+                  fontSize: '14px',
+                  color: getTextColor(),
+                  opacity: 0.6,
+                  paddingTop: '16px',
+                  borderTop: `1px solid ${backgroundColor === 'white' ? '#e5e7eb' : 'rgba(255,255,255,0.1)'}`,
+                  textAlign: 'center',
+                }}
+              >
+                {copyrightText && <div>{copyrightText}</div>}
+                <div style={{ marginTop: '8px', fontSize: '12px' }}>
+                  {branding.companyName || 'This clinic'} powered by{' '}
+                  <a
+                    href="https://www.livocare.ai"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: 'inherit',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    LivoCare
+                  </a>
                 </div>
-              )}
+              </div>
             </div>
           </footer>
 

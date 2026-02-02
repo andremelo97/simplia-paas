@@ -280,8 +280,8 @@ function generateHtmlEmail({ bodyText, branding, settings, variables, locale }) 
               ${footerContactInfo}
               <p style="margin: ${footerContactInfo ? '16px' : '0'} 0 0 0; color: #9ca3af; font-size: 12px;">
                 ${locale === 'pt-BR'
-                  ? `Este e-mail foi enviado por ${companyName} | <a href="https://www.livocare.ai" style="color: #B725B7; text-decoration: none;">www.livocare.ai</a>`
-                  : `This email was sent by ${companyName} | <a href="https://www.livocare.ai" style="color: #B725B7; text-decoration: none;">www.livocare.ai</a>`}
+                  ? `Criado e enviado via <a href="https://www.livocare.ai" target="_blank" rel="noopener noreferrer" style="color: #B725B7; text-decoration: none; font-weight: 500;">LivoCare</a> | Conheça em <a href="https://www.livocare.ai" target="_blank" rel="noopener noreferrer" style="color: #B725B7; text-decoration: none;">www.livocare.ai</a>`
+                  : `Created and sent via <a href="https://www.livocare.ai" target="_blank" rel="noopener noreferrer" style="color: #B725B7; text-decoration: none; font-weight: 500;">LivoCare</a> | Learn more at <a href="https://www.livocare.ai" target="_blank" rel="noopener noreferrer" style="color: #B725B7; text-decoration: none;">www.livocare.ai</a>`}
               </p>
             </td>
           </tr>

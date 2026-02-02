@@ -146,7 +146,7 @@ router.get('/:id', async (req, res) => {
  *       **Scope:** Tenant (x-tenant-id required)
  *
  *       Create a new public quote template with Puck layout configuration.
- *       Max 3 templates per tenant (enforced by application logic).
+ *       Limits: Max 10 templates total, max 3 active templates per tenant.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -197,13 +197,26 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Check template limit (max 3 per tenant)
+    // Check total template limit (max 10 per tenant)
     const totalTemplates = await PublicQuoteTemplate.count(schema, {});
-    if (totalTemplates >= 3) {
+    if (totalTemplates >= 10) {
       return res.status(400).json({
         error: 'Validation error',
-        message: 'Maximum of 3 templates allowed per tenant'
+        message: 'Maximum of 10 templates allowed. Delete one before creating a new template.'
       });
+    }
+
+    // Check active template limit (max 3 active per tenant)
+    // Only check if creating as active (default is active=true)
+    const isActive = active !== false;
+    if (isActive) {
+      const activeTemplates = await PublicQuoteTemplate.count(schema, { active: true });
+      if (activeTemplates >= 3) {
+        return res.status(400).json({
+          error: 'Validation error',
+          message: 'Maximum of 3 active templates allowed. Deactivate one before creating a new active template.'
+        });
+      }
     }
 
     const template = await PublicQuoteTemplate.create(schema, {
@@ -241,6 +254,7 @@ router.post('/', async (req, res) => {
  *
  *       Update an existing public quote template.
  *       Setting isDefault=true will unset all other defaults.
+ *       Setting active=true is limited to max 3 active templates per tenant.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -280,6 +294,22 @@ router.put('/:id', async (req, res) => {
     const schema = req.tenant?.schema;
     const { id } = req.params;
     const { name, description, content, isDefault, active } = req.body;
+
+    // If activating a template, check the limit
+    if (active === true) {
+      // First check if the template is currently inactive
+      const currentTemplate = await PublicQuoteTemplate.findById(id, schema);
+      if (!currentTemplate.active) {
+        // Template is being activated, check limit
+        const activeTemplates = await PublicQuoteTemplate.count(schema, { active: true });
+        if (activeTemplates >= 3) {
+          return res.status(400).json({
+            error: 'Validation error',
+            message: 'Maximum of 3 active templates allowed. Deactivate one before activating this template.'
+          });
+        }
+      }
+    }
 
     const template = await PublicQuoteTemplate.update(id, schema, {
       name,

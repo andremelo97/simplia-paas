@@ -38,11 +38,13 @@
       }
     },
     "template_quote": {
-      "title": "Create Quote with Template",
+      "title": "Create Document",
       "select_template": "Select Template",
       "no_templates": "No templates available",
       "fill_with_ai": "Fill with AI",
-      "create": "Create Quote"
+      "create": "Create Quote",
+      "ai_banner_title": "Smart Fill",
+      "ai_banner_description": "Our AI will analyze the transcription and fill the template following the instructions you defined."
     },
     "generate_public_quote": {
       "title": "Generate Public Quote Link",
@@ -696,7 +698,11 @@
       "tab_templates": "Templates",
       "public_quote_links": "Public Quote Links",
       "templates_list": "Templates",
+      "templates_count": "{{count}}/{{max}}",
+      "active_count": "{{count}}/{{max}} active",
       "create_template": "Create Template",
+      "max_total_reached": "Limit of 10 templates reached",
+      "max_active_reached": "Limit of 3 active reached. Deactivate one to create new active.",
       "loading_templates": "Loading templates...",
       "revoke_link_title": "Revoke Public Link?",
       "revoke_link_description": "Are you sure you want to revoke the public link for quote {{quoteNumber}}? This will make the link inactive and inaccessible.",

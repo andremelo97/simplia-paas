@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardTitle, CardContent, Button } from '@client/common/ui'
+import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Tooltip, Paginator } from '@client/common/ui'
 import { Plus } from 'lucide-react'
 import { publicQuotesService, PublicQuoteTemplate } from '../../../services/publicQuotes'
 import { brandingService, BrandingData } from '../../../services/branding'
@@ -9,14 +9,29 @@ import { TemplatesEmpty } from '../../../components/public-quotes/TemplatesEmpty
 import { TemplateCard } from '../../../components/public-quotes/TemplateCard'
 import { useAuthStore } from '../../../shared/store'
 
+const MAX_TOTAL_TEMPLATES = 10
+const MAX_ACTIVE_TEMPLATES = 3
+const TEMPLATES_PER_PAGE = 6
+
 export const TemplatesTab: React.FC = () => {
   const { t } = useTranslation('tq')
   const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const canEdit = user?.role !== 'operations'
+
+  const totalCount = templates?.length || 0
+  const activeCount = templates?.filter(t => t.active).length || 0
+
+  // Pagination
+  const startIndex = (currentPage - 1) * TEMPLATES_PER_PAGE
+  const paginatedTemplates = templates?.slice(startIndex, startIndex + TEMPLATES_PER_PAGE) || []
+  const isMaxTotalReached = totalCount >= MAX_TOTAL_TEMPLATES
+  const isMaxActiveReached = activeCount >= MAX_ACTIVE_TEMPLATES
+  const isCreateDisabled = isMaxTotalReached || isMaxActiveReached
 
   useEffect(() => {
     loadData()
@@ -42,22 +57,38 @@ export const TemplatesTab: React.FC = () => {
     navigate(`/public-quotes/templates/${template.id}/edit`)
   }
 
+  const getCreateDisabledReason = () => {
+    if (isMaxTotalReached) return t('public_quotes.pages.max_total_reached')
+    if (isMaxActiveReached) return t('public_quotes.pages.max_active_reached')
+    return ''
+  }
+
   return (
     <Card>
       <CardHeader className="py-4 px-6">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base">
-            {t('public_quotes.pages.templates_list')} ({templates?.length || 0} {t('common.of')} 3)
-          </CardTitle>
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-base">
+              {t('public_quotes.pages.templates_list')}
+            </CardTitle>
+            <Badge variant="secondary">
+              {t('public_quotes.pages.templates_count', { count: totalCount, max: MAX_TOTAL_TEMPLATES })}
+            </Badge>
+            <Badge variant={isMaxActiveReached ? 'warning' : 'success'}>
+              {t('public_quotes.pages.active_count', { count: activeCount, max: MAX_ACTIVE_TEMPLATES })}
+            </Badge>
+          </div>
           {canEdit && (
-            <Button
-              variant="primary"
-              disabled={(templates?.length || 0) >= 3}
-              onClick={() => navigate('/public-quotes/templates/create')}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t('public_quotes.pages.create_template')}
-            </Button>
+            <Tooltip content={getCreateDisabledReason()} disabled={!isCreateDisabled}>
+              <Button
+                variant="primary"
+                disabled={isCreateDisabled}
+                onClick={() => navigate('/public-quotes/templates/create')}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('public_quotes.pages.create_template')}
+              </Button>
+            </Tooltip>
           )}
         </div>
       </CardHeader>
@@ -74,16 +105,28 @@ export const TemplatesTab: React.FC = () => {
 
         {/* Templates Grid - 3 columns */}
         {!loading && templates && templates.length > 0 && branding && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templates.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                branding={branding}
-                onClick={() => handleTemplateClick(template)}
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginatedTemplates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  branding={branding}
+                  onClick={() => handleTemplateClick(template)}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalCount > TEMPLATES_PER_PAGE && (
+              <Paginator
+                currentPage={currentPage}
+                totalItems={totalCount}
+                itemsPerPage={TEMPLATES_PER_PAGE}
+                onPageChange={setCurrentPage}
               />
-            ))}
-          </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

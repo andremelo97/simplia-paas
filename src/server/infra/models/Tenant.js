@@ -49,10 +49,10 @@ class Tenant {
     `;
     const result = await database.query(query, [name, subdomain, schemaName, timezone, status, stripeCustomerId, stripeSubscriptionId]);
 
-    // Create tenant-specific Supabase Storage bucket
-    console.log(`🪣 [Tenant.create] Attempting to create bucket for subdomain: ${subdomain}`);
+    // Create tenant-specific Supabase Storage bucket (private for security)
+    console.log(`🪣 [Tenant.create] Attempting to create PRIVATE bucket for subdomain: ${subdomain}`);
     try {
-      const bucketResult = await createTenantBucket(subdomain, true); // public bucket
+      const bucketResult = await createTenantBucket(subdomain, false); // private bucket
       console.log(`✅ [Tenant.create] Bucket creation result:`, bucketResult);
     } catch (bucketError) {
       console.error(`❌ [Tenant.create] Failed to create tenant bucket for ${subdomain}:`, bucketError);

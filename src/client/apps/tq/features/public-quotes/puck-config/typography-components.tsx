@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
-import { textColorOptions, resolveColor } from './color-options'
+import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -27,145 +27,16 @@ const verticalPaddingOptions = [
 ]
 
 export const createTypographyComponents = (branding: BrandingData) => ({
-  Heading: {
-    fields: {
-      text: {
-        type: 'textarea' as const,
-        label: 'text',
-      },
-      size: {
-        type: 'select' as const,
-        label: 'size',
-        options: [
-          { label: 'XXXL', value: 'xxxl' },
-          { label: 'XXL', value: 'xxl' },
-          { label: 'XL', value: 'xl' },
-          { label: 'L', value: 'l' },
-          { label: 'M', value: 'm' },
-          { label: 'S', value: 's' },
-          { label: 'XS', value: 'xs' },
-        ],
-      },
-      level: {
-        type: 'select' as const,
-        label: 'level',
-        options: [
-          { label: 'H1', value: 'h1' },
-          { label: 'H2', value: 'h2' },
-          { label: 'H3', value: 'h3' },
-          { label: 'H4', value: 'h4' },
-          { label: 'H5', value: 'h5' },
-          { label: 'H6', value: 'h6' },
-        ],
-      },
-      align: {
-        type: 'radio' as const,
-        label: 'align',
-        options: [
-          { label: 'Left', value: 'left' },
-          { label: 'Center', value: 'center' },
-          { label: 'Right', value: 'right' },
-        ],
-      },
-      horizontalPadding: {
-        type: 'select' as const,
-        label: 'Horizontal Padding',
-        options: verticalPaddingOptions,
-      },
-      verticalPadding: {
-        type: 'select' as const,
-        label: 'Vertical Padding',
-        options: verticalPaddingOptions,
-      },
-      color: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
-      },
-    },
-    defaultProps: {
-      text: 'Heading',
-      size: 'm',
-      level: 'h2',
-      align: 'left',
-      horizontalPadding: 16,
-      verticalPadding: 8,
-      color: 'default',
-    },
-    render: ({ text, size, level, align, horizontalPadding, verticalPadding, color }: any) => {
-      const Tag = level || 'h2'
-
-      const baseSizeStyles = {
-        xs: { fontSize: '12px' },
-        s: { fontSize: '14px' },
-        m: { fontSize: '16px' },
-        l: { fontSize: '18px' },
-        xl: { fontSize: '20px' },
-        xxl: { fontSize: '24px' },
-        xxxl: { fontSize: '30px' },
-      }
-
-      const alignStyles = {
-        left: 'left' as const,
-        center: 'center' as const,
-        right: 'right' as const,
-      }
-
-      const textColor = resolveColor(color, branding)
-      const uniqueId = `heading-${Math.random().toString(36).substr(2, 9)}`
-
-      return (
-        <>
-          <Tag
-            className={uniqueId}
-            style={{
-              fontWeight: '700',
-              ...baseSizeStyles[size as keyof typeof baseSizeStyles],
-              textAlign: alignStyles[align as keyof typeof alignStyles],
-              wordBreak: 'break-word',
-              paddingLeft: `${horizontalPadding}px`,
-              paddingRight: `${horizontalPadding}px`,
-              paddingTop: `${verticalPadding}px`,
-              paddingBottom: `${verticalPadding}px`,
-              color: textColor,
-            }}
-          >
-            {text}
-          </Tag>
-          <style>{`
-            @media (min-width: 640px) {
-              .${uniqueId} {
-                padding-left: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
-                padding-right: ${horizontalPadding === 16 ? 0 : horizontalPadding}px;
-                ${size === 's' ? 'font-size: 16px;' : ''}
-                ${size === 'm' ? 'font-size: 18px;' : ''}
-                ${size === 'l' ? 'font-size: 20px;' : ''}
-                ${size === 'xl' ? 'font-size: 24px;' : ''}
-                ${size === 'xxl' ? 'font-size: 30px;' : ''}
-                ${size === 'xxxl' ? 'font-size: 36px;' : ''}
-              }
-            }
-            @media (min-width: 768px) {
-              .${uniqueId} {
-                ${size === 'xxl' ? 'font-size: 36px;' : ''}
-                ${size === 'xxxl' ? 'font-size: 48px;' : ''}
-              }
-            }
-            @media (min-width: 1024px) {
-              .${uniqueId} {
-                ${size === 'xxxl' ? 'font-size: 60px;' : ''}
-              }
-            }
-          `}</style>
-        </>
-      )
-    },
-  },
   Text: {
     fields: {
       text: {
         type: 'textarea' as const,
         label: 'text',
+      },
+      fontFamily: {
+        type: 'select' as const,
+        label: 'Font',
+        options: fontOptions,
       },
       size: {
         type: 'select' as const,
@@ -195,6 +66,27 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         label: 'Text Color',
         options: textColorOptions,
       },
+      // Link options
+      linkUrl: {
+        type: 'text' as const,
+        label: 'Link URL (optional)',
+      },
+      openInNewTab: {
+        type: 'radio' as const,
+        label: 'Open in New Tab',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      showUnderline: {
+        type: 'radio' as const,
+        label: 'Show Underline',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
       maxWidth: {
         type: 'text' as const,
         label: 'maxWidth',
@@ -210,16 +102,34 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         options: verticalPaddingOptions,
       },
     },
+    resolveFields: (data: any, { fields }: any) => {
+      const resolvedFields = { ...fields }
+
+      // Only show link options when linkUrl is provided
+      if (!data.props.linkUrl) {
+        delete resolvedFields.openInNewTab
+        delete resolvedFields.showUnderline
+      }
+
+      return resolvedFields
+    },
     defaultProps: {
       text: 'Text',
+      fontFamily: 'inherit',
       size: 16,
       align: 'left',
       color: 'default',
+      linkUrl: '',
+      openInNewTab: true,
+      showUnderline: true,
       maxWidth: '',
       horizontalPadding: 16,
       verticalPadding: 0,
     },
-    render: ({ text, size, align, color, maxWidth, horizontalPadding, verticalPadding }: any) => {
+    render: ({ text, fontFamily, size, align, color, linkUrl, openInNewTab, showUnderline, maxWidth, horizontalPadding, verticalPadding }: any) => {
+      useEffect(() => {
+        loadGoogleFont(fontFamily)
+      }, [fontFamily])
       const alignStyles = {
         left: 'left' as const,
         center: 'center' as const,
@@ -231,6 +141,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       const fontSize = typeof size === 'number' ? size : parseInt(size) || 16
 
       const styles: any = {
+        fontFamily: fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit',
         fontSize: `${fontSize}px`,
         textAlign: alignStyles[align as keyof typeof alignStyles],
         wordBreak: 'break-word',
@@ -245,10 +156,27 @@ export const createTypographyComponents = (branding: BrandingData) => ({
         styles.maxWidth = maxWidth
       }
 
+      const textContent = linkUrl ? (
+        <a
+          href={linkUrl}
+          target={openInNewTab ? '_blank' : '_self'}
+          rel={openInNewTab ? 'noopener noreferrer' : undefined}
+          style={{
+            color: 'inherit',
+            textDecoration: showUnderline ? 'underline' : 'none',
+            textUnderlineOffset: '4px',
+          }}
+        >
+          {text}
+        </a>
+      ) : (
+        text
+      )
+
       return (
         <>
           <p className={uniqueId} style={styles}>
-            {text}
+            {textContent}
           </p>
           <style>{`
             @media (min-width: 640px) {
@@ -267,6 +195,11 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       text: {
         type: 'textarea' as const,
         label: 'text',
+      },
+      fontFamily: {
+        type: 'select' as const,
+        label: 'Font',
+        options: fontOptions,
       },
       level: {
         type: 'select' as const,
@@ -325,6 +258,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       text: 'Title',
+      fontFamily: 'inherit',
       level: 'h2',
       size: 'auto',
       align: 'left',
@@ -332,7 +266,10 @@ export const createTypographyComponents = (branding: BrandingData) => ({
       horizontalPadding: 16,
       verticalPadding: 8,
     },
-    render: ({ text, level, size, align, color, horizontalPadding, verticalPadding }: any) => {
+    render: ({ text, fontFamily, level, size, align, color, horizontalPadding, verticalPadding }: any) => {
+      useEffect(() => {
+        loadGoogleFont(fontFamily)
+      }, [fontFamily])
       const Tag = level || 'h2'
 
       // Font size based on hierarchy level (used when size is 'auto')
@@ -364,6 +301,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
           <Tag
             className={uniqueId}
             style={{
+              fontFamily: fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit',
               fontWeight: '700',
               fontSize: `${fontSize}px`,
               textAlign: alignStyles[align as keyof typeof alignStyles],

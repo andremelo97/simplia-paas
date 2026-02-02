@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
-import { textColorOptions, resolveColor } from './color-options'
+import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
 
 const withFallback = (value: string | undefined, fallback: string) =>
   (typeof value === 'string' && value.trim().length > 0) ? value : fallback
@@ -110,6 +110,11 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
         type: 'text' as const,
         label: 'Button Label',
       },
+      buttonFontFamily: {
+        type: 'select' as const,
+        label: 'Button Font',
+        options: fontOptions,
+      },
       buttonVariant: {
         type: 'radio' as const,
         label: 'Button Style',
@@ -134,6 +139,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       height: '80',
       showButton: false,
       buttonLabel: 'Get Started',
+      buttonFontFamily: 'inherit',
       buttonUrl: '#',
       buttonVariant: 'primary',
       buttonTextColor: '#ffffff',
@@ -166,6 +172,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
         delete resolvedFields.widgetTitle
         delete resolvedFields.widgetHeight
         delete resolvedFields.buttonLabel
+        delete resolvedFields.buttonFontFamily
         delete resolvedFields.buttonVariant
         delete resolvedFields.buttonTextColor
       } else {
@@ -182,7 +189,11 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
 
       return resolvedFields
     },
-    render: ({ showLogo, mobileLogoDisplay, mobileButtonAlign, backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor, buttonAction, widgetUrl, widgetTitle, widgetHeight }: any) => {
+    render: ({ showLogo, mobileLogoDisplay, mobileButtonAlign, backgroundColor, height, showButton, buttonLabel, buttonFontFamily, buttonUrl, buttonVariant, buttonTextColor, buttonAction, widgetUrl, widgetTitle, widgetHeight }: any) => {
+      useEffect(() => {
+        loadGoogleFont(buttonFontFamily)
+      }, [buttonFontFamily])
+
       // Convert string booleans to actual booleans
       const shouldShowLogo = showLogo === true || showLogo === 'true'
       const shouldShowButton = showButton === true || showButton === 'true'
@@ -325,6 +336,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                   data-widget-height={widgetHeight}
                   style={{
                     ...getButtonStyles(),
+                    fontFamily: buttonFontFamily !== 'inherit' ? `'${buttonFontFamily}', sans-serif` : 'inherit',
                     cursor: buttonAction !== 'none' ? 'pointer' : 'default',
                     border: 'none',
                   }}
@@ -345,6 +357,8 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 padding-bottom: 6px !important;
                 font-size: 12px !important;
               }
+            }
+            @media (max-width: 480px) {
               ${effectiveMobileLogoDisplay === 'hidden' ? `
               .${logoId} {
                 display: none !important;

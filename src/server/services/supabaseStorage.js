@@ -6,14 +6,15 @@
  * Can be used for audio files, images, documents, videos, etc.
  *
  * **URL Strategy:**
- * - Returns **permanent public URLs** by default (no expiration)
- * - Also provides signed URLs (24h) for temporary access scenarios
- * - Use public URLs for: brand assets (logos, videos), public resources
- * - Use signed URLs for: private/sensitive files when needed
+ * - All buckets are PRIVATE by default (more secure)
+ * - Returns **signed URLs** for all files (with configurable expiration)
+ * - Backend uses service role key to bypass RLS for uploads/management
+ * - Default expiration: 7 days for branding, 24h for other files
  *
- * **Requirements:**
- * - Bucket must be set as PUBLIC in Supabase Dashboard for public URLs to work
- * - For private files, keep bucket private and use getSignedUrl() method explicitly
+ * **Security:**
+ * - Buckets are private, requiring signed URLs for access
+ * - Service role key bypasses RLS for backend operations
+ * - Signed URLs provide time-limited access to files
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -49,7 +50,7 @@ class SupabaseStorageService {
    * @param {string} fileIdentifier - Unique identifier for the file (e.g., sessionId, userId, etc.)
    * @param {string} folder - Folder within bucket ('audio-files' or 'branding')
    * @param {string} mimeType - File MIME type
-   * @returns {Promise<{url: string, path: string, size: number}>}
+   * @returns {Promise<{path: string, signedUrl: string, size: number}>} path for DB storage, signedUrl for immediate use
    */
   async uploadFile(fileBuffer, fileName, fileIdentifier, folder, mimeType) {
     try {
@@ -72,25 +73,20 @@ class SupabaseStorageService {
         throw new Error(`Failed to upload file: ${error.message}`);
       }
 
-      // Generate public URL (permanent, no expiration)
-      const { data: publicData } = this.supabase.storage
-        .from(this.bucketName)
-        .getPublicUrl(storagePath);
-
-      // Also generate a signed URL valid for 24 hours (for private/temporary access scenarios)
+      // Generate signed URL (7 days for branding assets)
+      const expiresIn = folder === 'branding' ? 7 * 24 * 60 * 60 : 24 * 60 * 60; // 7 days or 24 hours
       const { data: signedData, error: signedError } = await this.supabase.storage
         .from(this.bucketName)
-        .createSignedUrl(storagePath, 24 * 60 * 60); // 24 hours
+        .createSignedUrl(storagePath, expiresIn);
 
       if (signedError) {
-        console.warn('Failed to create signed URL, using public URL:', signedError);
+        console.error('Failed to create signed URL:', signedError);
+        throw new Error(`Failed to create signed URL: ${signedError.message}`);
       }
 
       return {
-        url: publicData.publicUrl, // Use permanent public URL as default for branding assets
-        publicUrl: publicData.publicUrl,
-        signedUrl: signedData?.signedUrl, // Available for scenarios requiring temporary access
-        path: storagePath,
+        path: storagePath, // Primary identifier - store this in database
+        signedUrl: signedData.signedUrl, // Temporary URL for immediate use
         size: fileBuffer.length
       };
 
@@ -169,10 +165,10 @@ class SupabaseStorageService {
         return true;
       }
 
-      // Bucket doesn't exist, create it
-      console.log(`[Storage] Creating new bucket: ${this.bucketName}`);
+      // Bucket doesn't exist, create it as PRIVATE
+      console.log(`[Storage] Creating new PRIVATE bucket: ${this.bucketName}`);
       const { error: createError } = await this.supabase.storage.createBucket(this.bucketName, {
-        public: true
+        public: false
         // Note: fileSizeLimit and allowedMimeTypes removed - causes "object exceeded maximum size" error
         // File size limit and MIME validation are done at application level during upload
       });
@@ -190,20 +186,16 @@ class SupabaseStorageService {
   }
 
   /**
-   * Get signed URL for private/temporary access
+   * Get signed URL for file access
    *
-   * Use this method explicitly when you need:
-   * - Temporary access to sensitive files
-   * - Time-limited sharing
-   * - Files in private buckets
+   * All buckets are private, so signed URLs are required for access.
+   * Default expiration: 7 days for branding assets, 1 hour for others.
    *
-   * Note: Brand assets (logos, videos) should use permanent public URLs instead (default behavior)
-   *
-   * @param {string} filePath - Storage file path
-   * @param {number} expiresIn - URL expiration in seconds (default: 1 hour)
+   * @param {string} filePath - Storage file path (e.g., 'branding/logo.png')
+   * @param {number} expiresIn - URL expiration in seconds (default: 7 days)
    * @returns {Promise<string>}
    */
-  async getSignedUrl(filePath, expiresIn = 3600) {
+  async getSignedUrl(filePath, expiresIn = 7 * 24 * 60 * 60) {
     try {
       const { data, error } = await this.supabase.storage
         .from(this.bucketName)
@@ -231,11 +223,13 @@ const DEFAULT_TENANT_FOLDERS = ['audio-files', 'branding', 'bug-reports'];
  * Create tenant-specific bucket during TQ app provisioning
  * Also creates default folders (audio-files, branding, bug-reports)
  *
+ * Buckets are PRIVATE by default for security. Use signed URLs for access.
+ *
  * @param {string} tenantSlug - Tenant slug (e.g., 'acme-clinic')
- * @param {boolean} isPublic - Whether bucket should be public (default: true)
+ * @param {boolean} isPublic - Whether bucket should be public (default: false)
  * @returns {Promise<{bucketName: string, created: boolean, folders: string[]}>}
  */
-async function createTenantBucket(tenantSlug, isPublic = true) {
+async function createTenantBucket(tenantSlug, isPublic = false) {
   if (!tenantSlug) {
     throw new Error('tenantSlug is required to create bucket');
   }

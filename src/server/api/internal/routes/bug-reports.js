@@ -150,7 +150,7 @@ router.post('/', upload.array('attachments', 5), async (req, res) => {
             console.log(`[BugReport] Upload success: ${result.path}`);
 
             attachmentUrls.push({
-              url: result.url,
+              url: result.signedUrl, // Use signed URL (7 days expiry for private bucket)
               name: file.originalname,
               type: file.mimetype,
               size: file.size

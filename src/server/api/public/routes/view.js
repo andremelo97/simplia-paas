@@ -136,14 +136,14 @@ router.get('/quotes/:tenantSlug/:token', async (req, res) => {
     // 6. Get full quote with items
     const quote = await Quote.findById(publicQuote.quoteId, schema, true, true);
 
-    // 7. Get tenant branding
+    // 7. Get tenant branding (with signed URLs for private bucket)
     const branding = await TenantBranding.findByTenant(tenant.id);
 
     // 8. Return combined data
     res.json({
       data: {
         quote: quote.toJSON(),
-        branding: branding.toJSON(),
+        branding: await branding.toJSONWithSignedUrls(tenant.subdomain),
         puckSchema: publicQuote.puckSchema,
         viewsCount: publicQuote.viewsCount
       }

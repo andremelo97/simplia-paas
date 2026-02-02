@@ -367,14 +367,15 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
       mimeType
     );
 
-    // Update transcription with audio URL and status
+    // Update transcription with audio PATH (not URL) and status
+    // We store the path and generate signed URLs on-demand for security
     await client.query(
       `UPDATE ${tenantSchema}.transcription
        SET audio_url = $1,
            transcript_status = 'uploaded',
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $2`,
-      [uploadResult.url, transcriptionId]
+      [uploadResult.path, transcriptionId]
     );
 
     await client.query('COMMIT');
@@ -384,7 +385,7 @@ router.post('/upload', upload.single('audio'), async (req, res) => {
     const response = {
       success: true,
       transcriptionId,
-      audioUrl: uploadResult.url,
+      audioUrl: uploadResult.signedUrl, // Return signed URL for immediate use
       fileName,
       fileSize: uploadResult.size,
       storagePath: uploadResult.path,
@@ -517,6 +518,27 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
       return res.status(400).json({ error: 'No audio file uploaded for this transcription' });
     }
 
+    // Generate signed URL for audio file (stored as path in database)
+    // Deepgram needs a valid URL to access the audio file
+    let audioUrlForDeepgram = transcription.audio_url;
+
+    // Check if it's a storage path (not a full URL)
+    const isStoragePath = !transcription.audio_url.startsWith('http://') &&
+                          !transcription.audio_url.startsWith('https://');
+
+    if (isStoragePath) {
+      const tenantSubdomain = req.tenant?.slug;
+      if (!tenantSubdomain) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: 'Tenant subdomain not found' });
+      }
+
+      const storageService = getTenantStorageService(tenantSubdomain);
+      // Generate signed URL with 24h expiration for Deepgram processing
+      audioUrlForDeepgram = await storageService.getSignedUrl(transcription.audio_url, 86400);
+      console.log(`[Transcription] Generated signed URL for audio (24h expiry)`);
+    }
+
     // Build webhook callback URL (Deepgram will automatically add dg-token header)
     const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:3001';
     const webhookUrl = `${apiBaseUrl}/api/tq/v1/webhook/deepgram`;
@@ -575,7 +597,8 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
 
     // Start Deepgram transcription with plan-based language strategy
     console.log(`[Transcription] Starting Deepgram transcription for: ${transcriptionId}`);
-    console.log(`[Transcription] Audio URL: ${transcription.audio_url}`);
+    console.log(`[Transcription] Audio path: ${transcription.audio_url}`);
+    console.log(`[Transcription] Using signed URL: ${isStoragePath ? 'yes' : 'no (legacy URL)'}`);
     console.log(`[Transcription] Model: ${DEFAULT_STT_MODEL}`);
     console.log(`[Transcription] Language Strategy: ${detectLanguage ? 'Multilingual (detect_language)' : `Monolingual (${transcriptionLanguage})`}`);
 
@@ -595,7 +618,7 @@ router.post('/:transcriptionId/transcribe', checkTranscriptionQuota, async (req,
     }
 
     const transcriptionApiResult = await deepgramService.transcribeByUrl(
-      transcription.audio_url,
+      audioUrlForDeepgram,
       webhookUrl,
       deepgramOptions
     );

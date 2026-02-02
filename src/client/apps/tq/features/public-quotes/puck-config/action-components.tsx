@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
-import { textColorOptions, resolveColor } from './color-options'
+import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
 
 export const createActionComponents = (branding: BrandingData) => ({
   Button: {
@@ -43,6 +43,11 @@ export const createActionComponents = (branding: BrandingData) => ({
         type: 'text' as const,
         label: 'Button Text',
       },
+      fontFamily: {
+        type: 'select' as const,
+        label: 'Font',
+        options: fontOptions,
+      },
       style: {
         type: 'radio' as const,
         label: 'Style',
@@ -78,6 +83,7 @@ export const createActionComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       text: 'Click here',
+      fontFamily: 'inherit',
       action: 'none',
       url: '',
       widgetUrl: '',
@@ -103,7 +109,10 @@ export const createActionComponents = (branding: BrandingData) => ({
 
       return resolvedFields
     },
-    render: ({ text, action, url, widgetUrl, widgetTitle, widgetHeight, style, size, align, textColor }: any) => {
+    render: ({ text, fontFamily, action, url, widgetUrl, widgetTitle, widgetHeight, style, size, align, textColor }: any) => {
+      useEffect(() => {
+        loadGoogleFont(fontFamily)
+      }, [fontFamily])
       const getAlignStyle = (align: string) => {
         switch (align) {
           case 'center':
@@ -167,6 +176,7 @@ export const createActionComponents = (branding: BrandingData) => ({
               display: 'inline-block',
               width: 'fit-content',
               borderRadius: '4px',
+              fontFamily: fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit',
               fontWeight: '500',
               border: '1px solid',
               wordBreak: 'break-word',

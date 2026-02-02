@@ -113,7 +113,7 @@ export const createConfigWithResolvedData = (
       // Override Button to handle actions
       Button: {
         ...baseConfig.components.Button,
-        render: ({ text, action, url, widgetUrl, widgetTitle, widgetHeight, style, size, align, textColor }: any) => {
+        render: ({ text, fontFamily, action, url, widgetUrl, widgetTitle, widgetHeight, style, size, align, textColor }: any) => {
           const getAlignStyle = (a: string) => {
             switch (a) {
               case 'center':
@@ -181,6 +181,7 @@ export const createConfigWithResolvedData = (
                   display: 'inline-block',
                   width: 'fit-content',
                   borderRadius: '4px',
+                  fontFamily: fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit',
                   fontWeight: '500',
                   border: '1px solid',
                   wordBreak: 'break-word',
@@ -208,7 +209,7 @@ export const createConfigWithResolvedData = (
       // Override Header to handle button actions
       Header: {
         ...baseConfig.components.Header,
-        render: ({ backgroundColor, height, showButton, buttonLabel, buttonUrl, buttonVariant, buttonTextColor, buttonAction, widgetUrl, widgetTitle, widgetHeight, mobileLogoDisplay, mobileButtonAlign }: any) => {
+        render: ({ backgroundColor, height, showButton, buttonLabel, buttonFontFamily, buttonUrl, buttonVariant, buttonTextColor, buttonAction, widgetUrl, widgetTitle, widgetHeight, mobileLogoDisplay, mobileButtonAlign }: any) => {
           const headerButtonId = `header-btn-${Math.random().toString(36).substr(2, 9)}`
           const logoId = `header-logo-${Math.random().toString(36).substr(2, 9)}`
           const headerContainerId = `header-container-${Math.random().toString(36).substr(2, 9)}`
@@ -251,6 +252,7 @@ export const createConfigWithResolvedData = (
               paddingTop: '10px',
               paddingBottom: '10px',
               borderRadius: '6px',
+              fontFamily: buttonFontFamily !== 'inherit' ? `'${buttonFontFamily}', sans-serif` : 'inherit',
               fontSize: '14px',
               fontWeight: '500',
               textDecoration: 'none',
@@ -382,6 +384,8 @@ export const createConfigWithResolvedData = (
                     padding-bottom: 6px !important;
                     font-size: 12px !important;
                   }
+                }
+                @media (max-width: 480px) {
                   ${effectiveMobileLogoDisplay === 'hidden' ? `
                   .${logoId} {
                     display: none !important;
@@ -404,7 +408,7 @@ export const createConfigWithResolvedData = (
       },
       QuoteNumber: {
         ...baseConfig.components.QuoteNumber,
-        render: ({ label, showNumber, size = 'm' }: any) => {
+        render: ({ label, fontFamily, showNumber, size = 'm' }: any) => {
           const baseSizeStyles = {
             xs: { label: '12px', number: '14px' },
             s: { label: '14px', number: '16px' },
@@ -429,15 +433,16 @@ export const createConfigWithResolvedData = (
           const responsiveStyle = responsiveSizeStyles[size as keyof typeof responsiveSizeStyles]
           const uniqueId = `quote-number-${Math.random().toString(36).substr(2, 9)}`
           const effectiveLabel = getEffectiveLabel(label, labels.quoteNumber)
+          const fontFamilyStyle = fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit'
 
           return (
             <>
               <div className={uniqueId} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-                <span className={`${uniqueId}-label`} style={{ fontSize: sizeStyle.label, fontWeight: '500', color: '#4b5563' }}>
+                <span className={`${uniqueId}-label`} style={{ fontFamily: fontFamilyStyle, fontSize: sizeStyle.label, fontWeight: '500', color: '#4b5563' }}>
                   {effectiveLabel}
                 </span>
                 {showNumber !== false && (
-                  <span className={`${uniqueId}-number`} style={{ fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
+                  <span className={`${uniqueId}-number`} style={{ fontFamily: fontFamilyStyle, fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
                     {quoteData?.quote?.number || 'N/A'}
                   </span>
                 )}
@@ -458,9 +463,10 @@ export const createConfigWithResolvedData = (
       },
       QuoteTotal: {
         ...baseConfig.components.QuoteTotal,
-        render: ({ label, totalColor }: any) => {
+        render: ({ label, fontFamily, totalColor }: any) => {
           const totalColorResolved = resolveColor(totalColor)
           const effectiveLabel = getEffectiveLabel(label, labels.total)
+          const fontFamilyStyle = fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit'
 
           return (
             <div style={{
@@ -473,10 +479,10 @@ export const createConfigWithResolvedData = (
               backgroundColor: '#f3f4f6',
               borderRadius: '8px'
             }}>
-              <span style={{ fontSize: '18px', fontWeight: '600' }}>
+              <span style={{ fontFamily: fontFamilyStyle, fontSize: '18px', fontWeight: '600' }}>
                 {effectiveLabel}:
               </span>
-              <span style={{ fontSize: '24px', fontWeight: '700', color: totalColorResolved }}>
+              <span style={{ fontFamily: fontFamilyStyle, fontSize: '24px', fontWeight: '700', color: totalColorResolved }}>
                 {quoteData?.quote?.total || '$0.00'}
               </span>
             </div>

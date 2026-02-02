@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
+import { textColorOptions, backgroundColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
 
 const aspectRatioOptions = [
   { label: '16:9 (Widescreen)', value: '16/9' },
@@ -114,7 +115,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
       borderRadius: 8,
       maxWidth: '100%',
       alignment: 'center',
-      padding: 24,
+      padding: 0,
       linkUrl: '',
       openInNewTab: true,
     },
@@ -194,10 +195,10 @@ export const createMediaComponents = (branding: BrandingData) => ({
           className={containerId}
           style={{
             width: '100%',
+            boxSizing: 'border-box',
             paddingTop: `${padding}px`,
             paddingBottom: `${padding}px`,
-            paddingLeft: '16px',
-            paddingRight: '16px',
+            overflow: 'hidden',
           }}
         >
           {content}
@@ -276,7 +277,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
       borderRadius: 8,
       maxWidth: '100%',
       alignment: 'center',
-      padding: 24,
+      padding: 0,
       autoplay: false,
       loop: false,
       muted: false,
@@ -338,10 +339,10 @@ export const createMediaComponents = (branding: BrandingData) => ({
           className={containerId}
           style={{
             width: '100%',
+            boxSizing: 'border-box',
             paddingTop: `${padding}px`,
             paddingBottom: `${padding}px`,
-            paddingLeft: '16px',
-            paddingRight: '16px',
+            overflow: 'hidden',
           }}
         >
           <div
@@ -349,6 +350,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
             style={{
               width: '100%',
               maxWidth: maxWidth,
+              boxSizing: 'border-box',
               ...getAlignmentStyle(),
               aspectRatio: aspectRatio,
               borderRadius: `${borderRadius}px`,
@@ -796,6 +798,365 @@ export const createMediaComponents = (branding: BrandingData) => ({
             )}
           </div>
         </div>
+      )
+    },
+  },
+
+  VideoRows: {
+    fields: {
+      rows: {
+        type: 'array' as const,
+        label: 'Video Rows',
+        arrayFields: {
+          layout: {
+            type: 'radio' as const,
+            label: 'Videos per Row',
+            options: [
+              { label: '1 Video', value: '1' },
+              { label: '2 Videos', value: '2' },
+            ],
+          },
+          video1Title: {
+            type: 'text' as const,
+            label: 'Video 1 Title',
+          },
+          video1Url: {
+            type: 'text' as const,
+            label: 'Video 1 URL (embed)',
+          },
+          video2Title: {
+            type: 'text' as const,
+            label: 'Video 2 Title',
+          },
+          video2Url: {
+            type: 'text' as const,
+            label: 'Video 2 URL (embed)',
+          },
+        },
+        defaultItemProps: {
+          layout: '2',
+          video1Title: 'Video 1',
+          video1Url: '',
+          video2Title: 'Video 2',
+          video2Url: '',
+        },
+      },
+      // Title styling
+      titleColor: {
+        type: 'select' as const,
+        label: 'Title Color',
+        options: textColorOptions,
+      },
+      titleFontFamily: {
+        type: 'select' as const,
+        label: 'Title Font',
+        options: fontOptions,
+      },
+      titleSize: {
+        type: 'select' as const,
+        label: 'Title Size',
+        options: [
+          { label: 'Small (14px)', value: '14' },
+          { label: 'Medium (16px)', value: '16' },
+          { label: 'Large (18px)', value: '18' },
+          { label: 'XL (20px)', value: '20' },
+          { label: '2XL (24px)', value: '24' },
+        ],
+      },
+      // Video size options
+      videoWidth: {
+        type: 'select' as const,
+        label: 'Video Max Width',
+        options: [
+          { label: 'Full Width', value: '100%' },
+          { label: 'Small (320px)', value: '320px' },
+          { label: 'Medium (480px)', value: '480px' },
+          { label: 'Large (560px)', value: '560px' },
+          { label: 'X-Large (640px)', value: '640px' },
+          { label: '2X-Large (768px)', value: '768px' },
+        ],
+      },
+      videoHeight: {
+        type: 'select' as const,
+        label: 'Video Height',
+        options: [
+          { label: 'Auto (16:9)', value: 'auto' },
+          { label: 'Small (180px)', value: '180' },
+          { label: 'Medium (240px)', value: '240' },
+          { label: 'Large (315px)', value: '315' },
+          { label: 'X-Large (400px)', value: '400' },
+          { label: '2X-Large (480px)', value: '480' },
+        ],
+      },
+      // Layout options
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+      rowGap: {
+        type: 'select' as const,
+        label: 'Gap Between Rows',
+        options: [
+          { label: '16px', value: 16 },
+          { label: '24px', value: 24 },
+          { label: '32px', value: 32 },
+          { label: '40px', value: 40 },
+          { label: '48px', value: 48 },
+          { label: '64px', value: 64 },
+        ],
+      },
+      videoGap: {
+        type: 'select' as const,
+        label: 'Gap Between Videos',
+        options: [
+          { label: '8px', value: 8 },
+          { label: '16px', value: 16 },
+          { label: '24px', value: 24 },
+          { label: '32px', value: 32 },
+          { label: '40px', value: 40 },
+        ],
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: paddingOptions,
+      },
+      horizontalPadding: {
+        type: 'select' as const,
+        label: 'Horizontal Padding',
+        options: paddingOptions,
+      },
+      borderRadius: {
+        type: 'select' as const,
+        label: 'Video Border Radius',
+        options: borderRadiusOptions,
+      },
+    },
+    defaultProps: {
+      rows: [
+        {
+          layout: '2',
+          video1Title: 'Video 1',
+          video1Url: '',
+          video2Title: 'Video 2',
+          video2Url: '',
+        },
+      ],
+      titleColor: 'primary',
+      titleFontFamily: 'inherit',
+      titleSize: '16',
+      videoWidth: '100%',
+      videoHeight: 'auto',
+      backgroundColor: 'none',
+      rowGap: 32,
+      videoGap: 24,
+      verticalPadding: 0,
+      horizontalPadding: 0,
+      borderRadius: 8,
+    },
+    render: ({ rows, titleColor, titleFontFamily, titleSize, videoWidth, videoHeight, backgroundColor, rowGap, videoGap, verticalPadding, horizontalPadding, borderRadius }: any) => {
+      useEffect(() => {
+        loadGoogleFont(titleFontFamily)
+      }, [titleFontFamily])
+
+      const uniqueId = `video-rows-${Math.random().toString(36).substr(2, 9)}`
+      const titleColorResolved = resolveColor(titleColor, branding)
+      const bgColorResolved = resolveColor(backgroundColor, branding)
+      const fontFamilyStyle = titleFontFamily !== 'inherit' ? `'${titleFontFamily}', sans-serif` : 'inherit'
+
+      // Convert YouTube and Vimeo URLs to embed URLs
+      const getEmbedUrl = (inputUrl: string) => {
+        if (!inputUrl) return ''
+
+        // YouTube
+        const youtubeRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
+        const youtubeMatch = inputUrl.match(youtubeRegex)
+        if (youtubeMatch) {
+          return `https://www.youtube.com/embed/${youtubeMatch[1]}`
+        }
+
+        // Vimeo
+        const vimeoRegex = /(?:vimeo\.com\/)(\d+)/
+        const vimeoMatch = inputUrl.match(vimeoRegex)
+        if (vimeoMatch) {
+          return `https://player.vimeo.com/video/${vimeoMatch[1]}`
+        }
+
+        // Already an embed URL
+        return inputUrl
+      }
+
+      return (
+        <>
+          <div
+            className={uniqueId}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              backgroundColor: bgColorResolved,
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: `${horizontalPadding}px`,
+              paddingRight: `${horizontalPadding}px`,
+              overflow: 'hidden',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: `${rowGap}px`,
+              }}
+            >
+              {rows && rows.map((row: any, rowIndex: number) => {
+                const isSingleVideo = row.layout === '1'
+
+                return (
+                  <div
+                    key={rowIndex}
+                    className={`${uniqueId}-row`}
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: isSingleVideo ? '1fr' : '1fr 1fr',
+                      gap: `${videoGap}px`,
+                    }}
+                  >
+                    {/* Video 1 */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                      {row.video1Title && (
+                        <h3
+                          style={{
+                            fontFamily: fontFamilyStyle,
+                            fontSize: `${titleSize}px`,
+                            fontWeight: '500',
+                            color: titleColorResolved,
+                            textAlign: 'center',
+                            margin: 0,
+                            textDecoration: 'underline',
+                            textUnderlineOffset: '4px',
+                          }}
+                        >
+                          {row.video1Title}
+                        </h3>
+                      )}
+                      <div
+                        style={{
+                          width: '100%',
+                          maxWidth: videoWidth,
+                          height: videoHeight === 'auto' ? undefined : `${videoHeight}px`,
+                          aspectRatio: videoHeight === 'auto' ? '16/9' : undefined,
+                          backgroundColor: '#f3f4f6',
+                          borderRadius: `${borderRadius}px`,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        {row.video1Url ? (
+                          <iframe
+                            src={getEmbedUrl(row.video1Url)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              border: 'none',
+                            }}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            title={row.video1Title || 'Video'}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              minHeight: '180px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#9ca3af',
+                              fontSize: '14px',
+                            }}
+                          >
+                            Add video URL
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Video 2 (only if layout is 2) */}
+                    {!isSingleVideo && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
+                        {row.video2Title && (
+                          <h3
+                            style={{
+                              fontFamily: fontFamilyStyle,
+                              fontSize: `${titleSize}px`,
+                              fontWeight: '500',
+                              color: titleColorResolved,
+                              textAlign: 'center',
+                              margin: 0,
+                              textDecoration: 'underline',
+                              textUnderlineOffset: '4px',
+                            }}
+                          >
+                            {row.video2Title}
+                          </h3>
+                        )}
+                        <div
+                          style={{
+                            width: '100%',
+                            maxWidth: videoWidth,
+                            height: videoHeight === 'auto' ? undefined : `${videoHeight}px`,
+                            aspectRatio: videoHeight === 'auto' ? '16/9' : undefined,
+                            backgroundColor: '#f3f4f6',
+                            borderRadius: `${borderRadius}px`,
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {row.video2Url ? (
+                            <iframe
+                              src={getEmbedUrl(row.video2Url)}
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                border: 'none',
+                              }}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              title={row.video2Title || 'Video'}
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                minHeight: '180px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#9ca3af',
+                                fontSize: '14px',
+                              }}
+                            >
+                              Add video URL
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          <style>{`
+            @media (max-width: 768px) {
+              .${uniqueId}-row {
+                grid-template-columns: 1fr !important;
+              }
+            }
+          `}</style>
+        </>
       )
     },
   },

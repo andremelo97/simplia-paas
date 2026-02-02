@@ -1,5 +1,43 @@
 // Centralized color options for Puck components
 
+// Google Fonts options - popular fonts for web
+export const fontOptions = [
+  { label: 'Default (System)', value: 'inherit' },
+  { label: 'Inter', value: 'Inter' },
+  { label: 'Roboto', value: 'Roboto' },
+  { label: 'Open Sans', value: 'Open Sans' },
+  { label: 'Lato', value: 'Lato' },
+  { label: 'Montserrat', value: 'Montserrat' },
+  { label: 'Poppins', value: 'Poppins' },
+  { label: 'Raleway', value: 'Raleway' },
+  { label: 'Oswald', value: 'Oswald' },
+  { label: 'Playfair Display', value: 'Playfair Display' },
+  { label: 'Merriweather', value: 'Merriweather' },
+  { label: 'Source Sans Pro', value: 'Source Sans Pro' },
+  { label: 'Nunito', value: 'Nunito' },
+  { label: 'Ubuntu', value: 'Ubuntu' },
+  { label: 'Rubik', value: 'Rubik' },
+  { label: 'Work Sans', value: 'Work Sans' },
+  { label: 'Quicksand', value: 'Quicksand' },
+  { label: 'Barlow', value: 'Barlow' },
+  { label: 'DM Sans', value: 'DM Sans' },
+  { label: 'Manrope', value: 'Manrope' },
+]
+
+// Helper to load Google Font dynamically
+export const loadGoogleFont = (fontFamily: string) => {
+  if (!fontFamily || fontFamily === 'inherit') return
+
+  const fontId = `google-font-${fontFamily.replace(/\s+/g, '-').toLowerCase()}`
+  if (document.getElementById(fontId)) return
+
+  const link = document.createElement('link')
+  link.id = fontId
+  link.rel = 'stylesheet'
+  link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:wght@400;500;600;700&display=swap`
+  document.head.appendChild(link)
+}
+
 export const textColorOptions = [
   { label: 'Default (Gray 900)', value: 'default' },
   { label: 'Muted (Gray 600)', value: 'muted' },
@@ -7,7 +45,7 @@ export const textColorOptions = [
   { label: 'Secondary', value: 'secondary' },
   { label: 'Tertiary', value: 'tertiary' },
   { label: 'White', value: '#ffffff' },
-  { label: 'Black', value: '#111827' },
+  { label: 'Black', value: '#000000' },
   { label: 'Gray 700', value: '#374151' },
   { label: 'Gray 600', value: '#4b5563' },
   { label: 'Blue', value: '#3b82f6' },
@@ -27,7 +65,7 @@ export const backgroundColorOptions = [
   { label: 'Light Gray', value: '#f9fafb' },
   { label: 'Gray', value: '#f3f4f6' },
   { label: 'Dark Gray', value: '#e5e7eb' },
-  { label: 'Black', value: '#111827' },
+  { label: 'Black', value: '#000000' },
   { label: 'Blue', value: '#3b82f6' },
   { label: 'Red', value: '#ef4444' },
   { label: 'Green', value: '#10b981' },
@@ -46,7 +84,7 @@ export const iconColorOptions = [
   { label: 'Yellow', value: '#f59e0b' },
   { label: 'Purple', value: '#8b5cf6' },
   { label: 'Pink', value: '#ec4899' },
-  { label: 'Black', value: '#111827' },
+  { label: 'Black', value: '#000000' },
   { label: 'White', value: '#ffffff' },
 ]
 

@@ -24,7 +24,7 @@ export const createConfig = (branding: BrandingData) => ({
     },
     typography: {
       title: 'Typography',
-      components: ['Heading', 'Title', 'Text'],
+      components: ['Title', 'Text'],
     },
     actions: {
       title: 'Actions',
@@ -36,7 +36,7 @@ export const createConfig = (branding: BrandingData) => ({
     },
     media: {
       title: 'Media',
-      components: ['Image', 'Video', 'ImageCarousel'],
+      components: ['Image', 'Video', 'ImageCarousel', 'VideoRows'],
     },
     headerFooter: {
       title: 'Header & Footer',

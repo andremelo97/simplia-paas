@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import * as Icons from './icons'
-import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor } from './color-options'
+import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -753,25 +753,59 @@ export const createOtherComponents = (branding: BrandingData) => ({
         type: 'text' as const,
         label: 'padding',
       },
+      titleFontFamily: {
+        type: 'select' as const,
+        label: 'Title Font',
+        options: fontOptions,
+      },
       titleSize: {
         type: 'text' as const,
         label: 'title font size (px)',
         placeholder: '48',
-      },
-      descriptionSize: {
-        type: 'text' as const,
-        label: 'description font size (px)',
-        placeholder: '18',
       },
       titleColor: {
         type: 'select' as const,
         label: 'Title Color',
         options: textColorOptions,
       },
+      titleBgColor: {
+        type: 'select' as const,
+        label: 'Title Background Color',
+        options: backgroundColorOptions,
+      },
+      titleBgOpacity: {
+        type: 'number' as const,
+        label: 'Title Background Opacity (0-1)',
+        min: 0,
+        max: 1,
+        step: 0.1,
+      },
+      descriptionFontFamily: {
+        type: 'select' as const,
+        label: 'Description Font',
+        options: fontOptions,
+      },
+      descriptionSize: {
+        type: 'text' as const,
+        label: 'description font size (px)',
+        placeholder: '18',
+      },
       descriptionColor: {
         type: 'select' as const,
         label: 'Description Color',
         options: textColorOptions,
+      },
+      descriptionBgColor: {
+        type: 'select' as const,
+        label: 'Description Background Color',
+        options: backgroundColorOptions,
+      },
+      descriptionBgOpacity: {
+        type: 'number' as const,
+        label: 'Description Background Opacity (0-1)',
+        min: 0,
+        max: 1,
+        step: 0.1,
       },
       backgroundColor: {
         type: 'select' as const,
@@ -794,6 +828,16 @@ export const createOtherComponents = (branding: BrandingData) => ({
       // Only show backgroundOpacity when showOverlay is true
       if (data.props.showOverlay !== true && data.props.showOverlay !== 'true') {
         delete resolvedFields.backgroundOpacity
+      }
+
+      // Only show titleBgOpacity when titleBgColor is set
+      if (!data.props.titleBgColor || data.props.titleBgColor === 'none') {
+        delete resolvedFields.titleBgOpacity
+      }
+
+      // Only show descriptionBgOpacity when descriptionBgColor is set
+      if (!data.props.descriptionBgColor || data.props.descriptionBgColor === 'none') {
+        delete resolvedFields.descriptionBgOpacity
       }
 
       return resolvedFields
@@ -819,15 +863,25 @@ export const createOtherComponents = (branding: BrandingData) => ({
       inlineMediaType: 'image',
       inlineMediaUrl: '',
       padding: '64px',
+      titleFontFamily: 'inherit',
       titleSize: '',
-      descriptionSize: '',
       titleColor: '#111827',
+      titleBgColor: 'none',
+      titleBgOpacity: 0.5,
+      descriptionFontFamily: 'inherit',
+      descriptionSize: '',
       descriptionColor: '#374151',
+      descriptionBgColor: 'none',
+      descriptionBgOpacity: 0.5,
       backgroundColor: 'none',
       videoObjectFit: 'cover',
       showOverlay: true,
     },
-    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleSize, descriptionSize, titleColor, descriptionColor, backgroundColor, videoObjectFit, showOverlay }: any) => {
+    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleFontFamily, titleSize, titleColor, titleBgColor, titleBgOpacity, descriptionFontFamily, descriptionSize, descriptionColor, descriptionBgColor, descriptionBgOpacity, backgroundColor, videoObjectFit, showOverlay }: any) => {
+      useEffect(() => {
+        loadGoogleFont(titleFontFamily)
+        loadGoogleFont(descriptionFontFamily)
+      }, [titleFontFamily, descriptionFontFamily])
       const alignClasses = {
         left: 'text-left',
         center: 'text-center',
@@ -1043,10 +1097,36 @@ export const createOtherComponents = (branding: BrandingData) => ({
               {/* Content */}
               <div style={{ width: '100%', maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto', position: 'relative', zIndex: 10 }}>
                 <div style={{ width: '100%', maxWidth: '768px', ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' } : { textAlign: 'left' }), paddingLeft: '16px', paddingRight: '16px' }}>
-                  <h1 className={bgTitleId} style={{ fontSize: `${parseInt(titleSize) || 48}px`, fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                  <h1 className={bgTitleId} style={{
+                    fontFamily: titleFontFamily !== 'inherit' ? `'${titleFontFamily}', sans-serif` : 'inherit',
+                    fontSize: `${parseInt(titleSize) || 48}px`,
+                    fontWeight: '700',
+                    marginBottom: '16px',
+                    wordBreak: 'break-word',
+                    color: resolveColor(titleColor, branding),
+                    ...(titleBgColor && titleBgColor !== 'none' ? {
+                      display: 'inline-block',
+                      backgroundColor: `${resolveColor(titleBgColor, branding)}${Math.round((titleBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                    } : {})
+                  }}>
                     {title}
                   </h1>
-                  <p className={bgDescId} style={{ fontSize: `${parseInt(descriptionSize) || 18}px`, marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                  <p className={bgDescId} style={{
+                    fontFamily: descriptionFontFamily !== 'inherit' ? `'${descriptionFontFamily}', sans-serif` : 'inherit',
+                    fontSize: `${parseInt(descriptionSize) || 18}px`,
+                    marginBottom: '24px',
+                    lineHeight: '1.625',
+                    wordBreak: 'break-word',
+                    color: resolveColor(descriptionColor, branding),
+                    ...(descriptionBgColor && descriptionBgColor !== 'none' ? {
+                      display: 'inline-block',
+                      backgroundColor: `${resolveColor(descriptionBgColor, branding)}${Math.round((descriptionBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                    } : {})
+                  }}>
                     {description}
                   </p>
                   {buttons && buttons.length > 0 && (
@@ -1142,10 +1222,36 @@ export const createOtherComponents = (branding: BrandingData) => ({
               {align === 'center' ? (
                 // Layout centralizado - single column
                 <div style={{ width: '100%', maxWidth: '768px', marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' }}>
-                  <h1 className={inlineTitleId} style={{ fontSize: `${parseInt(titleSize) || 48}px`, fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                  <h1 className={inlineTitleId} style={{
+                    fontFamily: titleFontFamily !== 'inherit' ? `'${titleFontFamily}', sans-serif` : 'inherit',
+                    fontSize: `${parseInt(titleSize) || 48}px`,
+                    fontWeight: '700',
+                    marginBottom: '16px',
+                    wordBreak: 'break-word',
+                    color: resolveColor(titleColor, branding),
+                    ...(titleBgColor && titleBgColor !== 'none' ? {
+                      display: 'inline-block',
+                      backgroundColor: `${resolveColor(titleBgColor, branding)}${Math.round((titleBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                    } : {})
+                  }}>
                     {title}
                   </h1>
-                  <p className={inlineDescId} style={{ fontSize: `${parseInt(descriptionSize) || 18}px`, marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                  <p className={inlineDescId} style={{
+                    fontFamily: descriptionFontFamily !== 'inherit' ? `'${descriptionFontFamily}', sans-serif` : 'inherit',
+                    fontSize: `${parseInt(descriptionSize) || 18}px`,
+                    marginBottom: '24px',
+                    lineHeight: '1.625',
+                    wordBreak: 'break-word',
+                    color: resolveColor(descriptionColor, branding),
+                    ...(descriptionBgColor && descriptionBgColor !== 'none' ? {
+                      display: 'inline-block',
+                      backgroundColor: `${resolveColor(descriptionBgColor, branding)}${Math.round((descriptionBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
+                      padding: '4px 12px',
+                      borderRadius: '4px',
+                    } : {})
+                  }}>
                     {description}
                   </p>
                   {buttons && buttons.length > 0 && (
@@ -1176,10 +1282,36 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 // Layout left - two columns (or single column if no media)
                 <div className={inlineGridId} style={{ width: '100%', ...(showInlineMedia && inlineMediaUrl ? { display: 'grid', gridTemplateColumns: '1fr', gap: '24px', alignItems: 'center' } : {}) }}>
                   <div style={{ textAlign: 'left' }}>
-                    <h1 className={inlineTitleId} style={{ fontSize: `${parseInt(titleSize) || 48}px`, fontWeight: '700', marginBottom: '16px', wordBreak: 'break-word', color: resolveColor(titleColor, branding) }}>
+                    <h1 className={inlineTitleId} style={{
+                      fontFamily: titleFontFamily !== 'inherit' ? `'${titleFontFamily}', sans-serif` : 'inherit',
+                      fontSize: `${parseInt(titleSize) || 48}px`,
+                      fontWeight: '700',
+                      marginBottom: '16px',
+                      wordBreak: 'break-word',
+                      color: resolveColor(titleColor, branding),
+                      ...(titleBgColor && titleBgColor !== 'none' ? {
+                        display: 'inline-block',
+                        backgroundColor: `${resolveColor(titleBgColor, branding)}${Math.round((titleBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
+                        padding: '4px 12px',
+                        borderRadius: '4px',
+                      } : {})
+                    }}>
                       {title}
                     </h1>
-                    <p className={inlineDescId} style={{ fontSize: `${parseInt(descriptionSize) || 18}px`, marginBottom: '24px', lineHeight: '1.625', wordBreak: 'break-word', color: resolveColor(descriptionColor, branding) }}>
+                    <p className={inlineDescId} style={{
+                      fontFamily: descriptionFontFamily !== 'inherit' ? `'${descriptionFontFamily}', sans-serif` : 'inherit',
+                      fontSize: `${parseInt(descriptionSize) || 18}px`,
+                      marginBottom: '24px',
+                      lineHeight: '1.625',
+                      wordBreak: 'break-word',
+                      color: resolveColor(descriptionColor, branding),
+                      ...(descriptionBgColor && descriptionBgColor !== 'none' ? {
+                        display: 'inline-block',
+                        backgroundColor: `${resolveColor(descriptionBgColor, branding)}${Math.round((descriptionBgOpacity || 0.5) * 255).toString(16).padStart(2, '0')}`,
+                        padding: '4px 12px',
+                        borderRadius: '4px',
+                      } : {})
+                    }}>
                       {description}
                     </p>
                     {buttons && buttons.length > 0 && (

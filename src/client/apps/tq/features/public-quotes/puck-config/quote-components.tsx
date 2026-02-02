@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
-import { textColorOptions, resolveColor } from './color-options'
+import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
 
 const withFallback = (value: string | undefined, fallback: string) =>
   (typeof value === 'string' && value.trim().length > 0) ? value : fallback
@@ -10,6 +10,11 @@ export const createQuoteComponents = (branding: BrandingData) => ({
     fields: {
       label: {
         type: 'text' as const
+      },
+      fontFamily: {
+        type: 'select' as const,
+        label: 'Font',
+        options: fontOptions,
       },
       showNumber: {
         type: 'radio' as const,
@@ -35,10 +40,14 @@ export const createQuoteComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       label: 'Quote #',
+      fontFamily: 'inherit',
       showNumber: false,
       size: 'm'
     },
-    render: ({ label, showNumber, size }: any) => {
+    render: ({ label, fontFamily, showNumber, size }: any) => {
+      useEffect(() => {
+        loadGoogleFont(fontFamily)
+      }, [fontFamily])
       const baseSizeStyles = {
         xs: { label: '12px', number: '14px' },
         s: { label: '14px', number: '16px' },
@@ -64,14 +73,16 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       const uniqueId = `quote-number-${Math.random().toString(36).substr(2, 9)}`
       const effectiveLabel = withFallback(label, 'Quote #')
 
+      const fontFamilyStyle = fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit'
+
       return (
         <>
           <div className={uniqueId} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
-            <span className={`${uniqueId}-label`} style={{ fontSize: sizeStyle.label, fontWeight: '500', color: '#4b5563' }}>
+            <span className={`${uniqueId}-label`} style={{ fontFamily: fontFamilyStyle, fontSize: sizeStyle.label, fontWeight: '500', color: '#4b5563' }}>
               {effectiveLabel}
             </span>
             {showNumber !== false && (
-              <span className={`${uniqueId}-number`} style={{ fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
+              <span className={`${uniqueId}-number`} style={{ fontFamily: fontFamilyStyle, fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
                 {'{{quote.number}}'}
               </span>
             )}
@@ -95,6 +106,11 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       label: {
         type: 'text' as const
       },
+      fontFamily: {
+        type: 'select' as const,
+        label: 'Font',
+        options: fontOptions,
+      },
       totalColor: {
         type: 'select' as const,
         label: 'Total Color',
@@ -103,11 +119,17 @@ export const createQuoteComponents = (branding: BrandingData) => ({
     },
     defaultProps: {
       label: 'Total',
+      fontFamily: 'inherit',
       totalColor: 'primary'
     },
-    render: ({ label, totalColor }: any) => {
+    render: ({ label, fontFamily, totalColor }: any) => {
+      useEffect(() => {
+        loadGoogleFont(fontFamily)
+      }, [fontFamily])
+
       const totalColorResolved = resolveColor(totalColor, branding)
       const effectiveLabel = withFallback(label, 'Total')
+      const fontFamilyStyle = fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit'
 
       return (
         <div
@@ -122,8 +144,8 @@ export const createQuoteComponents = (branding: BrandingData) => ({
             borderRadius: '8px'
           }}
         >
-          <span style={{ fontSize: '18px', fontWeight: '600' }}>{effectiveLabel}:</span>
-          <span style={{ fontSize: '24px', fontWeight: '700', color: totalColorResolved }}>
+          <span style={{ fontFamily: fontFamilyStyle, fontSize: '18px', fontWeight: '600' }}>{effectiveLabel}:</span>
+          <span style={{ fontFamily: fontFamilyStyle, fontSize: '24px', fontWeight: '700', color: totalColorResolved }}>
             {'{{quote.total}}'}
           </span>
         </div>

@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Upload, Palette, Video, Phone, MapPin, Globe, Facebook, Instagram, Linkedin, Mail } from 'lucide-react'
 
-// Phone mask function for Brazilian format
-const formatPhone = (value: string): string => {
-  const digits = value.replace(/\D/g, '').slice(0, 11)
-  if (digits.length <= 2) return digits
-  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
-  if (digits.length <= 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`
-}
-
 // Custom brand icons (lucide doesn't have brand icons)
 const WhatsAppIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
@@ -281,8 +272,8 @@ export const BrandingConfiguration: React.FC = () => {
               <Input
                 id="phone"
                 value={branding.phone || ''}
-                onChange={(e) => setBranding({ ...branding, phone: formatPhone(e.target.value) })}
-                placeholder="(11) 99999-9999"
+                onChange={(e) => setBranding({ ...branding, phone: e.target.value })}
+                placeholder="+55 11 99999-9999"
                 className="mt-2"
               />
             </div>

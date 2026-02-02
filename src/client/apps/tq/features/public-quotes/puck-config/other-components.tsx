@@ -706,6 +706,14 @@ export const createOtherComponents = (branding: BrandingData) => ({
         type: 'text' as const,
         label: 'background image url',
       },
+      showOverlay: {
+        type: 'radio' as const,
+        label: 'Show Color Overlay',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No (original colors)', value: false },
+        ],
+      },
       backgroundOpacity: {
         type: 'number' as const,
         label: 'background opacity (0-1)',
@@ -779,14 +787,16 @@ export const createOtherComponents = (branding: BrandingData) => ({
           { label: 'Fill (stretch to fill)', value: 'fill' },
         ],
       },
-      showOverlay: {
-        type: 'radio' as const,
-        label: 'Show Color Overlay',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No (original colors)', value: false },
-        ],
-      },
+    },
+    resolveFields: (data: any, { fields }: any) => {
+      const resolvedFields = { ...fields }
+
+      // Only show backgroundOpacity when showOverlay is true
+      if (data.props.showOverlay !== true && data.props.showOverlay !== 'true') {
+        delete resolvedFields.backgroundOpacity
+      }
+
+      return resolvedFields
     },
     defaultProps: {
       title: 'Hero Title',

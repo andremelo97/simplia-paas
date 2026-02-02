@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import * as Icons from './icons'
+import * as LucideIcons from 'lucide-react'
 import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor, fontOptions, loadGoogleFont, maxWidthOptions } from './color-options'
 
 const verticalPaddingOptions = [
@@ -3488,6 +3489,258 @@ export const createOtherComponents = (branding: BrandingData) => ({
             }
           `}</style>
         </>
+      )
+    },
+  },
+  IconList: {
+    fields: {
+      icons: {
+        type: 'array' as const,
+        label: 'Icons',
+        arrayFields: {
+          icon: {
+            type: 'select' as const,
+            label: 'Icon',
+            options: [
+              // Healthcare & Medical
+              { label: '❤️ Heart', value: 'Heart' },
+              { label: '💗 Heart Pulse', value: 'HeartPulse' },
+              { label: '🩺 Stethoscope', value: 'Stethoscope' },
+              { label: '💊 Pill', value: 'Pill' },
+              { label: '🌡️ Thermometer', value: 'Thermometer' },
+              { label: '👁️ Eye', value: 'Eye' },
+              { label: '➕ Plus', value: 'Plus' },
+              { label: '💉 Syringe', value: 'Syringe' },
+              { label: '🏥 Hospital', value: 'Hospital' },
+              { label: '🩹 Cross', value: 'Cross' },
+              { label: '🏃 Activity', value: 'Activity' },
+              // Business & Contact
+              { label: '📧 Mail', value: 'Mail' },
+              { label: '📞 Phone', value: 'Phone' },
+              { label: '📍 Map Pin', value: 'MapPin' },
+              { label: '🌐 Globe', value: 'Globe' },
+              { label: '💬 Message Circle', value: 'MessageCircle' },
+              { label: '💼 Briefcase', value: 'Briefcase' },
+              { label: '🏢 Building', value: 'Building' },
+              { label: '📄 File Text', value: 'FileText' },
+              { label: '📋 Clipboard', value: 'ClipboardList' },
+              { label: '💵 Dollar Sign', value: 'DollarSign' },
+              { label: '🏷️ Tag', value: 'Tag' },
+              { label: '🔗 Link', value: 'Link' },
+              { label: '📱 Smartphone', value: 'Smartphone' },
+              { label: '💳 Credit Card', value: 'CreditCard' },
+              // Care & Wellness
+              { label: '⚡ Zap', value: 'Zap' },
+              { label: '⭐ Star', value: 'Star' },
+              { label: '🛡️ Shield', value: 'Shield' },
+              { label: '🛡️✓ Shield Check', value: 'ShieldCheck' },
+              { label: '✅ Check Circle', value: 'CheckCircle' },
+              { label: '✓ Check', value: 'Check' },
+              { label: '🎯 Target', value: 'Target' },
+              { label: '👤 User', value: 'User' },
+              { label: '👥 Users', value: 'Users' },
+              { label: '🏠 Home', value: 'Home' },
+              { label: '⏰ Clock', value: 'Clock' },
+              { label: '📅 Calendar', value: 'Calendar' },
+              { label: '🏆 Trophy', value: 'Trophy' },
+              { label: '🎖️ Award', value: 'Award' },
+              { label: '👍 Thumbs Up', value: 'ThumbsUp' },
+              { label: '💪 Arm', value: 'Dumbbell' },
+              { label: '🔒 Lock', value: 'Lock' },
+              // Aesthetics & Beauty
+              { label: '💎 Gem', value: 'Gem' },
+              { label: '🌿 Leaf', value: 'Leaf' },
+              { label: '☀️ Sun', value: 'Sun' },
+              { label: '🌙 Moon', value: 'Moon' },
+              { label: '💧 Droplet', value: 'Droplet' },
+              { label: '✂️ Scissors', value: 'Scissors' },
+              { label: '✨ Sparkles', value: 'Sparkles' },
+              { label: '🌸 Flower', value: 'Flower2' },
+              { label: '🎨 Palette', value: 'Palette' },
+              { label: '🪞 Scan', value: 'ScanFace' },
+            ],
+          },
+          label: {
+            type: 'text' as const,
+            label: 'Label (optional)',
+          },
+        },
+        defaultItemProps: {
+          icon: 'Heart',
+          label: '',
+        },
+      },
+      layout: {
+        type: 'radio' as const,
+        label: 'Layout',
+        options: [
+          { label: 'Horizontal', value: 'horizontal' },
+          { label: 'Vertical', value: 'vertical' },
+        ],
+      },
+      align: {
+        type: 'radio' as const,
+        label: 'Alignment',
+        options: [
+          { label: 'Left', value: 'left' },
+          { label: 'Center', value: 'center' },
+          { label: 'Right', value: 'right' },
+        ],
+      },
+      iconSize: {
+        type: 'text' as const,
+        label: 'Icon Size (px)',
+        placeholder: '32',
+      },
+      iconColor: {
+        type: 'select' as const,
+        label: 'Icon Color',
+        options: iconColorOptions,
+      },
+      labelSize: {
+        type: 'text' as const,
+        label: 'Label Size (px)',
+        placeholder: '14',
+      },
+      labelColor: {
+        type: 'select' as const,
+        label: 'Label Color',
+        options: textColorOptions,
+      },
+      gap: {
+        type: 'select' as const,
+        label: 'Gap Between Icons',
+        options: [
+          { label: 'Small (12px)', value: '12' },
+          { label: 'Medium (24px)', value: '24' },
+          { label: 'Large (32px)', value: '32' },
+          { label: 'X-Large (48px)', value: '48' },
+        ],
+      },
+      verticalPadding: {
+        type: 'select' as const,
+        label: 'Vertical Padding',
+        options: verticalPaddingOptions,
+      },
+      backgroundColor: {
+        type: 'select' as const,
+        label: 'Background Color',
+        options: backgroundColorOptions,
+      },
+    },
+    defaultProps: {
+      icons: [
+        { icon: 'CheckCircle', label: '' },
+        { icon: 'Shield', label: '' },
+        { icon: 'Star', label: '' },
+      ],
+      layout: 'horizontal',
+      align: 'center',
+      iconSize: '',
+      iconColor: 'primary',
+      labelSize: '',
+      labelColor: '#374151',
+      gap: '24',
+      verticalPadding: 16,
+      backgroundColor: 'none',
+    },
+    render: ({ icons, layout, align, iconSize, iconColor, labelSize, labelColor, gap, verticalPadding, backgroundColor }: any) => {
+      const size = parseInt(iconSize) || 32
+      const color = resolveColor(iconColor, branding)
+      const labelFontSize = parseInt(labelSize) || 14
+      const labelTextColor = resolveColor(labelColor, branding)
+      const gapValue = gap || '24'
+
+      const validIcons = Array.isArray(icons) ? icons.filter((item: any) => item && item.icon) : []
+
+      if (validIcons.length === 0) {
+        return (
+          <div
+            style={{
+              width: '100%',
+              paddingTop: `${verticalPadding}px`,
+              paddingBottom: `${verticalPadding}px`,
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              backgroundColor: resolveColor(backgroundColor, branding),
+            }}
+          >
+            <div
+              style={{
+                height: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#f3f4f6',
+                borderRadius: '8px',
+                color: '#9ca3af',
+                fontSize: '14px',
+              }}
+            >
+              Add icons to display
+            </div>
+          </div>
+        )
+      }
+
+      const justifyContent = align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'
+
+      const renderIcon = (iconName: string) => {
+        const IconComponent = (LucideIcons as any)[iconName]
+        if (!IconComponent) return null
+        return <IconComponent size={size} color={color} strokeWidth={2} />
+      }
+
+      return (
+        <div
+          style={{
+            width: '100%',
+            paddingTop: `${verticalPadding}px`,
+            paddingBottom: `${verticalPadding}px`,
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            backgroundColor: resolveColor(backgroundColor, branding),
+          }}
+        >
+          <div
+            style={{
+              maxWidth: '1152px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              display: 'flex',
+              flexDirection: layout === 'vertical' ? 'column' : 'row',
+              flexWrap: 'wrap',
+              gap: `${gapValue}px`,
+              justifyContent,
+              alignItems: layout === 'vertical' ? (align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start') : 'center',
+            }}
+          >
+            {validIcons.map((item: any, index: number) => (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                {renderIcon(item.icon)}
+                {item.label && (
+                  <span
+                    style={{
+                      fontSize: `${labelFontSize}px`,
+                      color: labelTextColor,
+                      textAlign: 'center',
+                    }}
+                  >
+                    {item.label}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       )
     },
   },

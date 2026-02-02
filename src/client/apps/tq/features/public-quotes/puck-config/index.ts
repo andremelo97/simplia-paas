@@ -44,7 +44,7 @@ export const createConfig = (branding: BrandingData) => ({
     },
     other: {
       title: 'Other',
-      components: ['CardContainer', 'CardWithIcon', 'Hero', 'Logos', 'Stats', 'TextColumns', 'TextRows', 'Testimonials', 'FAQ', 'PricingTable', 'TeamSection'],
+      components: ['CardContainer', 'CardWithIcon', 'Hero', 'Logos', 'Stats', 'TextColumns', 'TextRows', 'Testimonials', 'FAQ', 'PricingTable', 'TeamSection', 'IconList'],
     },
   },
 })

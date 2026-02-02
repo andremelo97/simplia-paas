@@ -815,6 +815,8 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                         <a
                           key={index}
                           href={ensureProtocol(link.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
                             color: getTextColor(),
                             textDecoration: 'none',

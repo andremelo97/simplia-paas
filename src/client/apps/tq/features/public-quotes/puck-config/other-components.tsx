@@ -1200,6 +1200,8 @@ export const createOtherComponents = (branding: BrandingData) => ({
                         <a
                           key={index}
                           href={button.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1327,6 +1329,8 @@ export const createOtherComponents = (branding: BrandingData) => ({
                         <a
                           key={index}
                           href={button.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -1389,6 +1393,8 @@ export const createOtherComponents = (branding: BrandingData) => ({
                           <a
                             key={index}
                             href={button.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -3051,6 +3057,8 @@ export const createOtherComponents = (branding: BrandingData) => ({
                       {plan.buttonLabel && (
                         <a
                           href={plan.buttonUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
                             display: 'block',
                             width: '100%',

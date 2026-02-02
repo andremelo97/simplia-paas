@@ -2463,6 +2463,18 @@ export const createOtherComponents = (branding: BrandingData) => ({
           { label: 'No', value: false },
         ],
       },
+      titleLevel: {
+        type: 'select' as const,
+        label: 'Title Hierarchy',
+        options: [
+          { label: 'H1', value: 'h1' },
+          { label: 'H2', value: 'h2' },
+          { label: 'H3', value: 'h3' },
+          { label: 'H4', value: 'h4' },
+          { label: 'H5', value: 'h5' },
+          { label: 'H6', value: 'h6' },
+        ],
+      },
       items: {
         type: 'array' as const,
         label: 'Questions & Answers',
@@ -2547,6 +2559,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
     defaultProps: {
       title: 'Frequently Asked Questions',
       showTitle: true,
+      titleLevel: 'h2',
       items: [
         {
           question: 'How does your service work?',
@@ -2571,7 +2584,8 @@ export const createOtherComponents = (branding: BrandingData) => ({
       iconColor: '#6b7280',
       dividerColor: '#e5e7eb',
     },
-    render: ({ title, showTitle, items, allowMultipleOpen, defaultOpen, verticalPadding, maxWidth, backgroundColor, questionColor, answerColor, iconColor, dividerColor }: any) => {
+    render: ({ title, showTitle, titleLevel, items, allowMultipleOpen, defaultOpen, verticalPadding, maxWidth, backgroundColor, questionColor, answerColor, iconColor, dividerColor }: any) => {
+      const TitleTag = titleLevel || 'h2'
       const [openItems, setOpenItems] = React.useState<number[]>(defaultOpen ? [0] : [])
 
       const validItems = Array.isArray(items) ? items.filter((item: any) => item && item.question) : []
@@ -2634,7 +2648,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
         >
           <div style={{ maxWidth: maxWidth, marginLeft: 'auto', marginRight: 'auto' }}>
             {showTitle && title && (
-              <h2
+              <TitleTag
                 style={{
                   fontSize: '28px',
                   fontWeight: '700',
@@ -2644,7 +2658,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                 }}
               >
                 {title}
-              </h2>
+              </TitleTag>
             )}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {validItems.map((item: any, index: number) => (

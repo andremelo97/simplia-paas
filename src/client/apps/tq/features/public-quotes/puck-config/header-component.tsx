@@ -705,6 +705,13 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       const effectiveQuickLinksTitle = withFallback(quickLinksTitle, 'Quick Links')
       const effectiveContactTitle = withFallback(contactTitle, 'Contact')
 
+      // Count visible sections for dynamic grid
+      const hasSocialLinks = showSocialLinks && effectiveSocialLinks && effectiveSocialLinks.length > 0
+      const hasQuickLinks = showQuickLinks && quickLinks && quickLinks.length > 0
+      const hasContact = showContact && effectiveContactItems && effectiveContactItems.length > 0
+      const visibleSections = [hasSocialLinks, hasQuickLinks, hasContact].filter(Boolean).length
+      const gridColumns = visibleSections === 1 ? '1fr' : visibleSections === 2 ? '1fr 1fr' : '1fr 1fr 1fr'
+
       return (
         <>
           <footer
@@ -731,10 +738,11 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 gap: '32px',
               }}
             >
-              {/* Three column grid */}
-              <div className={`${uniqueId}-grid`} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '32px' }}>
+              {/* Dynamic column grid based on visible sections */}
+              {visibleSections > 0 && (
+              <div className={`${uniqueId}-grid`} style={{ display: 'grid', gridTemplateColumns: gridColumns, gap: '32px' }}>
                 {/* Social Links */}
-                {showSocialLinks && effectiveSocialLinks && effectiveSocialLinks.length > 0 && (
+                {hasSocialLinks && (
                   <div>
                     <h3
                       style={{
@@ -788,7 +796,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 )}
 
                 {/* Quick Links */}
-                {showQuickLinks && quickLinks && quickLinks.length > 0 && (
+                {hasQuickLinks && (
                   <div>
                     <h3
                       style={{
@@ -825,7 +833,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 )}
 
                 {/* Contact */}
-                {showContact && effectiveContactItems && effectiveContactItems.length > 0 && (
+                {hasContact && (
                   <div>
                     <h3
                       style={{
@@ -872,6 +880,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                   </div>
                 )}
               </div>
+              )}
 
               {/* Copyright & Partnership */}
               <div
@@ -915,20 +924,11 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                 padding-left: ${Math.round(horizontalPadding * 1.5)}px;
                 padding-right: ${Math.round(horizontalPadding * 1.5)}px;
               }
-              .${uniqueId} > div:first-child {
-                grid-template-columns: 1fr 1fr 1fr;
-              }
             }
             @media (min-width: 768px) {
               .${wrapperId} {
                 padding-left: ${horizontalPadding * 2}px;
                 padding-right: ${horizontalPadding * 2}px;
-              }
-            }
-            @media (max-width: 639px) {
-              .${uniqueId} > div:first-child {
-                grid-template-columns: 1fr;
-                gap: 24px;
               }
             }
           `}</style>

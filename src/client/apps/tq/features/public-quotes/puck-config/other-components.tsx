@@ -779,6 +779,14 @@ export const createOtherComponents = (branding: BrandingData) => ({
           { label: 'Fill (stretch to fill)', value: 'fill' },
         ],
       },
+      showOverlay: {
+        type: 'radio' as const,
+        label: 'Show Color Overlay',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No (original colors)', value: false },
+        ],
+      },
     },
     defaultProps: {
       title: 'Hero Title',
@@ -807,8 +815,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
       descriptionColor: '#374151',
       backgroundColor: 'none',
       videoObjectFit: 'cover',
+      showOverlay: true,
     },
-    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleSize, descriptionSize, titleColor, descriptionColor, backgroundColor, videoObjectFit }: any) => {
+    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleSize, descriptionSize, titleColor, descriptionColor, backgroundColor, videoObjectFit, showOverlay }: any) => {
       const alignClasses = {
         left: 'text-left',
         center: 'text-center',
@@ -1006,19 +1015,21 @@ export const createOtherComponents = (branding: BrandingData) => ({
               )}
               
               {/* Gradient overlay - subtle white for text legibility */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
-                  background: align === 'center'
-                    ? 'linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25))'
-                    : 'linear-gradient(to right, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0) 100%)',
-                  zIndex: 1,
-                }}
-              />
+              {(showOverlay === true || showOverlay === 'true') && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                    background: align === 'center'
+                      ? 'linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25))'
+                      : 'linear-gradient(to right, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 50%, rgba(255, 255, 255, 0.05) 70%, rgba(255, 255, 255, 0) 100%)',
+                    zIndex: 1,
+                  }}
+                />
+              )}
               {/* Content */}
               <div style={{ width: '100%', maxWidth: '1152px', marginLeft: 'auto', marginRight: 'auto', position: 'relative', zIndex: 10 }}>
                 <div style={{ width: '100%', maxWidth: '768px', ...(align === 'center' ? { marginLeft: 'auto', marginRight: 'auto', textAlign: 'center' } : { textAlign: 'left' }), paddingLeft: '16px', paddingRight: '16px' }}>

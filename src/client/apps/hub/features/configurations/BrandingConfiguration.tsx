@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Upload, Palette, Phone, MapPin, Globe, Facebook, Instagram, Linkedin, Mail, Images } from 'lucide-react'
+import { Upload, Palette, Phone, MapPin, Globe, Facebook, Instagram, Linkedin, Mail } from 'lucide-react'
 
 // Custom brand icons (lucide doesn't have brand icons)
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -352,10 +352,7 @@ export const BrandingConfiguration: React.FC = () => {
 
       {/* Media Library */}
       <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Images className="h-5 w-5 text-[#B725B7]" />
-          <h2 className="text-lg font-semibold text-gray-900">{t('media_library.title')}</h2>
-        </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('media_library.title')}</h2>
         <MediaLibrary />
       </Card>
 

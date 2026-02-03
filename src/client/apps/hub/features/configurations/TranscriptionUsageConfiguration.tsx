@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Clock, TrendingUp, Settings, AlertCircle, CreditCard, ExternalLink } from 'lucide-react'
+import { Clock, AlertCircle, CreditCard, ExternalLink } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Label, Progress, Alert, AlertTitle, AlertDescription, Checkbox, Select } from '@client/common/ui'
 import { transcriptionUsageService } from '../../services/transcriptionUsageService'
@@ -336,12 +336,9 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
 
       {/* Current Month Usage */}
       <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <TrendingUp className="h-5 w-5 text-[#B725B7]" />
-          <h2 className="text-lg font-semibold text-gray-900">
-            {t('transcription_usage.current_month')} ({formatMonthYear(new Date(usage.current.month + '-01'))})
-          </h2>
-        </div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          {t('transcription_usage.current_month')} ({formatMonthYear(new Date(usage.current.month + '-01'))})
+        </h2>
 
         {/* Progress Bar */}
         <div className="mb-6">
@@ -440,10 +437,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       {/* Premium Features Configuration */}
       {hasAnyPremiumFeature && (
         <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Settings className="h-5 w-5 text-[#B725B7]" />
-            <h2 className="text-lg font-semibold text-gray-900">{t('transcription_usage.custom_quota_settings')}</h2>
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('transcription_usage.custom_quota_settings')}</h2>
           <p className="text-sm text-gray-600 mb-6">
             {t('transcription_usage.premium_description')}
           </p>
@@ -512,10 +506,7 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
       {/* Language Settings (Only show if NOT using auto-detect) */}
       {!usage.plan.languageDetectionEnabled && (
         <Card className="p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Settings className="h-5 w-5 text-[#B725B7]" />
-            <h2 className="text-lg font-semibold text-gray-900">{t('transcription_usage.language_settings')}</h2>
-          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('transcription_usage.language_settings')}</h2>
 
           <p className="text-sm text-gray-600 mb-6">
             {t('transcription_usage.language_settings_description')}

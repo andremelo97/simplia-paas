@@ -656,6 +656,10 @@ export const createMediaComponents = (branding: BrandingData) => ({
       // Calculate the translate amount (one image width per step)
       const translatePercent = currentIndex * imageWidthPercent
 
+      // Responsive arrow positioning: outside on desktop, inside on mobile
+      const isMobile = containerWidth < 768
+      const arrowPosition = isMobile ? '12px' : '-48px'
+
       return (
         <div
           ref={containerRef}
@@ -667,62 +671,25 @@ export const createMediaComponents = (branding: BrandingData) => ({
             paddingRight: '16px',
           }}
         >
+          {/* Outer wrapper for arrows positioning */}
           <div
             style={{
               width: '100%',
               maxWidth: maxWidth,
               ...getAlignmentStyle(),
               position: 'relative',
-              height: heightMap[height] || '300px',
-              borderRadius: `${borderRadius}px`,
-              overflow: 'hidden',
             }}
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
-            {/* Images container */}
-            <div
-              style={{
-                display: 'flex',
-                height: '100%',
-                transform: `translateX(-${translatePercent}%)`,
-                transition: 'transform 0.5s ease-in-out',
-              }}
-            >
-              {validImages.map((image: any, index: number) => (
-                <div
-                  key={index}
-                  style={{
-                    width: `${imageWidthPercent}%`,
-                    height: '100%',
-                    flexShrink: 0,
-                    paddingLeft: effectivePerSlide > 1 && index > 0 ? `${gap / 2}px` : '0',
-                    paddingRight: effectivePerSlide > 1 && index < validImages.length - 1 ? `${gap / 2}px` : '0',
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  <img
-                    src={image.url}
-                    alt={image.alt || `Slide ${index + 1}`}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      borderRadius: effectivePerSlide > 1 && gap > 0 ? '4px' : '0',
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Navigation Arrows */}
+            {/* Navigation Arrows - outside on desktop, inside on mobile */}
             {shouldShowArrows && hasMultipleSlides && (
               <>
                 <button
                   onClick={goToPrev}
                   style={{
                     position: 'absolute',
-                    left: '12px',
+                    left: arrowPosition,
                     top: '50%',
                     transform: 'translateY(-50%)',
                     width: '36px',
@@ -748,7 +715,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
                   onClick={goToNext}
                   style={{
                     position: 'absolute',
-                    right: '12px',
+                    right: arrowPosition,
                     top: '50%',
                     transform: 'translateY(-50%)',
                     width: '36px',
@@ -773,39 +740,84 @@ export const createMediaComponents = (branding: BrandingData) => ({
               </>
             )}
 
-            {/* Indicators - always visible when there are multiple slides */}
-            {hasMultipleSlides && (
+            {/* Images container with overflow hidden */}
+            <div
+              style={{
+                width: '100%',
+                height: heightMap[height] || '300px',
+                borderRadius: `${borderRadius}px`,
+                overflow: 'hidden',
+                position: 'relative',
+              }}
+            >
               <div
                 style={{
-                  position: 'absolute',
-                  bottom: '12px',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
                   display: 'flex',
-                  gap: '8px',
-                  zIndex: 10,
+                  height: '100%',
+                  transform: `translateX(-${translatePercent}%)`,
+                  transition: 'transform 0.5s ease-in-out',
                 }}
               >
-                {Array.from({ length: totalPositions }).map((_, index: number) => (
-                  <button
+                {validImages.map((image: any, index: number) => (
+                  <div
                     key={index}
-                    onClick={() => goToSlide(index)}
                     style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      backgroundColor: index === currentIndex ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.5)',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
-                      border: 'none',
-                      padding: 0,
-                      cursor: 'pointer',
-                      transition: 'background-color 0.3s ease',
+                      width: `${imageWidthPercent}%`,
+                      height: '100%',
+                      flexShrink: 0,
+                      paddingLeft: effectivePerSlide > 1 && index > 0 ? `${gap / 2}px` : '0',
+                      paddingRight: effectivePerSlide > 1 && index < validImages.length - 1 ? `${gap / 2}px` : '0',
+                      boxSizing: 'border-box',
                     }}
-                    aria-label={`Go to slide ${index + 1}`}
-                  />
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.alt || `Slide ${index + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: effectivePerSlide > 1 && gap > 0 ? '4px' : '0',
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
-            )}
+
+              {/* Indicators - inside overflow container at bottom */}
+              {hasMultipleSlides && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    display: 'flex',
+                    gap: '8px',
+                    zIndex: 10,
+                  }}
+                >
+                  {Array.from({ length: totalPositions }).map((_, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        backgroundColor: index === currentIndex ? 'rgba(255, 255, 255, 1)' : 'rgba(255, 255, 255, 0.5)',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        transition: 'background-color 0.3s ease',
+                      }}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import { textColorOptions, backgroundColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
+import { MediaPickerField } from './MediaPickerField'
 
 const aspectRatioOptions = [
   { label: '16:9 (Widescreen)', value: '16/9' },
@@ -57,8 +58,11 @@ export const createMediaComponents = (branding: BrandingData) => ({
   Image: {
     fields: {
       url: {
-        type: 'text' as const,
-        label: 'Image URL',
+        type: 'custom' as const,
+        label: 'Image',
+        render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+          <MediaPickerField value={value} onChange={onChange} mediaType="image" />
+        ),
       },
       alt: {
         type: 'text' as const,
@@ -210,8 +214,11 @@ export const createMediaComponents = (branding: BrandingData) => ({
   Video: {
     fields: {
       url: {
-        type: 'text' as const,
-        label: 'Video URL (YouTube, Vimeo, or embed URL)',
+        type: 'custom' as const,
+        label: 'Video',
+        render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+          <MediaPickerField value={value} onChange={onChange} mediaType="video" />
+        ),
       },
       aspectRatio: {
         type: 'select' as const,
@@ -400,8 +407,11 @@ export const createMediaComponents = (branding: BrandingData) => ({
         max: 10,
         arrayFields: {
           url: {
-            type: 'text' as const,
-            label: 'Image URL',
+            type: 'custom' as const,
+            label: 'Image',
+            render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+              <MediaPickerField value={value} onChange={onChange} mediaType="image" />
+            ),
           },
           alt: {
             type: 'text' as const,
@@ -821,16 +831,22 @@ export const createMediaComponents = (branding: BrandingData) => ({
             label: 'Video 1 Title',
           },
           video1Url: {
-            type: 'text' as const,
-            label: 'Video 1 URL (embed)',
+            type: 'custom' as const,
+            label: 'Video 1',
+            render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+              <MediaPickerField value={value} onChange={onChange} mediaType="video" />
+            ),
           },
           video2Title: {
             type: 'text' as const,
             label: 'Video 2 Title',
           },
           video2Url: {
-            type: 'text' as const,
-            label: 'Video 2 URL (embed)',
+            type: 'custom' as const,
+            label: 'Video 2',
+            render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+              <MediaPickerField value={value} onChange={onChange} mediaType="video" />
+            ),
           },
         },
         defaultItemProps: {

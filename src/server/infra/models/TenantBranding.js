@@ -16,7 +16,6 @@ class TenantBranding {
     this.secondaryColor = data.secondary_color || '#E91E63';
     this.tertiaryColor = data.tertiary_color || '#5ED6CE';
     this.logoUrl = data.logo_url;
-    this.backgroundVideoUrl = data.background_video_url;
     this.companyName = data.company_name;
     // Contact information
     this.email = data.email;
@@ -65,7 +64,6 @@ class TenantBranding {
       secondary_color: '#E91E63',
       tertiary_color: '#5ED6CE',
       logo_url: null,
-      background_video_url: null,
       company_name: companyName,
       email: null,
       phone: null,
@@ -84,7 +82,6 @@ class TenantBranding {
       secondaryColor,
       tertiaryColor,
       logoUrl,
-      backgroundVideoUrl,
       companyName,
       email,
       phone,
@@ -99,21 +96,19 @@ class TenantBranding {
         secondary_color,
         tertiary_color,
         logo_url,
-        background_video_url,
         company_name,
         email,
         phone,
         address,
         social_links
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       ON CONFLICT (tenant_id_fk)
       DO UPDATE SET
         primary_color = COALESCE(EXCLUDED.primary_color, tenant_branding.primary_color),
         secondary_color = COALESCE(EXCLUDED.secondary_color, tenant_branding.secondary_color),
         tertiary_color = COALESCE(EXCLUDED.tertiary_color, tenant_branding.tertiary_color),
         logo_url = EXCLUDED.logo_url,
-        background_video_url = EXCLUDED.background_video_url,
         company_name = EXCLUDED.company_name,
         email = EXCLUDED.email,
         phone = EXCLUDED.phone,
@@ -129,7 +124,6 @@ class TenantBranding {
       secondaryColor,
       tertiaryColor,
       logoUrl,
-      backgroundVideoUrl,
       companyName,
       email,
       phone,
@@ -165,7 +159,6 @@ class TenantBranding {
       secondaryColor: this.secondaryColor,
       tertiaryColor: this.tertiaryColor,
       logoUrl: this.logoUrl,
-      backgroundVideoUrl: this.backgroundVideoUrl,
       companyName: this.companyName,
       email: this.email,
       phone: this.phone,
@@ -212,16 +205,6 @@ class TenantBranding {
           json.logoUrl = await storage.getSignedUrl(json.logoUrl);
         } catch (error) {
           console.warn(`[TenantBranding] Failed to generate signed URL for logo: ${error.message}`);
-          // Keep the path as fallback
-        }
-      }
-
-      // Generate signed URL for video if it's a path
-      if (json.backgroundVideoUrl && TenantBranding.isStoragePath(json.backgroundVideoUrl)) {
-        try {
-          json.backgroundVideoUrl = await storage.getSignedUrl(json.backgroundVideoUrl);
-        } catch (error) {
-          console.warn(`[TenantBranding] Failed to generate signed URL for video: ${error.message}`);
           // Keep the path as fallback
         }
       }

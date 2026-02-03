@@ -3,6 +3,7 @@ import { BrandingData } from '../../../services/branding'
 import * as Icons from './icons'
 import * as LucideIcons from 'lucide-react'
 import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor, fontOptions, loadGoogleFont, maxWidthOptions } from './color-options'
+import { MediaPickerField } from './MediaPickerField'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -791,13 +792,23 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Background Media',
         options: [
           { label: 'None', value: 'none' },
-          { label: 'Image (custom URL)', value: 'image' },
-          { label: 'Video (from branding)', value: 'video' },
+          { label: 'Image', value: 'image' },
+          { label: 'Video', value: 'video' },
         ],
       },
       backgroundImageUrl: {
-        type: 'text' as const,
-        label: 'Background Image URL',
+        type: 'custom' as const,
+        label: 'Background Image',
+        render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+          <MediaPickerField value={value || ''} onChange={onChange} mediaType="image" />
+        ),
+      },
+      backgroundVideoUrl: {
+        type: 'custom' as const,
+        label: 'Background Video',
+        render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+          <MediaPickerField value={value || ''} onChange={onChange} mediaType="video" />
+        ),
       },
       videoObjectFit: {
         type: 'select' as const,
@@ -878,6 +889,16 @@ export const createOtherComponents = (branding: BrandingData) => ({
     resolveFields: (data: any, { fields }: any) => {
       const resolvedFields = { ...fields }
 
+      // Only show backgroundImageUrl when backgroundMode is 'image'
+      if (data.props.backgroundMode !== 'image') {
+        delete resolvedFields.backgroundImageUrl
+      }
+
+      // Only show backgroundVideoUrl when backgroundMode is 'video'
+      if (data.props.backgroundMode !== 'video') {
+        delete resolvedFields.backgroundVideoUrl
+      }
+
       // Only show backgroundOpacity, overlayColor and overlayOpacity when showOverlay is true
       if (data.props.showOverlay !== true && data.props.showOverlay !== 'true') {
         delete resolvedFields.backgroundOpacity
@@ -912,6 +933,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
       align: 'left',
       backgroundMode: 'none',
       backgroundImageUrl: '',
+      backgroundVideoUrl: '',
       backgroundOpacity: 0.3,
       disableVideoOnMobile: false,
       showInlineMedia: false,
@@ -936,7 +958,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
       titleMaxWidth: '100%',
       descriptionMaxWidth: '100%',
     },
-    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleFontFamily, titleSize, titleColor, titleBgColor, titleBgOpacity, descriptionFontFamily, descriptionSize, descriptionColor, descriptionBgColor, descriptionBgOpacity, backgroundColor, videoObjectFit, showOverlay, overlayColor, overlayOpacity, titleMaxWidth, descriptionMaxWidth }: any) => {
+    render: ({ title, description, buttons, align, backgroundMode, backgroundImageUrl, backgroundVideoUrl, backgroundOpacity, disableVideoOnMobile, showInlineMedia, inlineMediaType, inlineMediaUrl, padding, titleFontFamily, titleSize, titleColor, titleBgColor, titleBgOpacity, descriptionFontFamily, descriptionSize, descriptionColor, descriptionBgColor, descriptionBgOpacity, backgroundColor, videoObjectFit, showOverlay, overlayColor, overlayOpacity, titleMaxWidth, descriptionMaxWidth }: any) => {
       useEffect(() => {
         loadGoogleFont(titleFontFamily)
         loadGoogleFont(descriptionFontFamily)
@@ -1050,7 +1072,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
       }
 
       // Determine if we have a background
-      const hasVideoBackground = backgroundMode === 'video' && branding.backgroundVideoUrl
+      const hasVideoBackground = backgroundMode === 'video' && backgroundVideoUrl
       const hasImageBackground = backgroundMode === 'image' && backgroundImageUrl
       const hasBackground = hasVideoBackground || hasImageBackground
 
@@ -1081,7 +1103,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
               }}
             >
               {/* Background video layer */}
-              {hasVideoBackground && branding.backgroundVideoUrl && (
+              {hasVideoBackground && backgroundVideoUrl && (
                 <video
                   className={bgVideoId}
                   autoPlay
@@ -1115,7 +1137,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
                     zIndex: 0,
                   }}
                 >
-                  <source src={branding.backgroundVideoUrl} type="video/mp4" />
+                  <source src={backgroundVideoUrl} type="video/mp4" />
                 </video>
               )}
               

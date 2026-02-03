@@ -174,7 +174,6 @@ router.post('/pq/:accessToken', async (req, res) => {
           secondaryColor: brandingData.secondary_color || '#1E40AF',
           tertiaryColor: brandingData.tertiary_color || '#60A5FA',
           logo: brandingData.logo_url || null,
-          backgroundVideoUrl: brandingData.background_video_url || null,
           socialLinks: brandingData.social_links || null,
           email: brandingData.email || null,
           phone: brandingData.phone || null,

@@ -148,7 +148,7 @@ export const EditPublicQuoteTemplate: React.FC = () => {
         description: template.description,
         content: template.content,
         isDefault: false, // Duplicate is never default
-        active: template.active
+        active: false // Duplicate starts inactive
       }
 
       const newTemplate = await publicQuotesService.createTemplate(duplicateData)

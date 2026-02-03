@@ -317,9 +317,6 @@ CREATE TABLE IF NOT EXISTS tenant_branding (
   -- Images (URLs to Supabase storage)
   logo_url TEXT,
 
-  -- Background video (URL to Supabase storage)
-  background_video_url TEXT,
-
   -- Display information
   company_name VARCHAR(255),
 
@@ -344,7 +341,6 @@ COMMENT ON COLUMN tenant_branding.primary_color IS 'Main brand color in hex form
 COMMENT ON COLUMN tenant_branding.secondary_color IS 'Secondary brand color in hex format (#RRGGBB)';
 COMMENT ON COLUMN tenant_branding.tertiary_color IS 'Tertiary brand color in hex format (#RRGGBB)';
 COMMENT ON COLUMN tenant_branding.logo_url IS 'URL to tenant logo (Supabase storage path)';
-COMMENT ON COLUMN tenant_branding.background_video_url IS 'URL to background video for Hero sections (Supabase storage, MP4 format, max 20MB)';
 COMMENT ON COLUMN tenant_branding.company_name IS 'Company display name for public pages';
 COMMENT ON COLUMN tenant_branding.email IS 'Contact email for public pages and email footers';
 
@@ -581,5 +577,36 @@ COMMENT ON COLUMN public.user_onboarding.skipped IS 'Whether user skipped the wi
 -- =============================================
 -- COMMENTS FOR DOCUMENTATION
 -- =============================================
+
+-- =============================================
+-- TENANT MEDIA LIBRARY
+-- =============================================
+
+-- Media library for tenant images and videos (used in Puck components)
+CREATE TABLE IF NOT EXISTS tenant_media_library (
+  id SERIAL PRIMARY KEY,
+  tenant_id_fk INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  filename VARCHAR(255) NOT NULL,           -- UUID generated filename
+  original_filename VARCHAR(255) NOT NULL,  -- Original filename from upload
+  storage_path TEXT NOT NULL,               -- "media-library/uuid.ext"
+  media_type VARCHAR(10) NOT NULL,          -- 'image' or 'video'
+  mime_type VARCHAR(100) NOT NULL,
+  file_size INTEGER NOT NULL,
+  alt_text VARCHAR(255),
+  uploaded_by_fk INTEGER REFERENCES users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT (now() AT TIME ZONE 'UTC'),
+  UNIQUE(tenant_id_fk, storage_path)
+);
+
+COMMENT ON TABLE tenant_media_library IS 'Media library for tenant images and videos used in Puck page builder components';
+COMMENT ON COLUMN tenant_media_library.tenant_id_fk IS 'Foreign key to tenants table - each media belongs to one tenant';
+COMMENT ON COLUMN tenant_media_library.filename IS 'UUID-based filename stored in Supabase (e.g., abc123.png)';
+COMMENT ON COLUMN tenant_media_library.original_filename IS 'Original filename from upload for display purposes';
+COMMENT ON COLUMN tenant_media_library.storage_path IS 'Full path in tenant bucket (e.g., media-library/abc123.png)';
+COMMENT ON COLUMN tenant_media_library.media_type IS 'Media type: image or video';
+COMMENT ON COLUMN tenant_media_library.mime_type IS 'MIME type of the file (e.g., image/png, video/mp4)';
+COMMENT ON COLUMN tenant_media_library.file_size IS 'File size in bytes';
+COMMENT ON COLUMN tenant_media_library.alt_text IS 'Alt text for accessibility (images only)';
+COMMENT ON COLUMN tenant_media_library.uploaded_by_fk IS 'User who uploaded the file';
 
 -- COMMENT ON DATABASE simplia_paas IS 'Simplia PaaS - Multi-tenant medical practice management platform';

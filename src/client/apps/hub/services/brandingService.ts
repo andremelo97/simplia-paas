@@ -12,6 +12,27 @@ export interface SocialLinks {
   [key: string]: string | undefined; // Allow additional social networks
 }
 
+export interface MediaLibraryItem {
+  id: number;
+  url: string;
+  filename: string;
+  originalFilename: string;
+  mediaType: 'image' | 'video';
+  mimeType: string;
+  fileSize: number;
+  altText?: string;
+  createdAt: string;
+}
+
+export interface MediaLibraryResponse {
+  data: MediaLibraryItem[];
+  meta: {
+    count: number;
+    limit: number;
+    remaining: number;
+  };
+}
+
 export interface BrandingData {
   id?: number;
   tenantId: number;
@@ -19,7 +40,6 @@ export interface BrandingData {
   secondaryColor: string;
   tertiaryColor: string;
   logoUrl: string | null;
-  backgroundVideoUrl?: string | null;
   companyName: string | null;
   // Contact information
   email?: string | null;
@@ -76,15 +96,34 @@ export const brandingService = {
     return response.data?.data || response.data;
   },
 
+  // =============================================
+  // MEDIA LIBRARY
+  // =============================================
+
   /**
-   * Upload background video
+   * Get media library files
+   * @param type - Optional filter: 'image' or 'video'
    */
-  uploadVideo: async (file: File): Promise<{ backgroundVideoUrl: string }> => {
+  getMediaLibrary: async (type?: 'image' | 'video'): Promise<MediaLibraryResponse> => {
+    const params = type ? `?type=${type}` : '';
+    const response = await http.get(`/internal/api/v1/configurations/branding/media-library${params}`);
+    return response.data;
+  },
+
+  /**
+   * Upload file to media library
+   * @param file - File to upload (image or video)
+   * @param altText - Optional alt text for images
+   */
+  uploadMediaLibraryItem: async (file: File, altText?: string): Promise<{ data: MediaLibraryItem; meta: { count: number; limit: number; remaining: number } }> => {
     const formData = new FormData();
-    formData.append('video', file);
+    formData.append('file', file);
+    if (altText) {
+      formData.append('altText', altText);
+    }
 
     const response = await http.post(
-      '/internal/api/v1/configurations/branding/upload-video',
+      '/internal/api/v1/configurations/branding/media-library',
       formData,
       {
         headers: {
@@ -94,5 +133,13 @@ export const brandingService = {
     );
 
     return response.data;
+  },
+
+  /**
+   * Delete file from media library
+   * @param id - Media file ID
+   */
+  deleteMediaLibraryItem: async (id: number): Promise<void> => {
+    await http.delete(`/internal/api/v1/configurations/branding/media-library/${id}`);
   },
 };

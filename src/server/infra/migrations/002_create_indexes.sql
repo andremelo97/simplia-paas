@@ -185,3 +185,16 @@ COMMENT ON INDEX idx_tenant_transcription_config_tenant IS 'Fast lookup of trans
 -- 
 -- Key constraint: user_application_access.tenant_id_fk must match users.tenant_id_fk for the given user_id
 -- This is enforced at the application layer in all user access operations.
+
+-- =============================================
+-- TENANT MEDIA LIBRARY INDEXES
+-- =============================================
+
+-- Primary lookup indexes for media library
+CREATE INDEX IF NOT EXISTS idx_media_library_tenant ON tenant_media_library(tenant_id_fk);
+CREATE INDEX IF NOT EXISTS idx_media_library_type ON tenant_media_library(tenant_id_fk, media_type);
+CREATE INDEX IF NOT EXISTS idx_media_library_created ON tenant_media_library(tenant_id_fk, created_at DESC);
+
+COMMENT ON INDEX idx_media_library_tenant IS 'Fast lookup of media files by tenant';
+COMMENT ON INDEX idx_media_library_type IS 'Optimizes filtering media by type (image/video) within tenant';
+COMMENT ON INDEX idx_media_library_created IS 'Optimizes listing media files by creation date within tenant';

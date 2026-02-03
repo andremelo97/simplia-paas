@@ -80,11 +80,6 @@
     "company_logo": "Logotipo da empresa",
     "upload_logo": "Enviar logotipo",
     "image_formats": "PNG, JPEG ou SVG (máx. 5 MB)",
-    "background_video": "Vídeo de fundo (opcional)",
-    "background_video_description": "Envie um vídeo para usar como fundo nas seções hero. O vídeo será reproduzido automaticamente em loop com opacidade ajustável.",
-    "upload_video": "Enviar vídeo",
-    "replace_video": "Substituir vídeo",
-    "video_formats": "Somente formato MP4 - Tamanho máx.: 20 MB - Recomendado: formato paisagem otimizado para web",
     "save_changes": "Salvar alterações",
     "reset_to_defaults": "Restaurar padrões",
     "reset_confirm": "Tem certeza de que deseja restaurar a marca para os padrões?",
@@ -386,6 +381,26 @@
       }
     }
   },
+  "media_library": {
+    "title": "Biblioteca de Mídia",
+    "description": "Faça upload de imagens e vídeos para usar nos componentes do editor de páginas públicas.",
+    "files": "arquivos",
+    "loading": "Carregando biblioteca...",
+    "error_loading": "Erro ao carregar biblioteca de mídia",
+    "uploading": "Enviando arquivo...",
+    "upload_failed": "Falha ao enviar arquivo",
+    "delete_confirm": "Tem certeza que deseja excluir este arquivo?",
+    "delete_failed": "Falha ao excluir arquivo",
+    "delete": "Excluir",
+    "drag_drop": "Arraste e solte ou clique para selecionar",
+    "drop_here": "Solte o arquivo aqui",
+    "formats_hint": "Imagens: PNG, JPEG, SVG (máx 5MB) • Vídeos: MP4 (máx 20MB)",
+    "empty": "Nenhum arquivo na biblioteca",
+    "limit_reached": "Limite de {{max}} arquivos atingido",
+    "invalid_format": "Formato de arquivo inválido",
+    "image_too_large": "Imagem muito grande (máx {{max}}MB)",
+    "video_too_large": "Vídeo muito grande (máx {{max}}MB)"
+  },
   "onboarding": {
     "title": "Primeiros Passos no Hub",
     "skip": "Pular por agora",
@@ -418,7 +433,7 @@
       "feature1": "Logo da empresa e cores da marca",
       "feature2": "Nome da empresa, telefone e endereço",
       "feature3": "Redes sociais (WhatsApp, Instagram, etc.)",
-      "feature4": "Vídeo de fundo para páginas públicas",
+      "feature4": "Biblioteca de mídia para fundos de páginas públicas",
       "configure_now": "Configurar Marca Agora"
     },
     "communication": {

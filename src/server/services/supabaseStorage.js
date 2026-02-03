@@ -217,7 +217,7 @@ module.exports = SupabaseStorageService;
 /**
  * Default folders to create in each tenant bucket
  */
-const DEFAULT_TENANT_FOLDERS = ['audio-files', 'branding', 'bug-reports'];
+const DEFAULT_TENANT_FOLDERS = ['audio-files', 'branding', 'bug-reports', 'media-library'];
 
 /**
  * Create tenant-specific bucket during TQ app provisioning

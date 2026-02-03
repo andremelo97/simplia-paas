@@ -11,7 +11,7 @@ export const CreatePublicQuoteTemplate: React.FC = () => {
     description: t('public_quotes.defaults.template_description'),
     content: {},
     isDefault: false,
-    active: true
+    active: false
   }), [t])
 
   const defaultRef = useRef(defaultValues)

@@ -1,7 +1,9 @@
 const express = require('express');
 const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
 const { requireAuth, requireAdmin, createRateLimit } = require('../../../infra/middleware/auth');
 const { TenantBranding, TenantBrandingNotFoundError } = require('../../../infra/models/TenantBranding');
+const { TenantMediaLibrary, MediaLibraryLimitExceededError, MediaNotFoundError, MAX_MEDIA_FILES } = require('../../../infra/models/TenantMediaLibrary');
 const SupabaseStorageService = require('../../../services/supabaseStorage');
 
 const router = express.Router();
@@ -28,19 +30,26 @@ const upload = multer({
   }
 });
 
-// Configure multer for video uploads
-const videoUpload = multer({
+// Configure multer for media library uploads (images + videos)
+const mediaLibraryUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 20 * 1024 * 1024, // 20MB limit for videos
+    fileSize: 20 * 1024 * 1024, // 20MB max (for videos)
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['video/mp4'];
+    const allowedImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+    const allowedVideoTypes = ['video/mp4'];
+    const allowedTypes = [...allowedImageTypes, ...allowedVideoTypes];
 
     if (allowedTypes.includes(file.mimetype)) {
+      // Additional size check for images (5MB limit)
+      if (allowedImageTypes.includes(file.mimetype)) {
+        // Note: size check happens after upload, we'll validate in the route
+        req.isImage = true;
+      }
       cb(null, true);
     } else {
-      cb(new Error('Only MP4 video files are allowed'), false);
+      cb(new Error('Only PNG, JPEG, SVG images and MP4 videos are allowed'), false);
     }
   }
 });
@@ -199,7 +208,6 @@ router.put('/', requireAdmin, async (req, res) => {
       secondaryColor,
       tertiaryColor,
       logoUrl,
-      backgroundVideoUrl,
       companyName,
       // Contact information
       email,
@@ -237,7 +245,6 @@ router.put('/', requireAdmin, async (req, res) => {
       secondaryColor,
       tertiaryColor,
       logoUrl,
-      backgroundVideoUrl,
       companyName,
       // Contact information
       email,
@@ -309,8 +316,7 @@ router.delete('/', requireAdmin, async (req, res) => {
 
     // Delete files from Supabase Storage
     const filesToDelete = [
-      extractStoragePath(existingBranding.logoUrl),
-      extractStoragePath(existingBranding.backgroundVideoUrl)
+      extractStoragePath(existingBranding.logoUrl)
     ].filter(Boolean); // Remove null/undefined values
 
     // Delete each file (continue even if some deletions fail)
@@ -448,7 +454,6 @@ router.post('/upload-logo', requireAdmin, upload.single('image'), async (req, re
       secondaryColor: existingBranding.secondaryColor,
       tertiaryColor: existingBranding.tertiaryColor,
       logoUrl: uploadResult.path, // Store path, not URL
-      backgroundVideoUrl: existingBranding.backgroundVideoUrl,
       companyName: existingBranding.companyName,
       // Preserve contact information
       email: existingBranding.email,
@@ -488,19 +493,95 @@ router.post('/upload-logo', requireAdmin, upload.single('image'), async (req, re
   }
 });
 
+// =============================================
+// MEDIA LIBRARY ENDPOINTS
+// =============================================
+
 /**
  * @openapi
- * /configurations/branding/upload-video:
- *   post:
+ * /configurations/branding/media-library:
+ *   get:
  *     tags: [Configurations]
- *     summary: Upload tenant background video
+ *     summary: List media library files
  *     description: |
  *       **Scope:** Platform (uses authenticated user's tenant)
  *
- *       Upload a background video for the tenant to use in Hero sections.
- *       Videos are stored in a tenant-specific folder: `tenant_{tenantId}/background-video.mp4`
- *       Automatically updates the branding configuration with the new video URL.
- *       Supported format: MP4 only (max 20MB)
+ *       Returns all media files in the tenant's library with signed URLs.
+ *       Optionally filter by media type (image or video).
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [image, video]
+ *         description: Filter by media type
+ *     responses:
+ *       200:
+ *         description: Media library retrieved successfully
+ */
+router.get('/media-library', requireAdmin, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId;
+
+    if (!tenantId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    const { type } = req.query;
+    const validTypes = ['image', 'video'];
+
+    if (type && !validTypes.includes(type)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Type must be "image" or "video"'
+      });
+    }
+
+    const mediaFiles = await TenantMediaLibrary.findByTenant(tenantId, type || null);
+    const tenantSubdomain = await getTenantSubdomain(tenantId);
+
+    // Convert to JSON with signed URLs
+    const mediaWithUrls = await Promise.all(
+      mediaFiles.map(media => media.toJSONWithSignedUrl(tenantSubdomain))
+    );
+
+    const count = await TenantMediaLibrary.countByTenant(tenantId);
+
+    res.json({
+      data: mediaWithUrls,
+      meta: {
+        count: count,
+        limit: MAX_MEDIA_FILES,
+        remaining: MAX_MEDIA_FILES - count
+      }
+    });
+  } catch (error) {
+    console.error('Get media library error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to get media library'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /configurations/branding/media-library:
+ *   post:
+ *     tags: [Configurations]
+ *     summary: Upload file to media library
+ *     description: |
+ *       **Scope:** Platform (uses authenticated user's tenant)
+ *
+ *       Upload an image or video to the tenant's media library.
+ *       Limit: 15 files per tenant.
+ *       Images: PNG, JPEG, SVG (max 5MB)
+ *       Videos: MP4 (max 20MB)
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -510,21 +591,22 @@ router.post('/upload-logo', requireAdmin, upload.single('image'), async (req, re
  *           schema:
  *             type: object
  *             properties:
- *               video:
+ *               file:
  *                 type: string
  *                 format: binary
- *                 description: Video file (MP4 format only, max 20MB)
+ *               altText:
+ *                 type: string
+ *                 description: Alt text for images (accessibility)
  *     responses:
- *       200:
- *         description: Video uploaded successfully
+ *       201:
+ *         description: File uploaded successfully
  *       400:
- *         description: Invalid file format or missing file
- *       413:
- *         description: File too large (max 20MB)
+ *         description: Invalid file or limit reached
  */
-router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (req, res) => {
+router.post('/media-library', requireAdmin, mediaLibraryUpload.single('file'), async (req, res) => {
   try {
     const tenantId = req.user?.tenantId;
+    const userId = req.user?.id;
 
     if (!tenantId) {
       return res.status(401).json({
@@ -536,75 +618,77 @@ router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (r
     if (!req.file) {
       return res.status(400).json({
         error: 'Validation Error',
-        message: 'Video file is required'
+        message: 'File is required'
       });
     }
 
-    // Get existing branding FIRST to check for old files
-    const existingBranding = await TenantBranding.findByTenant(tenantId);
-
-    // Get tenant-specific storage service
-    const brandingStorage = await getTenantStorageService(tenantId);
-    await brandingStorage.ensureBucketExists();
-
-    // Extract file extension from new file
-    const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
-    const newPath = `branding/background-video.${fileExtension}`;
-
-    // Delete old video ONLY if it's different from the new one
-    const oldPath = extractStoragePath(existingBranding.backgroundVideoUrl);
-    if (oldPath && oldPath !== newPath) {
-      try {
-        await brandingStorage.deleteFile(oldPath);
-        console.log(`Deleted old video from storage: ${oldPath}`);
-      } catch (error) {
-        console.warn('Failed to delete old video from storage:', error);
-        // Continue even if deletion fails
-      }
+    // Check image size limit (5MB)
+    const isImage = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'].includes(req.file.mimetype);
+    if (isImage && req.file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Image files must be less than 5MB'
+      });
     }
 
-    // NOW upload the new file (upsert will replace if same name)
-    const uploadResult = await brandingStorage.uploadFile(
+    // Determine media type
+    const mediaType = isImage ? 'image' : 'video';
+
+    // Generate unique filename
+    const fileExtension = req.file.originalname.split('.').pop().toLowerCase();
+    const uniqueFilename = `${uuidv4()}.${fileExtension}`;
+    const storagePath = `media-library/${uniqueFilename}`;
+
+    // Get tenant storage service
+    const tenantSubdomain = await getTenantSubdomain(tenantId);
+    const storageService = new SupabaseStorageService(`tenant-${tenantSubdomain}`);
+    await storageService.ensureBucketExists();
+
+    // Upload file
+    const uploadResult = await storageService.uploadFile(
       req.file.buffer,
       req.file.originalname,
-      'background-video',
-      'branding', // Folder within tenant bucket
+      uuidv4(), // Use UUID as identifier
+      'media-library',
       req.file.mimetype
     );
 
-    // Update branding configuration with new video PATH (preserve all existing fields)
-    const updateData = {
-      primaryColor: existingBranding.primaryColor,
-      secondaryColor: existingBranding.secondaryColor,
-      tertiaryColor: existingBranding.tertiaryColor,
-      logoUrl: existingBranding.logoUrl,
-      backgroundVideoUrl: uploadResult.path, // Store path, not URL
-      companyName: existingBranding.companyName,
-      // Preserve contact information
-      email: existingBranding.email,
-      phone: existingBranding.phone,
-      address: existingBranding.address,
-      socialLinks: existingBranding.socialLinks
-    };
-
-    await TenantBranding.upsert(tenantId, updateData);
-
-    res.json({
-      data: {
-        backgroundVideoUrl: uploadResult.signedUrl, // Return signed URL for immediate use
-        storagePath: uploadResult.path,
-        size: uploadResult.size
-      },
-      meta: {
-        code: 'VIDEO_UPLOADED',
-        message: 'Background video uploaded successfully'
-      }
+    // Create database record
+    const media = await TenantMediaLibrary.create(tenantId, {
+      filename: uniqueFilename,
+      originalFilename: req.file.originalname,
+      storagePath: uploadResult.path,
+      mediaType: mediaType,
+      mimeType: req.file.mimetype,
+      fileSize: req.file.size,
+      altText: req.body.altText || null,
+      uploadedByFk: userId
     });
 
-  } catch (error) {
-    console.error('Video upload error:', error);
+    const mediaWithUrl = await media.toJSONWithSignedUrl(tenantSubdomain);
+    const count = await TenantMediaLibrary.countByTenant(tenantId);
 
-    if (error.message.includes('Only MP4')) {
+    res.status(201).json({
+      data: mediaWithUrl,
+      meta: {
+        code: 'MEDIA_UPLOADED',
+        message: 'File uploaded successfully',
+        count: count,
+        limit: MAX_MEDIA_FILES,
+        remaining: MAX_MEDIA_FILES - count
+      }
+    });
+  } catch (error) {
+    console.error('Media upload error:', error);
+
+    if (error instanceof MediaLibraryLimitExceededError) {
+      return res.status(400).json({
+        error: 'Limit Exceeded',
+        message: `Maximum of ${MAX_MEDIA_FILES} files allowed in media library`
+      });
+    }
+
+    if (error.message.includes('Only PNG, JPEG, SVG')) {
       return res.status(400).json({
         error: 'Validation Error',
         message: error.message
@@ -613,7 +697,105 @@ router.post('/upload-video', requireAdmin, videoUpload.single('video'), async (r
 
     res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Failed to upload video'
+      message: 'Failed to upload file'
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /configurations/branding/media-library/{id}:
+ *   delete:
+ *     tags: [Configurations]
+ *     summary: Delete file from media library
+ *     description: |
+ *       **Scope:** Platform (uses authenticated user's tenant)
+ *
+ *       Remove a file from the tenant's media library.
+ *       This also deletes the file from Supabase storage.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Media file ID
+ *     responses:
+ *       200:
+ *         description: File deleted successfully
+ *       404:
+ *         description: File not found
+ */
+router.delete('/media-library/:id', requireAdmin, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    const mediaId = parseInt(req.params.id, 10);
+
+    if (!tenantId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Authentication required'
+      });
+    }
+
+    if (isNaN(mediaId)) {
+      return res.status(400).json({
+        error: 'Validation Error',
+        message: 'Invalid media ID'
+      });
+    }
+
+    // Get media to retrieve storage path
+    const media = await TenantMediaLibrary.findById(mediaId, tenantId);
+
+    if (!media) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Media file not found'
+      });
+    }
+
+    // Delete from storage
+    const tenantSubdomain = await getTenantSubdomain(tenantId);
+    const storageService = new SupabaseStorageService(`tenant-${tenantSubdomain}`);
+
+    try {
+      await storageService.deleteFile(media.storagePath);
+      console.log(`Deleted media file from storage: ${media.storagePath}`);
+    } catch (storageError) {
+      console.warn(`Failed to delete media file from storage: ${storageError.message}`);
+      // Continue with database deletion even if storage delete fails
+    }
+
+    // Delete from database
+    await TenantMediaLibrary.delete(mediaId, tenantId);
+
+    const count = await TenantMediaLibrary.countByTenant(tenantId);
+
+    res.json({
+      meta: {
+        code: 'MEDIA_DELETED',
+        message: 'File deleted successfully',
+        count: count,
+        limit: MAX_MEDIA_FILES,
+        remaining: MAX_MEDIA_FILES - count
+      }
+    });
+  } catch (error) {
+    console.error('Media delete error:', error);
+
+    if (error instanceof MediaNotFoundError) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Media file not found'
+      });
+    }
+
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to delete file'
     });
   }
 });

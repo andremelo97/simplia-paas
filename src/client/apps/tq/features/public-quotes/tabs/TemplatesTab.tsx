@@ -31,7 +31,7 @@ export const TemplatesTab: React.FC = () => {
   const paginatedTemplates = templates?.slice(startIndex, startIndex + TEMPLATES_PER_PAGE) || []
   const isMaxTotalReached = totalCount >= MAX_TOTAL_TEMPLATES
   const isMaxActiveReached = activeCount >= MAX_ACTIVE_TEMPLATES
-  const isCreateDisabled = isMaxTotalReached || isMaxActiveReached
+  const isCreateDisabled = isMaxTotalReached
 
   useEffect(() => {
     loadData()
@@ -59,7 +59,6 @@ export const TemplatesTab: React.FC = () => {
 
   const getCreateDisabledReason = () => {
     if (isMaxTotalReached) return t('public_quotes.pages.max_total_reached')
-    if (isMaxActiveReached) return t('public_quotes.pages.max_active_reached')
     return ''
   }
 

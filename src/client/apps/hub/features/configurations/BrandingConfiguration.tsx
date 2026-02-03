@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Upload, Palette, Video, Phone, MapPin, Globe, Facebook, Instagram, Linkedin, Mail } from 'lucide-react'
+import { Upload, Palette, Phone, MapPin, Globe, Facebook, Instagram, Linkedin, Mail, Images } from 'lucide-react'
 
 // Custom brand icons (lucide doesn't have brand icons)
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -29,7 +29,7 @@ import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Label, Alert, AlertDescription, Textarea } from '@client/common/ui'
 import { brandingService, BrandingData, SocialLinks } from '../../services/brandingService'
 import { ImageUploadModal } from '../../components/configurations/ImageUploadModal'
-import { VideoUploadModal } from '../../components/configurations/VideoUploadModal'
+import { MediaLibrary } from '../../components/configurations/MediaLibrary'
 
 // Social network configuration with icons
 const SOCIAL_NETWORKS = [
@@ -51,7 +51,6 @@ export const BrandingConfiguration: React.FC = () => {
     secondaryColor: '',
     tertiaryColor: '',
     logoUrl: null,
-    backgroundVideoUrl: null,
     companyName: null,
     email: null,
     phone: null,
@@ -78,7 +77,6 @@ export const BrandingConfiguration: React.FC = () => {
 
   const [loading, setLoading] = useState(true)
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
-  const [videoUploadModalOpen, setVideoUploadModalOpen] = useState(false)
 
   useEffect(() => {
     loadBranding()
@@ -120,10 +118,6 @@ export const BrandingConfiguration: React.FC = () => {
 
   const handleUploadComplete = (imageUrl: string) => {
     setBranding(prev => ({ ...prev, logoUrl: imageUrl }))
-  }
-
-  const handleVideoUploadComplete = (videoUrl: string) => {
-    setBranding(prev => ({ ...prev, backgroundVideoUrl: videoUrl }))
   }
 
   if (loading) {
@@ -356,38 +350,13 @@ export const BrandingConfiguration: React.FC = () => {
         </div>
       </Card>
 
-      {/* Background Video */}
+      {/* Media Library */}
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Video className="h-5 w-5 text-[#B725B7]" />
-          <h2 className="text-lg font-semibold text-gray-900">{t('branding.background_video')}</h2>
+          <Images className="h-5 w-5 text-[#B725B7]" />
+          <h2 className="text-lg font-semibold text-gray-900">{t('media_library.title')}</h2>
         </div>
-        <p className="text-sm text-gray-600 mb-4">
-          {t('branding.background_video_description')}
-        </p>
-        <div className="space-y-3">
-          {branding.backgroundVideoUrl && (
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <video
-                src={branding.backgroundVideoUrl}
-                className="w-full max-h-48 rounded"
-                controls
-                muted
-              />
-            </div>
-          )}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setVideoUploadModalOpen(true)}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {branding.backgroundVideoUrl ? t('branding.replace_video') : t('branding.upload_video')}
-          </Button>
-          <p className="text-xs text-gray-500">
-            {t('branding.video_formats')}
-          </p>
-        </div>
+        <MediaLibrary />
       </Card>
 
       {/* Actions */}
@@ -401,11 +370,6 @@ export const BrandingConfiguration: React.FC = () => {
         open={uploadModalOpen}
         onClose={() => setUploadModalOpen(false)}
         onUploadComplete={handleUploadComplete}
-      />
-      <VideoUploadModal
-        open={videoUploadModalOpen}
-        onClose={() => setVideoUploadModalOpen(false)}
-        onUploadComplete={handleVideoUploadComplete}
       />
     </div>
   )

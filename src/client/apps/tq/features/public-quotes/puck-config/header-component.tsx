@@ -139,7 +139,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       height: '80',
       showButton: false,
       buttonLabel: 'Get Started',
-      buttonFontFamily: 'inherit',
+      buttonFontFamily: 'Montserrat',
       buttonUrl: '#',
       buttonVariant: 'primary',
       buttonTextColor: '#ffffff',

@@ -151,7 +151,7 @@ router.post('/pq/:accessToken', async (req, res) => {
     
     // Get branding from global tenant_branding table (including social links and contact info)
     const brandingQuery = `
-      SELECT primary_color, secondary_color, tertiary_color, logo_url, background_video_url,
+      SELECT primary_color, secondary_color, tertiary_color, logo_url,
              social_links, email, phone, address, company_name
       FROM public.tenant_branding
       WHERE tenant_id_fk = $1

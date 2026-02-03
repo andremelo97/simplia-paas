@@ -18,7 +18,6 @@ interface PublicQuoteData {
     secondaryColor: string
     tertiaryColor: string
     logo: string | null
-    backgroundVideoUrl?: string | null
     socialLinks?: Record<string, string> | null
     email?: string | null
     phone?: string | null
@@ -180,7 +179,6 @@ export const PublicQuoteAccess: React.FC = () => {
       secondaryColor: quoteData.branding.secondaryColor,
       tertiaryColor: quoteData.branding.tertiaryColor,
       logoUrl: quoteData.branding.logo || null,
-      backgroundVideoUrl: quoteData.branding.backgroundVideoUrl || null,
       companyName: quoteData.branding.companyName || null,
       socialLinks: quoteData.branding.socialLinks || null,
       email: quoteData.branding.email || null,

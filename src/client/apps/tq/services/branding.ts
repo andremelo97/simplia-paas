@@ -17,7 +17,6 @@ export interface BrandingData {
   secondaryColor: string
   tertiaryColor: string
   logoUrl: string | null
-  backgroundVideoUrl?: string | null
   companyName: string | null
   // Contact information
   email?: string | null

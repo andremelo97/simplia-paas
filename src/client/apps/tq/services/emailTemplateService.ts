@@ -44,7 +44,6 @@ export interface Branding {
   secondaryColor: string;
   tertiaryColor: string;
   logoUrl: string | null;
-  backgroundVideoUrl: string | null;
   companyName: string | null;
   // Contact information
   email?: string | null;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronLeft,
@@ -35,6 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   className
 }) => {
   const location = useLocation()
+  const navigate = useNavigate()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   // Auto-expand parent items when a child is active
@@ -139,6 +140,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => {
                     if (isOpen) {
                       toggleExpanded(item.name)
+                    } else {
+                      // When collapsed, navigate to the parent href
+                      navigate(item.href)
                     }
                   }}
                   style={{

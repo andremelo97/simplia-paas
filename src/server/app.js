@@ -57,6 +57,18 @@ const HUB_ORIGIN = process.env.HUB_ORIGIN || 'http://localhost:3003';
 const TQ_ORIGIN = process.env.TQ_ORIGIN || 'http://localhost:3005';
 const WEBSITE_ORIGIN = process.env.WEBSITE_ORIGIN || 'http://localhost:3006';
 
+// Extract hostnames from ORIGIN URLs for static file serving
+const getHostname = (url) => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+};
+const INTERNAL_HOSTNAME = getHostname(ADMIN_PANEL_ORIGIN);
+const HUB_HOSTNAME = getHostname(HUB_ORIGIN);
+const TQ_HOSTNAME = getHostname(TQ_ORIGIN);
+
 // Global middlewares
 if (ENABLE_HELMET) {
   app.use(helmet({
@@ -221,8 +233,9 @@ app.use('/api/tq/v1', cors(internalCorsOptions), tqApiRouter);
 const blockDocsOnNonInternalDomain = (req, res, next) => {
   const hostname = req.hostname;
 
-  // Only allow docs on internal.livocare.ai and localhost
-  const allowedHosts = ['internal.livocare.ai', 'localhost', '127.0.0.1'];
+  // Only allow docs on internal hostname and localhost
+  const allowedHosts = ['localhost', '127.0.0.1'];
+  if (INTERNAL_HOSTNAME) allowedHosts.push(INTERNAL_HOSTNAME);
   const isAllowed = allowedHosts.some(host => hostname === host || hostname.startsWith(host));
 
   if (!isAllowed) {
@@ -492,7 +505,7 @@ if (isProduction) {
     const hostname = req.hostname;
 
     // Internal Admin subdomain
-    if (hostname === 'internal.livocare.ai') {
+    if (INTERNAL_HOSTNAME && hostname === INTERNAL_HOSTNAME) {
       // Serve admin at root
       if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
         return express.static(adminPath)(req, res, () => {
@@ -507,7 +520,7 @@ if (isProduction) {
     }
 
     // Hub subdomain
-    if (hostname === 'hub.livocare.ai') {
+    if (HUB_HOSTNAME && hostname === HUB_HOSTNAME) {
       // Serve hub at root
       if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
         return express.static(hubPath)(req, res, () => {
@@ -522,7 +535,7 @@ if (isProduction) {
     }
 
     // TQ subdomain
-    if (hostname === 'tq.livocare.ai') {
+    if (TQ_HOSTNAME && hostname === TQ_HOSTNAME) {
       // Serve TQ at root
       if (req.path === '/' || !req.path.startsWith('/api') && !req.path.startsWith('/docs') && !req.path.startsWith('/internal')) {
         return express.static(tqPath)(req, res, () => {

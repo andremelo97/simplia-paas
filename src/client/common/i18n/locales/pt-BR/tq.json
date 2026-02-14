@@ -44,7 +44,13 @@
       "fill_with_ai": "Preencher com IA",
       "create": "Criar Cotação",
       "ai_banner_title": "Preenchimento Inteligente",
-      "ai_banner_description": "Nossa IA analisará a transcrição e preencherá o template seguindo as instruções que você definiu."
+      "ai_banner_description": "Nossa IA analisará a transcrição e preencherá o template seguindo as instruções que você definiu.",
+      "document_type": "Tipo de Documento",
+      "type_quote": "Cotação",
+      "type_clinical_note": "Nota Clínica",
+      "type_prevention": "Prevenção",
+      "create_document": "Criar Documento",
+      "failed_to_create": "Falha ao criar documento"
     },
     "generate_public_quote": {
       "title": "Gerar Link Público da Cotação",

@@ -1656,8 +1656,6 @@ export const NewSession: React.FC = () => {
         transcription={transcription}
         patient={selectedPatient || createdPatient}
         sessionId={session?.id}
-        onCreateQuote={handleTemplateCreateQuote}
-        onCreateClinicalReport={handleTemplateCreateClinicalReport}
         onQuoteCreated={handleTemplateQuoteCreated}
       />
 

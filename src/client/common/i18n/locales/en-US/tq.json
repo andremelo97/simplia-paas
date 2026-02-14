@@ -44,7 +44,13 @@
       "fill_with_ai": "Fill with AI",
       "create": "Create Quote",
       "ai_banner_title": "Smart Fill",
-      "ai_banner_description": "Our AI will analyze the transcription and fill the template following the instructions you defined."
+      "ai_banner_description": "Our AI will analyze the transcription and fill the template following the instructions you defined.",
+      "document_type": "Document Type",
+      "type_quote": "Quote",
+      "type_clinical_note": "Clinical Note",
+      "type_prevention": "Prevention",
+      "create_document": "Create Document",
+      "failed_to_create": "Failed to create document"
     },
     "generate_public_quote": {
       "title": "Generate Public Quote Link",

@@ -7,14 +7,18 @@
 
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Receipt, Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Sparkles, FileText } from 'lucide-react'
 import { Modal, Button, Select, Alert, AlertDescription } from '@client/common/ui'
 import { templatesService, Template } from '../../services/templates'
 import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentService'
 import { quotesService, CreateQuoteRequest } from '../../services/quotes'
+import { clinicalNotesService, CreateClinicalNoteRequest } from '../../services/clinicalNotes'
+import { preventionService, CreatePreventionRequest } from '../../services/prevention'
 import { sessionsService } from '../../services/sessions'
 import { transcriptionService } from '../../services/transcriptionService'
 import { Patient } from '../../services/patients'
+
+type DocumentType = 'quote' | 'clinical-note' | 'prevention'
 
 interface TemplateQuoteModalProps {
   open: boolean
@@ -22,10 +26,7 @@ interface TemplateQuoteModalProps {
   transcription: string
   patient: Patient | null
   sessionId?: string // Optional: if provided, skips session creation
-  onCreateQuote?: (templateId: string) => void
-  onCreateClinicalReport?: (templateId: string) => void
   onQuoteCreated?: (quoteId: string, quoteNumber: string) => void
-  className?: string
 }
 
 export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
@@ -34,17 +35,14 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   transcription,
   patient,
   sessionId,
-  onCreateQuote,
-  onCreateClinicalReport,
-  onQuoteCreated,
-  className = ''
+  onQuoteCreated
 }) => {
   const { t } = useTranslation('tq')
   const [templates, setTemplates] = useState<Template[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
+  const [documentType, setDocumentType] = useState<DocumentType>('quote')
   const [isLoading, setIsLoading] = useState(false)
-  const [isCreatingQuote, setIsCreatingQuote] = useState(false)
-  const [isCreatingClinicalReport, setIsCreatingClinicalReport] = useState(false)
+  const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Load active templates when modal opens
@@ -77,13 +75,13 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
     }
   }
 
-  const handleCreateQuote = async () => {
+  const handleCreateDocument = async () => {
     if (!selectedTemplateId || !transcription.trim() || !patient) {
       return
     }
 
     try {
-      setIsCreatingQuote(true)
+      setIsCreating(true)
       setError(null)
 
       let targetSessionId: string
@@ -114,53 +112,52 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
 
       const filledTemplateResponse = await aiAgentService.fillTemplate(fillTemplateRequest)
 
-      // Step 4: Create quote with filled template content
-      const quoteData: CreateQuoteRequest = {
-        sessionId: targetSessionId,
-        content: filledTemplateResponse.filledTemplate,
-        status: 'draft'
-      }
-
-      const newQuote = await quotesService.createQuote(quoteData)
-
-      // Call the callback to show toast in NewSession
-      if (onQuoteCreated) {
-        onQuoteCreated(newQuote.id, newQuote.number)
+      // Step 4: Create document based on selected type
+      switch (documentType) {
+        case 'quote': {
+          const quoteData: CreateQuoteRequest = {
+            sessionId: targetSessionId,
+            content: filledTemplateResponse.filledTemplate,
+            status: 'draft'
+          }
+          const newQuote = await quotesService.createQuote(quoteData)
+          if (onQuoteCreated) {
+            onQuoteCreated(newQuote.id, newQuote.number)
+          }
+          break
+        }
+        case 'clinical-note': {
+          const noteData: CreateClinicalNoteRequest = {
+            sessionId: targetSessionId,
+            content: filledTemplateResponse.filledTemplate
+          }
+          await clinicalNotesService.create(noteData)
+          break
+        }
+        case 'prevention': {
+          const preventionData: CreatePreventionRequest = {
+            sessionId: targetSessionId,
+            content: filledTemplateResponse.filledTemplate,
+            status: 'draft'
+          }
+          await preventionService.create(preventionData)
+          break
+        }
       }
 
       // Success feedback is handled automatically by HTTP interceptor
       onClose()
 
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to create quote from template')
+      setError(error instanceof Error ? error.message : t('modals.template_quote.failed_to_create'))
     } finally {
-      setIsCreatingQuote(false)
-    }
-  }
-
-  const handleCreateClinicalReport = async () => {
-    if (!selectedTemplateId || !onCreateClinicalReport) {
-      return
-    }
-
-    try {
-      setIsCreatingClinicalReport(true)
-      setError(null)
-
-      // Call the parent handler and wait for it to complete
-      await onCreateClinicalReport(selectedTemplateId)
-
-      // Close modal after successful creation
-      onClose()
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to create clinical report')
-    } finally {
-      setIsCreatingClinicalReport(false)
+      setIsCreating(false)
     }
   }
 
   const handleClose = () => {
     setSelectedTemplateId('')
+    setDocumentType('quote')
     setError(null)
     onClose()
   }
@@ -173,7 +170,6 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
       onClose={handleClose}
       title={t('modals.template_quote.title')}
       size="md"
-      className={className}
     >
       <div className="p-6 space-y-6">
           {/* AI Banner */}
@@ -245,36 +241,36 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex space-x-3">
-            <Button
-              variant="primary"
-              onClick={handleCreateQuote}
-              disabled={!selectedTemplateId || !transcription.trim() || !patient || isLoading || isCreatingQuote}
-              className="flex-1 flex items-center justify-center gap-2"
-            >
-              {isCreatingQuote ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Receipt className="w-4 h-4" />
-              )}
-              {isCreatingQuote ? t('common.loading') : t('modals.ai_agent.create_quote')}
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={handleCreateClinicalReport}
-              disabled={!selectedTemplateId || isLoading || isCreatingQuote || isCreatingClinicalReport}
-              className="flex-1 flex items-center justify-center gap-2"
-            >
-              {isCreatingClinicalReport ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <FileText className="w-4 h-4" />
-              )}
-              {isCreatingClinicalReport ? t('common.loading') : t('modals.ai_agent.create_clinical_report')}
-            </Button>
+          {/* Document Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t('modals.template_quote.document_type')} *
+            </label>
+            <Select
+              value={documentType}
+              onChange={(e) => setDocumentType(e.target.value as DocumentType)}
+              options={[
+                { value: 'quote', label: t('modals.template_quote.type_quote') },
+                { value: 'clinical-note', label: t('modals.template_quote.type_clinical_note') },
+                { value: 'prevention', label: t('modals.template_quote.type_prevention') }
+              ]}
+            />
           </div>
+
+          {/* Action Button */}
+          <Button
+            variant="primary"
+            onClick={handleCreateDocument}
+            disabled={!selectedTemplateId || !transcription.trim() || !patient || isLoading || isCreating}
+            className="w-full flex items-center justify-center gap-2"
+          >
+            {isCreating ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4" />
+            )}
+            {isCreating ? t('common.loading') : t('modals.template_quote.create_document')}
+          </Button>
         </div>
     </Modal>
   )

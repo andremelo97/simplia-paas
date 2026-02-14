@@ -450,7 +450,6 @@ export const EditSession: React.FC = () => {
           })
           setShowLinkToast(true)
         }}
-        onCreateClinicalReport={handleCreateClinicalReport}
       />
 
       {/* Quote Link Toast */}

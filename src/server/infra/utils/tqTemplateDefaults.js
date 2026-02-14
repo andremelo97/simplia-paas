@@ -1,4 +1,4 @@
-const PUBLIC_QUOTE_TEMPLATE_BASE = {
+const LANDING_PAGE_TEMPLATE_BASE = {
   root: { props: {} },
   zones: {},
   content: [
@@ -179,9 +179,9 @@ const DEFAULT_TEMPLATES = {
       description: 'Template padrão para relatórios clínicos completos',
       content: '<p><strong><mark data-color="var(--tt-color-highlight-purple)" style="background-color: var(--tt-color-highlight-purple); color: inherit;">Notas da Consulta</mark></strong></p><p></p><p>Dr(a). $me.fullName$ atendeu $patient.fullName$ hoje sobre [motivo da consulta]. O paciente [descrever sintomas relevantes, preocupações ou motivo da visita] [Forneça um resumo conciso do propósito da consulta, incluindo sintomas, preocupações ou detalhes de exame de rotina. Se o paciente foi encaminhado, especifique o nome do médico que encaminhou e o motivo. Use frases completas para manter a clareza.]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p></p><p><strong>Histórico Médico:</strong></p><p>[Liste o histórico médico relevante, incluindo tratamentos anteriores, cirurgias, alergias, condições médicas e medicamentos que possam impactar o tratamento.]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p></p><p><strong>Exame Clínico:</strong></p><p>- <strong>Exame Físico Geral:</strong> [Achados do exame físico geral: documente achados como sinais vitais, aparência geral, ou outras anormalidades. Se nenhuma anormalidade foi detectada, indique "Sem alterações."]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p>- <strong>Exame Específico:</strong> [Achados de exames específicos por sistema: Inclua achados relevantes como exames cardiovascular, respiratório, neurológico, musculoesquelético ou outras observações específicas.]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p></p><p><strong>Exames Complementares:</strong></p><p>[Tipo de exames realizados e achados: Especifique quais exames foram solicitados ou realizados, ex.: exames de sangue, raio-X, ultrassom, ressonância, tomografia. Forneça os achados, incluindo valores laboratoriais, achados de imagem ou outras observações relevantes.]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p></p><p><strong>Testes Clínicos:</strong></p><p>- Reflexos - [Resultados para testes realizados]</p><p>- Palpação - [Resultados para áreas testadas]</p><p>- Mobilidade - [Resultados para articulações testadas]</p><p>- Sensibilidade - [Resultados para áreas testadas]</p><p>- Outros testes - [Resultados de testes adicionais realizados]</p><p>(Inclua resultados de todos os testes clínicos realizados, garantindo clareza e consistência no formato.)</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p></p><p><strong>Meus diagnósticos foram:</strong></p><p>[Diagnóstico, incluindo condições médicas relevantes: Liste cada diagnóstico separadamente, especificando achados como condições agudas, crônicas, patologias identificadas ou outras preocupações. Use terminologia apropriada e frases completas.]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p></p><p><strong>Plano de Tratamento:</strong></p><p>[Tratamento recomendado com base nos achados: detalhe o plano de tratamento, especificando procedimentos como medicações, terapias, procedimentos cirúrgicos ou acompanhamento. Indique claramente se o tratamento será em fases e quem será responsável por procedimentos específicos. Descreva qualquer explicação, educação ou justificativa discutida com o paciente.]</p><p>[Encaminhamento para outro profissional, se aplicável. Se encaminhando para um especialista ou outro médico, especifique o motivo do encaminhamento e o tratamento esperado que será fornecido.]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p><p></p><p><strong>Complicações/riscos discutidos:</strong></p><p>[Riscos potenciais relevantes ao tratamento recomendado: liste complicações potenciais associadas ao plano de tratamento, como dor, inchaço, infecção, riscos procedimentais ou resultados a longo prazo. Descreva qualquer explicação, educação ou justificativa discutida com o paciente.]</p><p>(Inclua apenas informações se explicitamente mencionadas na transcrição, notas contextuais ou nota clínica.)</p>'
     },
-    publicQuoteTemplate: {
-      name: 'Template Padrão de Cotação Pública',
-      description: 'Template de layout padrão para cotações públicas',
+    landingPageTemplate: {
+      name: 'Template Padrão de Landing Page',
+      description: 'Template de layout padrão para landing pages',
       content: ''
     }
   },
@@ -196,16 +196,16 @@ const DEFAULT_TEMPLATES = {
       description: 'Default template for comprehensive clinical reports',
       content: '<p><strong><mark data-color="var(--tt-color-highlight-purple)" style="background-color: var(--tt-color-highlight-purple); color: inherit;">Consult Notes</mark></strong></p><p></p><p>Dr. $me.fullName$ has seen $patient.fullName$ today about [reason for consultation]. The patient [describe relevant symptoms, concerns, or reason for visit] [Provide a concise summary of the consultation\'s purpose, including symptoms, concerns, or routine examination details. If the patient was referred, specify the referring clinician\'s name and reason for referral. Ensure full sentences are used to maintain clarity.]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p></p><p><strong>Medical History:</strong></p><p>[List relevant medical history, including previous treatments, surgeries, allergies, medical conditions, and medications that may impact treatment.]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p></p><p><strong>Clinical Examination:</strong></p><p>- <strong>General Physical Examination:</strong> [Findings from the general physical examination: document findings such as vital signs, general appearance, or other abnormalities. If no abnormalities are detected, state "NAD."]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p>- <strong>Specific Examination:</strong> [Findings from system-specific examinations: Include relevant findings such as cardiovascular, respiratory, neurological, musculoskeletal examinations, or other specific observations.]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p></p><p><strong>Diagnostic Tests:</strong></p><p>[Type of diagnostic tests performed and findings: Specify which tests were ordered or performed, e.g., blood tests, X-rays, ultrasound, MRI, CT scans. Provide findings, including laboratory values, imaging findings, or other relevant observations.]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p></p><p><strong>Clinical Tests:</strong></p><p>- Reflexes - [Results for tested reflexes]</p><p>- Palpation - [Results for tested areas]</p><p>- Mobility - [Results for tested joints]</p><p>- Sensitivity - [Results for tested areas]</p><p>- Other tests - [Results for additional clinical tests performed]</p><p>(Include results for all clinical tests performed, ensuring clarity and consistency in format.)</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p></p><p><strong>My diagnoses were:</strong></p><p>[Diagnosis, including relevant medical conditions: List each diagnosis separately, specifying findings such as acute conditions, chronic conditions, identified pathologies, or other concerns. Use appropriate terminology and full sentences.]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p></p><p><strong>Treatment Plan:</strong></p><p>[Recommended treatment based on findings: outline the treatment plan in detail, specifying procedures such as medications, therapies, surgical procedures, or follow-up. Clearly state if treatment will be phased and who will be responsible for specific procedures. Outline any explanation, education or rationale discussed with the patient.]</p><p>[Referral to another clinician, if applicable. If referring to a specialist or another clinician, specify the reason for referral and the expected treatment they will provide.]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p><p></p><p><strong>Complications/risks discussed:</strong></p><p>[Potential risks relevant to the recommended treatment: list potential complications associated with the treatment plan, such as pain, swelling, infection, procedural risks, or long-term outcomes. Outline any explanation, education or rationale discussed with the patient.]</p><p>(Only include information if explicitly mentioned in the transcript, contextual notes, or clinical note.)</p>'
     },
-    publicQuoteTemplate: {
-      name: 'Default Public Quote Template',
-      description: 'Default layout template for public quotes',
+    landingPageTemplate: {
+      name: 'Default Landing Page Template',
+      description: 'Default layout template for landing pages',
       content: ''
     }
   }
 };
 
-function buildPublicQuoteTemplateContent(locale) {
-  const base = JSON.parse(JSON.stringify(PUBLIC_QUOTE_TEMPLATE_BASE));
+function buildLandingPageTemplateContent(locale) {
+  const base = JSON.parse(JSON.stringify(LANDING_PAGE_TEMPLATE_BASE));
   const currentYear = new Date().getFullYear();
 
   if (locale === 'pt-BR') {
@@ -249,19 +249,19 @@ function buildPublicQuoteTemplateContent(locale) {
 
 function getDefaultTemplates(locale = 'en-US') {
   const data = DEFAULT_TEMPLATES[locale] || DEFAULT_TEMPLATES['en-US'];
-  const publicQuoteTemplateContent = buildPublicQuoteTemplateContent(locale);
+  const landingPageTemplateContent = buildLandingPageTemplateContent(locale);
 
   return {
     patientSummary: data.patientSummary,
     clinicalReport: data.clinicalReport,
-    publicQuoteTemplate: {
-      ...data.publicQuoteTemplate,
-      content: publicQuoteTemplateContent
+    landingPageTemplate: {
+      ...data.landingPageTemplate,
+      content: landingPageTemplateContent
     }
   };
 }
 
 module.exports = {
   getDefaultTemplates,
-  PUBLIC_QUOTE_TEMPLATE_BASE
+  LANDING_PAGE_TEMPLATE_BASE
 };

@@ -29,7 +29,7 @@ const bugReportsRoutes = require('./api/internal/routes/bug-reports');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
-const publicQuoteAccessRoutes = require('./api/tq/routes/public-quote-access');
+const landingPageAccessRoutes = require('./api/tq/routes/landing-page-access');
 const deepgramWebhookRoutes = require('./api/tq/routes/deepgram-webhook');
 
 // Public routes (no auth required)
@@ -208,10 +208,10 @@ app.use('/api/website/contact', cors(internalCorsOptions), websiteContactRoutes)
 // Mount provisioning API routes (API key auth, for N8N/Stripe webhooks)
 app.use('/api/provisioning', cors(internalCorsOptions), provisioningRoutes);
 
-// Mount public quote access route FIRST (NO authentication, NO tenant middleware required)
-// This allows patients to access quotes via /api/tq/v1/pq/:accessToken
+// Mount landing page access route FIRST (NO authentication, NO tenant middleware required)
+// This allows patients to access landing pages via /api/tq/v1/lp/:accessToken
 // IMPORTANT: Must be mounted BEFORE protected TQ routes to avoid tenant middleware
-app.use('/api/tq/v1', cors(internalCorsOptions), publicQuoteAccessRoutes);
+app.use('/api/tq/v1', cors(internalCorsOptions), landingPageAccessRoutes);
 
 // Mount Deepgram webhook route (NO authentication, NO tenant middleware required)
 // Deepgram is external service that cannot send x-tenant-id header

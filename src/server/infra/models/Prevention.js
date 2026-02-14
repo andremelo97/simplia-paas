@@ -1,13 +1,13 @@
 const database = require('../db/database');
 
-class ClinicalReportNotFoundError extends Error {
+class PreventionNotFoundError extends Error {
   constructor(message) {
-    super(`Clinical report not found: ${message}`);
-    this.name = 'ClinicalReportNotFoundError';
+    super(`Prevention not found: ${message}`);
+    this.name = 'PreventionNotFoundError';
   }
 }
 
-class ClinicalReport {
+class Prevention {
   constructor(data) {
     this.id = data.id;
     this.createdAt = data.created_at;
@@ -15,6 +15,7 @@ class ClinicalReport {
     this.number = data.number;
     this.sessionId = data.session_id;
     this.content = data.content;
+    this.status = data.status;
     this.createdByUserId = data.created_by_user_id_fk;
 
     // Include creator data if joined
@@ -48,64 +49,69 @@ class ClinicalReport {
   }
 
   /**
-   * Find clinical report by ID within a tenant schema
+   * Find prevention by ID within a tenant schema
    */
   static async findById(id, schema, includeSession = true) {
     let query = `
-      SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
+      SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
              p.email as patient_email, p.phone as patient_phone,
              u.first_name as creator_first_name, u.last_name as creator_last_name
-      FROM ${schema}.clinical_report cr
-      LEFT JOIN ${schema}.session s ON cr.session_id = s.id
+      FROM ${schema}.prevention prv
+      LEFT JOIN ${schema}.session s ON prv.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
-      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
-      WHERE cr.id = $1
+      LEFT JOIN public.users u ON prv.created_by_user_id_fk = u.id
+      WHERE prv.id = $1
     `;
 
     const result = await database.query(query, [id]);
 
     if (result.rows.length === 0) {
-      throw new ClinicalReportNotFoundError(`ID: ${id} in schema: ${schema}`);
+      throw new PreventionNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    return new ClinicalReport(result.rows[0]);
+    return new Prevention(result.rows[0]);
   }
 
   /**
-   * Find all clinical reports within a tenant schema
+   * Find all preventions within a tenant schema
    */
   static async findAll(schema, options = {}) {
-    const { limit = 50, offset = 0, sessionId, createdFrom, createdTo, patientId, createdByUserId } = options;
+    const { limit = 50, offset = 0, sessionId, status, createdFrom, createdTo, patientId, createdByUserId } = options;
 
     let query = `
-      SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
+      SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
              p.email as patient_email, p.phone as patient_phone,
              u.first_name as creator_first_name, u.last_name as creator_last_name
-      FROM ${schema}.clinical_report cr
-      LEFT JOIN ${schema}.session s ON cr.session_id = s.id
+      FROM ${schema}.prevention prv
+      LEFT JOIN ${schema}.session s ON prv.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
-      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
+      LEFT JOIN public.users u ON prv.created_by_user_id_fk = u.id
     `;
 
     const params = [];
     const conditions = [];
 
     if (sessionId) {
-      conditions.push(`cr.session_id = $${params.length + 1}`);
+      conditions.push(`prv.session_id = $${params.length + 1}`);
       params.push(sessionId);
+    }
+
+    if (status) {
+      conditions.push(`prv.status = $${params.length + 1}`);
+      params.push(status);
     }
 
     if (createdFrom) {
       // Accept ISO timestamp UTC from frontend (timezone-aware)
-      conditions.push(`cr.created_at >= $${params.length + 1}::timestamptz`);
+      conditions.push(`prv.created_at >= $${params.length + 1}::timestamptz`);
       params.push(createdFrom);
     }
 
     if (createdTo) {
       // Accept ISO timestamp UTC from frontend (includes end of day)
-      conditions.push(`cr.created_at <= $${params.length + 1}::timestamptz`);
+      conditions.push(`prv.created_at <= $${params.length + 1}::timestamptz`);
       params.push(createdTo);
     }
 
@@ -115,7 +121,7 @@ class ClinicalReport {
     }
 
     if (createdByUserId) {
-      conditions.push(`cr.created_by_user_id_fk = $${params.length + 1}`);
+      conditions.push(`prv.created_by_user_id_fk = $${params.length + 1}`);
       params.push(createdByUserId);
     }
 
@@ -123,31 +129,36 @@ class ClinicalReport {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
-    query += ` ORDER BY cr.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    query += ` ORDER BY prv.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(limit, offset);
 
     const result = await database.query(query, params);
-    return result.rows.map(row => new ClinicalReport(row));
+    return result.rows.map(row => new Prevention(row));
   }
 
   /**
-   * Count clinical reports within a tenant schema
+   * Count preventions within a tenant schema
    */
   static async count(schema, options = {}) {
-    const { sessionId, patientId, createdByUserId } = options;
+    const { sessionId, status, patientId, createdByUserId } = options;
 
-    let query = `SELECT COUNT(*) as count FROM ${schema}.clinical_report cr`;
+    let query = `SELECT COUNT(*) as count FROM ${schema}.prevention prv`;
     const params = [];
     const conditions = [];
 
     // Join with session if filtering by patientId
     if (patientId) {
-      query += ` LEFT JOIN ${schema}.session s ON cr.session_id = s.id`;
+      query += ` LEFT JOIN ${schema}.session s ON prv.session_id = s.id`;
     }
 
     if (sessionId) {
-      conditions.push(`cr.session_id = $${params.length + 1}`);
+      conditions.push(`prv.session_id = $${params.length + 1}`);
       params.push(sessionId);
+    }
+
+    if (status) {
+      conditions.push(`prv.status = $${params.length + 1}`);
+      params.push(status);
     }
 
     if (patientId) {
@@ -156,7 +167,7 @@ class ClinicalReport {
     }
 
     if (createdByUserId) {
-      conditions.push(`cr.created_by_user_id_fk = $${params.length + 1}`);
+      conditions.push(`prv.created_by_user_id_fk = $${params.length + 1}`);
       params.push(createdByUserId);
     }
 
@@ -169,52 +180,53 @@ class ClinicalReport {
   }
 
   /**
-   * Create a new clinical report within a tenant schema
+   * Create a new prevention within a tenant schema
    */
-  static async create(reportData, schema) {
-    const { sessionId, content, createdByUserId = null } = reportData;
+  static async create(preventionData, schema) {
+    const { sessionId, content, status = 'draft', createdByUserId = null } = preventionData;
 
     const insertQuery = `
-      INSERT INTO ${schema}.clinical_report (session_id, content, created_by_user_id_fk)
-      VALUES ($1, $2, $3)
+      INSERT INTO ${schema}.prevention (session_id, content, status, created_by_user_id_fk)
+      VALUES ($1, $2, $3, $4)
       RETURNING id
     `;
 
     const insertResult = await database.query(insertQuery, [
       sessionId,
       content,
+      status,
       createdByUserId
     ]);
 
-    const reportId = insertResult.rows[0].id;
+    const preventionId = insertResult.rows[0].id;
 
-    // Fetch the created report with all joined data (session + patient + creator)
+    // Fetch the created prevention with all joined data (session + patient + creator)
     const selectQuery = `
-      SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
+      SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
              p.email as patient_email, p.phone as patient_phone,
              u.first_name as creator_first_name, u.last_name as creator_last_name
-      FROM ${schema}.clinical_report cr
-      LEFT JOIN ${schema}.session s ON cr.session_id = s.id
+      FROM ${schema}.prevention prv
+      LEFT JOIN ${schema}.session s ON prv.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
-      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
-      WHERE cr.id = $1
+      LEFT JOIN public.users u ON prv.created_by_user_id_fk = u.id
+      WHERE prv.id = $1
     `;
 
-    const selectResult = await database.query(selectQuery, [reportId]);
+    const selectResult = await database.query(selectQuery, [preventionId]);
 
-    return new ClinicalReport(selectResult.rows[0]);
+    return new Prevention(selectResult.rows[0]);
   }
 
   /**
-   * Update an existing clinical report within a tenant schema
+   * Update an existing prevention within a tenant schema
    */
   static async update(id, updates, schema) {
     if (Object.keys(updates).length === 0) {
       throw new Error('No updates provided');
     }
 
-    const allowedUpdates = ['content'];
+    const allowedUpdates = ['content', 'status'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -232,7 +244,7 @@ class ClinicalReport {
     }
 
     const updateQuery = `
-      UPDATE ${schema}.clinical_report
+      UPDATE ${schema}.prevention
       SET ${updateFields.join(', ')}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $${paramIndex}
       RETURNING id
@@ -244,44 +256,25 @@ class ClinicalReport {
     ]);
 
     if (updateResult.rows.length === 0) {
-      throw new ClinicalReportNotFoundError(`ID: ${id} in schema: ${schema}`);
+      throw new PreventionNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    // Fetch the updated report with all joined data (session + patient + creator)
+    // Fetch the updated prevention with all joined data (session + patient + creator)
     const selectQuery = `
-      SELECT cr.*, s.number as session_number, s.status as session_status, s.patient_id,
+      SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
              p.email as patient_email, p.phone as patient_phone,
              u.first_name as creator_first_name, u.last_name as creator_last_name
-      FROM ${schema}.clinical_report cr
-      LEFT JOIN ${schema}.session s ON cr.session_id = s.id
+      FROM ${schema}.prevention prv
+      LEFT JOIN ${schema}.session s ON prv.session_id = s.id
       LEFT JOIN ${schema}.patient p ON s.patient_id = p.id
-      LEFT JOIN public.users u ON cr.created_by_user_id_fk = u.id
-      WHERE cr.id = $1
+      LEFT JOIN public.users u ON prv.created_by_user_id_fk = u.id
+      WHERE prv.id = $1
     `;
 
     const selectResult = await database.query(selectQuery, [id]);
 
-    return new ClinicalReport(selectResult.rows[0]);
-  }
-
-  /**
-   * Delete a clinical report within a tenant schema (hard delete)
-   */
-  static async delete(id, schema) {
-    const query = `
-      DELETE FROM ${schema}.clinical_report
-      WHERE id = $1
-      RETURNING *
-    `;
-
-    const result = await database.query(query, [id]);
-
-    if (result.rows.length === 0) {
-      throw new ClinicalReportNotFoundError(`ID: ${id} in schema: ${schema}`);
-    }
-
-    return new ClinicalReport(result.rows[0]);
+    return new Prevention(selectResult.rows[0]);
   }
 
   /**
@@ -290,11 +283,12 @@ class ClinicalReport {
   toJSON() {
     const result = {
       id: this.id,
-      created_at: this.createdAt,
-      updated_at: this.updatedAt,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
       number: this.number,
-      session_id: this.sessionId,
+      sessionId: this.sessionId,
       content: this.content,
+      status: this.status,
       createdByUserId: this.createdByUserId
     };
 
@@ -322,4 +316,4 @@ class ClinicalReport {
   }
 }
 
-module.exports = { ClinicalReport, ClinicalReportNotFoundError };
+module.exports = { Prevention, PreventionNotFoundError };

@@ -139,9 +139,18 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
       CACHE 1
     `);
 
-    // Create clinical report number sequence for unique incremental numbers
+    // Create clinical note number sequence for unique incremental numbers
     await client.query(`
-      CREATE SEQUENCE IF NOT EXISTS clinical_report_number_seq
+      CREATE SEQUENCE IF NOT EXISTS clinical_note_number_seq
+      START WITH 1
+      INCREMENT BY 1
+      NO MAXVALUE
+      CACHE 1
+    `);
+
+    // Create prevention number sequence for unique incremental numbers
+    await client.query(`
+      CREATE SEQUENCE IF NOT EXISTS prevention_number_seq
       START WITH 1
       INCREMENT BY 1
       NO MAXVALUE
@@ -222,15 +231,29 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
       )
     `);
 
-    // Create clinical_report table
+    // Create clinical_note table (renamed from clinical_report)
     await client.query(`
-      CREATE TABLE IF NOT EXISTS clinical_report (
+      CREATE TABLE IF NOT EXISTS clinical_note (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
-        number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('CLR' || LPAD(nextval('clinical_report_number_seq')::text, 6, '0')),
+        number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('CLN' || LPAD(nextval('clinical_note_number_seq')::text, 6, '0')),
         session_id UUID NOT NULL REFERENCES session(id) ON DELETE RESTRICT,
         content TEXT NOT NULL,
+        created_by_user_id_fk INTEGER REFERENCES public.users(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Create prevention table (similar to quote but without items/pricing)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS prevention (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now(),
+        number VARCHAR(10) NOT NULL UNIQUE DEFAULT ('PRV' || LPAD(nextval('prevention_number_seq')::text, 6, '0')),
+        session_id UUID NOT NULL REFERENCES session(id) ON DELETE RESTRICT,
+        content TEXT,
+        status VARCHAR(20) NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sent', 'viewed')),
         created_by_user_id_fk INTEGER REFERENCES public.users(id) ON DELETE SET NULL
       )
     `);
@@ -336,15 +359,31 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_clinical_report_session_id ON clinical_report(session_id)
+      CREATE INDEX IF NOT EXISTS idx_clinical_note_session_id ON clinical_note(session_id)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_clinical_report_created_at ON clinical_report(created_at)
+      CREATE INDEX IF NOT EXISTS idx_clinical_note_created_at ON clinical_note(created_at)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_clinical_report_number ON clinical_report(number)
+      CREATE INDEX IF NOT EXISTS idx_clinical_note_number ON clinical_note(number)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_prevention_session_id ON prevention(session_id)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_prevention_created_at ON prevention(created_at)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_prevention_status ON prevention(status)
+    `);
+
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_prevention_number ON prevention(number)
     `);
 
     // Create update triggers for updated_at timestamps
@@ -437,19 +476,30 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
     `);
 
     await client.query(`
-      DROP TRIGGER IF EXISTS update_clinical_report_updated_at ON clinical_report
+      DROP TRIGGER IF EXISTS update_clinical_note_updated_at ON clinical_note
     `);
 
     await client.query(`
-      CREATE TRIGGER update_clinical_report_updated_at
-        BEFORE UPDATE ON clinical_report
+      CREATE TRIGGER update_clinical_note_updated_at
+        BEFORE UPDATE ON clinical_note
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
-    // Create public_quote_template table for reusable Puck layouts
     await client.query(`
-      CREATE TABLE IF NOT EXISTS public_quote_template (
+      DROP TRIGGER IF EXISTS update_prevention_updated_at ON prevention
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_prevention_updated_at
+        BEFORE UPDATE ON prevention
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
+    // Create landing_page_template table for reusable Puck layouts (renamed from public_quote_template)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS landing_page_template (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
@@ -462,36 +512,38 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
     `);
 
     await client.query(`
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_public_quote_template_default
-        ON public_quote_template(is_default)
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_landing_page_template_default
+        ON landing_page_template(is_default)
         WHERE is_default = true
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_public_quote_template_active
-        ON public_quote_template(active)
+      CREATE INDEX IF NOT EXISTS idx_landing_page_template_active
+        ON landing_page_template(active)
     `);
 
     await client.query(`
-      DROP TRIGGER IF EXISTS update_public_quote_template_updated_at ON public_quote_template
+      DROP TRIGGER IF EXISTS update_landing_page_template_updated_at ON landing_page_template
     `);
 
     await client.query(`
-      CREATE TRIGGER update_public_quote_template_updated_at
-        BEFORE UPDATE ON public_quote_template
+      CREATE TRIGGER update_landing_page_template_updated_at
+        BEFORE UPDATE ON landing_page_template
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
-    // Create public_quote table for external quote sharing instances
+    // Create landing_page table for external document sharing instances (renamed from public_quote)
+    // Supports both quote and prevention document types
     await client.query(`
-      CREATE TABLE IF NOT EXISTS public_quote (
+      CREATE TABLE IF NOT EXISTS landing_page (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ DEFAULT now(),
         tenant_id INTEGER NOT NULL,
-        quote_id UUID NOT NULL REFERENCES quote(id) ON DELETE RESTRICT,
-        template_id UUID REFERENCES public_quote_template(id) ON DELETE SET NULL,
+        document_id UUID,
+        document_type VARCHAR(20) NOT NULL DEFAULT 'quote' CHECK (document_type IN ('quote', 'prevention')),
+        template_id UUID REFERENCES landing_page_template(id) ON DELETE SET NULL,
         access_token VARCHAR(64) UNIQUE NOT NULL,
         public_url TEXT,
         content JSONB,
@@ -504,36 +556,40 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_public_quote_access_token ON public_quote(access_token)
+      CREATE INDEX IF NOT EXISTS idx_landing_page_access_token ON landing_page(access_token)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_public_quote_tenant_id ON public_quote(tenant_id)
+      CREATE INDEX IF NOT EXISTS idx_landing_page_tenant_id ON landing_page(tenant_id)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_public_quote_quote_id ON public_quote(quote_id)
+      CREATE INDEX IF NOT EXISTS idx_landing_page_document_id ON landing_page(document_id)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_public_quote_template_id ON public_quote(template_id)
+      CREATE INDEX IF NOT EXISTS idx_landing_page_document_type ON landing_page(document_type)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_public_quote_active ON public_quote(active)
+      CREATE INDEX IF NOT EXISTS idx_landing_page_template_id ON landing_page(template_id)
     `);
 
     await client.query(`
-      CREATE INDEX IF NOT EXISTS idx_public_quote_expires_at ON public_quote(expires_at)
+      CREATE INDEX IF NOT EXISTS idx_landing_page_active ON landing_page(active)
     `);
 
     await client.query(`
-      DROP TRIGGER IF EXISTS update_public_quote_updated_at ON public_quote
+      CREATE INDEX IF NOT EXISTS idx_landing_page_expires_at ON landing_page(expires_at)
     `);
 
     await client.query(`
-      CREATE TRIGGER update_public_quote_updated_at
-        BEFORE UPDATE ON public_quote
+      DROP TRIGGER IF EXISTS update_landing_page_updated_at ON landing_page
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_landing_page_updated_at
+        BEFORE UPDATE ON landing_page
         FOR EACH ROW
         EXECUTE FUNCTION update_updated_at_column()
     `);
@@ -587,9 +643,9 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
-    const { patientSummary, clinicalReport, publicQuoteTemplate } = templatesByLocale;
+    const { patientSummary, clinicalReport, landingPageTemplate } = templatesByLocale;
 
-    // Seed default templates for quotes and clinical reports
+    // Seed default templates for quotes and clinical notes
     await client.query(
       `
       INSERT INTO template (title, description, content, active)
@@ -612,14 +668,14 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
       [clinicalReport.title, clinicalReport.description, clinicalReport.content]
     );
 
-    // Seed default public_quote_template
+    // Seed default landing_page_template
     await client.query(
       `
-      INSERT INTO public_quote_template (name, description, content, is_default, active)
+      INSERT INTO landing_page_template (name, description, content, is_default, active)
       VALUES ($1, $2, $3::jsonb, true, true)
       ON CONFLICT (is_default) WHERE is_default = true DO NOTHING
       `,
-      [publicQuoteTemplate.name, publicQuoteTemplate.description, publicQuoteTemplate.content]
+      [landingPageTemplate.name, landingPageTemplate.description, landingPageTemplate.content]
     );
 
     // Seed default AI Agent configuration
@@ -688,10 +744,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_report', 'public_quote', 'public_quote_template', 'ai_agent_configuration', 'tq_email_template')
+        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_note', 'prevention', 'landing_page', 'landing_page_template', 'ai_agent_configuration', 'tq_email_template')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 12;
+    return parseInt(result.rows[0].table_count) === 13;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

@@ -1,6 +1,6 @@
 const express = require('express');
 const { createRateLimit } = require('../../../infra/middleware/auth');
-const { PublicQuote, PublicQuoteNotFoundError } = require('../../../infra/models/PublicQuote');
+const { LandingPage, LandingPageNotFoundError } = require('../../../infra/models/LandingPage');
 const { Quote } = require('../../../infra/models/Quote');
 const { TenantBranding } = require('../../../infra/models/TenantBranding');
 const database = require('../../../infra/db/database');
@@ -85,12 +85,12 @@ router.get('/quotes/:tenantSlug/:token', async (req, res) => {
     const tenant = tenantResult.rows[0];
     const schema = tenant.schema_name;
 
-    // 2. Find public quote by token with full quote data
-    let publicQuote;
+    // 2. Find landing page by token with full quote data
+    let landingPage;
     try {
-      publicQuote = await PublicQuote.findByTokenWithQuoteData(token, schema);
+      landingPage = await LandingPage.findByTokenWithDocumentData(token, schema);
     } catch (error) {
-      if (error instanceof PublicQuoteNotFoundError) {
+      if (error instanceof LandingPageNotFoundError) {
         return res.status(404).json({
           error: 'Not Found',
           message: 'Quote link not found or has been revoked'
@@ -99,17 +99,17 @@ router.get('/quotes/:tenantSlug/:token', async (req, res) => {
       throw error;
     }
 
-    // 3. Check if link is expired (based on quote.expires_at)
-    if (publicQuote.isExpired()) {
+    // 3. Check if link is expired
+    if (landingPage.isExpired()) {
       return res.status(403).json({
         error: 'Forbidden',
         message: 'Quote link has expired',
-        expiresAt: publicQuote.quote?.expiresAt
+        expiresAt: landingPage.expiresAt
       });
     }
 
     // 4. Verify password if required
-    if (publicQuote.passwordHash && !password) {
+    if (landingPage.passwordHash && !password) {
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'Password required',
@@ -117,8 +117,8 @@ router.get('/quotes/:tenantSlug/:token', async (req, res) => {
       });
     }
 
-    if (publicQuote.passwordHash) {
-      const isValidPassword = await publicQuote.verifyPassword(password);
+    if (landingPage.passwordHash) {
+      const isValidPassword = await landingPage.verifyPassword(password);
       if (!isValidPassword) {
         return res.status(401).json({
           error: 'Unauthorized',
@@ -129,12 +129,15 @@ router.get('/quotes/:tenantSlug/:token', async (req, res) => {
     }
 
     // 5. Increment view count (async, don't wait)
-    publicQuote.incrementViews(schema).catch(err => {
+    landingPage.incrementViews(schema).catch(err => {
       console.error('Error incrementing views:', err);
     });
 
-    // 6. Get full quote with items
-    const quote = await Quote.findById(publicQuote.quoteId, schema, true, true);
+    // 6. Get full quote with items (only for quote document type)
+    let quote = null;
+    if (landingPage.documentType === 'quote' && landingPage.documentId) {
+      quote = await Quote.findById(landingPage.documentId, schema, true, true);
+    }
 
     // 7. Get tenant branding (with signed URLs for private bucket)
     const branding = await TenantBranding.findByTenant(tenant.id);
@@ -142,10 +145,10 @@ router.get('/quotes/:tenantSlug/:token', async (req, res) => {
     // 8. Return combined data
     res.json({
       data: {
-        quote: quote.toJSON(),
+        quote: quote ? quote.toJSON() : null,
         branding: await branding.toJSONWithSignedUrls(tenant.subdomain),
-        puckSchema: publicQuote.puckSchema,
-        viewsCount: publicQuote.viewsCount
+        puckSchema: landingPage.content,
+        viewsCount: landingPage.viewsCount
       }
     });
   } catch (error) {
@@ -223,12 +226,12 @@ router.post('/quotes/:tenantSlug/:token/verify-password', async (req, res) => {
 
     const schema = tenantResult.rows[0].schema_name;
 
-    // Find public quote
-    let publicQuote;
+    // Find landing page
+    let landingPage;
     try {
-      publicQuote = await PublicQuote.findByToken(token, schema);
+      landingPage = await LandingPage.findByToken(token, schema);
     } catch (error) {
-      if (error instanceof PublicQuoteNotFoundError) {
+      if (error instanceof LandingPageNotFoundError) {
         return res.status(404).json({
           error: 'Not Found',
           message: 'Quote link not found'
@@ -238,7 +241,7 @@ router.post('/quotes/:tenantSlug/:token/verify-password', async (req, res) => {
     }
 
     // Verify password
-    const isValid = await publicQuote.verifyPassword(password);
+    const isValid = await landingPage.verifyPassword(password);
 
     if (!isValid) {
       return res.status(401).json({

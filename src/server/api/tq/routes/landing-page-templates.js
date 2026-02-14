@@ -1,20 +1,20 @@
 const express = require('express');
-const { PublicQuoteTemplate, PublicQuoteTemplateNotFoundError } = require('../../../infra/models/PublicQuoteTemplate');
+const { LandingPageTemplate, LandingPageTemplateNotFoundError } = require('../../../infra/models/LandingPageTemplate');
 
 const router = express.Router();
 
-console.log('🔧 [Public Quote Templates Router] Public quote templates router loaded and initialized');
+console.log('[Landing Page Templates Router] Landing page templates router loaded and initialized');
 
 /**
  * @openapi
- * /tq/public-quote-templates:
+ * /tq/landing-page-templates:
  *   get:
- *     tags: [TQ - Public Quote Templates]
- *     summary: List all public quote templates for tenant
+ *     tags: [TQ - Landing Page Templates]
+ *     summary: List all landing page templates for tenant
  *     description: |
  *       **Scope:** Tenant (x-tenant-id required)
  *
- *       Get all public quote templates within the tenant's schema with pagination.
+ *       Get all landing page templates within the tenant's schema with pagination.
  *       Templates are ordered by default status (default first) then created date.
  *     security:
  *       - bearerAuth: []
@@ -62,8 +62,8 @@ router.get('/', async (req, res) => {
     };
 
     const [templates, total] = await Promise.all([
-      PublicQuoteTemplate.findAll(schema, options),
-      PublicQuoteTemplate.count(schema, { active: options.active, isDefault: options.isDefault })
+      LandingPageTemplate.findAll(schema, options),
+      LandingPageTemplate.count(schema, { active: options.active, isDefault: options.isDefault })
     ]);
 
     res.json({
@@ -75,24 +75,24 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('List public quote templates error:', error);
+    console.error('List landing page templates error:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to list public quote templates'
+      message: 'Failed to list landing page templates'
     });
   }
 });
 
 /**
  * @openapi
- * /tq/public-quote-templates/{id}:
+ * /tq/landing-page-templates/{id}:
  *   get:
- *     tags: [TQ - Public Quote Templates]
- *     summary: Get public quote template by ID
+ *     tags: [TQ - Landing Page Templates]
+ *     summary: Get landing page template by ID
  *     description: |
  *       **Scope:** Tenant (x-tenant-id required)
  *
- *       Retrieve a specific public quote template by ID within the tenant's schema.
+ *       Retrieve a specific landing page template by ID within the tenant's schema.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -115,37 +115,37 @@ router.get('/:id', async (req, res) => {
     const schema = req.tenant?.schema;
     const { id } = req.params;
 
-    const template = await PublicQuoteTemplate.findById(id, schema);
+    const template = await LandingPageTemplate.findById(id, schema);
 
     res.json({
       data: template.toJSON()
     });
   } catch (error) {
-    if (error instanceof PublicQuoteTemplateNotFoundError) {
+    if (error instanceof LandingPageTemplateNotFoundError) {
       return res.status(404).json({
         error: 'Not found',
         message: error.message
       });
     }
 
-    console.error('Get public quote template error:', error);
+    console.error('Get landing page template error:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to get public quote template'
+      message: 'Failed to get landing page template'
     });
   }
 });
 
 /**
  * @openapi
- * /tq/public-quote-templates:
+ * /tq/landing-page-templates:
  *   post:
- *     tags: [TQ - Public Quote Templates]
- *     summary: Create a new public quote template
+ *     tags: [TQ - Landing Page Templates]
+ *     summary: Create a new landing page template
  *     description: |
  *       **Scope:** Tenant (x-tenant-id required)
  *
- *       Create a new public quote template with Puck layout configuration.
+ *       Create a new landing page template with Puck layout configuration.
  *       Limits: Max 10 templates total, max 3 active templates per tenant.
  *     security:
  *       - bearerAuth: []
@@ -198,7 +198,7 @@ router.post('/', async (req, res) => {
     }
 
     // Check total template limit (max 10 per tenant)
-    const totalTemplates = await PublicQuoteTemplate.count(schema, {});
+    const totalTemplates = await LandingPageTemplate.count(schema, {});
     if (totalTemplates >= 10) {
       return res.status(400).json({
         error: 'Validation error',
@@ -210,7 +210,7 @@ router.post('/', async (req, res) => {
     // Only check if creating as active (default is active=true)
     const isActive = active !== false;
     if (isActive) {
-      const activeTemplates = await PublicQuoteTemplate.count(schema, { active: true });
+      const activeTemplates = await LandingPageTemplate.count(schema, { active: true });
       if (activeTemplates >= 3) {
         return res.status(400).json({
           error: 'Validation error',
@@ -219,7 +219,7 @@ router.post('/', async (req, res) => {
       }
     }
 
-    const template = await PublicQuoteTemplate.create(schema, {
+    const template = await LandingPageTemplate.create(schema, {
       name,
       description,
       content,
@@ -230,29 +230,29 @@ router.post('/', async (req, res) => {
     res.status(201).json({
       data: template.toJSON(),
       meta: {
-        code: 'PUBLIC_QUOTE_TEMPLATE_CREATED',
-        message: 'Public quote template created successfully'
+        code: 'LANDING_PAGE_TEMPLATE_CREATED',
+        message: 'Landing page template created successfully'
       }
     });
   } catch (error) {
-    console.error('Create public quote template error:', error);
+    console.error('Create landing page template error:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to create public quote template'
+      message: 'Failed to create landing page template'
     });
   }
 });
 
 /**
  * @openapi
- * /tq/public-quote-templates/{id}:
+ * /tq/landing-page-templates/{id}:
  *   put:
- *     tags: [TQ - Public Quote Templates]
- *     summary: Update a public quote template
+ *     tags: [TQ - Landing Page Templates]
+ *     summary: Update a landing page template
  *     description: |
  *       **Scope:** Tenant (x-tenant-id required)
  *
- *       Update an existing public quote template.
+ *       Update an existing landing page template.
  *       Setting isDefault=true will unset all other defaults.
  *       Setting active=true is limited to max 3 active templates per tenant.
  *     security:
@@ -298,10 +298,10 @@ router.put('/:id', async (req, res) => {
     // If activating a template, check the limit
     if (active === true) {
       // First check if the template is currently inactive
-      const currentTemplate = await PublicQuoteTemplate.findById(id, schema);
+      const currentTemplate = await LandingPageTemplate.findById(id, schema);
       if (!currentTemplate.active) {
         // Template is being activated, check limit
-        const activeTemplates = await PublicQuoteTemplate.count(schema, { active: true });
+        const activeTemplates = await LandingPageTemplate.count(schema, { active: true });
         if (activeTemplates >= 3) {
           return res.status(400).json({
             error: 'Validation error',
@@ -311,7 +311,7 @@ router.put('/:id', async (req, res) => {
       }
     }
 
-    const template = await PublicQuoteTemplate.update(id, schema, {
+    const template = await LandingPageTemplate.update(id, schema, {
       name,
       description,
       content,
@@ -322,37 +322,37 @@ router.put('/:id', async (req, res) => {
     res.json({
       data: template.toJSON(),
       meta: {
-        code: 'PUBLIC_QUOTE_TEMPLATE_UPDATED',
-        message: 'Public quote template updated successfully'
+        code: 'LANDING_PAGE_TEMPLATE_UPDATED',
+        message: 'Landing page template updated successfully'
       }
     });
   } catch (error) {
-    if (error instanceof PublicQuoteTemplateNotFoundError) {
+    if (error instanceof LandingPageTemplateNotFoundError) {
       return res.status(404).json({
         error: 'Not found',
         message: error.message
       });
     }
 
-    console.error('Update public quote template error:', error);
+    console.error('Update landing page template error:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to update public quote template'
+      message: 'Failed to update landing page template'
     });
   }
 });
 
 /**
  * @openapi
- * /tq/public-quote-templates/{id}:
+ * /tq/landing-page-templates/{id}:
  *   delete:
- *     tags: [TQ - Public Quote Templates]
- *     summary: Delete a public quote template
+ *     tags: [TQ - Landing Page Templates]
+ *     summary: Delete a landing page template
  *     description: |
  *       **Scope:** Tenant (x-tenant-id required)
  *
- *       Delete a public quote template.
- *       Associated public quotes will have template_id set to NULL (ON DELETE SET NULL).
+ *       Delete a landing page template.
+ *       Associated landing pages will have template_id set to NULL (ON DELETE SET NULL).
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -375,26 +375,26 @@ router.delete('/:id', async (req, res) => {
     const schema = req.tenant?.schema;
     const { id } = req.params;
 
-    await PublicQuoteTemplate.delete(id, schema);
+    await LandingPageTemplate.delete(id, schema);
 
     res.json({
       meta: {
-        code: 'PUBLIC_QUOTE_TEMPLATE_DELETED',
-        message: 'Public quote template deleted successfully'
+        code: 'LANDING_PAGE_TEMPLATE_DELETED',
+        message: 'Landing page template deleted successfully'
       }
     });
   } catch (error) {
-    if (error instanceof PublicQuoteTemplateNotFoundError) {
+    if (error instanceof LandingPageTemplateNotFoundError) {
       return res.status(404).json({
         error: 'Not found',
         message: error.message
       });
     }
 
-    console.error('Delete public quote template error:', error);
+    console.error('Delete landing page template error:', error);
     res.status(500).json({
       error: 'Internal server error',
-      message: 'Failed to delete public quote template'
+      message: 'Failed to delete landing page template'
     });
   }
 });

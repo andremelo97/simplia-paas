@@ -1,13 +1,13 @@
 const database = require('../db/database');
 
-class PublicQuoteTemplateNotFoundError extends Error {
+class LandingPageTemplateNotFoundError extends Error {
   constructor(message) {
-    super(`Public Quote Template not found: ${message}`);
-    this.name = 'PublicQuoteTemplateNotFoundError';
+    super(`Landing Page Template not found: ${message}`);
+    this.name = 'LandingPageTemplateNotFoundError';
   }
 }
 
-class PublicQuoteTemplate {
+class LandingPageTemplate {
   constructor(data) {
     this.id = data.id;
     this.createdAt = data.created_at;
@@ -25,17 +25,17 @@ class PublicQuoteTemplate {
   static async findById(id, schema) {
     const query = `
       SELECT *
-      FROM ${schema}.public_quote_template
+      FROM ${schema}.landing_page_template
       WHERE id = $1
     `;
 
     const result = await database.query(query, [id]);
 
     if (result.rows.length === 0) {
-      throw new PublicQuoteTemplateNotFoundError(`ID: ${id} in schema: ${schema}`);
+      throw new LandingPageTemplateNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    return new PublicQuoteTemplate(result.rows[0]);
+    return new LandingPageTemplate(result.rows[0]);
   }
 
   /**
@@ -46,7 +46,7 @@ class PublicQuoteTemplate {
 
     let query = `
       SELECT *
-      FROM ${schema}.public_quote_template
+      FROM ${schema}.landing_page_template
     `;
 
     const params = [];
@@ -70,7 +70,7 @@ class PublicQuoteTemplate {
     params.push(limit, offset);
 
     const result = await database.query(query, params);
-    return result.rows.map(row => new PublicQuoteTemplate(row));
+    return result.rows.map(row => new LandingPageTemplate(row));
   }
 
   /**
@@ -81,7 +81,7 @@ class PublicQuoteTemplate {
 
     let query = `
       SELECT COUNT(*) as count
-      FROM ${schema}.public_quote_template
+      FROM ${schema}.landing_page_template
     `;
 
     const params = [];
@@ -114,20 +114,20 @@ class PublicQuoteTemplate {
     // If setting as default, unset all other defaults first
     if (isDefault) {
       await database.query(`
-        UPDATE ${schema}.public_quote_template
+        UPDATE ${schema}.landing_page_template
         SET is_default = false
         WHERE is_default = true
       `);
     }
 
     const query = `
-      INSERT INTO ${schema}.public_quote_template (name, description, content, is_default, active)
+      INSERT INTO ${schema}.landing_page_template (name, description, content, is_default, active)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `;
 
     const result = await database.query(query, [name, description, content, isDefault, active]);
-    return new PublicQuoteTemplate(result.rows[0]);
+    return new LandingPageTemplate(result.rows[0]);
   }
 
   /**
@@ -139,7 +139,7 @@ class PublicQuoteTemplate {
     // If setting as default, unset all other defaults first
     if (isDefault === true) {
       await database.query(`
-        UPDATE ${schema}.public_quote_template
+        UPDATE ${schema}.landing_page_template
         SET is_default = false
         WHERE is_default = true AND id != $1
       `, [id]);
@@ -181,7 +181,7 @@ class PublicQuoteTemplate {
     params.push(id);
 
     const query = `
-      UPDATE ${schema}.public_quote_template
+      UPDATE ${schema}.landing_page_template
       SET ${updateFields.join(', ')}
       WHERE id = $${paramIndex}
       RETURNING *
@@ -190,10 +190,10 @@ class PublicQuoteTemplate {
     const result = await database.query(query, params);
 
     if (result.rows.length === 0) {
-      throw new PublicQuoteTemplateNotFoundError(`ID: ${id} in schema: ${schema}`);
+      throw new LandingPageTemplateNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    return new PublicQuoteTemplate(result.rows[0]);
+    return new LandingPageTemplate(result.rows[0]);
   }
 
   /**
@@ -201,7 +201,7 @@ class PublicQuoteTemplate {
    */
   static async delete(id, schema) {
     const query = `
-      DELETE FROM ${schema}.public_quote_template
+      DELETE FROM ${schema}.landing_page_template
       WHERE id = $1
       RETURNING *
     `;
@@ -209,10 +209,10 @@ class PublicQuoteTemplate {
     const result = await database.query(query, [id]);
 
     if (result.rows.length === 0) {
-      throw new PublicQuoteTemplateNotFoundError(`ID: ${id} in schema: ${schema}`);
+      throw new LandingPageTemplateNotFoundError(`ID: ${id} in schema: ${schema}`);
     }
 
-    return new PublicQuoteTemplate(result.rows[0]);
+    return new LandingPageTemplate(result.rows[0]);
   }
 
   toJSON() {
@@ -229,4 +229,4 @@ class PublicQuoteTemplate {
   }
 }
 
-module.exports = { PublicQuoteTemplate, PublicQuoteTemplateNotFoundError };
+module.exports = { LandingPageTemplate, LandingPageTemplateNotFoundError };

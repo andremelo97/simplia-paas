@@ -2,7 +2,7 @@ require('dotenv').config();
 const app = require('./app');
 const { initAudioCleanupJob } = require('./jobs/cleanupOldAudioFiles');
 const { initTranscriptionCostUpdateJob } = require('./jobs/updateTranscriptionCosts');
-const { initExpirePublicQuotesJob } = require('./jobs/expirePublicQuotes');
+const { initExpireLandingPagesJob } = require('./jobs/expireLandingPages');
 
 const PORT = process.env.PORT || 3001;
 
@@ -12,6 +12,6 @@ app.listen(PORT, () => {
   // Initialize cron jobs
   initAudioCleanupJob();  // Hourly: Clean audio files >24h old
   initTranscriptionCostUpdateJob();  // Daily 3 AM: Update transcription costs
-  initExpirePublicQuotesJob();  // Hourly: Expire public quote links
+  initExpireLandingPagesJob();  // Hourly: Expire landing page links
 });
  

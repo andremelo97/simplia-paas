@@ -2,30 +2,30 @@ const cron = require('node-cron');
 const database = require('../infra/db/database');
 
 /**
- * Cron job to expire public quotes
- * Runs every hour and deactivates expired public quotes across all tenant schemas
+ * Cron job to expire landing pages
+ * Runs every hour and deactivates expired landing pages across all tenant schemas
  *
  * IMPORTANT: This job checks expires_at timestamp against CURRENT_TIMESTAMP (UTC).
  * Frontend sends expires_at as ISO timestamp (e.g., "2025-10-30T21:39:50.995Z"),
  * which preserves the exact moment of expiration (current time + N days).
  * PostgreSQL compares both timestamps in UTC, so expiration is timezone-agnostic.
  */
-async function expirePublicQuotes() {
+async function expireLandingPages() {
   const startTime = Date.now();
   let executionId = null;
 
   try {
-    console.log('🕒 [Expire Public Quotes] Starting expiration check...');
+    console.log('[Expire Landing Pages] Starting expiration check...');
 
     // Log job start
     const startResult = await database.query(`
       INSERT INTO public.job_executions (job_name, status, started_at)
       VALUES ($1, $2, CURRENT_TIMESTAMP)
       RETURNING id
-    `, ['expire_public_quotes', 'running']);
+    `, ['expire_landing_pages', 'running']);
 
     executionId = startResult.rows[0].id;
-    console.log(`📝 [Expire Public Quotes] Execution ID: ${executionId}`);
+    console.log(`[Expire Landing Pages] Execution ID: ${executionId}`);
 
     // Query all active tenant schemas
     const schemasResult = await database.query(`
@@ -37,7 +37,7 @@ async function expirePublicQuotes() {
     const schemas = schemasResult.rows;
 
     if (schemas.length === 0) {
-      console.log('⚠️  [Expire Public Quotes] No active tenants found');
+      console.log('[Expire Landing Pages] No active tenants found');
 
       // Update execution as success with 0 expirations
       await database.query(`
@@ -46,20 +46,20 @@ async function expirePublicQuotes() {
         WHERE id = $4
       `, ['success', Date.now() - startTime, JSON.stringify({ expired: 0, schemas_processed: 0 }), executionId]);
 
-      console.log(`💾 [Expire Public Quotes] Execution logged to database (ID: ${executionId})`);
+      console.log(`[Expire Landing Pages] Execution logged to database (ID: ${executionId})`);
       return;
     }
 
-    console.log(`📊 [Expire Public Quotes] Processing ${schemas.length} tenant schemas...`);
+    console.log(`[Expire Landing Pages] Processing ${schemas.length} tenant schemas...`);
 
     let totalExpired = 0;
 
     for (const { schema_name, timezone } of schemas) {
       try {
-        // Find expired public quotes that are still active
+        // Find expired landing pages that are still active
         // expires_at < CURRENT_TIMESTAMP means the link has passed its expiration date
         const result = await database.query(`
-          UPDATE ${schema_name}.public_quote
+          UPDATE ${schema_name}.landing_page
           SET active = false, updated_at = CURRENT_TIMESTAMP
           WHERE active = true
             AND expires_at IS NOT NULL
@@ -68,23 +68,23 @@ async function expirePublicQuotes() {
         `);
 
         if (result.rowCount > 0) {
-          console.log(`✅ [Expire Public Quotes] Expired ${result.rowCount} quote(s) in ${schema_name} (timezone: ${timezone})`);
+          console.log(`[Expire Landing Pages] Expired ${result.rowCount} landing page(s) in ${schema_name} (timezone: ${timezone})`);
           totalExpired += result.rowCount;
 
           // Log details for debugging
           result.rows.forEach(row => {
-            console.log(`   - Public Quote ID: ${row.id}, Expired At: ${row.expires_at}`);
+            console.log(`   - Landing Page ID: ${row.id}, Expired At: ${row.expires_at}`);
           });
         }
       } catch (schemaError) {
-        console.error(`❌ [Expire Public Quotes] Failed to process schema ${schema_name}:`, schemaError.message);
+        console.error(`[Expire Landing Pages] Failed to process schema ${schema_name}:`, schemaError.message);
       }
     }
 
     if (totalExpired > 0) {
-      console.log(`🏁 [Expire Public Quotes] Completed. Total expired: ${totalExpired}`);
+      console.log(`[Expire Landing Pages] Completed. Total expired: ${totalExpired}`);
     } else {
-      console.log(`🏁 [Expire Public Quotes] Completed. No expired quotes found.`);
+      console.log(`[Expire Landing Pages] Completed. No expired landing pages found.`);
     }
 
     // Log job success
@@ -94,10 +94,10 @@ async function expirePublicQuotes() {
       WHERE id = $4
     `, ['success', Date.now() - startTime, JSON.stringify({ expired: totalExpired, schemas_processed: schemas.length }), executionId]);
 
-    console.log(`💾 [Expire Public Quotes] Execution logged to database (ID: ${executionId})`);
+    console.log(`[Expire Landing Pages] Execution logged to database (ID: ${executionId})`);
 
   } catch (error) {
-    console.error('❌ [Expire Public Quotes] Job failed:', error);
+    console.error('[Expire Landing Pages] Job failed:', error);
 
     // Log job failure
     if (executionId) {
@@ -107,13 +107,13 @@ async function expirePublicQuotes() {
         WHERE id = $4
       `, ['failed', Date.now() - startTime, error.message, executionId]);
 
-      console.log(`💾 [Expire Public Quotes] Failure logged to database (ID: ${executionId})`);
+      console.log(`[Expire Landing Pages] Failure logged to database (ID: ${executionId})`);
     }
   }
 }
 
 /**
- * Initialize the public quote expiration cron job
+ * Initialize the landing page expiration cron job
  * Runs every hour at minute 0
  *
  * Cron expression: '0 * * * *'
@@ -130,28 +130,28 @@ async function expirePublicQuotes() {
  * - ...
  * - 23:00
  */
-function initExpirePublicQuotesJob() {
+function initExpireLandingPagesJob() {
   const cronExpression = '0 * * * *';  // Every hour at minute 0
 
-  console.log(`⏰ [Expire Public Quotes] Attempting to schedule with expression: '${cronExpression}'`);
+  console.log(`[Expire Landing Pages] Attempting to schedule with expression: '${cronExpression}'`);
 
   try {
     const task = cron.schedule(cronExpression, () => {
-      console.log('🔔 [Expire Public Quotes] Cron callback triggered!');
-      expirePublicQuotes();
+      console.log('[Expire Landing Pages] Cron callback triggered!');
+      expireLandingPages();
     }, {
       scheduled: true,
       timezone: "UTC"  // Explicitly set timezone to UTC
     });
 
-    console.log(`✅ [Expire Public Quotes] Cron job scheduled successfully`);
-    console.log(`📅 [Expire Public Quotes] Schedule: Every hour at minute 0 (UTC)`);
-    console.log(`🌍 [Expire Public Quotes] Timezone: UTC`);
-    console.log(`⚙️  [Expire Public Quotes] Task object: ${task ? 'EXISTS' : 'NULL'}`);
+    console.log(`[Expire Landing Pages] Cron job scheduled successfully`);
+    console.log(`[Expire Landing Pages] Schedule: Every hour at minute 0 (UTC)`);
+    console.log(`[Expire Landing Pages] Timezone: UTC`);
+    console.log(`[Expire Landing Pages] Task object: ${task ? 'EXISTS' : 'NULL'}`);
 
   } catch (error) {
-    console.error('❌ [Expire Public Quotes] Failed to schedule cron job:', error);
+    console.error('[Expire Landing Pages] Failed to schedule cron job:', error);
   }
 }
 
-module.exports = { initExpirePublicQuotesJob, expirePublicQuotes };
+module.exports = { initExpireLandingPagesJob, expireLandingPages };

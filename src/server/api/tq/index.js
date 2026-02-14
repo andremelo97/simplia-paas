@@ -6,9 +6,10 @@ const quotesRoutes = require('./routes/quotes');
 const itemsRoutes = require('./routes/items');
 const templatesRoutes = require('./routes/templates');
 const aiAgentRoutes = require('./routes/ai-agent');
-const clinicalReportsRoutes = require('./routes/clinical-reports');
-const publicQuotesRoutes = require('./routes/public-quotes');
-const publicQuoteTemplatesRoutes = require('./routes/public-quote-templates');
+const clinicalNotesRoutes = require('./routes/clinical-notes');
+const landingPagesRoutes = require('./routes/landing-pages');
+const landingPageTemplatesRoutes = require('./routes/landing-page-templates');
+const preventionRoutes = require('./routes/prevention');
 const aiAgentConfigurationRoutes = require('./routes/ai-agent-configuration');
 const emailTemplatesRoutes = require('./routes/email-templates');
 const usersRoutes = require('./routes/users');
@@ -32,9 +33,10 @@ router.use('/sessions', sessionsRoutes);
 router.use('/quotes', quotesRoutes);
 router.use('/items', itemsRoutes);
 router.use('/templates', templatesRoutes);
-router.use('/clinical-reports', clinicalReportsRoutes);
-router.use('/public-quotes', publicQuotesRoutes);
-router.use('/public-quote-templates', publicQuoteTemplatesRoutes);
+router.use('/clinical-notes', clinicalNotesRoutes);
+router.use('/landing-pages', landingPagesRoutes);
+router.use('/landing-page-templates', landingPageTemplatesRoutes);
+router.use('/prevention', preventionRoutes);
 router.use('/users', usersRoutes);
 
 // Mount transcription routes (Deepgram integration)

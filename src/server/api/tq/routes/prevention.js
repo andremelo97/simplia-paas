@@ -1,7 +1,7 @@
 const express = require('express');
 const tenantMiddleware = require('../../../infra/middleware/tenant');
 const { requireAuth, createRateLimit } = require('../../../infra/middleware/auth');
-const { ClinicalReport, ClinicalReportNotFoundError } = require('../../../infra/models/ClinicalReport');
+const { Prevention, PreventionNotFoundError } = require('../../../infra/models/Prevention');
 
 const router = express.Router();
 
@@ -19,7 +19,7 @@ router.use(tqRateLimit);
  * @swagger
  * components:
  *   schemas:
- *     ClinicalReport:
+ *     Prevention:
  *       type: object
  *       properties:
  *         id:
@@ -27,12 +27,15 @@ router.use(tqRateLimit);
  *           format: uuid
  *         number:
  *           type: string
- *           example: "CLR000001"
+ *           example: "PRV000001"
  *         sessionId:
  *           type: string
  *           format: uuid
  *         content:
  *           type: string
+ *         status:
+ *           type: string
+ *           enum: [draft, sent, viewed]
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -43,16 +46,21 @@ router.use(tqRateLimit);
 
 /**
  * @swagger
- * /tq/clinical-reports:
+ * /tq/prevention:
  *   get:
- *     summary: List all clinical reports
- *     tags: [TQ - Clinical Reports]
+ *     summary: List all prevention documents
+ *     tags: [TQ - Prevention]
  *     parameters:
  *       - in: query
  *         name: sessionId
  *         schema:
  *           type: string
  *           format: uuid
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, sent, viewed]
  *       - in: query
  *         name: limit
  *         schema:
@@ -65,7 +73,7 @@ router.use(tqRateLimit);
  *           default: 0
  *     responses:
  *       200:
- *         description: List of clinical reports
+ *         description: List of prevention documents
  *         content:
  *           application/json:
  *             schema:
@@ -74,7 +82,7 @@ router.use(tqRateLimit);
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/ClinicalReport'
+ *                     $ref: '#/components/schemas/Prevention'
  *                 meta:
  *                   type: object
  *                   properties:
@@ -95,10 +103,11 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const { sessionId, limit = 50, offset = 0, created_from, created_to, patient_id, created_by_user_id } = req.query;
+    const { sessionId, status, limit = 50, offset = 0, created_from, created_to, patient_id, created_by_user_id } = req.query;
 
     const options = {
       sessionId,
+      status,
       limit: parseInt(limit),
       offset: parseInt(offset),
       createdFrom: created_from,
@@ -107,13 +116,13 @@ router.get('/', async (req, res) => {
       createdByUserId: created_by_user_id ? parseInt(created_by_user_id) : undefined
     };
 
-    const [reports, total] = await Promise.all([
-      ClinicalReport.findAll(schema, options),
-      ClinicalReport.count(schema, options)
+    const [preventions, total] = await Promise.all([
+      Prevention.findAll(schema, options),
+      Prevention.count(schema, options)
     ]);
 
     res.json({
-      data: reports.map(r => r.toJSON()),
+      data: preventions.map(p => p.toJSON()),
       meta: {
         total,
         limit: parseInt(limit),
@@ -121,20 +130,20 @@ router.get('/', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching clinical reports:', error);
+    console.error('Error fetching prevention documents:', error);
     res.status(500).json({
-      error: 'Failed to fetch clinical reports',
-      meta: { code: 'CLINICAL_REPORTS_FETCH_ERROR' }
+      error: 'Failed to fetch prevention documents',
+      meta: { code: 'PREVENTION_FETCH_ERROR' }
     });
   }
 });
 
 /**
  * @swagger
- * /tq/clinical-reports/{id}:
+ * /tq/prevention/{id}:
  *   get:
- *     summary: Get a clinical report by ID
- *     tags: [TQ - Clinical Reports]
+ *     summary: Get a prevention document by ID
+ *     tags: [TQ - Prevention]
  *     parameters:
  *       - in: path
  *         name: id
@@ -144,16 +153,16 @@ router.get('/', async (req, res) => {
  *           format: uuid
  *     responses:
  *       200:
- *         description: Clinical report details
+ *         description: Prevention document details
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/ClinicalReport'
+ *                   $ref: '#/components/schemas/Prevention'
  *       404:
- *         description: Clinical report not found
+ *         description: Prevention document not found
  */
 router.get('/:id', async (req, res) => {
   try {
@@ -166,33 +175,33 @@ router.get('/:id', async (req, res) => {
     }
 
     const { id } = req.params;
-    const report = await ClinicalReport.findById(id, schema);
+    const prevention = await Prevention.findById(id, schema);
 
     res.json({
-      data: report.toJSON()
+      data: prevention.toJSON()
     });
   } catch (error) {
-    if (error instanceof ClinicalReportNotFoundError) {
+    if (error instanceof PreventionNotFoundError) {
       return res.status(404).json({
         error: error.message,
-        meta: { code: 'CLINICAL_REPORT_NOT_FOUND' }
+        meta: { code: 'PREVENTION_NOT_FOUND' }
       });
     }
 
-    console.error('Error fetching clinical report:', error);
+    console.error('Error fetching prevention document:', error);
     res.status(500).json({
-      error: 'Failed to fetch clinical report',
-      meta: { code: 'CLINICAL_REPORT_FETCH_ERROR' }
+      error: 'Failed to fetch prevention document',
+      meta: { code: 'PREVENTION_FETCH_ERROR' }
     });
   }
 });
 
 /**
  * @swagger
- * /tq/clinical-reports:
+ * /tq/prevention:
  *   post:
- *     summary: Create a new clinical report
- *     tags: [TQ - Clinical Reports]
+ *     summary: Create a new prevention document
+ *     tags: [TQ - Prevention]
  *     requestBody:
  *       required: true
  *       content:
@@ -201,29 +210,32 @@ router.get('/:id', async (req, res) => {
  *             type: object
  *             required:
  *               - sessionId
- *               - content
  *             properties:
  *               sessionId:
  *                 type: string
  *                 format: uuid
  *               content:
  *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [draft, sent, viewed]
+ *                 default: draft
  *     responses:
  *       201:
- *         description: Clinical report created successfully
+ *         description: Prevention document created successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/ClinicalReport'
+ *                   $ref: '#/components/schemas/Prevention'
  *                 meta:
  *                   type: object
  *                   properties:
  *                     code:
  *                       type: string
- *                       example: "CLINICAL_REPORT_CREATED"
+ *                       example: "PREVENTION_CREATED"
  *       400:
  *         description: Invalid input
  */
@@ -237,44 +249,53 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const { sessionId, content } = req.body;
+    const { sessionId, content, status = 'draft' } = req.body;
 
     // Validation
-    if (!sessionId || !content) {
+    if (!sessionId) {
       return res.status(400).json({
-        error: 'Missing required fields: sessionId and content are required',
+        error: 'Missing required field: sessionId is required',
         meta: { code: 'VALIDATION_ERROR' }
       });
     }
 
-    const report = await ClinicalReport.create({
+    // Validate status
+    if (status && !['draft', 'sent', 'viewed'].includes(status)) {
+      return res.status(400).json({
+        error: 'Invalid status. Must be one of: draft, sent, viewed',
+        meta: { code: 'VALIDATION_ERROR' }
+      });
+    }
+
+    const prevention = await Prevention.create({
       sessionId,
       content,
+      status,
       createdByUserId: req.user?.userId || null
     }, schema);
 
     res.status(201).json({
-      data: report.toJSON(),
+      data: prevention.toJSON(),
       meta: {
-        code: 'CLINICAL_REPORT_CREATED',
-        message: 'Clinical report created successfully'
+        code: 'PREVENTION_CREATED',
+        message: 'Prevention document created successfully'
       }
     });
   } catch (error) {
-    console.error('Error creating clinical report:', error);
+    console.error('Error creating prevention document:', error);
     res.status(500).json({
-      error: 'Failed to create clinical report',
-      meta: { code: 'CLINICAL_REPORT_CREATE_ERROR' }
+      error: 'Failed to create prevention document',
+      meta: { code: 'PREVENTION_CREATE_ERROR' }
     });
   }
 });
 
 /**
  * @swagger
- * /tq/clinical-reports/{id}:
+ * /tq/prevention/{id}:
  *   put:
- *     summary: Update a clinical report
- *     tags: [TQ - Clinical Reports]
+ *     summary: Update a prevention document
+ *     tags: [TQ - Prevention]
  *     parameters:
  *       - in: path
  *         name: id
@@ -291,24 +312,27 @@ router.post('/', async (req, res) => {
  *             properties:
  *               content:
  *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [draft, sent, viewed]
  *     responses:
  *       200:
- *         description: Clinical report updated successfully
+ *         description: Prevention document updated successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
  *                 data:
- *                   $ref: '#/components/schemas/ClinicalReport'
+ *                   $ref: '#/components/schemas/Prevention'
  *                 meta:
  *                   type: object
  *                   properties:
  *                     code:
  *                       type: string
- *                       example: "CLINICAL_REPORT_UPDATED"
+ *                       example: "PREVENTION_UPDATED"
  *       404:
- *         description: Clinical report not found
+ *         description: Prevention document not found
  */
 router.put('/:id', async (req, res) => {
   try {
@@ -321,42 +345,51 @@ router.put('/:id', async (req, res) => {
     }
 
     const { id } = req.params;
-    const { content } = req.body;
+    const { content, status } = req.body;
 
-    const updates = {};
-    if (content !== undefined) updates.content = content;
-
-    const report = await ClinicalReport.update(id, updates, schema);
-
-    res.json({
-      data: report.toJSON(),
-      meta: {
-        code: 'CLINICAL_REPORT_UPDATED',
-        message: 'Clinical report updated successfully'
-      }
-    });
-  } catch (error) {
-    if (error instanceof ClinicalReportNotFoundError) {
-      return res.status(404).json({
-        error: error.message,
-        meta: { code: 'CLINICAL_REPORT_NOT_FOUND' }
+    // Validate status if provided
+    if (status && !['draft', 'sent', 'viewed'].includes(status)) {
+      return res.status(400).json({
+        error: 'Invalid status. Must be one of: draft, sent, viewed',
+        meta: { code: 'VALIDATION_ERROR' }
       });
     }
 
-    console.error('Error updating clinical report:', error);
+    const updates = {};
+    if (content !== undefined) updates.content = content;
+    if (status !== undefined) updates.status = status;
+
+    const prevention = await Prevention.update(id, updates, schema);
+
+    res.json({
+      data: prevention.toJSON(),
+      meta: {
+        code: 'PREVENTION_UPDATED',
+        message: 'Prevention document updated successfully'
+      }
+    });
+  } catch (error) {
+    if (error instanceof PreventionNotFoundError) {
+      return res.status(404).json({
+        error: error.message,
+        meta: { code: 'PREVENTION_NOT_FOUND' }
+      });
+    }
+
+    console.error('Error updating prevention document:', error);
     res.status(500).json({
-      error: 'Failed to update clinical report',
-      meta: { code: 'CLINICAL_REPORT_UPDATE_ERROR' }
+      error: 'Failed to update prevention document',
+      meta: { code: 'PREVENTION_UPDATE_ERROR' }
     });
   }
 });
 
 /**
  * @swagger
- * /tq/clinical-reports/{id}:
+ * /tq/prevention/{id}:
  *   delete:
- *     summary: Delete a clinical report
- *     tags: [TQ - Clinical Reports]
+ *     summary: Delete a prevention document
+ *     tags: [TQ - Prevention]
  *     parameters:
  *       - in: path
  *         name: id
@@ -365,30 +398,15 @@ router.put('/:id', async (req, res) => {
  *           type: string
  *           format: uuid
  *     responses:
- *       200:
- *         description: Clinical report deleted successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   $ref: '#/components/schemas/ClinicalReport'
- *                 meta:
- *                   type: object
- *                   properties:
- *                     code:
- *                       type: string
- *                       example: "CLINICAL_REPORT_DELETED"
- *       404:
- *         description: Clinical report not found
+ *       403:
+ *         description: Delete not allowed
  */
 router.delete('/:id', async (req, res) => {
-  // Clinical Reports cannot be deleted - data integrity requirement
+  // Prevention documents cannot be deleted - data integrity requirement
   return res.status(403).json({
     error: {
-      code: 'CLINICAL_REPORT_DELETE_NOT_ALLOWED',
-      message: 'Clinical reports cannot be deleted. This operation is not permitted for data integrity reasons.'
+      code: 'PREVENTION_DELETE_NOT_ALLOWED',
+      message: 'Prevention documents cannot be deleted. This operation is not permitted for data integrity reasons.'
     }
   });
 });

@@ -55,18 +55,19 @@ const toNumber = (value) => {
   return 0
 }
 
-function resolveQuoteData(quote, patient, items, options = {}) {
+function resolveDocumentData(document, patient, items, options = {}) {
   const locale = options.locale || 'en-US'
   const formatCurrency = options.formatCurrency || createCurrencyFormatter(locale)
   const formatDate = options.formatDate || createDateFormatter(locale)
 
-  return {
+  // Build base document data (works for both quote and prevention)
+  const result = {
     quote: {
-      number: quote.number || '',
-      total: formatCurrency(quote.total ?? 0),
-      content: quote.content || '',
-      status: quote.status || 'draft',
-      created_at: formatDate(quote.created_at)
+      number: document.number || '',
+      total: formatCurrency(document.total ?? 0),
+      content: document.content || '',
+      status: document.status || 'draft',
+      created_at: formatDate(document.created_at)
     },
     patient: {
       first_name: patient.first_name || '',
@@ -90,10 +91,17 @@ function resolveQuoteData(quote, patient, items, options = {}) {
       }
     })
   }
+
+  return result
 }
 
-function createContentPackage(templateContent, quote, patient, items, options = {}) {
-  const resolvedData = resolveQuoteData(quote, patient, items, options)
+// Alias for backwards compatibility
+function resolveQuoteData(quote, patient, items, options = {}) {
+  return resolveDocumentData(quote, patient, items, options)
+}
+
+function createContentPackage(templateContent, document, patient, items, options = {}) {
+  const resolvedData = resolveDocumentData(document, patient, items, options)
 
   return {
     template: templateContent || { content: [], root: {} },
@@ -104,6 +112,7 @@ function createContentPackage(templateContent, quote, patient, items, options = 
 module.exports = {
   createContentPackage,
   resolveQuoteData,
+  resolveDocumentData,
   createCurrencyFormatter,
   createDateFormatter
 }

@@ -1073,12 +1073,23 @@
     "new_session": "Nova Sessão",
     "patients": "Pacientes",
     "sessions": "Sessões",
+    "documents": "Documentos",
     "quotes": "Cotações",
     "clinical_notes": "Notas Clínicas",
     "prevention": "Prevenção",
     "templates": "Templates",
     "landing_pages": "Landing Pages",
     "configurations": "Configurações"
+  },
+  "documents": {
+    "title": "Documentos",
+    "subtitle": "Gerencie cotações, notas clínicas e documentos de prevenção",
+    "tabs": {
+      "quotes": "Cotações",
+      "clinical_notes": "Notas Clínicas",
+      "prevention": "Prevenção",
+      "items": "Itens"
+    }
   },
   "breadcrumbs": {
     "home": "Início",

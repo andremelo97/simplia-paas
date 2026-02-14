@@ -1101,12 +1101,23 @@
     "new_session": "New Session",
     "patients": "Patients",
     "sessions": "Sessions",
+    "documents": "Documents",
     "quotes": "Quotes",
     "clinical_notes": "Clinical Notes",
     "prevention": "Prevention",
     "templates": "Templates",
     "landing_pages": "Landing Pages",
     "configurations": "Configurations"
+  },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Manage quotes, clinical notes, and prevention documents",
+    "tabs": {
+      "quotes": "Quotes",
+      "clinical_notes": "Clinical Notes",
+      "prevention": "Prevention",
+      "items": "Items"
+    }
   },
   "breadcrumbs": {
     "home": "Home",

@@ -28,6 +28,7 @@ import { Prevention } from '../features/prevention/Prevention'
 import { EditPrevention } from '../features/prevention/EditPrevention'
 import { ViewPrevention } from '../features/prevention/ViewPrevention'
 import { LandingPagesLayout } from '../features/landing-pages/LandingPagesLayout'
+import { DocumentsLayout, EditDocument, QuotesDocumentsTab, ClinicalNotesDocumentsTab, PreventionDocumentsTab, ItemsDocumentsTab } from '../features/documents'
 import { LinksTab } from '../features/landing-pages/tabs/LinksTab'
 import { TemplatesTab } from '../features/landing-pages/tabs/TemplatesTab'
 import { CreateLandingPageTemplate } from '../features/landing-pages/CreateLandingPageTemplate'
@@ -143,17 +144,39 @@ export const AppRoutes: React.FC = () => {
         } />
         <Route path="templates/:id/edit" element={<EditTemplate />} />
 
-        {/* Clinical Notes */}
+        {/* Documents with Tabs (NEW unified structure) */}
+        <Route path="documents" element={<DocumentsLayout />}>
+          <Route index element={<Navigate to="quotes" replace />} />
+          <Route path="quotes" element={<QuotesDocumentsTab />} />
+          <Route path="clinical-notes" element={<ClinicalNotesDocumentsTab />} />
+          <Route path="prevention" element={<PreventionDocumentsTab />} />
+          <Route path="items" element={<ItemsDocumentsTab />} />
+        </Route>
+
+        {/* Documents Edit routes (outside layout for full page) - Using unified EditDocument */}
+        <Route path="documents/:documentType/:id/edit" element={<EditDocument />} />
+
+        {/* Documents View routes */}
+        <Route path="documents/clinical-note/:id/view" element={<ViewClinicalNote />} />
+        <Route path="documents/prevention/:id/view" element={<ViewPrevention />} />
+        <Route path="documents/items/create" element={
+          <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
+            <CreateItem />
+          </RouteGuard>
+        } />
+        <Route path="documents/items/:id/edit" element={<EditItem />} />
+
+        {/* Clinical Notes (OLD routes - kept for backwards compatibility) */}
         <Route path="clinical-notes" element={<ClinicalNotes />} />
         <Route path="clinical-notes/:id/view" element={<ViewClinicalNote />} />
         <Route path="clinical-notes/:id/edit" element={<EditClinicalNote />} />
 
-        {/* Prevention */}
+        {/* Prevention (OLD routes - kept for backwards compatibility) */}
         <Route path="prevention" element={<Prevention />} />
         <Route path="prevention/:id/view" element={<ViewPrevention />} />
         <Route path="prevention/:id/edit" element={<EditPrevention />} />
 
-        {/* Quote Management with Tabs */}
+        {/* Quote Management with Tabs (OLD routes - kept for backwards compatibility) */}
         <Route path="quotes" element={<QuoteManagementLayout />}>
           <Route index element={<QuotesRedirect />} />
           <Route path="overview" element={<QuotesTab />} />

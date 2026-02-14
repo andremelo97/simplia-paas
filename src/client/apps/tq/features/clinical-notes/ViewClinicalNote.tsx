@@ -47,7 +47,7 @@ export const ViewClinicalNote: React.FC = () => {
   }
 
   const handleEdit = () => {
-    navigate(`/clinical-notes/${id}/edit`)
+    navigate(`/documents/clinical-note/${id}/edit`)
   }
 
   const formatDate = (dateString?: string) => {
@@ -80,7 +80,7 @@ export const ViewClinicalNote: React.FC = () => {
             {loadError || t('clinical_notes.note_not_found')}
           </AlertDescription>
         </Alert>
-        <Button variant="secondary" onClick={() => navigate('/clinical-notes')}>
+        <Button variant="secondary" onClick={() => navigate('/documents/clinical-notes')}>
           {t('clinical_notes.pages.back_to_notes')}
         </Button>
       </div>

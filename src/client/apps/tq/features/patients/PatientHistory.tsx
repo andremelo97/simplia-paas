@@ -581,7 +581,7 @@ export const PatientHistory: React.FC = () => {
                         preview={report.content ? report.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined}
                         date={formatDateTime(report.created_at)}
                         icon={getEventIcon('clinical')}
-                        viewPath={`/clinical-reports/${report.id}/view`}
+                        viewPath={`/documents/clinical-note/${report.id}/edit`}
                       />
                     ))
                 ) : (
@@ -681,7 +681,7 @@ export const PatientHistory: React.FC = () => {
                             case 'quote':
                               return () => navigate(`/quotes/${event.id}/edit`)
                             case 'clinical':
-                              return () => navigate(`/clinical-reports/${event.id}/view`)
+                              return () => navigate(`/documents/clinical-note/${event.id}/edit`)
                             case 'prevention':
                               return () => navigate(`/documents/prevention/${event.id}/edit`)
                             default:

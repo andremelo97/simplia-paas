@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 
 interface DialogProps {
   open: boolean
@@ -47,24 +48,25 @@ export const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) 
     }
   }, [open])
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
         onClick={handleClose}
         aria-hidden="true"
       />
-      
+
       {/* Dialog content wrapper */}
-      <div 
+      <div
         className="relative z-10 w-full max-w-lg mx-auto"
         role="dialog"
         aria-modal="true"
       >
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

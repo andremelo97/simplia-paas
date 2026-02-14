@@ -80,7 +80,7 @@ export const ViewPrevention: React.FC = () => {
             {loadError || t('prevention.prevention_not_found')}
           </AlertDescription>
         </Alert>
-        <Button variant="secondary" onClick={() => navigate('/prevention')}>
+        <Button variant="secondary" onClick={() => navigate('/documents/prevention')}>
           {t('prevention.pages.back_to_preventions')}
         </Button>
       </div>

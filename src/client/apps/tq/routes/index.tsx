@@ -75,9 +75,9 @@ const RedirectToHub: React.FC = () => {
   )
 }
 
-// Redirect to quotes overview
+// Redirect to documents quotes (new unified route)
 const QuotesRedirect: React.FC = () => {
-  return <Navigate to="/quotes/overview" replace />
+  return <Navigate to="/documents/quotes" replace />
 }
 
 export const AppRoutes: React.FC = () => {

@@ -85,7 +85,7 @@ const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
       } else if (index === 1) {
         const docType = segment
         if (docType === 'quote') {
-          breadcrumbs.push({ label: t('breadcrumbs.quotes'), href: '/quotes' })
+          breadcrumbs.push({ label: t('breadcrumbs.quotes'), href: '/documents/quotes' })
         } else if (docType === 'clinical-note') {
           breadcrumbs.push({ label: t('breadcrumbs.clinical_notes'), href: '/documents/clinical-notes' })
         } else if (docType === 'prevention') {

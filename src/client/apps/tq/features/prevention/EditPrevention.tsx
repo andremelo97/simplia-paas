@@ -150,11 +150,11 @@ export const EditPrevention: React.FC = () => {
   }
 
   const handleCancel = () => {
-    navigate('/prevention')
+    navigate('/documents/prevention')
   }
 
   const handleView = () => {
-    navigate(`/prevention/${id}/view`)
+    navigate(`/documents/prevention/${id}/edit`)
   }
 
   const formatDate = (dateString?: string) => {
@@ -194,7 +194,7 @@ export const EditPrevention: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">{t('prevention.edit')}</h1>
           <p className="text-red-600 mt-1">{loadError || t('prevention.prevention_not_found')}</p>
         </div>
-        <Button variant="secondary" onClick={() => navigate('/prevention')}>
+        <Button variant="secondary" onClick={() => navigate('/documents/prevention')}>
           {t('prevention.back_to_preventions')}
         </Button>
       </div>

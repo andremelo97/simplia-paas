@@ -150,11 +150,11 @@ export const EditClinicalNote: React.FC = () => {
   }
 
   const handleCancel = () => {
-    navigate('/clinical-notes')
+    navigate('/documents/clinical-notes')
   }
 
   const handleView = () => {
-    navigate(`/clinical-notes/${id}/view`)
+    navigate(`/documents/clinical-note/${id}/view`)
   }
 
   const formatDate = (dateString?: string) => {
@@ -194,7 +194,7 @@ export const EditClinicalNote: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">{t('clinical_notes.edit')}</h1>
           <p className="text-red-600 mt-1">{loadError || t('clinical_notes.note_not_found')}</p>
         </div>
-        <Button variant="secondary" onClick={() => navigate('/clinical-notes')}>
+        <Button variant="secondary" onClick={() => navigate('/documents/clinical-notes')}>
           {t('clinical_notes.back_to_notes')}
         </Button>
       </div>

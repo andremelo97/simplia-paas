@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 
 interface ModalProps {
   open: boolean
@@ -28,7 +29,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   if (!open) return null
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
@@ -61,13 +62,14 @@ export const Modal: React.FC<ModalProps> = ({
             )}
           </div>
         </div>
-        
+
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -79,7 +81,7 @@ export const Dialog: React.FC<{
 }> = ({ open, onClose, children }) => {
   if (!open) return null
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
@@ -92,6 +94,7 @@ export const Dialog: React.FC<{
       <div className="relative z-10 max-h-[90vh] overflow-y-auto">
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -123,7 +123,7 @@ export const Home: React.FC = () => {
         timestamp: formatDateTime(report.created_at),
         icon: 'report',
         date: new Date(report.created_at),
-        path: `/clinical-reports/${report.id}/edit`
+        path: `/documents/clinical-note/${report.id}/edit`
       })
     })
 
@@ -366,7 +366,7 @@ export const Home: React.FC = () => {
               <ReportCard
                 key={report.id}
                 report={report}
-                onDoubleClick={() => navigate(`/clinical-reports/${report.id}/edit`)}
+                onDoubleClick={() => navigate(`/documents/clinical-note/${report.id}/edit`)}
               />
             ))}
           </div>

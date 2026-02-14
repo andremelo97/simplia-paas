@@ -426,7 +426,7 @@ export const TQOnboardingWizard: React.FC = () => {
           </div>
 
           <button
-            onClick={() => goToPage('/public-quotes/templates')}
+            onClick={() => goToPage('/landing-pages/templates')}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#B725B7] text-[#B725B7] rounded-lg hover:bg-purple-50 transition-colors"
           >
             <Layout className="w-5 h-5" />

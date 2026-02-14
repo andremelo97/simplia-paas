@@ -111,7 +111,7 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
           itemNumber={document.number}
           itemId={formState.toastData.publicQuoteId}
           onClose={() => onFormStateChange({ showLinkToast: false })}
-          type="public-quote"
+          type="landing-page"
           publicUrl={formState.toastData.publicUrl}
           password={formState.toastData.password}
           duration={15000}

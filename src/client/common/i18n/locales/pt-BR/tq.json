@@ -775,6 +775,7 @@
       "landing_pages_subtitle": "Compartilhe documentos externamente com templates customizáveis",
       "tab_links": "Links",
       "tab_templates": "Templates",
+      "links": "Links",
       "landing_page_links": "Links de Landing Pages",
       "templates_list": "Templates",
       "templates_count": "{{count}}/{{max}}",
@@ -839,7 +840,8 @@
       "document_number_placeholder": "Número do documento",
       "quote_number_placeholder": "Número da cotação",
       "created_from": "Criado De",
-      "created_to": "Criado Até"
+      "created_to": "Criado Até",
+      "document_type": "Tipo de Documento"
     },
     "validation": {
       "name_required": "Nome do template é obrigatório",
@@ -1083,6 +1085,7 @@
     "quotes": "Cotações",
     "clinical_notes": "Notas Clínicas",
     "prevention": "Prevenção",
+    "items": "Itens",
     "templates": "Templates",
     "landing_pages": "Landing Pages",
     "configurations": "Configurações"
@@ -1095,7 +1098,14 @@
       "clinical_notes": "Notas Clínicas",
       "prevention": "Prevenção",
       "items": "Itens"
-    }
+    },
+    "create": "Criar Documento",
+    "new_document": "Novo Documento",
+    "new_document_subtitle": "Crie um novo documento a partir de uma sessão existente",
+    "select_session": "Selecionar Sessão",
+    "select_session_placeholder": "Selecione uma sessão...",
+    "session_required": "Por favor, selecione uma sessão",
+    "content_required": "O conteúdo é obrigatório"
   },
   "breadcrumbs": {
     "home": "Início",
@@ -1236,6 +1246,7 @@
       "quote": "Cotação",
       "clinical_report": "Relatório Clínico",
       "public_quote": "Link de cotação pública",
+      "landing_page": "Landing Page",
       "item": "Item"
     },
     "actions": {

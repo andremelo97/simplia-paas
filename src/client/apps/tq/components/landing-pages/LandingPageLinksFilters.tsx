@@ -1,11 +1,13 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, CardTitle, Input, DateInput, Checkbox, Label, Button } from '@client/common/ui'
+import { Card, CardHeader, CardContent, CardTitle, Input, DateInput, Checkbox, Label, Button, Select } from '@client/common/ui'
 import { Trash2 } from 'lucide-react'
 
 interface LandingPageLinksFiltersProps {
   documentFilter: string
   onDocumentFilterChange: (value: string) => void
+  documentTypeFilter: string
+  onDocumentTypeFilterChange: (value: string) => void
   showActiveOnly: boolean
   onShowActiveOnlyChange: (value: boolean) => void
   showInactiveOnly: boolean
@@ -20,6 +22,8 @@ interface LandingPageLinksFiltersProps {
 export const LandingPageLinksFilters: React.FC<LandingPageLinksFiltersProps> = ({
   documentFilter,
   onDocumentFilterChange,
+  documentTypeFilter,
+  onDocumentTypeFilterChange,
   showActiveOnly,
   onShowActiveOnlyChange,
   showInactiveOnly,
@@ -49,13 +53,24 @@ export const LandingPageLinksFilters: React.FC<LandingPageLinksFiltersProps> = (
         </Button>
       </CardHeader>
       <CardContent className="px-6 pb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Input
             label={t('landing_pages.filters.filter_by_document')}
             type="text"
             placeholder={t('landing_pages.filters.document_number_placeholder')}
             value={documentFilter}
             onChange={(e) => onDocumentFilterChange(e.target.value)}
+          />
+
+          <Select
+            label={t('landing_pages.filters.document_type')}
+            value={documentTypeFilter}
+            onChange={(e) => onDocumentTypeFilterChange(e.target.value)}
+            options={[
+              { value: 'all', label: t('common:all') },
+              { value: 'quote', label: t('modals.template_quote.type_quote') },
+              { value: 'prevention', label: t('modals.template_quote.type_prevention') }
+            ]}
           />
 
           <div className="flex flex-col gap-3">

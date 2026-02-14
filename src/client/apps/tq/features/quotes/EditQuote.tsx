@@ -678,7 +678,7 @@ export const EditQuote: React.FC = () => {
           itemNumber={quote.number}
           itemId={toastData.publicQuoteId}
           onClose={() => setShowLinkToast(false)}
-          type="public-quote"
+          type="landing-page"
           publicUrl={toastData.publicUrl}
           password={toastData.password}
           duration={15000}

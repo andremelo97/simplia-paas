@@ -1,10 +1,15 @@
 import React from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Card } from '@client/common/ui'
+import { Plus } from 'lucide-react'
+import { Card, Button } from '@client/common/ui'
+import { useAuthStore } from '../../shared/store'
 
 export const DocumentsLayout: React.FC = () => {
   const { t } = useTranslation('tq')
+  const navigate = useNavigate()
+  const { user } = useAuthStore()
+  const canCreate = user?.role !== 'operations'
 
   const tabs = [
     { label: t('documents.tabs.quotes'), path: '/documents/quotes' },
@@ -25,6 +30,15 @@ export const DocumentsLayout: React.FC = () => {
                 {t('documents.subtitle')}
               </p>
             </div>
+            {canCreate && (
+              <Button
+                variant="primary"
+                onClick={() => navigate('/documents/new')}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                {t('documents.create')}
+              </Button>
+            )}
           </div>
 
           {/* Navigation Tabs */}

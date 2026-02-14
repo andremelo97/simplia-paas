@@ -14,6 +14,7 @@ export const LinksTab: React.FC = () => {
   const navigate = useNavigate()
   const { convertDateRange } = useDateFilterParams()
   const [documentFilter, setDocumentFilter] = useState(searchParams.get('document') || '')
+  const [documentTypeFilter, setDocumentTypeFilter] = useState('all')
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [showInactiveOnly, setShowInactiveOnly] = useState(false)
   const [createdFrom, setCreatedFrom] = useState('')
@@ -33,7 +34,7 @@ export const LinksTab: React.FC = () => {
 
   useEffect(() => {
     loadLandingPages()
-  }, [showActiveOnly, showInactiveOnly, createdFrom, createdTo, convertDateRange])
+  }, [showActiveOnly, showInactiveOnly, createdFrom, createdTo, documentTypeFilter, convertDateRange])
 
   // Update filter when URL params change
   useEffect(() => {
@@ -50,6 +51,7 @@ export const LinksTab: React.FC = () => {
       // Build filters object
       const filters: {
         active?: boolean
+        document_type?: 'quote' | 'prevention'
         created_from?: string
         created_to?: string
       } = {}
@@ -61,6 +63,11 @@ export const LinksTab: React.FC = () => {
         filters.active = false
       }
       // If both or neither are checked, don't filter by active status
+
+      // Handle document type filter
+      if (documentTypeFilter !== 'all') {
+        filters.document_type = documentTypeFilter as 'quote' | 'prevention'
+      }
 
       // Convert local dates to UTC timestamps using tenant timezone
       const dateParams = convertDateRange(createdFrom || undefined, createdTo || undefined)
@@ -132,6 +139,7 @@ export const LinksTab: React.FC = () => {
 
   const handleClearFilters = () => {
     setDocumentFilter('')
+    setDocumentTypeFilter('all')
     setShowActiveOnly(false)
     setShowInactiveOnly(false)
     setCreatedFrom('')
@@ -159,6 +167,8 @@ export const LinksTab: React.FC = () => {
       <LandingPageLinksFilters
         documentFilter={documentFilter}
         onDocumentFilterChange={setDocumentFilter}
+        documentTypeFilter={documentTypeFilter}
+        onDocumentTypeFilterChange={setDocumentTypeFilter}
         showActiveOnly={showActiveOnly}
         onShowActiveOnlyChange={setShowActiveOnly}
         showInactiveOnly={showInactiveOnly}

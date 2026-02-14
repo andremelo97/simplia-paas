@@ -145,6 +145,7 @@
       "quote": "Quote",
       "clinical_report": "Clinical Report",
       "public_quote": "Public Quote Link",
+      "landing_page": "Landing Page",
       "item": "Item"
     },
     "actions": {
@@ -803,6 +804,7 @@
       "landing_pages_subtitle": "Share documents externally with customizable templates",
       "tab_links": "Links",
       "tab_templates": "Templates",
+      "links": "Links",
       "landing_page_links": "Landing Page Links",
       "templates_list": "Templates",
       "templates_count": "{{count}}/{{max}}",
@@ -867,7 +869,8 @@
       "document_number_placeholder": "Document number",
       "quote_number_placeholder": "Quote number",
       "created_from": "Created From",
-      "created_to": "Created To"
+      "created_to": "Created To",
+      "document_type": "Document Type"
     },
     "validation": {
       "name_required": "Template name is required",
@@ -1111,6 +1114,7 @@
     "quotes": "Quotes",
     "clinical_notes": "Clinical Notes",
     "prevention": "Prevention",
+    "items": "Items",
     "templates": "Templates",
     "landing_pages": "Landing Pages",
     "configurations": "Configurations"
@@ -1123,7 +1127,14 @@
       "clinical_notes": "Clinical Notes",
       "prevention": "Prevention",
       "items": "Items"
-    }
+    },
+    "create": "Create Document",
+    "new_document": "New Document",
+    "new_document_subtitle": "Create a new document from an existing session",
+    "select_session": "Select Session",
+    "select_session_placeholder": "Select a session...",
+    "session_required": "Please select a session",
+    "content_required": "Content is required"
   },
   "breadcrumbs": {
     "home": "Home",

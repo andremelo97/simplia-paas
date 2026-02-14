@@ -162,8 +162,6 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
     onClose()
   }
 
-  const selectedTemplate = templates.find(t => t.id === selectedTemplateId)
-
   return (
     <Modal
       open={open}
@@ -218,28 +216,13 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
                 placeholder={t('modals.template_quote.select_template')}
                 options={templates.map((template) => ({
                   value: template.id,
-                  label: template.title
+                  label: template.description
+                    ? `${template.title} - ${template.description}`
+                    : template.title
                 }))}
               />
             )}
           </div>
-
-          {/* Template Preview */}
-          {selectedTemplate && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-900 mb-1">
-                {selectedTemplate.title}
-              </h4>
-              {selectedTemplate.description && (
-                <p className="text-xs text-gray-600 mb-2">
-                  {selectedTemplate.description}
-                </p>
-              )}
-              <p className="text-xs text-gray-500">
-                {t('common.usage')}: {selectedTemplate.usageCount}
-              </p>
-            </div>
-          )}
 
           {/* Document Type Selection */}
           <div>

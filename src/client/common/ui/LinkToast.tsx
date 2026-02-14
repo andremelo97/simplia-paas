@@ -9,11 +9,11 @@ interface LinkToastProps {
   itemNumber: string
   itemId: string
   onClose: () => void
-  type?: 'session' | 'quote' | 'clinical-report' | 'public-quote'
+  type?: 'session' | 'quote' | 'clinical-report' | 'landing-page'
   duration?: number // em millisegundos, default 10000
-  publicUrl?: string // For public-quote type
-  password?: string // For public-quote type
-  darkBackground?: boolean // For darker green background (public-quote only)
+  publicUrl?: string // For landing-page type
+  password?: string // For landing-page type
+  darkBackground?: boolean // For darker green background (landing-page)
 }
 
 export const LinkToast: React.FC<LinkToastProps> = ({
@@ -64,8 +64,8 @@ export const LinkToast: React.FC<LinkToastProps> = ({
   }, [show, duration])
 
   const handleClick = () => {
-    // Don't navigate for public-quote type (only shows copy buttons)
-    if (type === 'public-quote') return
+    // Don't navigate for landing-page type (only shows copy buttons)
+    if (type === 'landing-page') return
 
     let path: string
 
@@ -97,7 +97,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
     if (type === 'session') return t('link_toast.types.session')
     if (type === 'quote') return t('link_toast.types.quote')
     if (type === 'clinical-report') return t('link_toast.types.clinical_report')
-    if (type === 'public-quote') return t('link_toast.types.public_quote')
+    if (type === 'landing-page') return t('link_toast.types.landing_page')
     return t('link_toast.types.item')
   }
 
@@ -105,7 +105,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
     if (type === 'session') return t('link_toast.actions.session')
     if (type === 'quote') return t('link_toast.actions.quote')
     if (type === 'clinical-report') return t('link_toast.actions.clinical_report')
-    if (type === 'public-quote') return t('link_toast.actions.copy_link_password')
+    if (type === 'landing-page') return t('link_toast.actions.copy_link_password')
     return t('link_toast.actions.item')
   }
 
@@ -129,7 +129,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
             style={{
               backgroundColor: darkBackground ? '#10b981' : 'var(--brand-tertiary-bg)',
               borderColor: darkBackground ? '#059669' : 'var(--brand-tertiary)',
-              cursor: type === 'public-quote' ? 'default' : 'pointer'
+              cursor: type === 'landing-page' ? 'default' : 'pointer'
             }}
           >
             <div className="max-w-7xl mx-auto">
@@ -147,8 +147,8 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                       </span>
                     </div>
                     
-                    {type === 'public-quote' ? (
-                      /* Public Quote: Show URL and Password with copy buttons */
+                    {type === 'landing-page' ? (
+                      /* Landing Page: Show URL and Password with copy buttons */
                       <div className="space-y-2">
                         {publicUrl && (
                           <div className="flex items-center gap-2">

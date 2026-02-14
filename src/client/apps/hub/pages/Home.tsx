@@ -63,6 +63,30 @@ export const Home: React.FC = () => {
     }
   }
 
+  // Dynamically determine TQ URL based on current Hub hostname
+  const getTqBaseUrl = (): string => {
+    // Check for explicit env var first
+    if (import.meta.env.VITE_TQ_URL) {
+      return import.meta.env.VITE_TQ_URL
+    }
+
+    // Development mode
+    if (import.meta.env.DEV) {
+      return 'http://localhost:3005'
+    }
+
+    // Production: detect environment from current hostname
+    const hostname = window.location.hostname
+
+    // hub-test.livocare.ai -> tq-test.livocare.ai
+    if (hostname.includes('hub-test')) {
+      return 'https://tq-test.livocare.ai'
+    }
+
+    // hub.livocare.ai -> tq.livocare.ai (default production)
+    return 'https://tq.livocare.ai'
+  }
+
   const handleAppClick = (app: UserApp) => {
     // Special handling for TQ app - SSO integration
     if (app.slug === 'tq') {
@@ -76,9 +100,8 @@ export const Home: React.FC = () => {
 
       if (token && tenantId) {
         // Open TQ with SSO parameters - redirect directly to home after SSO
-        // Use localhost in development, production URL otherwise
-        const baseUrl = import.meta.env.VITE_TQ_URL ||
-          (import.meta.env.DEV ? 'http://localhost:3005' : 'https://tq.livocare.ai')
+        // Dynamically determine TQ URL based on current environment
+        const baseUrl = getTqBaseUrl()
         const tqUrl = `${baseUrl}/?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
         window.open(tqUrl, '_blank', 'noopener,noreferrer')
       } else {

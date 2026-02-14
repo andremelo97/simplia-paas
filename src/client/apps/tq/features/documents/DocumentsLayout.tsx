@@ -1,15 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { Card, Button } from '@client/common/ui'
 import { useAuthStore } from '../../shared/store'
+import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 
 export const DocumentsLayout: React.FC = () => {
   const { t } = useTranslation('tq')
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const canCreate = user?.role !== 'operations'
+  const [showCreateModal, setShowCreateModal] = useState(false)
 
   const tabs = [
     { label: t('documents.tabs.quotes'), path: '/documents/quotes' },
@@ -17,6 +19,12 @@ export const DocumentsLayout: React.FC = () => {
     { label: t('documents.tabs.prevention'), path: '/documents/prevention' },
     { label: t('documents.tabs.items'), path: '/documents/items' }
   ]
+
+  const handleDocumentCreated = (documentId: string, documentNumber: string) => {
+    setShowCreateModal(false)
+    // Navigate to the newly created document
+    navigate(`/documents/quotes/${documentId}`)
+  }
 
   return (
     <div className="space-y-8">
@@ -33,9 +41,9 @@ export const DocumentsLayout: React.FC = () => {
             {canCreate && (
               <Button
                 variant="primary"
-                onClick={() => navigate('/documents/new')}
+                onClick={() => setShowCreateModal(true)}
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <FileText className="w-4 h-4 mr-2" />
                 {t('documents.create')}
               </Button>
             )}
@@ -64,6 +72,13 @@ export const DocumentsLayout: React.FC = () => {
 
       {/* Tab Content */}
       <Outlet />
+
+      {/* Create Document Modal */}
+      <TemplateQuoteModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onQuoteCreated={handleDocumentCreated}
+      />
     </div>
   )
 }

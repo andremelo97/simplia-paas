@@ -1,6 +1,5 @@
 export { DocumentsLayout } from './DocumentsLayout'
 export { EditDocument } from './EditDocument'
-export { NewDocument } from './NewDocument'
 export * from './tabs'
 export * from './documentConfig'
 export * from './components'

@@ -140,6 +140,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => {
                     if (isOpen) {
                       toggleExpanded(item.name)
+                      // Also navigate to the parent href when expanded
+                      navigate(item.href)
                     } else {
                       // When collapsed, navigate to the parent href
                       navigate(item.href)

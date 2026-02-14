@@ -1,3 +1,10 @@
+/**
+ * Generate Landing Page Modal Component
+ *
+ * Generic modal for generating landing pages for both quotes and prevention documents.
+ * Uses the unified /api/tq/v1/landing-pages endpoint.
+ */
+
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -7,7 +14,6 @@ import {
   DialogTitle,
   Button,
   Label,
-  Select,
   Input,
   DateInput
 } from '@client/common/ui'
@@ -15,23 +21,25 @@ import { Copy, CheckCircle2 } from 'lucide-react'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
-interface GeneratePublicQuoteModalProps {
+interface GenerateLandingPageModalProps {
   open: boolean
   onClose: () => void
-  quoteId: string
-  quoteNumber: string
+  documentId: string
+  documentType: 'quote' | 'prevention'
+  documentNumber: string
   patientName?: string
   patientEmail?: string
   patientPhone?: string
-  onSuccess?: (publicQuote: any) => void
-  onShowToast?: (data: { publicQuoteId: string, publicUrl: string, password: string }) => void
+  onSuccess?: (landingPage: any) => void
+  onShowToast?: (data: { landingPageId: string, publicUrl: string, password: string }) => void
 }
 
-export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> = ({
+export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> = ({
   open,
   onClose,
-  quoteId,
-  quoteNumber,
+  documentId,
+  documentType,
+  documentNumber,
   patientName,
   patientEmail,
   patientPhone,
@@ -45,14 +53,14 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   const [expiresAt, setExpiresAt] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedQuote, setGeneratedQuote] = useState<any>(null)
+  const [generatedLandingPage, setGeneratedLandingPage] = useState<any>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
   // Load templates when modal opens
   useEffect(() => {
     if (open) {
       loadTemplates()
-      setGeneratedQuote(null) // Reset generated quote when reopening
+      setGeneratedLandingPage(null)
     }
   }, [open])
 
@@ -75,7 +83,6 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   }
 
   const handleQuickDate = (days: number) => {
-    // Add days to current date and set to end of day (23:59:59)
     const futureDate = new Date()
     futureDate.setDate(futureDate.getDate() + days)
     futureDate.setHours(23, 59, 59, 999)
@@ -83,21 +90,17 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   }
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const dateValue = e.target.value // YYYY-MM-DD
+    const dateValue = e.target.value
 
     if (!dateValue) {
       setExpiresAt('')
       return
     }
 
-    // User edited the date manually - set expiration to end of that day (23:59:59) in LOCAL timezone
-    // Using string constructor creates date in LOCAL timezone (e.g., "2025-10-04T23:59:59.999" in BRT)
     const localEndOfDay = new Date(`${dateValue}T23:59:59.999`)
-
     setExpiresAt(localEndOfDay.toISOString())
   }
 
-  // Extract YYYY-MM-DD from expiresAt for the DateInput (use LOCAL date parts, not UTC)
   const dateInputValue = expiresAt
     ? (() => {
         const date = new Date(expiresAt)
@@ -123,44 +126,44 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
       }
 
       const payload: any = {
-        quoteId,
+        documentId,
+        documentType,
         templateId: selectedTemplateId,
         tenantId,
-        autoGeneratePassword: true // Always generate password
+        autoGeneratePassword: true
       }
 
       if (expiresAt) {
-        // expiresAt is already an ISO string from handleQuickDate()
         payload.expiresAt = expiresAt
       }
 
-      // Use api directly to capture meta
+      // Use the unified landing-pages endpoint
       const { api } = await import('@client/config/http')
-      const response = await api.post('/api/tq/v1/public-quotes', payload)
-      
-      const publicQuote = response.data
+      const response = await api.post('/api/tq/v1/landing-pages', payload)
+
+      const landingPage = response.data
       const meta = response.meta || {}
-      
-      setGeneratedQuote(publicQuote)
-      
+
+      setGeneratedLandingPage(landingPage)
+
       // Notify parent to show LinkToast with URL and password
-      if (meta.publicUrl && meta.password && publicQuote.id) {
+      if (meta.publicUrl && meta.password && landingPage.id) {
         onShowToast?.({
-          publicQuoteId: publicQuote.id,
+          landingPageId: landingPage.id,
           publicUrl: meta.publicUrl,
           password: meta.password
         })
-        
+
         // Close modal after showing toast
         setTimeout(() => {
           onClose()
         }, 500)
       }
-      
-      onSuccess?.(publicQuote)
+
+      onSuccess?.(landingPage)
     } catch (error) {
-      // HTTP interceptor handles feedback automatically - no manual publishFeedback needed
-      setGeneratedQuote(null)
+      // HTTP interceptor handles feedback automatically
+      setGeneratedLandingPage(null)
     } finally {
       setIsGenerating(false)
     }
@@ -179,15 +182,14 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   const handleClose = () => {
     setExpiresAt('')
     setSelectedTemplateId('')
-    setGeneratedQuote(null)
+    setGeneratedLandingPage(null)
     onClose()
   }
 
-  const publicLink = generatedQuote
-    ? `${window.location.origin}/public/${generatedQuote.accessToken}`
+  const publicLink = generatedLandingPage
+    ? `${window.location.origin}/lp/${generatedLandingPage.accessToken}`
     : ''
 
-  // Format expiration date for display (use LOCAL date parts)
   const expirationDate = expiresAt
     ? (() => {
         const date = new Date(expiresAt)
@@ -198,17 +200,21 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
       })()
     : t('common:never') || 'Never'
 
+  const documentTypeLabel = documentType === 'quote'
+    ? t('modals.template_quote.type_quote')
+    : t('modals.template_quote.type_prevention')
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>{t('modals.generate_public_quote.title')}</DialogTitle>
+          <DialogTitle>{t('modals.generate_landing_page.title', 'Generate Landing Page')}</DialogTitle>
           <p className="text-sm text-gray-600 mt-1">
-            {t('modals.generate_public_quote.creating_link_for')} <strong>{quoteNumber}</strong>
+            {t('modals.generate_landing_page.creating_link_for', 'Creating link for')} <strong>{documentNumber}</strong> ({documentTypeLabel})
           </p>
         </DialogHeader>
 
-        {!generatedQuote ? (
+        {!generatedLandingPage ? (
           <div className="space-y-6 py-4 px-6">
             {/* Template Selection - Read Only */}
             <div className="space-y-2">
@@ -270,7 +276,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
 
             {/* Summary */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-              <h4 className="font-semibold text-gray-900">📋 {t('modals.generate_public_quote.summary')}</h4>
+              <h4 className="font-semibold text-gray-900">{t('modals.generate_public_quote.summary')}</h4>
 
               {/* Patient Info */}
               <div className="space-y-1 text-sm border-b border-gray-200 pb-3">
@@ -368,19 +374,19 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
 
             {/* Link Details */}
             <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <h4 className="font-semibold text-gray-900">📋 {t('modals.generate_public_quote.link_details')}</h4>
+              <h4 className="font-semibold text-gray-900">{t('modals.generate_public_quote.link_details')}</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t('modals.generate_public_quote.template')}:</span>
                   <span className="font-medium">
-                    {templates.find((t) => t.id === generatedQuote.templateId)?.name || '-'}
+                    {templates.find((t) => t.id === generatedLandingPage.templateId)?.name || '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t('modals.generate_public_quote.expiration')}:</span>
                   <span className="font-medium">
-                    {generatedQuote.expiresAt
-                      ? formatShortDate(generatedQuote.expiresAt)
+                    {generatedLandingPage.expiresAt
+                      ? formatShortDate(generatedLandingPage.expiresAt)
                       : t('common:never')}
                   </span>
                 </div>

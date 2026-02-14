@@ -28,7 +28,7 @@ import { Prevention } from '../features/prevention/Prevention'
 import { EditPrevention } from '../features/prevention/EditPrevention'
 import { ViewPrevention } from '../features/prevention/ViewPrevention'
 import { LandingPagesLayout } from '../features/landing-pages/LandingPagesLayout'
-import { DocumentsLayout, EditDocument, NewDocument, QuotesDocumentsTab, ClinicalNotesDocumentsTab, PreventionDocumentsTab, ItemsDocumentsTab } from '../features/documents'
+import { DocumentsLayout, EditDocument, QuotesDocumentsTab, ClinicalNotesDocumentsTab, PreventionDocumentsTab, ItemsDocumentsTab } from '../features/documents'
 import { LinksTab } from '../features/landing-pages/tabs/LinksTab'
 import { TemplatesTab } from '../features/landing-pages/tabs/TemplatesTab'
 import { CreateLandingPageTemplate } from '../features/landing-pages/CreateLandingPageTemplate'
@@ -152,13 +152,6 @@ export const AppRoutes: React.FC = () => {
           <Route path="prevention" element={<PreventionDocumentsTab />} />
           <Route path="items" element={<ItemsDocumentsTab />} />
         </Route>
-
-        {/* Documents New route (outside layout for full page) */}
-        <Route path="documents/new" element={
-          <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
-            <NewDocument />
-          </RouteGuard>
-        } />
 
         {/* Documents Edit routes (outside layout for full page) - Using unified EditDocument */}
         <Route path="documents/:documentType/:id/edit" element={<EditDocument />} />

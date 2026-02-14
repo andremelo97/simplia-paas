@@ -16,7 +16,7 @@ import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
 import { patientsService } from '../../services/patients'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { QuoteItemsManager } from './QuoteItemsManager'
-import { GeneratePublicQuoteModal } from '../../components/quotes/GeneratePublicQuoteModal'
+import { GenerateLandingPageModal } from '../../components/landing-pages/GenerateLandingPageModal'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { getQuoteStatusOptions } from '../../types/quoteStatus'
 import { useAuthStore } from '../../shared/store'
@@ -49,10 +49,9 @@ export const EditQuote: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
   
-  // LinkToast state for Public Quote
+  // LinkToast state for Landing Page
   const [showLinkToast, setShowLinkToast] = useState(false)
-  const [toastData, setToastData] = useState<{publicQuoteId: string, publicUrl: string, password: string} | null>(null)
-  const [isGeneratingPublicQuote, setIsGeneratingPublicQuote] = useState(false)
+  const [toastData, setToastData] = useState<{landingPageId: string, publicUrl: string, password: string} | null>(null)
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [patientErrors, setPatientErrors] = useState({ firstName: '', lastName: '', email: '' })
   const [contentError, setContentError] = useState('')
@@ -293,26 +292,6 @@ export const EditQuote: React.FC = () => {
 
   const handleCancel = () => {
     navigate('/quotes')
-  }
-
-  const handleGeneratePublicQuote = async () => {
-    if (!id || !selectedTemplateId) return
-
-    setIsGeneratingPublicQuote(true)
-
-    try {
-      await landingPagesService.createPublicQuote({
-        quoteId: id,
-        templateId: selectedTemplateId
-      })
-
-      // Navigate to public quotes links tab
-      navigate('/public-quotes/links')
-    } catch (error) {
-      // Error is handled by HTTP interceptor
-    } finally {
-      setIsGeneratingPublicQuote(false)
-    }
   }
 
   const formatDate = (dateString?: string) => {
@@ -651,17 +630,18 @@ export const EditQuote: React.FC = () => {
         </div>
       </div>
 
-      {/* Generate Public Quote Modal */}
+      {/* Generate Landing Page Modal */}
       {quote && (
-        <GeneratePublicQuoteModal
+        <GenerateLandingPageModal
           open={showGenerateModal}
           onClose={() => setShowGenerateModal(false)}
-          quoteId={quote.id}
-          quoteNumber={quote.number}
+          documentId={quote.id}
+          documentType="quote"
+          documentNumber={quote.number}
           patientName={`${patientFirstName} ${patientLastName}`.trim()}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
-          onSuccess={(publicQuote) => {
+          onSuccess={() => {
             setShowGenerateModal(false)
           }}
           onShowToast={(data) => {
@@ -671,12 +651,12 @@ export const EditQuote: React.FC = () => {
         />
       )}
       
-      {/* Link Toast for Public Quote */}
+      {/* Link Toast for Landing Page */}
       {toastData && quote && (
         <LinkToast
           show={showLinkToast}
           itemNumber={quote.number}
-          itemId={toastData.publicQuoteId}
+          itemId={toastData.landingPageId}
           onClose={() => setShowLinkToast(false)}
           type="landing-page"
           publicUrl={toastData.publicUrl}

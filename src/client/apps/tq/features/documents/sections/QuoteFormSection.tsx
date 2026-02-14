@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Button, LinkToast } from '@client/common/ui'
 import { QuoteItemsManager } from '../../quotes/QuoteItemsManager'
-import { GeneratePublicQuoteModal } from '../../../components/quotes/GeneratePublicQuoteModal'
+import { GenerateLandingPageModal } from '../../../components/landing-pages/GenerateLandingPageModal'
 import { LandingPageCard } from '../components/LandingPageCard'
 import { DocumentConfig, DocumentData } from '../documentConfig'
 
@@ -12,7 +12,7 @@ export interface QuoteFormState {
   items: any[]
   showGenerateModal: boolean
   showLinkToast: boolean
-  toastData: { publicQuoteId: string; publicUrl: string; password: string } | null
+  toastData: { landingPageId: string; publicUrl: string; password: string } | null
 }
 
 interface QuoteFormSectionProps {
@@ -82,13 +82,14 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
         </>
       )}
 
-      {/* Generate Public Quote Modal */}
+      {/* Generate Landing Page Modal */}
       {document && (
-        <GeneratePublicQuoteModal
+        <GenerateLandingPageModal
           open={formState.showGenerateModal}
           onClose={() => onFormStateChange({ showGenerateModal: false })}
-          quoteId={document.id}
-          quoteNumber={document.number}
+          documentId={document.id}
+          documentType="quote"
+          documentNumber={document.number}
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
@@ -104,12 +105,12 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
         />
       )}
 
-      {/* Link Toast for Public Quote */}
+      {/* Link Toast for Landing Page */}
       {formState.toastData && document && (
         <LinkToast
           show={formState.showLinkToast}
           itemNumber={document.number}
-          itemId={formState.toastData.publicQuoteId}
+          itemId={formState.toastData.landingPageId}
           onClose={() => onFormStateChange({ showLinkToast: false })}
           type="landing-page"
           publicUrl={formState.toastData.publicUrl}

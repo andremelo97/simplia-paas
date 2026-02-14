@@ -25,6 +25,7 @@ import {
   ClinicalNoteFormSection,
   ClinicalNoteHeaderAction,
   PreventionFormSection,
+  PreventionFormState,
   PreventionHeaderAction
 } from './sections'
 
@@ -68,6 +69,13 @@ export const EditDocument: React.FC = () => {
   const [quoteFormState, setQuoteFormState] = useState<QuoteFormState>({
     status: 'draft',
     items: [],
+    showGenerateModal: false,
+    showLinkToast: false,
+    toastData: null
+  })
+
+  // Prevention-specific state
+  const [preventionFormState, setPreventionFormState] = useState<PreventionFormState>({
     showGenerateModal: false,
     showLinkToast: false,
     toastData: null
@@ -342,8 +350,8 @@ export const EditDocument: React.FC = () => {
             document={document}
             documentId={id}
             config={config}
-            formState={{}}
-            onFormStateChange={() => {}}
+            formState={preventionFormState}
+            onFormStateChange={(updates) => setPreventionFormState(prev => ({ ...prev, ...updates }))}
             patientName={patientName}
             patientEmail={patient.email}
             patientPhone={patient.phone}

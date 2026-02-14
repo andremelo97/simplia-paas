@@ -15,7 +15,8 @@ import {
   Bot,
   HelpCircle,
   ExternalLink,
-  RotateCcw
+  RotateCcw,
+  FileText
 } from 'lucide-react'
 
 // LocalStorage key for draft persistence
@@ -1556,7 +1557,7 @@ export const NewSession: React.FC = () => {
               onClick={() => setShowTemplateQuoteModal(true)}
               className="flex items-center gap-2"
             >
-              <Plus className="w-4 h-4" />
+              <FileText className="w-4 h-4" />
               {t('sessions.create_documents')}
             </Button>
 

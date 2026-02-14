@@ -57,9 +57,8 @@ export const DOCUMENT_CONFIGS: Record<DocumentType, DocumentConfig> = {
     hasStatus: false,
     hasItems: false,
     hasLandingPage: true,
-    hasViewPage: true,
+    hasViewPage: false,
     backPath: '/documents/prevention',
-    viewPath: (id) => `/documents/prevention/${id}/view`,
     i18nKey: 'prevention',
     getById: (id) => preventionService.getById(id),
     update: (id, data) => preventionService.update(id, data)

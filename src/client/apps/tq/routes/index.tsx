@@ -26,7 +26,6 @@ import { EditClinicalNote } from '../features/clinical-notes/EditClinicalNote'
 import { ViewClinicalNote } from '../features/clinical-notes/ViewClinicalNote'
 import { Prevention } from '../features/prevention/Prevention'
 import { EditPrevention } from '../features/prevention/EditPrevention'
-import { ViewPrevention } from '../features/prevention/ViewPrevention'
 import { LandingPagesLayout } from '../features/landing-pages/LandingPagesLayout'
 import { DocumentsLayout, EditDocument, QuotesDocumentsTab, ClinicalNotesDocumentsTab, PreventionDocumentsTab, ItemsDocumentsTab } from '../features/documents'
 import { LinksTab } from '../features/landing-pages/tabs/LinksTab'
@@ -158,7 +157,6 @@ export const AppRoutes: React.FC = () => {
 
         {/* Documents View routes */}
         <Route path="documents/clinical-note/:id/view" element={<ViewClinicalNote />} />
-        <Route path="documents/prevention/:id/view" element={<ViewPrevention />} />
         <Route path="documents/items/create" element={
           <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
             <CreateItem />
@@ -173,7 +171,6 @@ export const AppRoutes: React.FC = () => {
 
         {/* Prevention (OLD routes - kept for backwards compatibility) */}
         <Route path="prevention" element={<Prevention />} />
-        <Route path="prevention/:id/view" element={<ViewPrevention />} />
         <Route path="prevention/:id/edit" element={<EditPrevention />} />
 
         {/* Quote Management with Tabs (OLD routes - kept for backwards compatibility) */}

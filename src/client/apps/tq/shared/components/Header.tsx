@@ -78,6 +78,25 @@ const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
       return
     }
 
+    // For documents routes: /documents/quote/:id/edit -> Home > Documents > Quotes > Edit
+    if (segments[0] === 'documents' && segments.length >= 4 && isId(segments[2])) {
+      if (index === 0) {
+        breadcrumbs.push({ label: t('breadcrumbs.documents'), href: '/documents/quotes' })
+      } else if (index === 1) {
+        const docType = segment
+        if (docType === 'quote') {
+          breadcrumbs.push({ label: t('breadcrumbs.quotes'), href: '/quotes' })
+        } else if (docType === 'clinical-note') {
+          breadcrumbs.push({ label: t('breadcrumbs.clinical_notes'), href: '/documents/clinical-notes' })
+        } else if (docType === 'prevention') {
+          breadcrumbs.push({ label: t('breadcrumbs.prevention'), href: '/documents/prevention' })
+        }
+      } else if (index === 3) {
+        breadcrumbs.push({ label: t('breadcrumbs.edit'), href: '#' })
+      }
+      return
+    }
+
     // For landing-pages template design: /landing-pages/templates/:id/design -> Home > Landing Pages > Templates > Edit > Design
     if (segments[0] === 'landing-pages' && segments[1] === 'templates' && segments[3] === 'design') {
       if (index === 0) {

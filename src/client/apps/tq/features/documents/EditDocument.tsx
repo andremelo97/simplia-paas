@@ -25,8 +25,7 @@ import {
   ClinicalNoteFormSection,
   ClinicalNoteHeaderAction,
   PreventionFormSection,
-  PreventionFormState,
-  PreventionHeaderAction
+  PreventionFormState
 } from './sections'
 
 export const EditDocument: React.FC = () => {
@@ -305,8 +304,6 @@ export const EditDocument: React.FC = () => {
     switch (config.type) {
       case 'clinical-note':
         return <ClinicalNoteHeaderAction documentId={id} config={config} />
-      case 'prevention':
-        return <PreventionHeaderAction documentId={id} config={config} />
       default:
         return null
     }

@@ -54,8 +54,7 @@ export const PreventionDocumentsTab: React.FC = () => {
   }
 
   const handleViewPrevention = (prevention: PreventionType) => {
-    // Navigate to the new documents view path
-    navigate(`/documents/prevention/${prevention.id}/view`)
+    navigate(`/documents/prevention/${prevention.id}/edit`)
   }
 
   return (

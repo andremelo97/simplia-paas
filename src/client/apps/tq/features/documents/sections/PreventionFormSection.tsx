@@ -1,8 +1,6 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Eye } from 'lucide-react'
-import { Button, LinkToast } from '@client/common/ui'
+import { LinkToast } from '@client/common/ui'
 
 import { LandingPageCard } from '../components/LandingPageCard'
 import { GenerateLandingPageModal } from '../../../components/landing-pages/GenerateLandingPageModal'
@@ -86,31 +84,5 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
         />
       )}
     </>
-  )
-}
-
-// Export a header action component for prevention
-export const PreventionHeaderAction: React.FC<{
-  documentId: string
-  config: DocumentConfig
-}> = ({ documentId, config }) => {
-  const { t } = useTranslation('tq')
-  const navigate = useNavigate()
-
-  const handleView = () => {
-    if (config.viewPath) {
-      navigate(config.viewPath(documentId))
-    }
-  }
-
-  return (
-    <Button
-      variant="secondary"
-      onClick={handleView}
-      className="flex items-center gap-2"
-    >
-      <Eye className="w-4 h-4" />
-      {t('prevention.view')}
-    </Button>
   )
 }

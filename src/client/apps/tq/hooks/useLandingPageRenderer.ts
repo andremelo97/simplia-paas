@@ -14,22 +14,21 @@ interface WidgetConfig {
   height: string
 }
 
-interface UsePublicQuoteRendererOptions {
+interface UseLandingPageRendererOptions {
   onApprove?: () => void
   onOpenWidget?: (config: WidgetConfig) => void
   accessToken?: string
 }
 
 /**
- * Reusable hook for rendering public quotes with Puck
+ * Reusable hook for rendering landing pages with Puck
  * Used by both authenticated preview and public access pages
- * @deprecated Use useLandingPageRenderer instead
  */
-export function usePublicQuoteRenderer(
+export function useLandingPageRenderer(
   template: LandingPageTemplate | null,
   quote: Quote | any | null,
   branding: BrandingData | null,
-  options: UsePublicQuoteRendererOptions = {}
+  options: UseLandingPageRendererOptions = {}
 ) {
   const { t } = useTranslation('tq')
   const { formatCurrency } = useCurrencyFormatter()

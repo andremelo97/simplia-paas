@@ -1,5 +1,5 @@
 import React from 'react'
-import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList, Settings } from 'lucide-react'
+import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList, Shield, Settings } from 'lucide-react'
 import { useUIStore, useAuthStore } from '../store'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
@@ -37,9 +37,14 @@ export const Sidebar: React.FC = () => {
       icon: Receipt
     },
     {
-      name: t('sidebar.clinical_reports'),
-      href: '/clinical-reports',
+      name: t('sidebar.clinical_notes'),
+      href: '/clinical-notes',
       icon: ClipboardList
+    },
+    {
+      name: t('sidebar.prevention'),
+      href: '/prevention',
+      icon: Shield
     },
     {
       name: t('sidebar.templates'),
@@ -47,8 +52,8 @@ export const Sidebar: React.FC = () => {
       icon: FileType
     },
     {
-      name: t('sidebar.public_quotes'),
-      href: '/public-quotes',
+      name: t('sidebar.landing_pages'),
+      href: '/landing-pages',
       icon: Share2
     }
   ]

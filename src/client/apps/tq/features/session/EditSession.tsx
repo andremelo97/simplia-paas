@@ -21,7 +21,7 @@ import { patientsService, Patient } from '../../services/patients'
 import { getSessionStatusColor, getSessionStatusLabel, getSessionStatusOptions, SessionStatus } from '../../types/sessionStatus'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentService'
-import { clinicalReportsService, CreateClinicalReportRequest } from '../../services/clinicalReports'
+import { clinicalNotesService, CreateClinicalNoteRequest } from '../../services/clinicalNotes'
 import { useAuthStore } from '../../shared/store'
 
 export const EditSession: React.FC = () => {
@@ -154,12 +154,12 @@ export const EditSession: React.FC = () => {
       const filledTemplateResponse = await aiAgentService.fillTemplate(fillTemplateRequest)
 
       // Step 2: Create clinical report with filled template content
-      const reportData: CreateClinicalReportRequest = {
+      const reportData: CreateClinicalNoteRequest = {
         sessionId: session.id,
         content: filledTemplateResponse.filledTemplate
       }
 
-      const newReport = await clinicalReportsService.create(reportData)
+      const newReport = await clinicalNotesService.create(reportData)
 
       // Show report link toast
       setToastData({

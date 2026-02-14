@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card, CardContent } from '@client/common/ui'
-import { ClinicalReport } from '../../services/clinicalReports'
+import { ClinicalNote } from '../../services/clinicalNotes'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface ReportCardProps {
-  report: ClinicalReport
+  report: ClinicalNote
   onDoubleClick: () => void
 }
 

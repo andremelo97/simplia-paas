@@ -14,7 +14,7 @@ import {
 } from '@client/common/ui'
 import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
 import { patientsService } from '../../services/patients'
-import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
+import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { QuoteItemsManager } from './QuoteItemsManager'
 import { GeneratePublicQuoteModal } from '../../components/quotes/GeneratePublicQuoteModal'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -45,7 +45,7 @@ export const EditQuote: React.FC = () => {
   const [patientId, setPatientId] = useState<string | null>(null)
 
   // Public Quote Template state
-  const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [templates, setTemplates] = useState<LandingPageTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
   
@@ -64,7 +64,7 @@ export const EditQuote: React.FC = () => {
     const loadTemplates = async () => {
       try {
         setIsLoadingTemplates(true)
-        const response = await publicQuotesService.listTemplates({ active: true })
+        const response = await landingPagesService.listTemplates({ active: true })
         setTemplates(response.data)
 
         // Set default template if exists
@@ -301,7 +301,7 @@ export const EditQuote: React.FC = () => {
     setIsGeneratingPublicQuote(true)
 
     try {
-      await publicQuotesService.createPublicQuote({
+      await landingPagesService.createPublicQuote({
         quoteId: id,
         templateId: selectedTemplateId
       })

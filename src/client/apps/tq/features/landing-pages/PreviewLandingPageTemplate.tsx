@@ -1,22 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useParams } from 'react-router-dom'
 import { Render } from '@measured/puck'
 import '@measured/puck/puck.css'
-import { Button } from '@client/common/ui'
 import { X } from 'lucide-react'
-import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
-import { quotesService, Quote } from '../../services/quotes'
+import { landingPagesService } from '../../services/landingPages'
 import { brandingService, BrandingData } from '../../services/branding'
-import { usePublicQuoteRenderer } from '../../hooks/usePublicQuoteRenderer'
+import { createConfigWithResolvedData } from './puck-config-preview'
 
-export const PreviewPublicQuote: React.FC = () => {
-  const { id: quoteId, templateId } = useParams<{ id: string; templateId: string }>()
-  const navigate = useNavigate()
-
-  const [quote, setQuote] = useState<Quote | null>(null)
-  const [template, setTemplate] = useState<LandingPageTemplate | null>(null)
+export const PreviewLandingPageTemplate: React.FC = () => {
+  const { t } = useTranslation('tq')
+  const { id } = useParams<{ id: string }>()
+  const [template, setTemplate] = useState<any>(null)
   const [branding, setBranding] = useState<BrandingData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   // Widget modal state
   const [widgetModal, setWidgetModal] = useState<{
@@ -36,59 +33,39 @@ export const PreviewPublicQuote: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    loadData()
-  }, [quoteId, templateId])
+    loadTemplateAndBranding()
+  }, [id])
 
-  const loadData = async () => {
-    if (!quoteId || !templateId) return
+  const loadTemplateAndBranding = async () => {
+    if (!id) return
 
     try {
-      setIsLoading(true)
+      setLoading(true)
 
-      // Load all data in parallel
-      const [fetchedQuote, templateData, brandingData] = await Promise.all([
-        quotesService.getQuote(quoteId),
-        landingPagesService.getTemplate(templateId),
-        brandingService.getBranding()
+      // Load branding and template in parallel
+      const [brandingData, fetchedTemplate] = await Promise.all([
+        brandingService.getBranding(),
+        landingPagesService.getTemplate(id)
       ])
 
-      setQuote(fetchedQuote)
-      setTemplate(templateData)
       setBranding(brandingData)
-
+      setTemplate(fetchedTemplate)
     } catch (error) {
-      // Failed to load preview data
+      // Failed to load template
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
-  // Create config with resolved quote data using reusable hook
-  const previewConfig = usePublicQuoteRenderer(template, quote, branding, {
+  // Create config with widget handler
+  const config = branding ? createConfigWithResolvedData(branding, {}, {
     onOpenWidget: handleOpenWidget
-  })
+  }) : null
 
-  const handleBack = () => {
-    navigate(`/quotes/${quoteId}/edit`)
-  }
-
-  if (isLoading) {
+  if (loading || !template || !config || !branding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading preview...</div>
-      </div>
-    )
-  }
-
-  if (!quote || !template || !previewConfig || !branding) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load preview</p>
-          <Button variant="secondary" onClick={handleBack}>
-            Back to Quote
-          </Button>
-        </div>
+        <div className="text-gray-500">{t('landing_pages.loading_preview')}</div>
       </div>
     )
   }
@@ -106,7 +83,7 @@ export const PreviewPublicQuote: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Render config={previewConfig} data={template.content} />
+      <Render config={config} data={template.content} />
 
       {/* Widget modal with iframe */}
       {widgetModal.isOpen && (

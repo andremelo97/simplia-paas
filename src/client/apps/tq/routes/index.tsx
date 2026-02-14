@@ -21,18 +21,21 @@ import { CreateTemplate } from '../features/templates/CreateTemplate'
 import { EditTemplate } from '../features/templates/EditTemplate'
 import { EditQuote } from '../features/quotes/EditQuote'
 import { PreviewPublicQuote } from '../features/quotes/PreviewPublicQuote'
-import { ClinicalReports } from '../features/clinical-reports/ClinicalReports'
-import { EditClinicalReport } from '../features/clinical-reports/EditClinicalReport'
-import { ViewClinicalReport } from '../features/clinical-reports/ViewClinicalReport'
-import { PublicQuotesLayout } from '../features/public-quotes/PublicQuotesLayout'
-import { LinksTab } from '../features/public-quotes/tabs/LinksTab'
-import { TemplatesTab } from '../features/public-quotes/tabs/TemplatesTab'
-import { CreatePublicQuoteTemplate } from '../features/public-quotes/CreatePublicQuoteTemplate'
-import { EditPublicQuoteTemplate } from '../features/public-quotes/EditPublicQuoteTemplate'
-import { DesignPublicQuoteTemplate } from '../features/public-quotes/DesignPublicQuoteTemplate'
-import { PreviewPublicQuoteTemplate } from '../features/public-quotes/PreviewPublicQuoteTemplate'
-import { PublicQuoteAccess } from '../features/public-quotes/PublicQuoteAccess'
-import { PreviewPublicQuoteLink } from '../features/public-quotes/PreviewPublicQuoteLink'
+import { ClinicalNotes } from '../features/clinical-notes/ClinicalNotes'
+import { EditClinicalNote } from '../features/clinical-notes/EditClinicalNote'
+import { ViewClinicalNote } from '../features/clinical-notes/ViewClinicalNote'
+import { Prevention } from '../features/prevention/Prevention'
+import { EditPrevention } from '../features/prevention/EditPrevention'
+import { ViewPrevention } from '../features/prevention/ViewPrevention'
+import { LandingPagesLayout } from '../features/landing-pages/LandingPagesLayout'
+import { LinksTab } from '../features/landing-pages/tabs/LinksTab'
+import { TemplatesTab } from '../features/landing-pages/tabs/TemplatesTab'
+import { CreateLandingPageTemplate } from '../features/landing-pages/CreateLandingPageTemplate'
+import { EditLandingPageTemplate } from '../features/landing-pages/EditLandingPageTemplate'
+import { DesignLandingPageTemplate } from '../features/landing-pages/DesignLandingPageTemplate'
+import { PreviewLandingPageTemplate } from '../features/landing-pages/PreviewLandingPageTemplate'
+import { LandingPageAccess } from '../features/landing-pages/LandingPageAccess'
+import { PreviewLandingPageLink } from '../features/landing-pages/PreviewLandingPageLink'
 import { Configurations } from '../features/configurations/Configurations'
 import { AIAgentConfiguration } from '../features/configurations/AIAgentConfiguration'
 import { EmailTemplateConfiguration } from '../features/configurations/EmailTemplateConfiguration'
@@ -83,12 +86,12 @@ export const AppRoutes: React.FC = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Public Quote Access - Completely public, no auth required */}
+      {/* Landing Page Access - Completely public, no auth required */}
       {/* Public route for patient access - NO AUTH */}
-      <Route path="/pq/:accessToken" element={<PublicQuoteAccess />} />
+      <Route path="/lp/:accessToken" element={<LandingPageAccess />} />
 
-      {/* Preview Public Quote Template - Completely isolated, no auth/layout */}
-      <Route path="/public-quotes/templates/:id/preview" element={<PreviewPublicQuoteTemplate />} />
+      {/* Preview Landing Page Template - Completely isolated, no auth/layout */}
+      <Route path="/landing-pages/templates/:id/preview" element={<PreviewLandingPageTemplate />} />
 
       {/* Preview Public Quote - Isolated preview with auth but no layout */}
       <Route
@@ -100,12 +103,12 @@ export const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* Preview Public Quote Link - Isolated preview (auth user sees what patient sees) */}
+      {/* Preview Landing Page Link - Isolated preview (auth user sees what patient sees) */}
       <Route
-        path="/public-quotes/links/:id/preview"
+        path="/landing-pages/links/:id/preview"
         element={
           <RouteGuard requireAuth requiredApp="tq">
-            <PreviewPublicQuoteLink />
+            <PreviewLandingPageLink />
           </RouteGuard>
         }
       />
@@ -140,10 +143,15 @@ export const AppRoutes: React.FC = () => {
         } />
         <Route path="templates/:id/edit" element={<EditTemplate />} />
 
-        {/* Clinical Reports */}
-        <Route path="clinical-reports" element={<ClinicalReports />} />
-        <Route path="clinical-reports/:id/view" element={<ViewClinicalReport />} />
-        <Route path="clinical-reports/:id/edit" element={<EditClinicalReport />} />
+        {/* Clinical Notes */}
+        <Route path="clinical-notes" element={<ClinicalNotes />} />
+        <Route path="clinical-notes/:id/view" element={<ViewClinicalNote />} />
+        <Route path="clinical-notes/:id/edit" element={<EditClinicalNote />} />
+
+        {/* Prevention */}
+        <Route path="prevention" element={<Prevention />} />
+        <Route path="prevention/:id/view" element={<ViewPrevention />} />
+        <Route path="prevention/:id/edit" element={<EditPrevention />} />
 
         {/* Quote Management with Tabs */}
         <Route path="quotes" element={<QuoteManagementLayout />}>
@@ -161,25 +169,25 @@ export const AppRoutes: React.FC = () => {
         {/* Edit Quote - Outside QuoteManagementLayout for full page layout */}
         <Route path="quotes/:id/edit" element={<EditQuote />} />
 
-        {/* Public Quotes with Tabs */}
-        <Route path="public-quotes" element={<PublicQuotesLayout />}>
-          <Route index element={<Navigate to="/public-quotes/links" replace />} />
+        {/* Landing Pages with Tabs */}
+        <Route path="landing-pages" element={<LandingPagesLayout />}>
+          <Route index element={<Navigate to="/landing-pages/links" replace />} />
           <Route path="links" element={<LinksTab />} />
           <Route path="templates" element={<TemplatesTab />} />
         </Route>
 
-        {/* Create Public Quote Template - Outside layout for full page */}
-        <Route path="public-quotes/templates/create" element={
+        {/* Create Landing Page Template - Outside layout for full page */}
+        <Route path="landing-pages/templates/create" element={
           <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
-            <CreatePublicQuoteTemplate />
+            <CreateLandingPageTemplate />
           </RouteGuard>
         } />
 
-        {/* Edit Public Quote Template - Outside layout for full page */}
-        <Route path="public-quotes/templates/:id/edit" element={<EditPublicQuoteTemplate />} />
+        {/* Edit Landing Page Template - Outside layout for full page */}
+        <Route path="landing-pages/templates/:id/edit" element={<EditLandingPageTemplate />} />
 
-        {/* Design Public Quote Template - Full screen Puck editor */}
-        <Route path="public-quotes/templates/:id/design" element={<DesignPublicQuoteTemplate />} />
+        {/* Design Landing Page Template - Full screen Puck editor */}
+        <Route path="landing-pages/templates/:id/design" element={<DesignLandingPageTemplate />} />
 
         {/* Configurations - Admin only */}
         <Route path="configurations" element={

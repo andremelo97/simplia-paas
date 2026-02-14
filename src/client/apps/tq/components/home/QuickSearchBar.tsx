@@ -5,14 +5,14 @@ import { SearchInput } from '@client/common/ui'
 import { Patient } from '../../services/patients'
 import { Session } from '../../services/sessions'
 import { Quote } from '../../services/quotes'
-import { ClinicalReport } from '../../services/clinicalReports'
+import { ClinicalNote } from '../../services/clinicalNotes'
 import { Template } from '../../services/templates'
-import { PublicQuoteTemplate } from '../../services/publicQuotes'
+import { LandingPageTemplate } from '../../services/landingPages'
 import { useTranslation } from 'react-i18next'
 
 interface SearchResult {
   id: string
-  type: 'patient' | 'session' | 'quote' | 'clinical_report' | 'template' | 'public_quote_template'
+  type: 'patient' | 'session' | 'quote' | 'clinical_note' | 'template' | 'landing_page_template'
   title: string
   subtitle: string
   path: string
@@ -22,12 +22,12 @@ interface QuickSearchBarProps {
   patients: Patient[]
   sessions: Session[]
   quotes: Quote[]
-  clinicalReports: ClinicalReport[]
+  clinicalNotes: ClinicalNote[]
   templates: Template[]
-  publicQuoteTemplates: PublicQuoteTemplate[]
+  landingPageTemplates: LandingPageTemplate[]
 }
 
-export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessions, quotes, clinicalReports, templates, publicQuoteTemplates }) => {
+export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessions, quotes, clinicalNotes, templates, landingPageTemplates }) => {
   const { t } = useTranslation('tq')
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -102,8 +102,8 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
         })
       })
 
-    // Search clinical reports
-    clinicalReports
+    // Search clinical notes
+    clinicalNotes
       .filter((r) => {
         const number = r.number?.toLowerCase() || ''
         const patientName = `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.toLowerCase()
@@ -113,10 +113,10 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
       .forEach((r) => {
         foundResults.push({
           id: r.id,
-          type: 'clinical_report',
+          type: 'clinical_note',
           title: r.number,
           subtitle: `${r.patient_first_name || ''} ${r.patient_last_name || ''}`.trim() || t('sessions.unknown_patient'),
-          path: `/clinical-reports/${r.id}/edit`
+          path: `/clinical-notes/${r.id}/edit`
         })
       })
 
@@ -138,28 +138,28 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
         })
       })
 
-    // Search public quote templates
-    publicQuoteTemplates
-      .filter((pqt) => {
-        const name = pqt.name?.toLowerCase() || ''
-        const description = pqt.description?.toLowerCase() || ''
+    // Search landing page templates
+    landingPageTemplates
+      .filter((lpt) => {
+        const name = lpt.name?.toLowerCase() || ''
+        const description = lpt.description?.toLowerCase() || ''
         return name.includes(searchQuery) || description.includes(searchQuery)
       })
       .slice(0, 3)
-      .forEach((pqt) => {
+      .forEach((lpt) => {
         foundResults.push({
-          id: pqt.id,
-          type: 'public_quote_template',
-          title: pqt.name,
-          subtitle: pqt.description || t('home.search.no_description'),
-          path: `/public-quotes/templates/${pqt.id}/edit`
+          id: lpt.id,
+          type: 'landing_page_template',
+          title: lpt.name,
+          subtitle: lpt.description || t('home.search.no_description'),
+          path: `/landing-pages/templates/${lpt.id}/edit`
         })
       })
 
     setResults(foundResults)
     setIsOpen(foundResults.length > 0)
     setSelectedIndex(0)
-  }, [query, patients, sessions, quotes, clinicalReports, templates, publicQuoteTemplates])
+  }, [query, patients, sessions, quotes, clinicalNotes, templates, landingPageTemplates])
 
   // Keyboard navigation
   useEffect(() => {
@@ -215,11 +215,11 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
         return <FileText className="w-4 h-4 text-[#B725B7]" />
       case 'quote':
         return <Receipt className="w-4 h-4 text-[#E91E63]" />
-      case 'clinical_report':
+      case 'clinical_note':
         return <ClipboardList className="w-4 h-4 text-blue-600" />
       case 'template':
         return <FileType className="w-4 h-4 text-purple-600" />
-      case 'public_quote_template':
+      case 'landing_page_template':
         return <Layout className="w-4 h-4 text-[#E91E63]" />
     }
   }
@@ -266,7 +266,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
 
               {/* Type badge */}
               <span className="flex-shrink-0 text-xs text-gray-400 uppercase">
-                {result.type === 'clinical_report' ? t('home.search.badge_report') : result.type === 'public_quote_template' ? t('home.search.badge_pq_template') : t(`home.search.badge_${result.type}`)}
+                {result.type === 'clinical_note' ? t('home.search.badge_note') : result.type === 'landing_page_template' ? t('home.search.badge_lp_template') : t(`home.search.badge_${result.type}`)}
               </span>
             </div>
           ))}

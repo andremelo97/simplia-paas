@@ -564,6 +564,106 @@
       "search_placeholder": "Buscar por número de relatório ou nome do paciente"
     }
   },
+  "clinical_notes": {
+    "title": "Notas Clínicas",
+    "create": "Criar Nota",
+    "edit": "Editar Nota",
+    "view": "Visualizar Nota",
+    "note": "Nota",
+    "number": "Número",
+    "content": "Conteúdo",
+    "no_notes": "Nenhuma nota clínica ainda. Crie sua primeira nota para começar.",
+    "no_notes_home": "Nenhuma nota clínica ainda. Crie sua primeira nota para começar.",
+    "latest": "Últimas Notas",
+    "note_created": "Nota clínica criada para",
+    "print_pdf": "Imprimir/PDF",
+    "loading_note": "Carregando nota clínica...",
+    "note_not_found": "Nota clínica não encontrada",
+    "back_to_notes": "Voltar para Notas Clínicas",
+    "information": "Informações da Nota Clínica",
+    "patient_session_info": "Informações do Paciente e Sessão",
+    "no_patient_data": "Sem dados do paciente",
+    "no_session_data": "Sem dados da sessão",
+    "session": "Sessão",
+    "content_section": "Conteúdo da Nota Clínica",
+    "patient": "Paciente",
+    "pages": {
+      "list_title": "Lista de Notas",
+      "notes": "notas",
+      "note": "Nota",
+      "management_subtitle": "Visualize e gerencie notas clínicas de seus pacientes",
+      "view_title": "Nota Clínica",
+      "print_save_pdf": "Imprimir/Salvar como PDF",
+      "back_to_notes": "Voltar para Notas Clínicas",
+      "generated_on": "Gerado em",
+      "disclaimer": "Esta nota clínica foi gerada automaticamente. Por favor, verifique todas as informações antes de usar.",
+      "unknown_patient": "Paciente Desconhecido"
+    },
+    "placeholders": {
+      "content": "Conteúdo da nota clínica..."
+    },
+    "empty": {
+      "no_notes": "Nenhuma nota clínica ainda",
+      "not_found": "Nenhuma nota clínica encontrada",
+      "no_match": "Nenhuma nota clínica corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Crie uma nota clínica a partir de uma sessão para vê-la aparecer aqui."
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "find_quickly": "Encontre sua nota clínica rapidamente",
+      "search_placeholder": "Buscar por número de nota ou nome do paciente"
+    }
+  },
+  "prevention": {
+    "title": "Prevenção",
+    "create": "Criar Prevenção",
+    "edit": "Editar Prevenção",
+    "view": "Visualizar Prevenção",
+    "prevention": "Prevenção",
+    "number": "Número",
+    "content": "Conteúdo",
+    "no_preventions": "Nenhuma prevenção ainda. Crie sua primeira prevenção para começar.",
+    "no_preventions_home": "Nenhuma prevenção ainda. Crie sua primeira prevenção para começar.",
+    "latest": "Últimas Prevenções",
+    "prevention_created": "Prevenção criada para",
+    "print_pdf": "Imprimir/PDF",
+    "loading_prevention": "Carregando prevenção...",
+    "prevention_not_found": "Prevenção não encontrada",
+    "back_to_preventions": "Voltar para Prevenções",
+    "information": "Informações da Prevenção",
+    "patient_session_info": "Informações do Paciente e Sessão",
+    "no_patient_data": "Sem dados do paciente",
+    "no_session_data": "Sem dados da sessão",
+    "session": "Sessão",
+    "content_section": "Conteúdo da Prevenção",
+    "patient": "Paciente",
+    "pages": {
+      "list_title": "Lista de Prevenções",
+      "preventions": "prevenções",
+      "prevention": "Prevenção",
+      "management_subtitle": "Visualize e gerencie prevenções de seus pacientes",
+      "view_title": "Prevenção",
+      "print_save_pdf": "Imprimir/Salvar como PDF",
+      "back_to_preventions": "Voltar para Prevenções",
+      "generated_on": "Gerado em",
+      "disclaimer": "Esta prevenção foi gerada automaticamente. Por favor, verifique todas as informações antes de usar.",
+      "unknown_patient": "Paciente Desconhecido"
+    },
+    "placeholders": {
+      "content": "Conteúdo da prevenção..."
+    },
+    "empty": {
+      "no_preventions": "Nenhuma prevenção ainda",
+      "not_found": "Nenhuma prevenção encontrada",
+      "no_match": "Nenhuma prevenção corresponde a \"{{query}}\". Tente ajustar sua busca.",
+      "get_started": "Crie uma prevenção a partir de uma sessão para vê-la aparecer aqui."
+    },
+    "filters": {
+      "title": "Busca e filtros",
+      "find_quickly": "Encontre sua prevenção rapidamente",
+      "search_placeholder": "Buscar por número de prevenção ou nome do paciente"
+    }
+  },
   "templates": {
     "title": "Templates",
     "create": "Criar Template",
@@ -631,6 +731,167 @@
     },
     "delete_template_title": "Deletar Template",
     "delete_template_description": "Tem certeza que deseja deletar \"{{title}}\"? Esta ação não pode ser desfeita."
+  },
+  "landing_pages": {
+    "title": "Landing Pages",
+    "edit_template": "Editar Template",
+    "edit_template_subtitle": "Atualizar informações do template e layout de design",
+    "create_subtitle": "Criar um novo template para layouts de landing pages",
+    "creating_template": "Criando Template...",
+    "template_information": "Informações do Template",
+    "template_name": "Nome do Template",
+    "description": "Descrição",
+    "design_layout": "Design do Layout",
+    "duplicate": "Duplicar",
+    "duplicating": "Duplicando...",
+    "set_as_default": "Definir como Padrão",
+    "set_as_default_description": "Usar este template por padrão ao criar landing pages",
+    "active_description": "Quando marcado, este template estará disponível para uso",
+    "delete_template": "Excluir Template?",
+    "delete_template_description": "Tem certeza que deseja excluir \"{{name}}\"? Esta ação não pode ser desfeita.",
+    "delete_template_confirm": "Excluir Template",
+    "loading_template": "Carregando template...",
+    "loading_preview": "Carregando visualização...",
+    "failed_to_load": "Falha ao carregar visualização",
+    "loading_quote": "Carregando cotação...",
+    "save_layout": "Salvar Layout",
+    "saving_layout": "Salvando...",
+    "layout_saved": "Salvo!",
+    "save_error": "Erro ao Salvar",
+    "unsaved_changes": "Alterações não salvas",
+    "unsaved_changes_confirm": "Você tem alterações não salvas. Tem certeza que deseja sair?",
+    "template_not_found": "Template não encontrado",
+    "preview": "Visualizar",
+    "fullscreen": "Tela Cheia",
+    "exit_fullscreen": "Sair da Tela Cheia",
+    "pages": {
+      "landing_pages_title": "Landing Pages",
+      "landing_pages_subtitle": "Compartilhe documentos externamente com templates customizáveis",
+      "tab_links": "Links",
+      "tab_templates": "Templates",
+      "landing_page_links": "Links de Landing Pages",
+      "templates_list": "Templates",
+      "templates_count": "{{count}}/{{max}}",
+      "active_count": "{{count}}/{{max}} ativos",
+      "create_template": "Criar Template",
+      "max_total_reached": "Limite de 10 templates atingido",
+      "max_active_reached": "Limite de 3 ativos atingido. Desative um para criar novo ativo.",
+      "loading_templates": "Carregando templates...",
+      "revoke_link_title": "Revogar Link Público?",
+      "revoke_link_description": "Tem certeza que deseja revogar o link público do documento {{documentNumber}}? Isso tornará o link inativo e inacessível.",
+      "revoke_link": "Revogar Link",
+      "back_to_quote": "Voltar para Cotação",
+      "no_content": "Sem Conteúdo",
+      "no_content_description": "Este template ainda não tem conteúdo."
+    },
+    "defaults": {
+      "template_name": "Template de Landing Page",
+      "template_description": "Layout de template para landing pages"
+    },
+    "placeholders": {
+      "template_name": "ex: Layout Padrão",
+      "template_description": "Descreva este layout de template (opcional)",
+      "password": "Digite a senha"
+    },
+    "helper": {
+      "template_name": "Nome do template (obrigatório)",
+      "description": "Detalhes adicionais sobre o template (opcional)"
+    },
+    "templates_empty": {
+      "no_templates": "Nenhum template ainda",
+      "get_started": "Crie seu primeiro template para customizar layouts de landing pages"
+    },
+    "links_empty": {
+      "no_links": "Nenhum link de landing page ainda",
+      "get_started": "Crie links de landing pages nas páginas de Cotações ou Prevenção para compartilhar com clientes"
+    },
+    "links": {
+      "card": {
+        "quote_title": "Cotação #{{number}}",
+        "prevention_title": "Prevenção #{{number}}",
+        "not_available": "N/D",
+        "template": "Template: {{name}}",
+        "template_default": "Padrão",
+        "expiration": "Expiração",
+        "views": "Visualizações",
+        "created": "Criado",
+        "copied": "Copiado!",
+        "copy_link": "Copiar Link",
+        "open": "Abrir",
+        "open_quote": "Abrir Cotação",
+        "open_prevention": "Abrir Prevenção",
+        "open_document": "Abrir Documento",
+        "new_password": "Nova Senha",
+        "revoke": "Revogar"
+      }
+    },
+    "filters": {
+      "title": "Busca e Filtros",
+      "clear_filters": "Limpar Filtros",
+      "filter_by_document": "Filtrar por Documento",
+      "filter_by_quote": "Filtrar por Cotação",
+      "document_number_placeholder": "Número do documento",
+      "quote_number_placeholder": "Número da cotação",
+      "created_from": "Criado De",
+      "created_to": "Criado Até"
+    },
+    "validation": {
+      "name_required": "Nome do template é obrigatório",
+      "name_min": "Nome do template deve ter pelo menos 2 caracteres",
+      "name_max": "Nome do template deve ter menos de 255 caracteres"
+    },
+    "errors": {
+      "create_failed": "Falha ao criar template. Por favor, tente novamente.",
+      "max_templates": "Máximo de 3 templates permitidos por tenant.",
+      "check_input": "Por favor, verifique sua entrada e tente novamente.",
+      "no_permission": "Você não tem permissão para criar templates.",
+      "session_expired": "Sua sessão expirou. Por favor, faça login novamente.",
+      "server_error": "Ocorreu um erro no servidor. Por favor, tente novamente mais tarde."
+    },
+    "duplicate_name": "{{name}} (Cópia)",
+    "labels": {
+      "quote_number": "Cotação #",
+      "prevention_number": "Prevenção #",
+      "total": "Total",
+      "items_empty": "Nenhum item nesta cotação",
+      "item": "Item",
+      "quantity": "Qtd",
+      "price": "Preço",
+      "discount": "Desconto"
+    },
+    "footer": {
+      "social_title": "Redes Sociais",
+      "quick_links_title": "Links Rápidos",
+      "contact_title": "Contato"
+    },
+    "access": {
+      "language_label": "Idioma",
+      "heading": "Documento Protegido",
+      "description": "Este documento é protegido por senha. Por favor, digite a senha para visualizá-lo.",
+      "password_label": "Senha",
+      "password_placeholder": "Digite a senha",
+      "button_access": "Acessar Documento",
+      "button_verifying": "Verificando...",
+      "footer_hint": "Se você não tem a senha, entre em contato com a pessoa que compartilhou este link com você.",
+      "loading": "Carregando documento...",
+      "no_content_title": "Sem Conteúdo",
+      "no_content_description": "Este template ainda não tem conteúdo.",
+      "errors": {
+        "empty": "Por favor, digite a senha.",
+        "incorrect": "Senha incorreta. Por favor, tente novamente.",
+        "not_found": "Este link não é válido ou expirou.",
+        "forbidden": "Acesso negado a este documento.",
+        "default": "Falha ao acessar documento. Por favor, tente novamente mais tarde."
+      }
+    },
+    "approve": {
+      "loading": "Aprovando cotação...",
+      "success_title": "Cotação Aprovada!",
+      "success_message": "Obrigado! Sua cotação foi aprovada com sucesso.",
+      "error_invalid_state": "Esta cotação não pode ser aprovada em seu estado atual.",
+      "error_unauthorized": "Falha na autorização. Por favor, atualize a página e tente novamente.",
+      "error_failed": "Falha ao aprovar cotação. Por favor, tente novamente."
+    }
   },
   "public_quotes": {
     "edit_template": "Editar Template",
@@ -813,9 +1074,10 @@
     "patients": "Pacientes",
     "sessions": "Sessões",
     "quotes": "Cotações",
-    "clinical_reports": "Relatórios Clínicos",
+    "clinical_notes": "Notas Clínicas",
+    "prevention": "Prevenção",
     "templates": "Templates",
-    "public_quotes": "Cotações Públicas",
+    "landing_pages": "Landing Pages",
     "configurations": "Configurações"
   },
   "breadcrumbs": {
@@ -823,10 +1085,11 @@
     "patients": "Pacientes",
     "sessions": "Sessões",
     "quotes": "Cotações",
-    "clinical_reports": "Relatórios Clínicos",
+    "clinical_notes": "Notas Clínicas",
+    "prevention": "Prevenção",
     "templates": "Templates",
     "configurations": "Configurações",
-    "public_quotes": "Cotações Públicas",
+    "landing_pages": "Landing Pages",
     "new_session": "Nova Sessão",
     "create": "Criar",
     "edit": "Editar",

@@ -1,4 +1,4 @@
-import { Quote } from '../../services/quotes'
+import { Quote } from '../services/quotes'
 
 export interface ResolvedQuoteData {
   quote: {

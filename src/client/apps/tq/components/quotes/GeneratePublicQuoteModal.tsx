@@ -12,7 +12,7 @@ import {
   DateInput
 } from '@client/common/ui'
 import { Copy, CheckCircle2 } from 'lucide-react'
-import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
+import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface GeneratePublicQuoteModalProps {
@@ -40,7 +40,7 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
 }) => {
   const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
-  const [templates, setTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [templates, setTemplates] = useState<LandingPageTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [expiresAt, setExpiresAt] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
@@ -59,11 +59,11 @@ export const GeneratePublicQuoteModal: React.FC<GeneratePublicQuoteModalProps> =
   const loadTemplates = async () => {
     setIsLoading(true)
     try {
-      const response = await publicQuotesService.listTemplates({ active: true })
+      const response = await landingPagesService.listTemplates({ active: true })
       setTemplates(response.data || [])
 
       // Auto-select default template
-      const defaultTemplate = response.data?.find((t: PublicQuoteTemplate) => t.isDefault)
+      const defaultTemplate = response.data?.find((t: LandingPageTemplate) => t.isDefault)
       if (defaultTemplate) {
         setSelectedTemplateId(defaultTemplate.id)
       }

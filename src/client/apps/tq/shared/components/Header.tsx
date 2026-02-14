@@ -6,9 +6,9 @@ import { QuickSearchBar } from '../../components/home/QuickSearchBar'
 import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
 import { quotesService, Quote } from '../../services/quotes'
-import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
+import { clinicalNotesService, ClinicalNote } from '../../services/clinicalNotes'
 import { templatesService, Template } from '../../services/templates'
-import { publicQuotesService, PublicQuoteTemplate } from '../../services/publicQuotes'
+import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useTranslation } from 'react-i18next'
 import { HelpCircle, Headphones } from 'lucide-react'
 import { Tooltip, Button, SupportModal } from '@client/common/ui'
@@ -35,10 +35,11 @@ const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
       case 'patients': return t('breadcrumbs.patients')
       case 'sessions': return t('breadcrumbs.sessions')
       case 'quotes': return t('breadcrumbs.quotes')
-      case 'clinical-reports': return t('breadcrumbs.clinical_reports')
+      case 'clinical-notes': return t('breadcrumbs.clinical_notes')
+      case 'prevention': return t('breadcrumbs.prevention')
       case 'templates': return t('breadcrumbs.templates')
       case 'configurations': return t('breadcrumbs.configurations')
-      case 'public-quotes': return t('breadcrumbs.public_quotes')
+      case 'landing-pages': return t('breadcrumbs.landing_pages')
       case 'new-session': return t('breadcrumbs.new_session')
       case 'create': return t('breadcrumbs.create')
       case 'edit': return t('breadcrumbs.edit')
@@ -76,15 +77,15 @@ const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
       return
     }
 
-    // For public-quotes template design: /public-quotes/templates/:id/design -> Home > Public Quotes > Templates > Edit > Design
-    if (segments[0] === 'public-quotes' && segments[1] === 'templates' && segments[3] === 'design') {
+    // For landing-pages template design: /landing-pages/templates/:id/design -> Home > Landing Pages > Templates > Edit > Design
+    if (segments[0] === 'landing-pages' && segments[1] === 'templates' && segments[3] === 'design') {
       if (index === 0) {
-        breadcrumbs.push({ label: t('breadcrumbs.public_quotes'), href: '/public-quotes' })
+        breadcrumbs.push({ label: t('breadcrumbs.landing_pages'), href: '/landing-pages' })
       } else if (index === 1) {
-        breadcrumbs.push({ label: t('breadcrumbs.templates'), href: '/public-quotes/templates' })
+        breadcrumbs.push({ label: t('breadcrumbs.templates'), href: '/landing-pages/templates' })
       } else if (index === 3) {
         const templateId = segments[2]
-        breadcrumbs.push({ label: t('breadcrumbs.edit'), href: `/public-quotes/templates/${templateId}/edit` })
+        breadcrumbs.push({ label: t('breadcrumbs.edit'), href: `/landing-pages/templates/${templateId}/edit` })
         breadcrumbs.push({ label: t('breadcrumbs.design'), href: '#' })
       }
       return
@@ -118,30 +119,30 @@ export const Header: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
-  const [clinicalReports, setClinicalReports] = useState<ClinicalReport[]>([])
+  const [clinicalNotes, setClinicalNotes] = useState<ClinicalNote[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
-  const [publicQuoteTemplates, setPublicQuoteTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [landingPageTemplates, setLandingPageTemplates] = useState<LandingPageTemplate[]>([])
   const [isSupportOpen, setIsSupportOpen] = useState(false)
 
   // Load data for search
   useEffect(() => {
     const loadSearchData = async () => {
       try {
-        const [patientsRes, sessionsRes, quotesRes, reportsRes, templatesRes, publicQuoteTemplatesRes] = await Promise.all([
+        const [patientsRes, sessionsRes, quotesRes, reportsRes, templatesRes, landingPageTemplatesRes] = await Promise.all([
           patientsService.list({}),
           sessionsService.list({}),
           quotesService.list({}),
-          clinicalReportsService.list({}),
+          clinicalNotesService.list({}),
           templatesService.getAll({}),
-          publicQuotesService.listTemplates({ active: true })
+          landingPagesService.listTemplates({ active: true })
         ])
 
         setPatients(patientsRes.data || [])
         setSessions(sessionsRes.data || [])
         setQuotes(quotesRes.data || [])
-        setClinicalReports(reportsRes.data || [])
+        setClinicalNotes(reportsRes.data || [])
         setTemplates(templatesRes.templates || [])
-        setPublicQuoteTemplates(publicQuoteTemplatesRes.data || [])
+        setLandingPageTemplates(landingPageTemplatesRes.data || [])
       } catch (error) {
         // Failed to load search data
       }
@@ -197,9 +198,9 @@ export const Header: React.FC = () => {
             patients={patients}
             sessions={sessions}
             quotes={quotes}
-            clinicalReports={clinicalReports}
+            clinicalNotes={clinicalNotes}
             templates={templates}
-            publicQuoteTemplates={publicQuoteTemplates}
+            landingPageTemplates={landingPageTemplates}
           />
         }
         rightActions={rightActions}

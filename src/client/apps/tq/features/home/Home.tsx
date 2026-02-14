@@ -8,8 +8,8 @@ import { consumeSso } from '../../lib/consumeSso'
 import { quotesService, Quote } from '../../services/quotes'
 import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
-import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
-import { publicQuotesService, PublicQuote, PublicQuoteTemplate } from '../../services/publicQuotes'
+import { clinicalNotesService, ClinicalNote } from '../../services/clinicalNotes'
+import { landingPagesService, LandingPage, LandingPageTemplate } from '../../services/landingPages'
 import { templatesService, Template } from '../../services/templates'
 import { QuickActionCard } from '../../components/home/QuickActionCard'
 import { QuoteCard } from '../../components/home/QuoteCard'
@@ -28,9 +28,9 @@ export const Home: React.FC = () => {
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
-  const [reports, setReports] = useState<ClinicalReport[]>([])
-  const [publicQuotes, setPublicQuotes] = useState<PublicQuote[]>([])
-  const [publicQuoteTemplates, setPublicQuoteTemplates] = useState<PublicQuoteTemplate[]>([])
+  const [reports, setReports] = useState<ClinicalNote[]>([])
+  const [publicQuotes, setLandingPages] = useState<LandingPage[]>([])
+  const [publicQuoteTemplates, setLandingPageTemplates] = useState<LandingPageTemplate[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
   const [isLoadingQuotes, setIsLoadingQuotes] = useState(true)
   const [isLoadingPatients, setIsLoadingPatients] = useState(true)
@@ -192,9 +192,9 @@ export const Home: React.FC = () => {
           quotesService.list({}),
           patientsService.list({}),
           sessionsService.list({}),
-          clinicalReportsService.list({}),
-          publicQuotesService.listAllPublicQuotes(),
-          publicQuotesService.listTemplates({ active: true }),
+          clinicalNotesService.list({}),
+          landingPagesService.listAllLandingPages(),
+          landingPagesService.listTemplates({ active: true }),
           templatesService.getAll({})
         ])
 
@@ -212,15 +212,15 @@ export const Home: React.FC = () => {
           .slice(0, 6)
 
         const sortedReports = reportsRes.data
-          .sort((a: ClinicalReport, b: ClinicalReport) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .sort((a: ClinicalNote, b: ClinicalNote) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 6)
 
-        const sortedPublicQuotes = publicQuotesRes
-          .sort((a: PublicQuote, b: PublicQuote) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        const sortedLandingPages = publicQuotesRes
+          .sort((a: LandingPage, b: LandingPage) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 5)
 
-        const sortedPublicQuoteTemplates = publicQuoteTemplatesRes.data
-          .sort((a: PublicQuoteTemplate, b: PublicQuoteTemplate) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        const sortedLandingPageTemplates = publicQuoteTemplatesRes.data
+          .sort((a: LandingPageTemplate, b: LandingPageTemplate) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 5)
 
         const sortedTemplates = templatesRes.templates
@@ -231,8 +231,8 @@ export const Home: React.FC = () => {
         setPatients(sortedPatients)
         setSessions(sortedSessions)
         setReports(sortedReports)
-        setPublicQuotes(sortedPublicQuotes)
-        setPublicQuoteTemplates(sortedPublicQuoteTemplates)
+        setLandingPages(sortedLandingPages)
+        setLandingPageTemplates(sortedLandingPageTemplates)
         setTemplates(sortedTemplates)
       } catch (error) {
         // Failed to load home data

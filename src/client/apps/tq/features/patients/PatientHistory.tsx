@@ -14,7 +14,7 @@ import {
 import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
 import { quotesService, Quote } from '../../services/quotes'
-import { clinicalReportsService, ClinicalReport } from '../../services/clinicalReports'
+import { clinicalNotesService, ClinicalNote } from '../../services/clinicalNotes'
 import { HistoryRow } from '../../components/patients/history/HistoryRow'
 import { TimelineItem } from '../../components/patients/history/TimelineItem'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -41,7 +41,7 @@ export const PatientHistory: React.FC = () => {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
-  const [clinicalReports, setClinicalReports] = useState<ClinicalReport[]>([])
+  const [clinicalReports, setClinicalNotes] = useState<ClinicalNote[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'sessions' | 'quotes' | 'clinical' | 'timeline'>('timeline')
 
@@ -183,7 +183,7 @@ export const PatientHistory: React.FC = () => {
         const [sessionsRes, quotesRes, reportsRes] = await Promise.all([
           sessionsService.list(filterParams),
           quotesService.list(filterParams),
-          clinicalReportsService.list(filterParams)
+          clinicalNotesService.list(filterParams)
         ])
 
         // Filter by patient_id
@@ -193,7 +193,7 @@ export const PatientHistory: React.FC = () => {
 
         setSessions(patientSessions)
         setQuotes(patientQuotes)
-        setClinicalReports(patientReports)
+        setClinicalNotes(patientReports)
       } catch (error) {
         // Failed to load patient data
       } finally {

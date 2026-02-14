@@ -592,6 +592,106 @@
       "search_placeholder": "Search by report number or patient name"
     }
   },
+  "clinical_notes": {
+    "title": "Clinical Notes",
+    "create": "Create Note",
+    "edit": "Edit Note",
+    "view": "View Note",
+    "note": "Note",
+    "number": "Number",
+    "content": "Content",
+    "no_notes": "No clinical notes yet. Create your first note to get started.",
+    "no_notes_home": "No clinical notes yet. Create your first note to get started.",
+    "latest": "Latest Notes",
+    "note_created": "Clinical note created for",
+    "print_pdf": "Print/PDF",
+    "loading_note": "Loading clinical note...",
+    "note_not_found": "Clinical note not found",
+    "back_to_notes": "Back to Clinical Notes",
+    "information": "Clinical Note Information",
+    "patient_session_info": "Patient and Session Information",
+    "no_patient_data": "No patient data",
+    "no_session_data": "No session data",
+    "session": "Session",
+    "content_section": "Clinical Note Content",
+    "patient": "Patient",
+    "pages": {
+      "list_title": "Notes List",
+      "notes": "notes",
+      "note": "Note",
+      "management_subtitle": "View and manage clinical notes for your patients",
+      "view_title": "Clinical Note",
+      "print_save_pdf": "Print/Save as PDF",
+      "back_to_notes": "Back to Clinical Notes",
+      "generated_on": "Generated on",
+      "disclaimer": "This clinical note was generated automatically. Please verify all information before use.",
+      "unknown_patient": "Unknown Patient"
+    },
+    "placeholders": {
+      "content": "Clinical note content..."
+    },
+    "empty": {
+      "no_notes": "No clinical notes yet",
+      "not_found": "No clinical notes found",
+      "no_match": "No clinical notes match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Create a clinical note from a session to see it appear here."
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "find_quickly": "Find your clinical note quickly",
+      "search_placeholder": "Search by note number or patient name"
+    }
+  },
+  "prevention": {
+    "title": "Prevention",
+    "create": "Create Prevention",
+    "edit": "Edit Prevention",
+    "view": "View Prevention",
+    "prevention": "Prevention",
+    "number": "Number",
+    "content": "Content",
+    "no_preventions": "No preventions yet. Create your first prevention to get started.",
+    "no_preventions_home": "No preventions yet. Create your first prevention to get started.",
+    "latest": "Latest Preventions",
+    "prevention_created": "Prevention created for",
+    "print_pdf": "Print/PDF",
+    "loading_prevention": "Loading prevention...",
+    "prevention_not_found": "Prevention not found",
+    "back_to_preventions": "Back to Preventions",
+    "information": "Prevention Information",
+    "patient_session_info": "Patient and Session Information",
+    "no_patient_data": "No patient data",
+    "no_session_data": "No session data",
+    "session": "Session",
+    "content_section": "Prevention Content",
+    "patient": "Patient",
+    "pages": {
+      "list_title": "Preventions List",
+      "preventions": "preventions",
+      "prevention": "Prevention",
+      "management_subtitle": "View and manage preventions for your patients",
+      "view_title": "Prevention",
+      "print_save_pdf": "Print/Save as PDF",
+      "back_to_preventions": "Back to Preventions",
+      "generated_on": "Generated on",
+      "disclaimer": "This prevention was generated automatically. Please verify all information before use.",
+      "unknown_patient": "Unknown Patient"
+    },
+    "placeholders": {
+      "content": "Prevention content..."
+    },
+    "empty": {
+      "no_preventions": "No preventions yet",
+      "not_found": "No preventions found",
+      "no_match": "No preventions match \"{{query}}\". Try adjusting your search.",
+      "get_started": "Create a prevention from a session to see it appear here."
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "find_quickly": "Find your prevention quickly",
+      "search_placeholder": "Search by prevention number or patient name"
+    }
+  },
   "templates": {
     "title": "Templates",
     "create": "Create Template",
@@ -659,6 +759,167 @@
     },
     "delete_template_title": "Delete Template",
     "delete_template_description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone."
+  },
+  "landing_pages": {
+    "title": "Landing Pages",
+    "edit_template": "Edit Template",
+    "edit_template_subtitle": "Update template information and design layout",
+    "create_subtitle": "Create a new template for landing page layouts",
+    "creating_template": "Creating Template...",
+    "template_information": "Template Information",
+    "template_name": "Template Name",
+    "description": "Description",
+    "design_layout": "Design Layout",
+    "duplicate": "Duplicate",
+    "duplicating": "Duplicating...",
+    "set_as_default": "Set as Default",
+    "set_as_default_description": "Use this template by default when creating landing pages",
+    "active_description": "When checked, this template will be available for use",
+    "delete_template": "Delete Template?",
+    "delete_template_description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "delete_template_confirm": "Delete Template",
+    "loading_template": "Loading template...",
+    "loading_preview": "Loading preview...",
+    "failed_to_load": "Failed to load preview",
+    "loading_quote": "Loading quote...",
+    "save_layout": "Save Layout",
+    "saving_layout": "Saving...",
+    "layout_saved": "Saved!",
+    "save_error": "Save Failed",
+    "unsaved_changes": "Unsaved changes",
+    "unsaved_changes_confirm": "You have unsaved changes. Are you sure you want to leave?",
+    "template_not_found": "Template not found",
+    "preview": "Preview",
+    "fullscreen": "Fullscreen",
+    "exit_fullscreen": "Exit Fullscreen",
+    "pages": {
+      "landing_pages_title": "Landing Pages",
+      "landing_pages_subtitle": "Share documents externally with customizable templates",
+      "tab_links": "Links",
+      "tab_templates": "Templates",
+      "landing_page_links": "Landing Page Links",
+      "templates_list": "Templates",
+      "templates_count": "{{count}}/{{max}}",
+      "active_count": "{{count}}/{{max}} active",
+      "create_template": "Create Template",
+      "max_total_reached": "Limit of 10 templates reached",
+      "max_active_reached": "Limit of 3 active reached. Deactivate one to create new active.",
+      "loading_templates": "Loading templates...",
+      "revoke_link_title": "Revoke Public Link?",
+      "revoke_link_description": "Are you sure you want to revoke the public link for document {{documentNumber}}? This will make the link inactive and inaccessible.",
+      "revoke_link": "Revoke Link",
+      "back_to_quote": "Back to Quote",
+      "no_content": "No Content",
+      "no_content_description": "This template doesn't have any content yet."
+    },
+    "defaults": {
+      "template_name": "Landing Page Template",
+      "template_description": "Template layout for landing pages"
+    },
+    "placeholders": {
+      "template_name": "e.g., Default Layout",
+      "template_description": "Describe this template layout (optional)",
+      "password": "Enter password"
+    },
+    "helper": {
+      "template_name": "Template name (required)",
+      "description": "Additional details about the template (optional)"
+    },
+    "templates_empty": {
+      "no_templates": "No templates yet",
+      "get_started": "Create your first template to customize landing page layouts"
+    },
+    "links_empty": {
+      "no_links": "No landing page links yet",
+      "get_started": "Create landing page links from the Quotes or Prevention page to share with clients"
+    },
+    "links": {
+      "card": {
+        "quote_title": "Quote #{{number}}",
+        "prevention_title": "Prevention #{{number}}",
+        "not_available": "N/A",
+        "template": "Template: {{name}}",
+        "template_default": "Default",
+        "expiration": "Expiration",
+        "views": "Views",
+        "created": "Created",
+        "copied": "Copied!",
+        "copy_link": "Copy Link",
+        "open": "Open",
+        "open_quote": "Open Quote",
+        "open_prevention": "Open Prevention",
+        "open_document": "Open Document",
+        "new_password": "New Password",
+        "revoke": "Revoke"
+      }
+    },
+    "filters": {
+      "title": "Search and Filters",
+      "clear_filters": "Clear Filters",
+      "filter_by_document": "Filter by Document",
+      "filter_by_quote": "Filter by Quote",
+      "document_number_placeholder": "Document number",
+      "quote_number_placeholder": "Quote number",
+      "created_from": "Created From",
+      "created_to": "Created To"
+    },
+    "validation": {
+      "name_required": "Template name is required",
+      "name_min": "Template name must be at least 2 characters",
+      "name_max": "Template name must be less than 255 characters"
+    },
+    "errors": {
+      "create_failed": "Failed to create template. Please try again.",
+      "max_templates": "Maximum of 3 templates allowed per tenant.",
+      "check_input": "Please check your input and try again.",
+      "no_permission": "You do not have permission to create templates.",
+      "session_expired": "Your session has expired. Please log in again.",
+      "server_error": "Server error occurred. Please try again later."
+    },
+    "duplicate_name": "{{name}} (Copy)",
+    "labels": {
+      "quote_number": "Quote #",
+      "prevention_number": "Prevention #",
+      "total": "Total",
+      "items_empty": "No items in this quote",
+      "item": "Item",
+      "quantity": "Qty",
+      "price": "Price",
+      "discount": "Discount"
+    },
+    "footer": {
+      "social_title": "Social Media",
+      "quick_links_title": "Quick Links",
+      "contact_title": "Contact"
+    },
+    "access": {
+      "language_label": "Language",
+      "heading": "Protected Document",
+      "description": "This document is password protected. Please enter the password to view it.",
+      "password_label": "Password",
+      "password_placeholder": "Enter the password",
+      "button_access": "Access Document",
+      "button_verifying": "Verifying...",
+      "footer_hint": "If you don't have the password, please contact the person who shared this link with you.",
+      "loading": "Loading document...",
+      "no_content_title": "No Content",
+      "no_content_description": "This template doesn't have any content yet.",
+      "errors": {
+        "empty": "Please enter the password.",
+        "incorrect": "Incorrect password. Please try again.",
+        "not_found": "This link is not valid or has expired.",
+        "forbidden": "Access denied to this document.",
+        "default": "Failed to access document. Please try again later."
+      }
+    },
+    "approve": {
+      "loading": "Approving quote...",
+      "success_title": "Quote Approved!",
+      "success_message": "Thank you! Your quote has been approved successfully.",
+      "error_invalid_state": "This quote cannot be approved in its current state.",
+      "error_unauthorized": "Authorization failed. Please refresh the page and try again.",
+      "error_failed": "Failed to approve quote. Please try again."
+    }
   },
   "public_quotes": {
     "edit_template": "Edit Template",
@@ -841,9 +1102,10 @@
     "patients": "Patients",
     "sessions": "Sessions",
     "quotes": "Quotes",
-    "clinical_reports": "Clinical Reports",
+    "clinical_notes": "Clinical Notes",
+    "prevention": "Prevention",
     "templates": "Templates",
-    "public_quotes": "Public Quotes",
+    "landing_pages": "Landing Pages",
     "configurations": "Configurations"
   },
   "breadcrumbs": {
@@ -851,10 +1113,11 @@
     "patients": "Patients",
     "sessions": "Sessions",
     "quotes": "Quotes",
-    "clinical_reports": "Clinical Reports",
+    "clinical_notes": "Clinical Notes",
+    "prevention": "Prevention",
     "templates": "Templates",
     "configurations": "Configurations",
-    "public_quotes": "Public Quotes",
+    "landing_pages": "Landing Pages",
     "new_session": "New Session",
     "create": "Create",
     "edit": "Edit",

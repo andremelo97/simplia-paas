@@ -56,14 +56,31 @@ src/
 │   └── services/    # Third-party (Deepgram, Supabase)
 ├── client/          # React frontend (TypeScript)
 │   ├── apps/        # hub/, tq/, internal-admin/
-│   └── common/      # Shared UI components, i18n
+│   └── common/      # Shared UI components, i18n, feedback
 └── shared/          # Shared utilities (.js)
 ```
 
 ## Two API Servers
 - **Internal API** (`src/server/index.js` → port 3001): Platform management, tenants, users, licensing
 - **TQ API** (`src/server/tq-api.js` → port 3004): Transcription Quote product endpoints
-- Public routes (webhooks, public quotes) are registered BEFORE auth middleware in tq-api.js
+- Public routes (webhooks, public quotes) registered BEFORE auth middleware in tq-api.js
+
+## Middleware Chain (TQ API)
+```
+Public routes → No middleware (webhooks, public-quote-access)
+Protected routes → requireAuth → tenantMiddleware → requireTranscriptionQuoteAccess
+```
+- `auth.js`: JWT validation, extracts user from token
+- `tenant.js`: Resolves tenant from `x-tenant-id` header, sets `req.tenant.schema`
+- `appAccess.js`: Validates user has TQ app access
+- `transcriptionQuota.js`: Enforces transcription minute limits
+
+## 5-Layer Licensing System
+1. **Tenant License**: Does tenant have active license for the app?
+2. **Seat Availability**: Within seat limit?
+3. **User Access**: User granted access to app?
+4. **Role Validation**: User role sufficient for action?
+5. **Audit Logging**: All access logged
 
 ## SSO Flow (Hub → TQ)
 1. Hub opens TQ: `http://localhost:3005/login?token={JWT}&tenantId={ID}`
@@ -78,6 +95,23 @@ tenant-{subdomain}/
 ```
 - Buckets created automatically during tenant provisioning
 - Public URLs (non-expiring)
+
+## Frontend Architecture
+
+### State Management
+- **Zustand** stores per app: `src/client/apps/{app}/store/auth.ts` or `shared/store/`
+- Auth state persisted to `localStorage['auth-storage']`
+- HTTP client auto-injects token and `x-tenant-id` from auth store
+
+### HTTP Client (`@client/config/http`)
+- Auto-injects `Authorization` header from persisted auth
+- Auto-injects `x-tenant-id` for tenant-scoped routes
+- Auto-publishes feedback from `meta.code` in responses
+
+### Key Hooks
+- `useDateFormatter()`: Timezone-aware date formatting
+- `useCurrencyFormatter()`: Locale-aware currency (R$ vs $)
+- `useTranslation('tq' | 'hub')`: i18n translations
 
 ## Timezone & i18n
 - **JWT includes**: `timezone` (IANA) and `locale` (derived)
@@ -95,7 +129,13 @@ tenant-{subdomain}/
 - **Templates**: Clinical document templates with TipTap editor
 - **Quotes**: AI-generated quotes from transcriptions
 - **Clinical Reports**: Medical documentation with print/PDF
-- **Public Quotes**: Shareable quote pages with Puck page builder
+- **Public Quotes**: Shareable quote pages with Puck visual editor
+
+### Puck Page Builder (Public Quotes)
+- Visual drag-and-drop editor for public quote templates
+- Config in `src/client/apps/tq/features/public-quotes/puck-config/`
+- Components: Grid, Flex, Heading, Text, Button, QuoteTotal, ItemsTable, Header, Footer
+- Template JSON stored in `public_quote_templates.content`
 
 ## API Patterns
 
@@ -154,10 +194,3 @@ npm run test:e2e:tq                   # TQ E2E only
 - **Timezone**: `docs/timezone-internationalization.md`
 - **Transcription quota**: `docs/transcription-quota-system.md`
 - **Public quotes**: `docs/tq-public-quotes-puck.md`
-
-## Best Practices
-- Always read files before editing
-- Use `useDateFormatter()` for dates, `useTranslation()` for text
-- Never hardcode pt-BR or en-US in components
-- Prefer editing existing files over creating new ones
-- Run tests before major changes

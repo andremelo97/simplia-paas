@@ -1,22 +1,26 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Render } from '@measured/puck'
-import '@measured/puck/puck.css'
-import { Button } from '@client/common/ui'
+import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { Puck, Render } from '@measured/puck'
 import { X } from 'lucide-react'
-import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
-import { quotesService, Quote } from '../../services/quotes'
+import { landingPagesService, LandingPage } from '../../services/landingPages'
+import { quotesService } from '../../services/quotes'
 import { brandingService, BrandingData } from '../../services/branding'
-import { usePublicQuoteRenderer } from '../../hooks/usePublicQuoteRenderer'
+import { useLandingPageRenderer } from '../../hooks/useLandingPageRenderer'
+import '@measured/puck/puck.css'
 
-export const PreviewPublicQuote: React.FC = () => {
-  const { id: quoteId, templateId } = useParams<{ id: string; templateId: string }>()
-  const navigate = useNavigate()
-
-  const [quote, setQuote] = useState<Quote | null>(null)
-  const [template, setTemplate] = useState<LandingPageTemplate | null>(null)
+/**
+ * Preview page for authenticated users to see what patients will see
+ * This is a read-only preview within the application context
+ */
+export const PreviewLandingPageLink: React.FC = () => {
+  const { t } = useTranslation('tq')
+  const { id } = useParams<{ id: string }>()
+  const [landingPage, setLandingPage] = useState<LandingPage | null>(null)
+  const [quote, setQuote] = useState<any>(null)
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Widget modal state
   const [widgetModal, setWidgetModal] = useState<{
@@ -36,77 +40,82 @@ export const PreviewPublicQuote: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    loadData()
-  }, [quoteId, templateId])
+    if (id) {
+      loadData()
+    }
+  }, [id])
 
   const loadData = async () => {
-    if (!quoteId || !templateId) return
+    if (!id) return
 
     try {
       setIsLoading(true)
+      setError(null)
 
-      // Load all data in parallel
-      const [fetchedQuote, templateData, brandingData] = await Promise.all([
-        quotesService.getQuote(quoteId),
-        landingPagesService.getTemplate(templateId),
-        brandingService.getBranding()
-      ])
+      // Load landing page
+      const pages = await landingPagesService.listAllLandingPages()
+      const foundLandingPage = pages.find(p => p.id === id)
 
-      setQuote(fetchedQuote)
-      setTemplate(templateData)
+      if (!foundLandingPage) {
+        setError('Landing page not found')
+        return
+      }
+
+      setLandingPage(foundLandingPage)
+
+      // Load full quote data if it's a quote landing page
+      if (foundLandingPage.quote?.id) {
+        const fullQuote = await quotesService.getQuote(foundLandingPage.quote.id)
+        setQuote(fullQuote)
+      }
+
+      // Load branding
+      const brandingData = await brandingService.getBranding()
       setBranding(brandingData)
-
-    } catch (error) {
-      // Failed to load preview data
+    } catch (err) {
+      setError('Failed to load preview')
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Create config with resolved quote data using reusable hook
-  const previewConfig = usePublicQuoteRenderer(template, quote, branding, {
-    onOpenWidget: handleOpenWidget
-  })
-
-  const handleBack = () => {
-    navigate(`/quotes/${quoteId}/edit`)
-  }
+  const previewConfig = useLandingPageRenderer(
+    landingPage?.template ? {
+      id: landingPage.template.id,
+      name: landingPage.template.name,
+      content: landingPage.template.content,
+      createdAt: '',
+      updatedAt: '',
+      isDefault: false,
+      active: true
+    } : null,
+    quote,
+    branding,
+    { onOpenWidget: handleOpenWidget }
+  )
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading preview...</div>
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-gray-500">{t('landing_pages.loading_preview')}</div>
       </div>
     )
   }
 
-  if (!quote || !template || !previewConfig || !branding) {
+  if (error || !previewConfig) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Failed to load preview</p>
-          <Button variant="secondary" onClick={handleBack}>
-            Back to Quote
-          </Button>
-        </div>
-      </div>
-    )
-  }
-
-  if (!template.content || !template.content.content || template.content.content.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Content</h1>
-          <p className="text-gray-600">This template doesn't have any content yet.</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-red-600">{error || t('landing_pages.failed_to_load')}</div>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-white">
-      <Render config={previewConfig} data={template.content} />
+      <Render
+        config={previewConfig}
+        data={landingPage?.template?.content || { root: {}, content: [], zones: {} }}
+      />
 
       {/* Widget modal with iframe */}
       {widgetModal.isOpen && (

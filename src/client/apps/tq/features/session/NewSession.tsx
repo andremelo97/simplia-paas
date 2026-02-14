@@ -56,7 +56,7 @@ import { useAuthStore } from '../../shared/store'
 import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
 import { quotesService, CreateQuoteRequest } from '../../services/quotes'
-import { clinicalReportsService } from '../../services/clinicalReports'
+import { clinicalNotesService } from '../../services/clinicalNotes'
 import { aiAgentService } from '../../services/aiAgentService'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
@@ -738,7 +738,7 @@ export const NewSession: React.FC = () => {
         sessionId: currentSession.id,
         content: htmlContent
       }
-      const newReport = await clinicalReportsService.create(reportData)
+      const newReport = await clinicalNotesService.create(reportData)
 
       // Defensive: check if report has required fields
       if (!newReport || !newReport.id || !newReport.number) {
@@ -839,7 +839,7 @@ export const NewSession: React.FC = () => {
         content: filledTemplateResponse.filledTemplate
       }
 
-      const newReport = await clinicalReportsService.create(reportData)
+      const newReport = await clinicalNotesService.create(reportData)
 
       // Defensive: check if report has required fields
       if (!newReport || !newReport.id || !newReport.number) {

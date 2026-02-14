@@ -43,9 +43,9 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
 
   const handleOpenDocument = () => {
     if (landingPage.documentType === 'prevention' && landingPage.prevention?.id) {
-      navigate(`/prevention/${landingPage.prevention.id}/edit`)
+      navigate(`/documents/prevention/${landingPage.prevention.id}/edit`)
     } else if (landingPage.quote?.id) {
-      navigate(`/quotes/${landingPage.quote.id}/edit`)
+      navigate(`/documents/quote/${landingPage.quote.id}/edit`)
     }
   }
 

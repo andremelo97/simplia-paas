@@ -117,7 +117,10 @@
     "no_results": "No results found",
     "active": "Active",
     "inactive": "Inactive",
-    "never": "Never"
+    "never": "Never",
+    "quote": "Quote",
+    "prevention": "Prevention",
+    "clinical_note": "Clinical Note"
   },
   "filters": {
     "select_patient": "Select patient...",

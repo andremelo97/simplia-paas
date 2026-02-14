@@ -117,7 +117,10 @@
     "no_results": "Nenhum resultado encontrado",
     "active": "Ativo",
     "inactive": "Inativo",
-    "never": "Nunca"
+    "never": "Nunca",
+    "quote": "Orçamento",
+    "prevention": "Prevenção",
+    "clinical_note": "Nota Clínica"
   },
   "filters": {
     "select_patient": "Selecionar paciente...",

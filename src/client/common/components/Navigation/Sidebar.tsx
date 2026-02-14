@@ -37,24 +37,45 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation()
   const navigate = useNavigate()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const [manuallyCollapsed, setManuallyCollapsed] = useState<string[]>([])
 
-  // Auto-expand parent items when a child is active
+  // Auto-expand parent items when a child is active (only if not manually collapsed)
   React.useEffect(() => {
     const activeParents = navigation
       .filter(item => item.children?.some(child => location.pathname.startsWith(child.href)))
       .map(item => item.name)
 
     if (activeParents.length > 0) {
-      setExpandedItems(prev => [...new Set([...prev, ...activeParents])])
+      setExpandedItems(prev => {
+        const toExpand = activeParents.filter(name => !manuallyCollapsed.includes(name))
+        return [...new Set([...prev, ...toExpand])]
+      })
     }
+  }, [location.pathname, navigation, manuallyCollapsed])
+
+  // Clear manual collapse when navigating away from the item's children
+  React.useEffect(() => {
+    setManuallyCollapsed(prev =>
+      prev.filter(name => {
+        const item = navigation.find(n => n.name === name)
+        return item?.children?.some(child => location.pathname.startsWith(child.href))
+      })
+    )
   }, [location.pathname, navigation])
 
   const toggleExpanded = (itemName: string) => {
-    setExpandedItems(prev =>
-      prev.includes(itemName)
-        ? prev.filter(name => name !== itemName)
-        : [...prev, itemName]
-    )
+    setExpandedItems(prev => {
+      const isCurrentlyExpanded = prev.includes(itemName)
+      if (isCurrentlyExpanded) {
+        // User is collapsing: track as manually collapsed
+        setManuallyCollapsed(mc => [...new Set([...mc, itemName])])
+        return prev.filter(name => name !== itemName)
+      } else {
+        // User is expanding: remove from manually collapsed
+        setManuallyCollapsed(mc => mc.filter(name => name !== itemName))
+        return [...prev, itemName]
+      }
+    })
   }
 
   const isItemActive = (item: NavigationItem): boolean => {
@@ -139,11 +160,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   onClick={() => {
                     if (isOpen) {
-                      toggleExpanded(item.name)
-                      // Also navigate to the parent href when expanded
-                      navigate(item.href)
+                      if (isExpanded) {
+                        // Already expanded: just collapse, don't navigate
+                        toggleExpanded(item.name)
+                      } else {
+                        // Collapsed: expand and navigate
+                        toggleExpanded(item.name)
+                        navigate(item.href)
+                      }
                     } else {
-                      // When collapsed, navigate to the parent href
+                      // Sidebar collapsed: navigate to the parent href
                       navigate(item.href)
                     }
                   }}

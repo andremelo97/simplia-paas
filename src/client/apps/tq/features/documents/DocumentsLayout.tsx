@@ -20,10 +20,22 @@ export const DocumentsLayout: React.FC = () => {
     { label: t('documents.tabs.items'), path: '/documents/items' }
   ]
 
-  const handleDocumentCreated = (documentId: string, documentNumber: string) => {
+  const handleQuoteCreated = (documentId: string, documentNumber: string) => {
     setShowCreateModal(false)
-    // Navigate to the newly created document
-    navigate(`/documents/quotes/${documentId}`)
+    // Navigate to the newly created quote
+    navigate(`/documents/quote/${documentId}/edit`)
+  }
+
+  const handleClinicalNoteCreated = (documentId: string, documentNumber: string) => {
+    setShowCreateModal(false)
+    // Navigate to the newly created clinical note
+    navigate(`/documents/clinical-note/${documentId}/edit`)
+  }
+
+  const handlePreventionCreated = (documentId: string, documentNumber: string) => {
+    setShowCreateModal(false)
+    // Navigate to the newly created prevention
+    navigate(`/documents/prevention/${documentId}/edit`)
   }
 
   return (
@@ -77,7 +89,9 @@ export const DocumentsLayout: React.FC = () => {
       <TemplateQuoteModal
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onQuoteCreated={handleDocumentCreated}
+        onQuoteCreated={handleQuoteCreated}
+        onClinicalNoteCreated={handleClinicalNoteCreated}
+        onPreventionCreated={handlePreventionCreated}
       />
     </div>
   )

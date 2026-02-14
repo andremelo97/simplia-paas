@@ -1245,6 +1245,8 @@
       "session": "Sessão",
       "quote": "Cotação",
       "clinical_report": "Relatório Clínico",
+      "clinical_note": "Nota Clínica",
+      "prevention": "Prevenção",
       "public_quote": "Link de cotação pública",
       "landing_page": "Landing Page",
       "item": "Item"
@@ -1253,6 +1255,8 @@
       "session": "Editar sessão",
       "quote": "Editar cotação",
       "clinical_report": "Editar relatório clínico",
+      "clinical_note": "Editar nota clínica",
+      "prevention": "Editar prevenção",
       "copy_link_password": "Copiar link e senha",
       "item": "Ver item"
     }

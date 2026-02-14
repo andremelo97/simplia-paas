@@ -144,6 +144,8 @@
       "session": "Session",
       "quote": "Quote",
       "clinical_report": "Clinical Report",
+      "clinical_note": "Clinical Note",
+      "prevention": "Prevention",
       "public_quote": "Public Quote Link",
       "landing_page": "Landing Page",
       "item": "Item"
@@ -152,6 +154,8 @@
       "session": "Edit Session",
       "quote": "Edit Quote",
       "clinical_report": "Edit Clinical Report",
+      "clinical_note": "Edit Clinical Note",
+      "prevention": "Edit Prevention",
       "copy_link_password": "Copy Link & Password",
       "item": "View Item"
     }

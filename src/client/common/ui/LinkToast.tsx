@@ -9,7 +9,7 @@ interface LinkToastProps {
   itemNumber: string
   itemId: string
   onClose: () => void
-  type?: 'session' | 'quote' | 'clinical-report' | 'landing-page'
+  type?: 'session' | 'quote' | 'clinical-report' | 'clinical-note' | 'prevention' | 'landing-page'
   duration?: number // em millisegundos, default 10000
   publicUrl?: string // For landing-page type
   password?: string // For landing-page type
@@ -72,9 +72,11 @@ export const LinkToast: React.FC<LinkToastProps> = ({
     if (type === 'session') {
       path = `/sessions/${itemId}/edit`
     } else if (type === 'quote') {
-      path = `/quotes/${itemId}/edit`
-    } else if (type === 'clinical-report') {
-      path = `/clinical-reports/${itemId}/edit`
+      path = `/documents/quote/${itemId}/edit`
+    } else if (type === 'clinical-report' || type === 'clinical-note') {
+      path = `/documents/clinical-note/${itemId}/edit`
+    } else if (type === 'prevention') {
+      path = `/documents/prevention/${itemId}/edit`
     } else {
       path = '/'
     }
@@ -96,7 +98,8 @@ export const LinkToast: React.FC<LinkToastProps> = ({
   const getTypeText = () => {
     if (type === 'session') return t('link_toast.types.session')
     if (type === 'quote') return t('link_toast.types.quote')
-    if (type === 'clinical-report') return t('link_toast.types.clinical_report')
+    if (type === 'clinical-report' || type === 'clinical-note') return t('link_toast.types.clinical_note')
+    if (type === 'prevention') return t('link_toast.types.prevention')
     if (type === 'landing-page') return t('link_toast.types.landing_page')
     return t('link_toast.types.item')
   }
@@ -104,7 +107,8 @@ export const LinkToast: React.FC<LinkToastProps> = ({
   const getActionText = () => {
     if (type === 'session') return t('link_toast.actions.session')
     if (type === 'quote') return t('link_toast.actions.quote')
-    if (type === 'clinical-report') return t('link_toast.actions.clinical_report')
+    if (type === 'clinical-report' || type === 'clinical-note') return t('link_toast.actions.clinical_note')
+    if (type === 'prevention') return t('link_toast.actions.prevention')
     if (type === 'landing-page') return t('link_toast.actions.copy_link_password')
     return t('link_toast.actions.item')
   }

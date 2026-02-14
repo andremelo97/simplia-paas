@@ -197,7 +197,7 @@ export const NewSession: React.FC = () => {
 
   // Link toast state
   const [showLinkToast, setShowLinkToast] = useState(false)
-  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report'} | null>(null)
+  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report' | 'clinical-note' | 'prevention'} | null>(null)
 
   // UI state for dropdown and patient flow
   const [transcribeMode, setTranscribeMode] = useState<'start' | 'upload'>('start')
@@ -795,11 +795,47 @@ export const NewSession: React.FC = () => {
       // Silent fail
     }
 
-    // Show quote link toast (redirects to /quotes)
+    // Show quote link toast (redirects to /documents/quote)
     setToastData({
       itemId: quoteId,
       itemNumber: quoteNumber,
       type: 'quote'
+    })
+    setShowLinkToast(true)
+  }
+
+  // Handle Clinical Note creation callback
+  const handleTemplateClinicalNoteCreated = (noteId: string, noteNumber: string) => {
+    // Clear draft from localStorage after successful creation (but keep form state)
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY)
+    } catch {
+      // Silent fail
+    }
+
+    // Show clinical note link toast (redirects to /documents/clinical-note)
+    setToastData({
+      itemId: noteId,
+      itemNumber: noteNumber,
+      type: 'clinical-note'
+    })
+    setShowLinkToast(true)
+  }
+
+  // Handle Prevention creation callback
+  const handleTemplatePreventionCreated = (preventionId: string, preventionNumber: string) => {
+    // Clear draft from localStorage after successful creation (but keep form state)
+    try {
+      localStorage.removeItem(DRAFT_STORAGE_KEY)
+    } catch {
+      // Silent fail
+    }
+
+    // Show prevention link toast (redirects to /documents/prevention)
+    setToastData({
+      itemId: preventionId,
+      itemNumber: preventionNumber,
+      type: 'prevention'
     })
     setShowLinkToast(true)
   }
@@ -1658,6 +1694,8 @@ export const NewSession: React.FC = () => {
         patient={selectedPatient || createdPatient}
         sessionId={session?.id}
         onQuoteCreated={handleTemplateQuoteCreated}
+        onClinicalNoteCreated={handleTemplateClinicalNoteCreated}
+        onPreventionCreated={handleTemplatePreventionCreated}
       />
 
       {/* Session Link Toast */}

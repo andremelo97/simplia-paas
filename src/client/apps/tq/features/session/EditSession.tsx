@@ -41,7 +41,7 @@ export const EditSession: React.FC = () => {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showTemplateModal, setShowTemplateModal] = useState(false)
   const [showLinkToast, setShowLinkToast] = useState(false)
-  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report'} | null>(null)
+  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report' | 'clinical-note' | 'prevention'} | null>(null)
   const [isDownloadingAudio, setIsDownloadingAudio] = useState(false)
 
   useEffect(() => {
@@ -447,6 +447,26 @@ export const EditSession: React.FC = () => {
             itemId: quoteId,
             itemNumber: quoteNumber,
             type: 'quote'
+          })
+          setShowLinkToast(true)
+        }}
+        onClinicalNoteCreated={(noteId, noteNumber) => {
+          setShowTemplateModal(false)
+          // Show clinical note link toast
+          setToastData({
+            itemId: noteId,
+            itemNumber: noteNumber,
+            type: 'clinical-note'
+          })
+          setShowLinkToast(true)
+        }}
+        onPreventionCreated={(preventionId, preventionNumber) => {
+          setShowTemplateModal(false)
+          // Show prevention link toast
+          setToastData({
+            itemId: preventionId,
+            itemNumber: preventionNumber,
+            type: 'prevention'
           })
           setShowLinkToast(true)
         }}

@@ -254,6 +254,26 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Quote deleted successfully."
   },
 
+  // TQ - Clinical Note operations
+  CLINICAL_NOTE_CREATED: {
+    title: "Clinical Note Created",
+    message: "Clinical note created successfully."
+  },
+  CLINICAL_NOTE_UPDATED: {
+    title: "Clinical Note Updated",
+    message: "Clinical note updated successfully."
+  },
+
+  // TQ - Prevention operations
+  PREVENTION_CREATED: {
+    title: "Prevention Created",
+    message: "Prevention document created successfully."
+  },
+  PREVENTION_UPDATED: {
+    title: "Prevention Updated",
+    message: "Prevention document updated successfully."
+  },
+
   // TQ - Session operations
   SESSION_CREATED: {
     title: "Session Created",

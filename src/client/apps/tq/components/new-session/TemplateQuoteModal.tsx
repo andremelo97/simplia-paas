@@ -30,6 +30,8 @@ interface TemplateQuoteModalProps {
   patient?: Patient | null        // Optional when using session selector
   sessionId?: string              // If provided, skips session selection
   onQuoteCreated?: (quoteId: string, quoteNumber: string) => void
+  onClinicalNoteCreated?: (noteId: string, noteNumber: string) => void
+  onPreventionCreated?: (preventionId: string, preventionNumber: string) => void
 }
 
 export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
@@ -38,7 +40,9 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
   transcription: propTranscription,
   patient: propPatient,
   sessionId: propSessionId,
-  onQuoteCreated
+  onQuoteCreated,
+  onClinicalNoteCreated,
+  onPreventionCreated
 }) => {
   const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
@@ -212,7 +216,10 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
             sessionId: targetSessionId,
             content: filledTemplateResponse.filledTemplate
           }
-          await clinicalNotesService.create(noteData)
+          const newNote = await clinicalNotesService.create(noteData)
+          if (onClinicalNoteCreated) {
+            onClinicalNoteCreated(newNote.id, newNote.number)
+          }
           break
         }
         case 'prevention': {
@@ -221,7 +228,10 @@ export const TemplateQuoteModal: React.FC<TemplateQuoteModalProps> = ({
             content: filledTemplateResponse.filledTemplate,
             status: 'draft'
           }
-          await preventionService.create(preventionData)
+          const newPrevention = await preventionService.create(preventionData)
+          if (onPreventionCreated) {
+            onPreventionCreated(newPrevention.id, newPrevention.number)
+          }
           break
         }
       }

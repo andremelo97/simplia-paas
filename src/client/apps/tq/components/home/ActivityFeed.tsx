@@ -1,14 +1,14 @@
 import React from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@client/common/ui'
-import { FileText, Users, Receipt, CheckCircle, Clock, ClipboardList, Share2, Layout } from 'lucide-react'
+import { FileText, Users, Receipt, CheckCircle, Clock, ClipboardList, Share2, Layout, Shield } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 interface Activity {
   id: string
-  type: 'patient_added' | 'session_created' | 'quote_created' | 'quote_approved' | 'session_completed' | 'report_created' | 'public_quote_created' | 'template_created' | 'public_quote_template_created'
+  type: 'patient_added' | 'session_created' | 'quote_created' | 'quote_approved' | 'session_completed' | 'report_created' | 'prevention_created' | 'public_quote_created' | 'template_created' | 'public_quote_template_created'
   message: string
   timestamp: string
-  icon: 'patient' | 'session' | 'quote' | 'approved' | 'completed' | 'report' | 'public_quote' | 'template' | 'public_quote_template'
+  icon: 'patient' | 'session' | 'quote' | 'approved' | 'completed' | 'report' | 'prevention' | 'public_quote' | 'template' | 'public_quote_template'
   path?: string
 }
 
@@ -40,6 +40,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoadin
         return <Receipt className={`${iconClass} text-[#E91E63]`} />
       case 'report':
         return <ClipboardList className={`${iconClass} text-blue-600`} />
+      case 'prevention':
+        return <Shield className={`${iconClass} text-teal-600`} />
       case 'public_quote':
         return <Share2 className={`${iconClass} text-[#5ED6CE]`} />
       case 'template':
@@ -65,6 +67,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities, isLoadin
         return 'bg-pink-100'
       case 'report':
         return 'bg-blue-100'
+      case 'prevention':
+        return 'bg-teal-100'
       case 'public_quote':
         return 'bg-teal-100'
       case 'template':

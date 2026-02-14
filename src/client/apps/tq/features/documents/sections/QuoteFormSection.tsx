@@ -1,7 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
-import { Button, LinkToast } from '@client/common/ui'
+import { LinkToast } from '@client/common/ui'
 import { QuoteItemsManager } from '../../quotes/QuoteItemsManager'
 import { GenerateLandingPageModal } from '../../../components/landing-pages/GenerateLandingPageModal'
 import { LandingPageCard } from '../components/LandingPageCard'
@@ -39,13 +38,6 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
   canEdit
 }) => {
   const { t } = useTranslation('tq')
-  const navigate = useNavigate()
-
-  const handleViewPublicLink = () => {
-    if (document?.number) {
-      navigate(`/landing-pages/links?quote=${encodeURIComponent(document.number)}`)
-    }
-  }
 
   return (
     <>
@@ -59,27 +51,15 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
 
       {/* Landing Page Card - Only for users who can edit */}
       {canEdit && (
-        <>
-          <LandingPageCard
-            documentId={documentId}
-            documentNumber={document?.number || ''}
-            config={config}
-            patientName={patientName}
-            patientEmail={patientEmail}
-            patientPhone={patientPhone}
-            onShowGenerateModal={() => onFormStateChange({ showGenerateModal: true })}
-          />
-
-          {/* Header action button */}
-          <div className="flex justify-end -mt-4">
-            <Button
-              variant="primary"
-              onClick={handleViewPublicLink}
-            >
-              {t('quotes.view_public_link')}
-            </Button>
-          </div>
-        </>
+        <LandingPageCard
+          documentId={documentId}
+          documentNumber={document?.number || ''}
+          config={config}
+          patientName={patientName}
+          patientEmail={patientEmail}
+          patientPhone={patientPhone}
+          onShowGenerateModal={() => onFormStateChange({ showGenerateModal: true })}
+        />
       )}
 
       {/* Generate Landing Page Modal */}

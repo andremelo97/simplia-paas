@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X } from 'lucide-react'
+import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X, Shield } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -15,6 +15,7 @@ import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
 import { quotesService, Quote } from '../../services/quotes'
 import { clinicalNotesService, ClinicalNote } from '../../services/clinicalNotes'
+import { preventionService, Prevention } from '../../services/prevention'
 import { HistoryRow } from '../../components/patients/history/HistoryRow'
 import { TimelineItem } from '../../components/patients/history/TimelineItem'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -23,7 +24,7 @@ import { useDateFilterParams } from '@client/common/utils/dateFilters'
 // Timeline event type
 interface TimelineEvent {
   id: string
-  type: 'session' | 'quote' | 'clinical' | 'patient_registered'
+  type: 'session' | 'quote' | 'clinical' | 'prevention' | 'patient_registered'
   title: string
   preview?: string
   status?: string
@@ -42,13 +43,15 @@ export const PatientHistory: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [clinicalReports, setClinicalNotes] = useState<ClinicalNote[]>([])
+  const [prevention, setPrevention] = useState<Prevention[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'sessions' | 'quotes' | 'clinical' | 'timeline'>('timeline')
+  const [activeTab, setActiveTab] = useState<'sessions' | 'quotes' | 'clinical' | 'prevention' | 'timeline'>('timeline')
 
   // Pagination state for each tab
   const [sessionsPage, setSessionsPage] = useState(1)
   const [quotesPage, setQuotesPage] = useState(1)
   const [clinicalPage, setClinicalPage] = useState(1)
+  const [preventionPage, setPreventionPage] = useState(1)
   const [timelinePage, setTimelinePage] = useState(1)
   const pageSize = 10
 
@@ -61,8 +64,8 @@ export const PatientHistory: React.FC = () => {
   const metrics = {
     totalSessions: sessions.length,
     totalQuotes: quotes.length,
-    approvedQuotes: quotes.filter(q => q.status === 'approved').length,
-    totalReports: clinicalReports.length
+    totalReports: clinicalReports.length,
+    totalPrevention: prevention.length
   }
 
   // Build timeline events from all data sources - sorted newest first (most recent on top)
@@ -119,9 +122,22 @@ export const PatientHistory: React.FC = () => {
       })
     })
 
+    // Add prevention events
+    prevention.forEach(prev => {
+      events.push({
+        id: prev.id,
+        type: 'prevention',
+        title: t('patients.history.prevention_title', { number: prev.number }),
+        preview: prev.content ? prev.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined,
+        status: prev.status,
+        date: formatDateTime(prev.createdAt),
+        timestamp: new Date(prev.createdAt).getTime()
+      })
+    })
+
     // Sort newest first (descending by timestamp)
     return events.sort((a, b) => b.timestamp - a.timestamp)
-  }, [patient, sessions, quotes, clinicalReports, formatDateTime])
+  }, [patient, sessions, quotes, clinicalReports, prevention, formatDateTime])
 
   const getEventIcon = (type: TimelineEvent['type']) => {
     const iconClasses = "h-10 w-10 rounded-full flex items-center justify-center"
@@ -143,6 +159,12 @@ export const PatientHistory: React.FC = () => {
         return (
           <div className={`${iconClasses} bg-gray-100`}>
             <Stethoscope className="w-5 h-5 text-gray-900" />
+          </div>
+        )
+      case 'prevention':
+        return (
+          <div className={`${iconClasses} bg-teal-100`}>
+            <Shield className="w-5 h-5 text-teal-600" />
           </div>
         )
       case 'patient_registered':
@@ -179,21 +201,24 @@ export const PatientHistory: React.FC = () => {
         if (dateParams.created_from_utc) filterParams.created_from = dateParams.created_from_utc
         if (dateParams.created_to_utc) filterParams.created_to = dateParams.created_to_utc
 
-        // Load sessions, quotes, and clinical reports for this patient
-        const [sessionsRes, quotesRes, reportsRes] = await Promise.all([
+        // Load sessions, quotes, clinical reports, and prevention for this patient
+        const [sessionsRes, quotesRes, reportsRes, preventionRes] = await Promise.all([
           sessionsService.list(filterParams),
           quotesService.list(filterParams),
-          clinicalNotesService.list(filterParams)
+          clinicalNotesService.list(filterParams),
+          preventionService.list(filterParams)
         ])
 
         // Filter by patient_id
         const patientSessions = sessionsRes.data.filter(s => s.patient_id === id)
         const patientQuotes = quotesRes.data.filter(q => q.patient_id === id)
         const patientReports = reportsRes.data.filter(r => r.patient_id === id)
+        const patientPrevention = preventionRes.data.filter(p => p.patient_id === id)
 
         setSessions(patientSessions)
         setQuotes(patientQuotes)
         setClinicalNotes(patientReports)
+        setPrevention(patientPrevention)
       } catch (error) {
         // Failed to load patient data
       } finally {
@@ -342,11 +367,11 @@ export const PatientHistory: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">{t('metrics.approved_quotes')}</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.approvedQuotes}</p>
+                <p className="text-sm text-gray-600">{t('metrics.total_reports')}</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.totalReports}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-[#5ED6CE]" />
+              <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <Stethoscope className="w-6 h-6 text-gray-900" />
               </div>
             </div>
           </CardContent>
@@ -356,11 +381,11 @@ export const PatientHistory: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">{t('metrics.total_reports')}</p>
-                <p className="text-2xl font-bold text-gray-900">{metrics.totalReports}</p>
+                <p className="text-sm text-gray-600">{t('metrics.total_prevention')}</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.totalPrevention}</p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-                <Stethoscope className="w-6 h-6 text-gray-900" />
+              <div className="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center">
+                <Shield className="w-6 h-6 text-teal-600" />
               </div>
             </div>
           </CardContent>
@@ -400,6 +425,16 @@ export const PatientHistory: React.FC = () => {
               }`}
             >
               {t('tabs.clinical')}
+            </button>
+            <button
+              onClick={() => setActiveTab('prevention')}
+              className={`px-8 py-4 text-sm font-medium transition-colors ${
+                activeTab === 'prevention'
+                  ? 'text-[#B725B7] border-b-2 border-[#B725B7]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {t('tabs.prevention')}
             </button>
             <button
               onClick={() => setActiveTab('timeline')}
@@ -568,6 +603,56 @@ export const PatientHistory: React.FC = () => {
             </>
           )}
 
+          {/* Prevention Tab */}
+          {activeTab === 'prevention' && (
+            <>
+              {prevention.length > 0 && (
+                <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+                  <p className="text-sm text-gray-600">
+                    {t('patients.history.showing_results', {
+                      from: Math.min((preventionPage - 1) * pageSize + 1, prevention.length),
+                      to: Math.min(preventionPage * pageSize, prevention.length),
+                      total: prevention.length
+                    })}
+                  </p>
+                </div>
+              )}
+              <div className="divide-y divide-gray-100">
+                {prevention.length > 0 ? (
+                  prevention
+                    .slice((preventionPage - 1) * pageSize, preventionPage * pageSize)
+                    .map((prev) => (
+                      <HistoryRow
+                        key={prev.id}
+                        id=""
+                        type="prevention"
+                        title={t('patients.history.prevention_title', { number: prev.number })}
+                        preview={prev.content ? prev.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined}
+                        status={prev.status}
+                        date={formatDateTime(prev.createdAt)}
+                        icon={getEventIcon('prevention')}
+                        viewPath={`/documents/prevention/${prev.id}/edit`}
+                      />
+                    ))
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    {t('patients.history.no_prevention')}
+                  </div>
+                )}
+              </div>
+              {prevention.length > pageSize && (
+                <div className="p-4">
+                  <Paginator
+                    currentPage={preventionPage}
+                    totalItems={prevention.length}
+                    itemsPerPage={pageSize}
+                    onPageChange={setPreventionPage}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
           {/* Timeline Tab */}
           {activeTab === 'timeline' && (
             <>
@@ -597,6 +682,8 @@ export const PatientHistory: React.FC = () => {
                               return () => navigate(`/quotes/${event.id}/edit`)
                             case 'clinical':
                               return () => navigate(`/clinical-reports/${event.id}/view`)
+                            case 'prevention':
+                              return () => navigate(`/documents/prevention/${event.id}/edit`)
                             default:
                               return undefined
                           }

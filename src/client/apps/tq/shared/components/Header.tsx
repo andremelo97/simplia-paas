@@ -7,6 +7,7 @@ import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
 import { quotesService, Quote } from '../../services/quotes'
 import { clinicalNotesService, ClinicalNote } from '../../services/clinicalNotes'
+import { preventionService, Prevention } from '../../services/prevention'
 import { templatesService, Template } from '../../services/templates'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useTranslation } from 'react-i18next'
@@ -120,6 +121,7 @@ export const Header: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [clinicalNotes, setClinicalNotes] = useState<ClinicalNote[]>([])
+  const [prevention, setPrevention] = useState<Prevention[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
   const [landingPageTemplates, setLandingPageTemplates] = useState<LandingPageTemplate[]>([])
   const [isSupportOpen, setIsSupportOpen] = useState(false)
@@ -128,11 +130,12 @@ export const Header: React.FC = () => {
   useEffect(() => {
     const loadSearchData = async () => {
       try {
-        const [patientsRes, sessionsRes, quotesRes, reportsRes, templatesRes, landingPageTemplatesRes] = await Promise.all([
+        const [patientsRes, sessionsRes, quotesRes, reportsRes, preventionRes, templatesRes, landingPageTemplatesRes] = await Promise.all([
           patientsService.list({}),
           sessionsService.list({}),
           quotesService.list({}),
           clinicalNotesService.list({}),
+          preventionService.list({}),
           templatesService.getAll({}),
           landingPagesService.listTemplates({ active: true })
         ])
@@ -141,6 +144,7 @@ export const Header: React.FC = () => {
         setSessions(sessionsRes.data || [])
         setQuotes(quotesRes.data || [])
         setClinicalNotes(reportsRes.data || [])
+        setPrevention(preventionRes.data || [])
         setTemplates(templatesRes.templates || [])
         setLandingPageTemplates(landingPageTemplatesRes.data || [])
       } catch (error) {
@@ -199,6 +203,7 @@ export const Header: React.FC = () => {
             sessions={sessions}
             quotes={quotes}
             clinicalNotes={clinicalNotes}
+            prevention={prevention}
             templates={templates}
             landingPageTemplates={landingPageTemplates}
           />

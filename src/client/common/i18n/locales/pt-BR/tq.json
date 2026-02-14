@@ -151,7 +151,10 @@
       "badge_quote": "cotação",
       "badge_report": "relatório",
       "badge_template": "template",
-      "badge_pq_template": "template pq"
+      "badge_pq_template": "template pq",
+      "badge_note": "nota",
+      "badge_lp_template": "template lp",
+      "badge_prevention": "prevenção"
     },
     "activities": {
       "patient_added": "Paciente {{firstName}} {{lastName}} foi adicionado",
@@ -159,6 +162,9 @@
       "session_created": "Sessão {{number}} criada para {{patientName}}",
       "quote_created": "Cotação {{number}} criada para {{patientName}}",
       "report_created": "Relatório clínico {{number}} criado para {{patientName}}",
+      "prevention_created": "Prevenção {{number}} criada para {{patientName}}",
+      "landing_page_created": "Landing page criada para {{documentNumber}}",
+      "lp_template_created": "Template de landing page \"{{name}}\" foi criado",
       "public_quote_created": "Link de cotação pública criado para Cotação {{quoteNumber}}",
       "public_quote_template_created": "Template de cotação pública \"{{name}}\" foi criado",
       "template_created": "Template \"{{title}}\" foi criado"
@@ -235,6 +241,8 @@
       "no_sessions": "Nenhuma sessão encontrada para este paciente",
       "no_quotes": "Nenhuma cotação encontrada para este paciente",
       "no_clinical_reports": "Nenhum relatório clínico encontrado para este paciente",
+      "no_prevention": "Nenhuma prevenção encontrada para este paciente",
+      "prevention_title": "Prevenção {{number}}",
       "no_events": "Nenhum evento encontrado para este paciente",
       "filters": "Filtros",
       "active": "Ativo",
@@ -643,6 +651,11 @@
     "session": "Sessão",
     "content_section": "Conteúdo da Prevenção",
     "patient": "Paciente",
+    "status": {
+      "draft": "Rascunho",
+      "sent": "Enviado",
+      "viewed": "Visualizado"
+    },
     "pages": {
       "list_title": "Lista de Prevenções",
       "preventions": "prevenções",
@@ -1068,12 +1081,14 @@
     "total_sessions": "Total de Sessões",
     "total_quotes": "Total de Cotações",
     "approved_quotes": "Cotações Aprovadas",
-    "total_reports": "Total de Relatórios"
+    "total_reports": "Total de Relatórios",
+    "total_prevention": "Total de Prevenções"
   },
   "tabs": {
     "sessions": "Sessões",
     "quotes": "Cotações",
     "clinical": "Clínico",
+    "prevention": "Prevenção",
     "timeline": "Linha do Tempo"
   },
   "sidebar": {

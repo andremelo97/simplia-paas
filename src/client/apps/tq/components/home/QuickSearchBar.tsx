@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Users, FileText, Receipt, ClipboardList, FileType, Layout } from 'lucide-react'
+import { Users, FileText, Receipt, ClipboardList, FileType, Layout, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SearchInput } from '@client/common/ui'
 import { Patient } from '../../services/patients'
 import { Session } from '../../services/sessions'
 import { Quote } from '../../services/quotes'
 import { ClinicalNote } from '../../services/clinicalNotes'
+import { Prevention } from '../../services/prevention'
 import { Template } from '../../services/templates'
 import { LandingPageTemplate } from '../../services/landingPages'
 import { useTranslation } from 'react-i18next'
 
 interface SearchResult {
   id: string
-  type: 'patient' | 'session' | 'quote' | 'clinical_note' | 'template' | 'landing_page_template'
+  type: 'patient' | 'session' | 'quote' | 'clinical_note' | 'prevention' | 'template' | 'landing_page_template'
   title: string
   subtitle: string
   path: string
@@ -23,11 +24,12 @@ interface QuickSearchBarProps {
   sessions: Session[]
   quotes: Quote[]
   clinicalNotes: ClinicalNote[]
+  prevention: Prevention[]
   templates: Template[]
   landingPageTemplates: LandingPageTemplate[]
 }
 
-export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessions, quotes, clinicalNotes, templates, landingPageTemplates }) => {
+export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessions, quotes, clinicalNotes, prevention, templates, landingPageTemplates }) => {
   const { t } = useTranslation('tq')
   const [query, setQuery] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -120,6 +122,24 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
         })
       })
 
+    // Search prevention
+    prevention
+      .filter((p) => {
+        const number = p.number?.toLowerCase() || ''
+        const patientName = `${p.patient_first_name || ''} ${p.patient_last_name || ''}`.toLowerCase()
+        return number.includes(searchQuery) || patientName.includes(searchQuery)
+      })
+      .slice(0, 3)
+      .forEach((p) => {
+        foundResults.push({
+          id: p.id,
+          type: 'prevention',
+          title: p.number,
+          subtitle: `${p.patient_first_name || ''} ${p.patient_last_name || ''}`.trim() || t('sessions.unknown_patient'),
+          path: `/documents/prevention/${p.id}/edit`
+        })
+      })
+
     // Search templates
     templates
       .filter((t) => {
@@ -159,7 +179,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
     setResults(foundResults)
     setIsOpen(foundResults.length > 0)
     setSelectedIndex(0)
-  }, [query, patients, sessions, quotes, clinicalNotes, templates, landingPageTemplates])
+  }, [query, patients, sessions, quotes, clinicalNotes, prevention, templates, landingPageTemplates])
 
   // Keyboard navigation
   useEffect(() => {
@@ -217,6 +237,8 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
         return <Receipt className="w-4 h-4 text-[#E91E63]" />
       case 'clinical_note':
         return <ClipboardList className="w-4 h-4 text-blue-600" />
+      case 'prevention':
+        return <Shield className="w-4 h-4 text-teal-600" />
       case 'template':
         return <FileType className="w-4 h-4 text-purple-600" />
       case 'landing_page_template':
@@ -266,7 +288,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
 
               {/* Type badge */}
               <span className="flex-shrink-0 text-xs text-gray-400 uppercase">
-                {result.type === 'clinical_note' ? t('home.search.badge_note') : result.type === 'landing_page_template' ? t('home.search.badge_lp_template') : t(`home.search.badge_${result.type}`)}
+                {result.type === 'clinical_note' ? t('home.search.badge_note') : result.type === 'landing_page_template' ? t('home.search.badge_lp_template') : result.type === 'prevention' ? t('home.search.badge_prevention') : t(`home.search.badge_${result.type}`)}
               </span>
             </div>
           ))}

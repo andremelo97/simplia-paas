@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Eye } from 'lucide-react'
 import { Button, LinkToast } from '@client/common/ui'
+
 import { LandingPageCard } from '../components/LandingPageCard'
 import { GenerateLandingPageModal } from '../../../components/landing-pages/GenerateLandingPageModal'
 import { DocumentConfig, DocumentData } from '../documentConfig'
@@ -37,13 +38,6 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
   canEdit
 }) => {
   const { t } = useTranslation('tq')
-  const navigate = useNavigate()
-
-  const handleViewPublicLink = () => {
-    if (document?.number) {
-      navigate(`/landing-pages/links?prevention=${encodeURIComponent(document.number)}`)
-    }
-  }
 
   // Prevention has Landing Page generation similar to Quote
   if (!canEdit) return null
@@ -60,16 +54,6 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
         patientPhone={patientPhone}
         onShowGenerateModal={() => onFormStateChange({ showGenerateModal: true })}
       />
-
-      {/* Header action button */}
-      <div className="flex justify-end -mt-4">
-        <Button
-          variant="primary"
-          onClick={handleViewPublicLink}
-        >
-          {t('prevention.view_public_link', 'View Public Links')}
-        </Button>
-      </div>
 
       {/* Generate Landing Page Modal */}
       {document && (

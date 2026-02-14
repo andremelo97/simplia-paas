@@ -14,7 +14,7 @@ export const LinksTab: React.FC = () => {
   const navigate = useNavigate()
   const { convertDateRange } = useDateFilterParams()
   const [documentFilter, setDocumentFilter] = useState(searchParams.get('document') || '')
-  const [documentTypeFilter, setDocumentTypeFilter] = useState('all')
+  const [documentTypeFilter, setDocumentTypeFilter] = useState(searchParams.get('documentType') || 'all')
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [showInactiveOnly, setShowInactiveOnly] = useState(false)
   const [createdFrom, setCreatedFrom] = useState('')
@@ -39,8 +39,12 @@ export const LinksTab: React.FC = () => {
   // Update filter when URL params change
   useEffect(() => {
     const documentParam = searchParams.get('document')
+    const documentTypeParam = searchParams.get('documentType')
     if (documentParam) {
       setDocumentFilter(documentParam)
+    }
+    if (documentTypeParam) {
+      setDocumentTypeFilter(documentTypeParam)
     }
   }, [searchParams])
 

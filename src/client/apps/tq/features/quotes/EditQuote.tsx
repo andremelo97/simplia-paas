@@ -338,12 +338,6 @@ export const EditQuote: React.FC = () => {
     )
   }
 
-  const handleViewPublicLink = () => {
-    if (quote?.number) {
-      navigate(`/public-quotes/links?quote=${encodeURIComponent(quote.number)}`)
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -353,14 +347,6 @@ export const EditQuote: React.FC = () => {
             {t('quotes.quote')} {quote.number} • {quote.patient_first_name || quote.patient_last_name ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim() : ''}
           </p>
         </div>
-        {canEdit && (
-          <Button
-            variant="primary"
-            onClick={handleViewPublicLink}
-          >
-            {t('quotes.view_public_link')}
-          </Button>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -582,11 +568,11 @@ export const EditQuote: React.FC = () => {
               readonly={!canEdit}
             />
 
-            {/* Public Quote Template Selection - Only show for users who can edit */}
+            {/* Landing Page - Only show for users who can edit */}
             {canEdit && (
               <Card>
                 <CardHeader className="p-6 pb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">{t('quotes.public_quote')}</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">{t('landing_pages.title', 'Landing Page')}</h2>
                 </CardHeader>
 
                 <CardContent className="space-y-4 px-6 pb-6">
@@ -618,7 +604,15 @@ export const EditQuote: React.FC = () => {
                         variant="primary"
                         onClick={() => setShowGenerateModal(true)}
                       >
-                        {t('quotes.generate_public_quote')}
+                        {t('landing_pages.generate', 'Generate Landing Page')}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        variant="tertiary"
+                        onClick={() => navigate(`/landing-pages/links?document=${encodeURIComponent(quote.number)}&documentType=quote`)}
+                      >
+                        {t('landing_pages.view_landing_pages', 'View Landing Pages')}
                       </Button>
                     </div>
                   )}

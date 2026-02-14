@@ -60,9 +60,9 @@ export const LandingPageCard: React.FC<LandingPageCardProps> = ({
     }
   }
 
-  const handleViewPublicLink = () => {
+  const handleViewLandingPages = () => {
     if (documentNumber) {
-      navigate(`/landing-pages/links?${config.type}=${encodeURIComponent(documentNumber)}`)
+      navigate(`/landing-pages/links?document=${encodeURIComponent(documentNumber)}&documentType=${config.type}`)
     }
   }
 
@@ -70,7 +70,7 @@ export const LandingPageCard: React.FC<LandingPageCardProps> = ({
     <Card>
       <CardHeader className="p-6 pb-4">
         <h2 className="text-lg font-semibold text-gray-900">
-          {t('quotes.public_quote', 'Landing Page')}
+          {t('landing_pages.title', 'Landing Page')}
         </h2>
       </CardHeader>
 
@@ -104,21 +104,19 @@ export const LandingPageCard: React.FC<LandingPageCardProps> = ({
                 variant="primary"
                 onClick={onShowGenerateModal}
               >
-                {t('quotes.generate_public_quote')}
+                {t('landing_pages.generate', 'Generate Landing Page')}
               </Button>
             )}
+
+            <Button
+              type="button"
+              variant="tertiary"
+              onClick={handleViewLandingPages}
+            >
+              {t('landing_pages.view_landing_pages', 'View Landing Pages')}
+            </Button>
           </div>
         )}
-
-        <div className="pt-2">
-          <Button
-            variant="ghost"
-            onClick={handleViewPublicLink}
-            className="text-sm"
-          >
-            {t('quotes.view_public_link', 'View existing links')}
-          </Button>
-        </div>
       </CardContent>
     </Card>
   )

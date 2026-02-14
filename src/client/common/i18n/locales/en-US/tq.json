@@ -184,7 +184,10 @@
       "badge_quote": "quote",
       "badge_report": "report",
       "badge_template": "template",
-      "badge_pq_template": "pq template"
+      "badge_pq_template": "pq template",
+      "badge_note": "note",
+      "badge_lp_template": "lp template",
+      "badge_prevention": "prevention"
     },
     "activities": {
       "patient_added": "Patient {{firstName}} {{lastName}} was added",
@@ -192,6 +195,9 @@
       "session_created": "Session {{number}} created for {{patientName}}",
       "quote_created": "Quote {{number}} created for {{patientName}}",
       "report_created": "Clinical report {{number}} created for {{patientName}}",
+      "prevention_created": "Prevention {{number}} created for {{patientName}}",
+      "landing_page_created": "Landing page created for {{documentNumber}}",
+      "lp_template_created": "Landing page template \"{{name}}\" was created",
       "public_quote_created": "Public quote link created for Quote {{quoteNumber}}",
       "public_quote_template_created": "Public quote template \"{{name}}\" was created",
       "template_created": "Template \"{{title}}\" was created"
@@ -268,6 +274,8 @@
       "no_sessions": "No sessions found for this patient",
       "no_quotes": "No quotes found for this patient",
       "no_clinical_reports": "No clinical reports found for this patient",
+      "no_prevention": "No prevention found for this patient",
+      "prevention_title": "Prevention {{number}}",
       "no_events": "No events found for this patient",
       "filters": "Filters",
       "active": "Active",
@@ -676,6 +684,11 @@
     "session": "Session",
     "content_section": "Prevention Content",
     "patient": "Patient",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "viewed": "Viewed"
+    },
     "pages": {
       "list_title": "Preventions List",
       "preventions": "preventions",
@@ -1101,12 +1114,14 @@
     "total_sessions": "Total Sessions",
     "total_quotes": "Total Quotes",
     "approved_quotes": "Approved Quotes",
-    "total_reports": "Total Reports"
+    "total_reports": "Total Reports",
+    "total_prevention": "Total Prevention"
   },
   "tabs": {
     "sessions": "Sessions",
     "quotes": "Quotes",
     "clinical": "Clinical",
+    "prevention": "Prevention",
     "timeline": "Timeline"
   },
   "sidebar": {

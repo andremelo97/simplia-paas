@@ -9,12 +9,14 @@ import { quotesService, Quote } from '../../services/quotes'
 import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
 import { clinicalNotesService, ClinicalNote } from '../../services/clinicalNotes'
+import { preventionService, Prevention } from '../../services/prevention'
 import { landingPagesService, LandingPage, LandingPageTemplate } from '../../services/landingPages'
 import { templatesService, Template } from '../../services/templates'
 import { QuickActionCard } from '../../components/home/QuickActionCard'
 import { QuoteCard } from '../../components/home/QuoteCard'
 import { SessionCard } from '../../components/home/SessionCard'
 import { ReportCard } from '../../components/home/ReportCard'
+import { PreventionCard } from '../../components/home/PreventionCard'
 import { RecentPatientRow } from '../../components/home/RecentPatientRow'
 import { ActivityFeed } from '../../components/home/ActivityFeed'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -29,6 +31,7 @@ export const Home: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [reports, setReports] = useState<ClinicalNote[]>([])
+  const [prevention, setPrevention] = useState<Prevention[]>([])
   const [publicQuotes, setLandingPages] = useState<LandingPage[]>([])
   const [publicQuoteTemplates, setLandingPageTemplates] = useState<LandingPageTemplate[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
@@ -36,15 +39,16 @@ export const Home: React.FC = () => {
   const [isLoadingPatients, setIsLoadingPatients] = useState(true)
   const [isLoadingSessions, setIsLoadingSessions] = useState(true)
   const [isLoadingReports, setIsLoadingReports] = useState(true)
+  const [isLoadingPrevention, setIsLoadingPrevention] = useState(true)
 
   // Generate activity feed from recent data
   const activities = React.useMemo(() => {
     const allActivities: Array<{
       id: string
-      type: 'patient_added' | 'session_created' | 'quote_created' | 'report_created' | 'public_quote_created' | 'template_created' | 'public_quote_template_created'
+      type: 'patient_added' | 'session_created' | 'quote_created' | 'report_created' | 'prevention_created' | 'public_quote_created' | 'template_created' | 'public_quote_template_created'
       message: string
       timestamp: string
-      icon: 'patient' | 'session' | 'quote' | 'report' | 'public_quote' | 'template' | 'public_quote_template'
+      icon: 'patient' | 'session' | 'quote' | 'report' | 'prevention' | 'public_quote' | 'template' | 'public_quote_template'
       date: Date
       path?: string
       quoteNumber?: string
@@ -123,31 +127,50 @@ export const Home: React.FC = () => {
       })
     })
 
-    // Add public quote activities
-    publicQuotes.forEach((pq) => {
-      const quoteNumber = pq.quote?.number || 'N/A'
+    // Add prevention activities
+    prevention.forEach((prev) => {
+      const patientName = prev.patient_first_name || prev.patient_last_name
+        ? `${prev.patient_first_name || ''} ${prev.patient_last_name || ''}`.trim()
+        : t('home.activities.unknown_patient')
       allActivities.push({
-        id: `public-quote-${pq.id}`,
-        type: 'public_quote_created',
-        message: t('home.activities.public_quote_created', { quoteNumber }),
-        timestamp: formatDateTime(pq.createdAt),
-        icon: 'public_quote',
-        date: new Date(pq.createdAt),
-        path: `/public-quotes/links?quote=${encodeURIComponent(quoteNumber)}`,
-        quoteNumber: quoteNumber
+        id: `prevention-${prev.id}`,
+        type: 'prevention_created',
+        message: t('home.activities.prevention_created', {
+          number: prev.number,
+          patientName
+        }),
+        timestamp: formatDateTime(prev.createdAt),
+        icon: 'prevention',
+        date: new Date(prev.createdAt),
+        path: `/documents/prevention/${prev.id}/edit`
       })
     })
 
-    // Add public quote template activities
+    // Add landing page activities
+    publicQuotes.forEach((pq) => {
+      const docNumber = pq.quote?.number || pq.prevention?.number || 'N/A'
+      allActivities.push({
+        id: `landing-page-${pq.id}`,
+        type: 'public_quote_created',
+        message: t('home.activities.landing_page_created', { documentNumber: docNumber }),
+        timestamp: formatDateTime(pq.createdAt),
+        icon: 'public_quote',
+        date: new Date(pq.createdAt),
+        path: `/landing-pages/links?document=${encodeURIComponent(docNumber)}`,
+        quoteNumber: docNumber
+      })
+    })
+
+    // Add landing page template activities
     publicQuoteTemplates.forEach((pqt) => {
       allActivities.push({
-        id: `public-quote-template-${pqt.id}`,
+        id: `lp-template-${pqt.id}`,
         type: 'public_quote_template_created',
-        message: t('home.activities.public_quote_template_created', { name: pqt.name }),
+        message: t('home.activities.lp_template_created', { name: pqt.name }),
         timestamp: formatDateTime(pqt.createdAt),
         icon: 'public_quote_template',
         date: new Date(pqt.createdAt),
-        path: `/public-quotes/templates/${pqt.id}/edit`
+        path: `/landing-pages/templates/${pqt.id}/edit`
       })
     })
 
@@ -169,7 +192,7 @@ export const Home: React.FC = () => {
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, 5)
       .map(({ date, ...rest }) => rest)
-  }, [patients, sessions, quotes, reports, publicQuotes, publicQuoteTemplates, templates, formatDateTime])
+  }, [patients, sessions, quotes, reports, prevention, publicQuotes, publicQuoteTemplates, templates, formatDateTime])
 
   // Handle SSO on home page load
   useEffect(() => {
@@ -188,11 +211,12 @@ export const Home: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [quotesRes, patientsRes, sessionsRes, reportsRes, publicQuotesRes, publicQuoteTemplatesRes, templatesRes] = await Promise.all([
+        const [quotesRes, patientsRes, sessionsRes, reportsRes, preventionRes, publicQuotesRes, publicQuoteTemplatesRes, templatesRes] = await Promise.all([
           quotesService.list({}),
           patientsService.list({}),
           sessionsService.list({}),
           clinicalNotesService.list({}),
+          preventionService.list({}),
           landingPagesService.listAllLandingPages(),
           landingPagesService.listTemplates({ active: true }),
           templatesService.getAll({})
@@ -215,6 +239,10 @@ export const Home: React.FC = () => {
           .sort((a: ClinicalNote, b: ClinicalNote) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
           .slice(0, 6)
 
+        const sortedPrevention = preventionRes.data
+          .sort((a: Prevention, b: Prevention) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 6)
+
         const sortedLandingPages = publicQuotesRes
           .sort((a: LandingPage, b: LandingPage) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 5)
@@ -231,6 +259,7 @@ export const Home: React.FC = () => {
         setPatients(sortedPatients)
         setSessions(sortedSessions)
         setReports(sortedReports)
+        setPrevention(sortedPrevention)
         setLandingPages(sortedLandingPages)
         setLandingPageTemplates(sortedLandingPageTemplates)
         setTemplates(sortedTemplates)
@@ -241,6 +270,7 @@ export const Home: React.FC = () => {
         setIsLoadingPatients(false)
         setIsLoadingSessions(false)
         setIsLoadingReports(false)
+        setIsLoadingPrevention(false)
       }
     }
 
@@ -345,6 +375,39 @@ export const Home: React.FC = () => {
             <CardHeader className="text-center py-8">
               <CardTitle className="text-gray-500 text-base font-normal">
                 {t('clinical_reports.no_reports_home')}
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-200"></div>
+
+      {/* Latest Prevention */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('prevention.latest')}</h2>
+        {isLoadingPrevention ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-40 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : prevention.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {prevention.map((prev) => (
+              <PreventionCard
+                key={prev.id}
+                prevention={prev}
+                onDoubleClick={() => navigate(`/documents/prevention/${prev.id}/edit`)}
+              />
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardHeader className="text-center py-8">
+              <CardTitle className="text-gray-500 text-base font-normal">
+                {t('prevention.no_preventions_home')}
               </CardTitle>
             </CardHeader>
           </Card>

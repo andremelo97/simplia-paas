@@ -25,7 +25,7 @@ export const Layout: React.FC = () => {
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden print:block print:h-auto print:overflow-visible">
       {/* Sidebar - hidden in print */}
-      <div className="print:hidden">
+      <div className="h-full print:hidden">
         <Sidebar />
       </div>
 

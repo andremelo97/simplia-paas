@@ -59,7 +59,7 @@ export const ViewClinicalNote: React.FC = () => {
     @page { margin: 2cm; size: A4; }
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #111827; line-height: 1.6; font-size: 11pt; margin: 0; padding: 0;
+      color: #111827; line-height: 1.6; font-size: 11pt; margin: 0; padding: 2rem 2.5rem;
     }
     .header { margin-bottom: 1.5rem; }
     .title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; color: #111827; }

@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit, FileText } from 'lucide-react'
+import { Edit } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { ClinicalNote } from '../../services/clinicalNotes'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -18,7 +18,6 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
   onView
 }) => {
   const { t } = useTranslation('tq')
-  const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
   const { user } = useAuthStore()
   const canEdit = user?.role !== 'operations'
@@ -36,9 +35,8 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
 
   return (
     <div
-      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+      onDoubleClick={handleEdit}
     >
       {/* Created At */}
       <div className="w-24">
@@ -81,22 +79,8 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
         </span>
       </div>
 
-      {/* Actions - visible on hover - Fixed width to match header */}
-      <div className={`w-24 flex items-center justify-end gap-1 transition-opacity duration-200 ${
-        isHovered ? 'opacity-100' : 'opacity-0'
-      }`}>
-        <Tooltip content={viewLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleView}
-            className="h-8 w-8 p-0 hover:bg-purple-100"
-            aria-label={viewLabel}
-          >
-            <FileText className="w-4 h-4 text-purple-600" />
-          </Button>
-        </Tooltip>
-
+      {/* Actions */}
+      <div className="w-24 flex items-center justify-end gap-1">
         {canEdit && (
           <Tooltip content={editLabel}>
             <Button

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edit, History, Trash2 } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
@@ -21,7 +21,6 @@ export const PatientRow: React.FC<PatientRowProps> = ({
   onDelete
 }) => {
   const { t } = useTranslation('tq')
-  const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
   const { user } = useAuthStore()
   const canDelete = user?.role !== 'operations'
@@ -44,9 +43,8 @@ export const PatientRow: React.FC<PatientRowProps> = ({
 
   return (
     <div
-      className="flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+      onDoubleClick={handleEdit}
     >
       <div className="flex items-center gap-6 flex-1 min-w-0">
         {/* Created At */}
@@ -78,10 +76,8 @@ export const PatientRow: React.FC<PatientRowProps> = ({
         </div>
       </div>
 
-      {/* Actions - visible on hover */}
-      <div className={`flex items-center gap-1 transition-opacity duration-200 ${
-        isHovered ? 'opacity-100' : 'opacity-0'
-      }`}>
+      {/* Actions */}
+      <div className="flex items-center gap-1">
         <Tooltip content={historyLabel}>
           <Button
             variant="ghost"

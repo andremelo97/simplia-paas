@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Edit, Trash2 } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
@@ -18,7 +18,6 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
   onDelete
 }) => {
   const { t } = useTranslation('tq')
-  const [isHovered, setIsHovered] = useState(false)
   const { formatShortDate } = useDateFormatter()
   const { user } = useAuthStore()
   const canEdit = user?.role !== 'operations'
@@ -39,9 +38,8 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
 
   return (
     <div
-      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+      onDoubleClick={() => onEdit(template)}
     >
       {/* Created At */}
       <div className="w-24">
@@ -71,10 +69,8 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
         </span>
       </div>
 
-      {/* Actions - visible on hover - Fixed width to match header */}
-      <div className={`w-24 flex items-center justify-end gap-1 transition-opacity duration-200 ${
-        isHovered ? 'opacity-100' : 'opacity-0'
-      }`}>
+      {/* Actions */}
+      <div className="w-24 flex items-center justify-end gap-1">
         <Tooltip content={t('common:edit')}>
           <Button
             variant="ghost"

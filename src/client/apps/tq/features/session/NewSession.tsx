@@ -518,6 +518,48 @@ export const NewSession: React.FC = () => {
     }
   }, [])
 
+  // Auto-create session when patient is already selected and transcription completes
+  useEffect(() => {
+    const patient = selectedPatient || createdPatient
+    const hasTranscription = createdTranscriptionId && transcription.trim().length > 0
+    const canAutoCreate = patient && hasTranscription && !session && !isCreatingSession
+
+    if (!canAutoCreate) return
+
+    const autoCreateSession = async () => {
+      setIsCreatingSession(true)
+      try {
+        const newSession = await createSessionWithTranscription(patient.id, createdTranscriptionId!)
+
+        setSessionContext({
+          patientId: patient.id,
+          transcriptionId: createdTranscriptionId
+        })
+
+        // Clear draft from localStorage
+        try {
+          localStorage.removeItem(DRAFT_STORAGE_KEY)
+        } catch {
+          // Silent fail
+        }
+
+        // Show session link toast
+        setToastData({
+          itemId: newSession.id,
+          itemNumber: newSession.number,
+          type: 'session'
+        })
+        setShowLinkToast(true)
+      } catch (error) {
+        // Error feedback is handled automatically by HTTP interceptor
+      } finally {
+        setIsCreatingSession(false)
+      }
+    }
+
+    autoCreateSession()
+  }, [createdTranscriptionId, selectedPatient, createdPatient, session, isCreatingSession])
+
   // Derived quota state
   const isQuotaExceeded = quota !== null && quota.remaining <= 0 && !quota.overageAllowed
   const isQuotaWarning = quota !== null && quota.percentUsed >= 80 && quota.percentUsed < 100

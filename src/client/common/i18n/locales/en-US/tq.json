@@ -414,7 +414,7 @@
       "all": "All"
     },
     "delete_session_title": "Delete Session",
-    "delete_session_description": "Are you sure you want to delete session \"{{number}}\"? This action cannot be undone. Note: Sessions with quotes or clinical reports cannot be deleted.",
+    "delete_session_description": "Are you sure you want to delete session \"{{number}}\"? This action cannot be undone. Note: Sessions with documents (quotes, clinical notes or preventions) cannot be deleted.",
     "recording": {
       "too_short": "Recording is too short. Minimum duration is 1 minute. Your recording: {{duration}}",
       "preparing": "Preparing audio file...",

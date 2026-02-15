@@ -553,6 +553,17 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
+    // Handle session with preventions error
+    if (error.code === 'SESSION_HAS_PREVENTIONS') {
+      return res.status(400).json({
+        error: {
+          code: 'SESSION_HAS_PREVENTIONS',
+          message: error.message,
+          preventionCount: error.preventionCount
+        }
+      });
+    }
+
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to delete session'

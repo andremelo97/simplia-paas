@@ -349,7 +349,27 @@ class Session {
       throw error;
     }
 
-    // If no quotes or reports, proceed with delete
+    // Check if session has any prevention documents
+    const preventionCheckQuery = `
+      SELECT COUNT(*) as prevention_count
+      FROM ${schema}.prevention
+      WHERE session_id = $1
+    `;
+
+    const preventionCheck = await database.query(preventionCheckQuery, [id]);
+    const preventionCount = parseInt(preventionCheck.rows[0].prevention_count);
+
+    if (preventionCount > 0) {
+      const error = new Error(
+        `Cannot delete session - session has ${preventionCount} prevention${preventionCount > 1 ? 's' : ''} attached. Delete or reassign preventions first.`
+      );
+      error.code = 'SESSION_HAS_PREVENTIONS';
+      error.statusCode = 400;
+      error.preventionCount = preventionCount;
+      throw error;
+    }
+
+    // If no quotes, reports, or preventions, proceed with delete
     const query = `
       DELETE FROM ${schema}.session
       WHERE id = $1

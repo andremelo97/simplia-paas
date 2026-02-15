@@ -77,7 +77,9 @@ export const EmailTemplateConfiguration: React.FC = () => {
   const [branding, setBranding] = useState<Branding | null>(null);
   const [locale, setLocale] = useState('pt-BR');
   const [loading, setLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const isInitialLoad = useRef(true);
   const [error, setError] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -126,7 +128,11 @@ export const EmailTemplateConfiguration: React.FC = () => {
 
   const loadTemplate = async () => {
     try {
-      setLoading(true);
+      if (isInitialLoad.current) {
+        setLoading(true);
+      } else {
+        setTabLoading(true);
+      }
       setError(null);
       setPreviewHtml('');
       setBodyError(null);
@@ -145,6 +151,8 @@ export const EmailTemplateConfiguration: React.FC = () => {
       setError(t('configurations.email_template.failed_to_load'));
     } finally {
       setLoading(false);
+      setTabLoading(false);
+      isInitialLoad.current = false;
     }
   };
 
@@ -269,7 +277,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
       )}
 
       {/* 2-Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 transition-opacity ${tabLoading ? 'opacity-50 pointer-events-none' : ''}`}>
         {/* Left Column - Configuration */}
         <div className="space-y-6">
           {/* Settings */}

@@ -240,12 +240,16 @@
       "quote_preview_total": "Total: ${{total}}",
       "quote_total": "Total: R$ {{total}}",
       "report_title": "Relatório {{number}}",
-      "clinical_report_title": "Relatório Clínico {{number}}",
+      "clinical_note_title": "Nota Clínica {{number}}",
       "showing_results": "Exibindo {{from}} a {{to}} de {{total}} resultados",
       "no_sessions": "Nenhuma sessão encontrada para este paciente",
       "no_quotes": "Nenhuma cotação encontrada para este paciente",
-      "no_clinical_reports": "Nenhum relatório clínico encontrado para este paciente",
+      "no_clinical_notes": "Nenhuma nota clínica encontrada para este paciente",
       "no_prevention": "Nenhuma prevenção encontrada para este paciente",
+      "no_landing_pages": "Nenhuma landing page encontrada para este paciente",
+      "total_landing_pages": "Landing Pages",
+      "expires": "Expira",
+      "views": "Visualizações",
       "prevention_title": "Prevenção {{number}}",
       "no_events": "Nenhum evento encontrado para este paciente",
       "filters": "Filtros",
@@ -848,6 +852,7 @@
         "open_quote": "Abrir Cotação",
         "open_prevention": "Abrir Prevenção",
         "open_document": "Abrir Documento",
+        "preview": "Visualizar",
         "new_password": "Nova Senha",
         "revoke": "Revogar"
       }
@@ -1089,14 +1094,16 @@
     "total_quotes": "Total de Cotações",
     "approved_quotes": "Cotações Aprovadas",
     "total_reports": "Total de Relatórios",
+    "total_clinical_notes": "Notas Clínicas",
     "total_prevention": "Total de Prevenções"
   },
   "tabs": {
     "sessions": "Sessões",
     "quotes": "Cotações",
-    "clinical": "Clínico",
+    "clinical": "Notas Clínicas",
     "prevention": "Prevenção",
-    "timeline": "Linha do Tempo"
+    "timeline": "Linha do Tempo",
+    "landing_pages": "Landing Pages"
   },
   "sidebar": {
     "home": "Início",

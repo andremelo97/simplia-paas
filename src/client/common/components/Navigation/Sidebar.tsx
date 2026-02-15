@@ -160,14 +160,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   onClick={() => {
                     if (isOpen) {
-                      if (isExpanded) {
-                        // Already expanded: just collapse, don't navigate
-                        toggleExpanded(item.name)
-                      } else {
-                        // Collapsed: expand and navigate
-                        toggleExpanded(item.name)
-                        navigate(item.href)
-                      }
+                      // Sidebar open: just toggle submenu, don't navigate
+                      toggleExpanded(item.name)
                     } else {
                       // Sidebar collapsed: navigate to the parent href
                       navigate(item.href)

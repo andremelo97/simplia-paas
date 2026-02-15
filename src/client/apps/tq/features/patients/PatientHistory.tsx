@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X, Shield } from 'lucide-react'
+import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X, Shield, Share2, Eye } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -9,13 +9,15 @@ import {
   CardTitle,
   Button,
   Paginator,
-  DateInput
+  DateInput,
+  StatusBadge
 } from '@client/common/ui'
 import { patientsService, Patient } from '../../services/patients'
 import { sessionsService, Session } from '../../services/sessions'
 import { quotesService, Quote } from '../../services/quotes'
 import { clinicalNotesService, ClinicalNote } from '../../services/clinicalNotes'
 import { preventionService, Prevention } from '../../services/prevention'
+import { landingPagesService, LandingPage } from '../../services/landingPages'
 import { HistoryRow } from '../../components/patients/history/HistoryRow'
 import { TimelineItem } from '../../components/patients/history/TimelineItem'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -42,16 +44,20 @@ export const PatientHistory: React.FC = () => {
   const [patient, setPatient] = useState<Patient | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [quotes, setQuotes] = useState<Quote[]>([])
-  const [clinicalReports, setClinicalNotes] = useState<ClinicalNote[]>([])
+  const [clinicalNotes, setClinicalNotes] = useState<ClinicalNote[]>([])
   const [prevention, setPrevention] = useState<Prevention[]>([])
+  const [landingPages, setLandingPages] = useState<LandingPage[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'sessions' | 'quotes' | 'clinical' | 'prevention' | 'timeline'>('timeline')
+  const [isFiltering, setIsFiltering] = useState(false)
+  const isInitialLoad = useRef(true)
+  const [activeTab, setActiveTab] = useState<'sessions' | 'quotes' | 'clinical' | 'prevention' | 'landing_pages' | 'timeline'>('timeline')
 
   // Pagination state for each tab
   const [sessionsPage, setSessionsPage] = useState(1)
   const [quotesPage, setQuotesPage] = useState(1)
   const [clinicalPage, setClinicalPage] = useState(1)
   const [preventionPage, setPreventionPage] = useState(1)
+  const [landingPagesPage, setLandingPagesPage] = useState(1)
   const [timelinePage, setTimelinePage] = useState(1)
   const pageSize = 10
 
@@ -64,8 +70,9 @@ export const PatientHistory: React.FC = () => {
   const metrics = {
     totalSessions: sessions.length,
     totalQuotes: quotes.length,
-    totalReports: clinicalReports.length,
-    totalPrevention: prevention.length
+    totalReports: clinicalNotes.length,
+    totalPrevention: prevention.length,
+    totalLandingPages: landingPages.length
   }
 
   // Build timeline events from all data sources - sorted newest first (most recent on top)
@@ -110,15 +117,15 @@ export const PatientHistory: React.FC = () => {
       })
     })
 
-    // Add clinical report events
-    clinicalReports.forEach(report => {
+    // Add clinical note events
+    clinicalNotes.forEach(note => {
       events.push({
-        id: report.id,
+        id: note.id,
         type: 'clinical',
-        title: t('patients.history.clinical_report_title', { number: report.number }),
-        preview: report.content ? report.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined,
-        date: formatDateTime(report.created_at),
-        timestamp: new Date(report.created_at).getTime()
+        title: t('patients.history.clinical_note_title', { number: note.number }),
+        preview: note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined,
+        date: formatDateTime(note.created_at),
+        timestamp: new Date(note.created_at).getTime()
       })
     })
 
@@ -137,7 +144,7 @@ export const PatientHistory: React.FC = () => {
 
     // Sort newest first (descending by timestamp)
     return events.sort((a, b) => b.timestamp - a.timestamp)
-  }, [patient, sessions, quotes, clinicalReports, prevention, formatDateTime])
+  }, [patient, sessions, quotes, clinicalNotes, prevention, formatDateTime])
 
   const getEventIcon = (type: TimelineEvent['type']) => {
     const iconClasses = "h-10 w-10 rounded-full flex items-center justify-center"
@@ -187,11 +194,17 @@ export const PatientHistory: React.FC = () => {
 
     const loadData = async () => {
       try {
-        setIsLoading(true)
+        if (isInitialLoad.current) {
+          setIsLoading(true)
+        } else {
+          setIsFiltering(true)
+        }
 
-        // Load patient data
-        const patientData = await patientsService.getPatient(id)
-        setPatient(patientData)
+        // Load patient data only on initial load
+        if (!patient) {
+          const patientData = await patientsService.getPatient(id)
+          setPatient(patientData)
+        }
 
         // Convert local dates to UTC timestamps using tenant timezone
         const dateParams = convertDateRange(createdFrom || undefined, createdTo || undefined)
@@ -201,12 +214,13 @@ export const PatientHistory: React.FC = () => {
         if (dateParams.created_from_utc) filterParams.created_from = dateParams.created_from_utc
         if (dateParams.created_to_utc) filterParams.created_to = dateParams.created_to_utc
 
-        // Load sessions, quotes, clinical reports, and prevention for this patient
-        const [sessionsRes, quotesRes, reportsRes, preventionRes] = await Promise.all([
+        // Load sessions, quotes, clinical reports, prevention and landing pages for this patient
+        const [sessionsRes, quotesRes, reportsRes, preventionRes, landingPagesRes] = await Promise.all([
           sessionsService.list(filterParams),
           quotesService.list(filterParams),
           clinicalNotesService.list(filterParams),
-          preventionService.list(filterParams)
+          preventionService.list(filterParams),
+          landingPagesService.listAllLandingPages(filterParams)
         ])
 
         // Filter by patient_id
@@ -214,15 +228,31 @@ export const PatientHistory: React.FC = () => {
         const patientQuotes = quotesRes.data.filter(q => q.patient_id === id)
         const patientReports = reportsRes.data.filter(r => r.patient_id === id)
         const patientPrevention = preventionRes.data.filter(p => p.patient_id === id)
+        const patientLandingPages = landingPagesRes.filter(lp =>
+          lp.quote?.patient?.id === id || lp.prevention?.patient?.id === id
+        )
 
         setSessions(patientSessions)
         setQuotes(patientQuotes)
         setClinicalNotes(patientReports)
         setPrevention(patientPrevention)
+        setLandingPages(patientLandingPages)
+
+        // Reset pagination on filter change
+        if (!isInitialLoad.current) {
+          setSessionsPage(1)
+          setQuotesPage(1)
+          setClinicalPage(1)
+          setPreventionPage(1)
+          setLandingPagesPage(1)
+          setTimelinePage(1)
+        }
       } catch (error) {
         // Failed to load patient data
       } finally {
         setIsLoading(false)
+        setIsFiltering(false)
+        isInitialLoad.current = false
       }
     }
 
@@ -234,7 +264,7 @@ export const PatientHistory: React.FC = () => {
   }
 
   const patientName = patient
-    ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || t('clinical_reports.pages.unknown_patient')
+    ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim() || t('clinical_notes.pages.unknown_patient')
     : t('common:loading')
 
   if (isLoading) {
@@ -334,7 +364,7 @@ export const PatientHistory: React.FC = () => {
       </Card>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 md:grid-cols-5 gap-4 transition-opacity ${isFiltering ? 'opacity-50' : ''}`}>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -367,7 +397,7 @@ export const PatientHistory: React.FC = () => {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">{t('metrics.total_reports')}</p>
+                <p className="text-sm text-gray-600">{t('metrics.total_clinical_notes')}</p>
                 <p className="text-2xl font-bold text-gray-900">{metrics.totalReports}</p>
               </div>
               <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
@@ -390,10 +420,24 @@ export const PatientHistory: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">{t('patients.history.total_landing_pages')}</p>
+                <p className="text-2xl font-bold text-gray-900">{metrics.totalLandingPages}</p>
+              </div>
+              <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <Share2 className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Tabs */}
-      <Card>
+      <Card className={`transition-opacity ${isFiltering ? 'opacity-50 pointer-events-none' : ''}`}>
         <CardHeader className="p-0">
           <div className="flex justify-center border-b border-gray-200">
             <button
@@ -435,6 +479,16 @@ export const PatientHistory: React.FC = () => {
               }`}
             >
               {t('tabs.prevention')}
+            </button>
+            <button
+              onClick={() => setActiveTab('landing_pages')}
+              className={`px-8 py-4 text-sm font-medium transition-colors ${
+                activeTab === 'landing_pages'
+                  ? 'text-[#B725B7] border-b-2 border-[#B725B7]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {t('tabs.landing_pages')}
             </button>
             <button
               onClick={() => setActiveTab('timeline')}
@@ -557,44 +611,44 @@ export const PatientHistory: React.FC = () => {
           {activeTab === 'clinical' && (
             <>
               {/* Top Info - Read-only */}
-              {clinicalReports.length > 0 && (
+              {clinicalNotes.length > 0 && (
                 <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
                   <p className="text-sm text-gray-600">
                     {t('patients.history.showing_results', {
-                      from: Math.min((clinicalPage - 1) * pageSize + 1, clinicalReports.length),
-                      to: Math.min(clinicalPage * pageSize, clinicalReports.length),
-                      total: clinicalReports.length
+                      from: Math.min((clinicalPage - 1) * pageSize + 1, clinicalNotes.length),
+                      to: Math.min(clinicalPage * pageSize, clinicalNotes.length),
+                      total: clinicalNotes.length
                     })}
                   </p>
                 </div>
               )}
               <div className="divide-y divide-gray-100">
-                {clinicalReports.length > 0 ? (
-                  clinicalReports
+                {clinicalNotes.length > 0 ? (
+                  clinicalNotes
                     .slice((clinicalPage - 1) * pageSize, clinicalPage * pageSize)
-                    .map((report) => (
+                    .map((note) => (
                       <HistoryRow
-                        key={report.id}
+                        key={note.id}
                         id=""
                         type="clinical"
-                        title={t('patients.history.clinical_report_title', { number: report.number })}
-                        preview={report.content ? report.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined}
-                        date={formatDateTime(report.created_at)}
+                        title={t('patients.history.clinical_note_title', { number: note.number })}
+                        preview={note.content ? note.content.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : undefined}
+                        date={formatDateTime(note.created_at)}
                         icon={getEventIcon('clinical')}
-                        viewPath={`/documents/clinical-note/${report.id}/edit`}
+                        viewPath={`/documents/clinical-note/${note.id}/edit`}
                       />
                     ))
                 ) : (
                   <div className="text-center py-12 text-gray-500">
-                    {t('patients.history.no_clinical_reports')}
+                    {t('patients.history.no_clinical_notes')}
                   </div>
                 )}
               </div>
-              {clinicalReports.length > pageSize && (
+              {clinicalNotes.length > pageSize && (
                 <div className="p-4">
                   <Paginator
                     currentPage={clinicalPage}
-                    totalItems={clinicalReports.length}
+                    totalItems={clinicalNotes.length}
                     itemsPerPage={pageSize}
                     onPageChange={setClinicalPage}
                   />
@@ -647,6 +701,83 @@ export const PatientHistory: React.FC = () => {
                     totalItems={prevention.length}
                     itemsPerPage={pageSize}
                     onPageChange={setPreventionPage}
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Landing Pages Tab */}
+          {activeTab === 'landing_pages' && (
+            <>
+              {landingPages.length > 0 && (
+                <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+                  <p className="text-sm text-gray-600">
+                    {t('patients.history.showing_results', {
+                      from: Math.min((landingPagesPage - 1) * pageSize + 1, landingPages.length),
+                      to: Math.min(landingPagesPage * pageSize, landingPages.length),
+                      total: landingPages.length
+                    })}
+                  </p>
+                </div>
+              )}
+              <div className="divide-y divide-gray-100">
+                {landingPages.length > 0 ? (
+                  landingPages
+                    .slice((landingPagesPage - 1) * pageSize, landingPagesPage * pageSize)
+                    .map((lp) => {
+                      const docNumber = lp.quote?.number || lp.prevention?.number || '-'
+                      const docTypeLabel = lp.documentType === 'prevention' ? t('common.prevention') : t('common.quote')
+                      const isExpired = lp.expiresAt ? new Date(lp.expiresAt) < new Date() : false
+
+                      return (
+                        <div key={lp.id} className="flex items-center justify-between py-3 px-6 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-center gap-4 flex-1 min-w-0">
+                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                              <Share2 className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-gray-900">{docTypeLabel}: {docNumber}</span>
+                                <StatusBadge status={lp.active ? 'active' : 'revoked'} />
+                                {isExpired && <StatusBadge status="expired" />}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {formatDateTime(lp.createdAt)}
+                                {lp.expiresAt && (
+                                  <span className="ml-3">
+                                    {t('patients.history.expires')}: {formatDateTime(lp.expiresAt)}
+                                  </span>
+                                )}
+                                <span className="ml-3">{t('patients.history.views')}: {lp.viewsCount}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(`/landing-pages/links/${lp.id}/preview`, '_blank')}
+                            className="flex items-center gap-1.5 flex-shrink-0"
+                          >
+                            <Eye className="w-4 h-4" />
+                            {t('landing_pages.links.card.preview')}
+                          </Button>
+                        </div>
+                      )
+                    })
+                ) : (
+                  <div className="text-center py-12 text-gray-500">
+                    {t('patients.history.no_landing_pages')}
+                  </div>
+                )}
+              </div>
+              {landingPages.length > pageSize && (
+                <div className="p-4">
+                  <Paginator
+                    currentPage={landingPagesPage}
+                    totalItems={landingPages.length}
+                    itemsPerPage={pageSize}
+                    onPageChange={setLandingPagesPage}
                   />
                 </div>
               )}

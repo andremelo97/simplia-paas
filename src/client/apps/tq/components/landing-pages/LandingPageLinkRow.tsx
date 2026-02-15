@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button, StatusBadge } from '@client/common/ui'
-import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key } from 'lucide-react'
+import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key, Eye } from 'lucide-react'
 import { LandingPage } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useAuthStore } from '../../shared/store'
@@ -140,6 +140,16 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
               {t('landing_pages.links.card.copy_link')}
             </>
           )}
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.open(`/landing-pages/links/${landingPage.id}/preview`, '_blank')}
+          className="flex items-center gap-1.5"
+        >
+          <Eye size={14} />
+          {t('landing_pages.links.card.preview')}
         </Button>
 
         <Button

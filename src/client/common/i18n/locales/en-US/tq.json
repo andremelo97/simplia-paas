@@ -273,12 +273,16 @@
       "quote_preview_total": "Total: ${{total}}",
       "quote_total": "Total: ${{total}}",
       "report_title": "Report {{number}}",
-      "clinical_report_title": "Clinical Report {{number}}",
+      "clinical_note_title": "Clinical Note {{number}}",
       "showing_results": "Showing {{from}} to {{to}} of {{total}} results",
       "no_sessions": "No sessions found for this patient",
       "no_quotes": "No quotes found for this patient",
-      "no_clinical_reports": "No clinical reports found for this patient",
+      "no_clinical_notes": "No clinical notes found for this patient",
       "no_prevention": "No prevention found for this patient",
+      "no_landing_pages": "No landing pages found for this patient",
+      "total_landing_pages": "Landing Pages",
+      "expires": "Expires",
+      "views": "Views",
       "prevention_title": "Prevention {{number}}",
       "no_events": "No events found for this patient",
       "filters": "Filters",
@@ -881,6 +885,7 @@
         "open_quote": "Open Quote",
         "open_prevention": "Open Prevention",
         "open_document": "Open Document",
+        "preview": "Preview",
         "new_password": "New Password",
         "revoke": "Revoke"
       }
@@ -1122,14 +1127,16 @@
     "total_quotes": "Total Quotes",
     "approved_quotes": "Approved Quotes",
     "total_reports": "Total Reports",
+    "total_clinical_notes": "Clinical Notes",
     "total_prevention": "Total Prevention"
   },
   "tabs": {
     "sessions": "Sessions",
     "quotes": "Quotes",
-    "clinical": "Clinical",
+    "clinical": "Clinical Notes",
     "prevention": "Prevention",
-    "timeline": "Timeline"
+    "timeline": "Timeline",
+    "landing_pages": "Landing Pages"
   },
   "sidebar": {
     "home": "Home",

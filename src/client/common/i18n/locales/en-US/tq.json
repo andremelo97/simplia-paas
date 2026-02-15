@@ -1360,8 +1360,6 @@
       "type_clinical_note_desc": "Detailed consultation notes. Used for medical records and can be printed or saved as PDF.",
       "type_prevention": "Prevention Plans",
       "type_prevention_desc": "Preventive care plans with recommendations. Share with patients via landing pages.",
-      "type_patient_summary": "Patient Summaries",
-      "type_patient_summary_desc": "Simplified visit summaries for patients. Easy to understand and share.",
       "view_documents": "View Documents"
     },
     "landing_pages": {

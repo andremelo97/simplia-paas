@@ -1360,8 +1360,6 @@
       "type_clinical_note_desc": "Notas detalhadas de consultas. Usadas para prontuário médico, podem ser impressas ou salvas em PDF.",
       "type_prevention": "Planos Preventivos",
       "type_prevention_desc": "Planos de cuidados preventivos com recomendações. Compartilhe com pacientes via landing pages.",
-      "type_patient_summary": "Resumos do Paciente",
-      "type_patient_summary_desc": "Resumos simplificados da consulta para pacientes. Fáceis de entender e compartilhar.",
       "view_documents": "Ver Documentos"
     },
     "landing_pages": {

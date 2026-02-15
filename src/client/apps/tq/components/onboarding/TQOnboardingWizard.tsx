@@ -462,17 +462,6 @@ export const TQOnboardingWizard: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-3">
-                <Users className="w-4 h-4 text-[#5ED6CE] flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-gray-900 text-sm">
-                    {t('onboarding.documents.type_patient_summary', 'Patient Summaries')}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {t('onboarding.documents.type_patient_summary_desc', 'Simplified visit summaries for patients. Easy to understand and share.')}
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
 

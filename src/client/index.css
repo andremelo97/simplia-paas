@@ -218,30 +218,26 @@ button[data-variant="secondary"] {
 
 /* Clinical Note / Prevention View - Hide toolbar and show full content */
 .clinical-report-view .simple-editor-wrapper .tiptap-toolbar,
-.clinical-note-view .simple-editor-wrapper .tiptap-toolbar,
-.prevention-view .simple-editor-wrapper .tiptap-toolbar {
+.clinical-note-view .simple-editor-wrapper .tiptap-toolbar {
   display: none !important;
 }
 
 .clinical-report-view .simple-editor-wrapper,
-.clinical-note-view .simple-editor-wrapper,
-.prevention-view .simple-editor-wrapper {
+.clinical-note-view .simple-editor-wrapper {
   max-height: none !important;
   height: auto !important;
   overflow: visible !important;
 }
 
 .clinical-report-view .simple-editor-content,
-.clinical-note-view .simple-editor-content,
-.prevention-view .simple-editor-content {
+.clinical-note-view .simple-editor-content {
   max-height: none !important;
   height: auto !important;
   overflow: visible !important;
 }
 
 .clinical-report-view .simple-editor-content .tiptap.ProseMirror.simple-editor,
-.clinical-note-view .simple-editor-content .tiptap.ProseMirror.simple-editor,
-.prevention-view .simple-editor-content .tiptap.ProseMirror.simple-editor {
+.clinical-note-view .simple-editor-content .tiptap.ProseMirror.simple-editor {
   max-height: none !important;
   height: auto !important;
   overflow-y: visible !important;
@@ -294,8 +290,7 @@ button[data-variant="secondary"] {
 
   /* Print container - force display:block to override Tailwind 'hidden' class */
   .print-report-content,
-  .print-note-content,
-  .print-prevention-content {
+  .print-note-content {
     display: block !important;
     width: 100%;
     max-width: 100%;

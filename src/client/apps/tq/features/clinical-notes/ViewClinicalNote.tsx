@@ -43,7 +43,73 @@ export const ViewClinicalNote: React.FC = () => {
   }, [id])
 
   const handlePrint = () => {
-    window.print()
+    if (!note) return
+
+    const title = t('clinical_notes.pages.view_title')
+    const patientLabel = t('common.patient')
+    const generatedOnLabel = t('clinical_notes.pages.generated_on')
+    const disclaimerText = t('clinical_notes.pages.disclaimer')
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${title} ${note.number}</title>
+  <style>
+    @page { margin: 2cm; size: A4; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #111827; line-height: 1.6; font-size: 11pt; margin: 0; padding: 0;
+    }
+    .header { margin-bottom: 1.5rem; }
+    .title { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; color: #111827; }
+    .patient { margin-bottom: 0.5rem; font-size: 1rem; color: #374151; }
+    .date { font-size: 0.875rem; color: #6b7280; }
+    .divider { margin: 1.5rem 0; border: none; border-top: 1px solid #e5e7eb; }
+    .content { font-size: 11pt; line-height: 1.6; color: #111827; }
+    .content p { margin-bottom: 0.75rem; orphans: 2; widows: 2; }
+    .content h1, .content h2, .content h3, .content h4 {
+      page-break-after: avoid; break-after: avoid;
+      margin-top: 1rem; margin-bottom: 0.5rem; font-weight: 600;
+    }
+    .content h1 { font-size: 1.5rem; }
+    .content h2 { font-size: 1.25rem; }
+    .content h3 { font-size: 1.1rem; }
+    .content ul, .content ol { margin-left: 1.5rem; margin-bottom: 0.75rem; }
+    .content li { margin-bottom: 0.25rem; }
+    .content strong { font-weight: 600; }
+    .content blockquote, .content pre, .content table { page-break-inside: avoid; }
+    .disclaimer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; font-size: 0.75rem; color: #6b7280; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h2 class="title">${title} ${note.number}</h2>
+    <p class="patient"><strong>${patientLabel}:</strong> ${patientName}</p>
+    <p class="date"><strong>${generatedOnLabel}:</strong> ${formatDate(note.created_at)}</p>
+  </div>
+  <hr class="divider" />
+  <div class="content">${note.content || '<p>No content available</p>'}</div>
+  <div class="disclaimer">${disclaimerText}</div>
+</body>
+</html>`
+
+    const printWindow = window.open('', '', 'width=800,height=600')
+    if (!printWindow) return
+
+    printWindow.document.write(html)
+    printWindow.document.close()
+
+    // Wait for content to render before printing
+    printWindow.onload = () => {
+      printWindow.focus()
+      printWindow.print()
+    }
+    // Fallback if onload doesn't fire (some browsers with document.write)
+    setTimeout(() => {
+      printWindow.focus()
+      printWindow.print()
+    }, 300)
   }
 
   const handleEdit = () => {
@@ -155,29 +221,6 @@ export const ViewClinicalNote: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Print-only version - Simple HTML rendering for proper pagination */}
-      <div className="hidden print:block print-note-content" data-date={formatDate(note.created_at)}>
-        {/* Note Header */}
-        <div className="print-header">
-          <h2 className="print-title">
-            {t('clinical_notes.pages.view_title')} {note.number}
-          </h2>
-          <p className="print-patient">
-            <strong>{t('common.patient')}:</strong> {patientName}
-          </p>
-          <p className="print-date">
-            <strong>{t('clinical_notes.pages.generated_on')}:</strong> {formatDate(note.created_at)}
-          </p>
-        </div>
-
-        <hr className="print-divider" />
-
-        {/* Note Content - Direct HTML rendering for proper pagination */}
-        <div
-          className="print-content"
-          dangerouslySetInnerHTML={{ __html: note.content || '<p>No content available</p>' }}
-        />
-      </div>
     </div>
   )
 }

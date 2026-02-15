@@ -26,7 +26,7 @@ import { useDateFilterParams } from '@client/common/utils/dateFilters'
 // Timeline event type
 interface TimelineEvent {
   id: string
-  type: 'session' | 'quote' | 'clinical' | 'prevention' | 'patient_registered'
+  type: 'session' | 'quote' | 'clinical' | 'prevention' | 'landing_page' | 'patient_registered'
   title: string
   preview?: string
   status?: string
@@ -142,9 +142,23 @@ export const PatientHistory: React.FC = () => {
       })
     })
 
+    // Add landing page events
+    landingPages.forEach(lp => {
+      const docNumber = lp.quote?.number || lp.prevention?.number || '-'
+      const docTypeLabel = lp.documentType === 'prevention' ? t('common.prevention') : t('common.quote')
+      events.push({
+        id: lp.id,
+        type: 'landing_page',
+        title: t('patients.history.landing_page_title', { type: docTypeLabel, number: docNumber }),
+        status: lp.active ? 'active' : 'revoked',
+        date: formatDateTime(lp.createdAt),
+        timestamp: new Date(lp.createdAt).getTime()
+      })
+    })
+
     // Sort newest first (descending by timestamp)
     return events.sort((a, b) => b.timestamp - a.timestamp)
-  }, [patient, sessions, quotes, clinicalNotes, prevention, formatDateTime])
+  }, [patient, sessions, quotes, clinicalNotes, prevention, landingPages, formatDateTime])
 
   const getEventIcon = (type: TimelineEvent['type']) => {
     const iconClasses = "h-10 w-10 rounded-full flex items-center justify-center"
@@ -172,6 +186,12 @@ export const PatientHistory: React.FC = () => {
         return (
           <div className={`${iconClasses} bg-teal-100`}>
             <Shield className="w-5 h-5 text-teal-600" />
+          </div>
+        )
+      case 'landing_page':
+        return (
+          <div className={`${iconClasses} bg-blue-100`}>
+            <Share2 className="w-5 h-5 text-blue-600" />
           </div>
         )
       case 'patient_registered':
@@ -815,6 +835,8 @@ export const PatientHistory: React.FC = () => {
                               return () => navigate(`/documents/clinical-note/${event.id}/edit`)
                             case 'prevention':
                               return () => navigate(`/documents/prevention/${event.id}/edit`)
+                            case 'landing_page':
+                              return () => window.open(`/landing-pages/links/${event.id}/preview`, '_blank')
                             default:
                               return undefined
                           }

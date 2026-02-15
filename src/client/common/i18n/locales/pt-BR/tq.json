@@ -251,6 +251,7 @@
       "expires": "Expira",
       "views": "Visualizações",
       "prevention_title": "Prevenção {{number}}",
+      "landing_page_title": "Landing Page - {{type}}: {{number}}",
       "no_events": "Nenhum evento encontrado para este paciente",
       "filters": "Filtros",
       "active": "Ativo",
@@ -791,6 +792,10 @@
     "unsaved_changes": "Alterações não salvas",
     "unsaved_changes_confirm": "Você tem alterações não salvas. Tem certeza que deseja sair?",
     "template_not_found": "Template não encontrado",
+    "status": {
+      "active": "Ativo",
+      "revoked": "Revogado"
+    },
     "preview": "Visualizar",
     "fullscreen": "Tela Cheia",
     "exit_fullscreen": "Sair da Tela Cheia",

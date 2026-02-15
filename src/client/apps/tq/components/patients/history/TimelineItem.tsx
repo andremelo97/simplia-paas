@@ -4,7 +4,7 @@ import { Button } from '@client/common/ui'
 
 interface TimelineItemProps {
   id: string
-  type: 'session' | 'quote' | 'clinical' | 'prevention' | 'event' | 'patient_registered'
+  type: 'session' | 'quote' | 'clinical' | 'prevention' | 'landing_page' | 'event' | 'patient_registered'
   title: string
   preview?: string
   status?: string
@@ -36,6 +36,8 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
       return t(`quotes.status.${status}`)
     } else if (type === 'prevention') {
       return t(`prevention.status.${status}`)
+    } else if (type === 'landing_page') {
+      return t(`landing_pages.status.${status}`)
     }
     return status
   }

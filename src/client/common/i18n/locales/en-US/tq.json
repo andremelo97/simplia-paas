@@ -284,6 +284,7 @@
       "expires": "Expires",
       "views": "Views",
       "prevention_title": "Prevention {{number}}",
+      "landing_page_title": "Landing Page - {{type}}: {{number}}",
       "no_events": "No events found for this patient",
       "filters": "Filters",
       "active": "Active",
@@ -824,6 +825,10 @@
     "unsaved_changes": "Unsaved changes",
     "unsaved_changes_confirm": "You have unsaved changes. Are you sure you want to leave?",
     "template_not_found": "Template not found",
+    "status": {
+      "active": "Active",
+      "revoked": "Revoked"
+    },
     "preview": "Preview",
     "fullscreen": "Fullscreen",
     "exit_fullscreen": "Exit Fullscreen",

@@ -5,6 +5,7 @@ import { Button, Card, Input, Textarea, Alert, AlertDescription, Checkbox } from
 import {
   emailTemplateService,
   EmailTemplateSettings,
+  EmailTemplateType,
   Branding,
   ColorOption,
   TextColorOption
@@ -69,6 +70,7 @@ const TEXT_COLOR_OPTIONS: TextColorOption[] = ['white', 'black'];
 
 export const EmailTemplateConfiguration: React.FC = () => {
   const { t } = useTranslation('tq');
+  const [activeTab, setActiveTab] = useState<EmailTemplateType>('quote');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [settings, setSettings] = useState<EmailTemplateSettings>(DEFAULT_SETTINGS);
@@ -84,7 +86,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
 
   useEffect(() => {
     loadTemplate();
-  }, []);
+  }, [activeTab]);
 
   // Debounced preview update
   const updatePreview = useCallback(async () => {
@@ -126,7 +128,9 @@ export const EmailTemplateConfiguration: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await emailTemplateService.getTemplate();
+      setPreviewHtml('');
+      setBodyError(null);
+      const data = await emailTemplateService.getTemplate(activeTab);
 
       if (data && data.subject && data.body) {
         setSubject(data.subject);
@@ -173,7 +177,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
         subject: trimmedSubject,
         body: trimmedBody,
         settings
-      });
+      }, activeTab);
       setBodyError(null);
     } catch (err) {
       setError(t('configurations.email_template.failed_to_save'));
@@ -188,7 +192,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
     try {
       setSaving(true);
       setError(null);
-      const resetTemplate = await emailTemplateService.resetTemplate();
+      const resetTemplate = await emailTemplateService.resetTemplate(activeTab);
       setSubject(resetTemplate.subject);
       setBody(resetTemplate.body);
       setSettings(resetTemplate.settings || DEFAULT_SETTINGS);
@@ -229,6 +233,32 @@ export const EmailTemplateConfiguration: React.FC = () => {
         <p className="text-gray-600">
           {t('configurations.email_template.description')}
         </p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200">
+        <button
+          type="button"
+          onClick={() => setActiveTab('quote')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'quote'
+              ? 'border-[#B725B7] text-[#B725B7]'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          {t('configurations.email_template.tab_quote')}
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('prevention')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'prevention'
+              ? 'border-[#B725B7] text-[#B725B7]'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+        >
+          {t('configurations.email_template.tab_prevention')}
+        </button>
       </div>
 
       {/* Error Alert */}

@@ -23,12 +23,14 @@ export const Layout: React.FC = () => {
   const isAdmin = user?.role === 'admin'
 
   return (
-    <div className="h-screen bg-gray-50 flex overflow-hidden">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="h-screen bg-gray-50 flex overflow-hidden print:block print:h-auto print:overflow-visible">
+      {/* Sidebar - hidden in print */}
+      <div className="print:hidden">
+        <Sidebar />
+      </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden print:block print:overflow-visible">
         <Header />
 
         <main className={`flex-1 ${isConfigurationsPage ? 'overflow-hidden relative' : 'overflow-y-auto overflow-x-visible'}`}>

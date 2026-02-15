@@ -40,21 +40,22 @@ router.get('/', async (req, res) => {
       });
     }
 
-    const template = await TQEmailTemplate.find(schema);
-
-    if (!template) {
-      return res.status(404).json({
-        error: 'Email template not found',
-        meta: { code: 'EMAIL_TEMPLATE_NOT_FOUND' }
-      });
-    }
-
     // Get branding for preview generation (with signed URLs)
     const branding = await TenantBranding.findByTenantId(tenantId);
 
     // Get tenant locale and subdomain
     const tenant = await Tenant.findById(tenantId);
     const locale = getLocaleFromTimezone(tenant.timezone);
+
+    const templateType = req.query.type || 'quote';
+    let template = await TQEmailTemplate.findByType(schema, templateType);
+
+    // Auto-seed template if not found (for existing tenants or new types)
+    if (!template) {
+      const defaults = TQEmailTemplate.getDefaultTemplate(locale, templateType);
+      const defaultSettings = TQEmailTemplate.getDefaultSettings(locale, templateType);
+      template = await TQEmailTemplate.upsert({ ...defaults, settings: defaultSettings }, schema, templateType);
+    }
 
     res.json({
       data: {
@@ -147,7 +148,8 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const template = await TQEmailTemplate.upsert({ subject, body, settings }, schema);
+    const templateType = req.query.type || 'quote';
+    const template = await TQEmailTemplate.upsert({ subject, body, settings }, schema, templateType);
 
     res.json({
       data: template.toJSON(),
@@ -206,13 +208,14 @@ router.post('/reset', async (req, res) => {
     const tenant = await Tenant.findById(req.tenant.id);
     const locale = getLocaleFromTimezone(tenant.timezone);
 
-    const defaults = TQEmailTemplate.getDefaultTemplate(locale);
-    const defaultSettings = TQEmailTemplate.getDefaultSettings(locale);
+    const templateType = req.query.type || 'quote';
+    const defaults = TQEmailTemplate.getDefaultTemplate(locale, templateType);
+    const defaultSettings = TQEmailTemplate.getDefaultSettings(locale, templateType);
 
     const template = await TQEmailTemplate.upsert({
       ...defaults,
       settings: defaultSettings
-    }, schema);
+    }, schema, templateType);
 
     res.json({
       data: template.toJSON(),

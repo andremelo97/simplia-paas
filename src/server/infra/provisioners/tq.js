@@ -619,7 +619,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
-    // Create tq_email_template table for email templates (TQ-specific, 1 per tenant)
+    // Create tq_email_template table for email templates (TQ-specific, 1 per type per tenant)
     // settings JSONB stores customizable options like greeting, CTA text, footer, toggles
     await client.query(`
       CREATE TABLE IF NOT EXISTS tq_email_template (
@@ -628,8 +628,14 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         updated_at TIMESTAMPTZ DEFAULT now(),
         subject TEXT NOT NULL,
         body TEXT NOT NULL,
-        settings JSONB NOT NULL DEFAULT '{}'::jsonb
+        settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+        template_type VARCHAR(50) NOT NULL DEFAULT 'quote'
       )
+    `);
+
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_tq_email_template_type
+        ON tq_email_template(template_type)
     `);
 
     await client.query(`
@@ -695,14 +701,16 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
       [defaultSystemMessage]
     );
 
-    // Seed default email template based on tenant locale
+    // Seed default email templates based on tenant locale (one per type)
     const TQEmailTemplate = require('../models/TQEmailTemplate');
-    const defaultEmailTemplate = TQEmailTemplate.getDefaultTemplate(locale);
-    const defaultSettings = TQEmailTemplate.getDefaultSettings(locale);
-    await client.query(
-      `INSERT INTO tq_email_template (subject, body, settings) VALUES ($1, $2, $3::jsonb)`,
-      [defaultEmailTemplate.subject, defaultEmailTemplate.body, JSON.stringify(defaultSettings)]
-    );
+    for (const templateType of ['quote', 'prevention']) {
+      const defaultEmailTemplate = TQEmailTemplate.getDefaultTemplate(locale, templateType);
+      const defaultSettings = TQEmailTemplate.getDefaultSettings(locale, templateType);
+      await client.query(
+        `INSERT INTO tq_email_template (subject, body, settings, template_type) VALUES ($1, $2, $3::jsonb, $4)`,
+        [defaultEmailTemplate.subject, defaultEmailTemplate.body, JSON.stringify(defaultSettings), templateType]
+      );
+    }
 
     await client.query('COMMIT');
     console.log(`TQ app schema provisioned successfully for tenant schema: ${schema}`);

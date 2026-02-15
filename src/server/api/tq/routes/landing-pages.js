@@ -415,7 +415,8 @@ router.post('/', async (req, res) => {
           password,
           patientId: documentData.patient_id,
           quoteId: documentType === 'quote' ? documentData.id : null,
-          publicQuoteId: landingPage.id
+          publicQuoteId: landingPage.id,
+          documentType
         });
       } catch (emailError) {
         console.error('Landing page email send failed. Rolling back generated link.', emailError);
@@ -721,7 +722,8 @@ router.post('/:id/new-password', async (req, res) => {
           password: newPassword,
           patientId: docInfo.patient_id,
           quoteId: updatedLandingPage.documentType === 'quote' ? docInfo.document_id : null,
-          publicQuoteId: updatedLandingPage.id
+          publicQuoteId: updatedLandingPage.id,
+          documentType: updatedLandingPage.documentType
         });
       } catch (emailError) {
         console.error('New password email send failed. Rolling back password change.', emailError);

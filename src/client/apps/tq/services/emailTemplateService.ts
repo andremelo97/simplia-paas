@@ -52,11 +52,14 @@ export interface Branding {
   socialLinks?: SocialLinks;
 }
 
+export type EmailTemplateType = 'quote' | 'prevention';
+
 export interface EmailTemplate {
   id: string;
   subject: string;
   body: string;
   settings: EmailTemplateSettings;
+  templateType: EmailTemplateType;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,8 +90,8 @@ export const emailTemplateService = {
   /**
    * Get email template for current tenant (includes branding and locale)
    */
-  async getTemplate(): Promise<EmailTemplateWithBranding> {
-    const response = await api.get<EmailTemplateResponse>('/api/tq/v1/configurations/email-template');
+  async getTemplate(type: EmailTemplateType = 'quote'): Promise<EmailTemplateWithBranding> {
+    const response = await api.get<EmailTemplateResponse>(`/api/tq/v1/configurations/email-template?type=${type}`);
     return response.data;
   },
 
@@ -99,16 +102,16 @@ export const emailTemplateService = {
     subject: string;
     body: string;
     settings: EmailTemplateSettings;
-  }): Promise<EmailTemplate> {
-    const response = await api.post<{ data: EmailTemplate }>('/api/tq/v1/configurations/email-template', data);
+  }, type: EmailTemplateType = 'quote'): Promise<EmailTemplate> {
+    const response = await api.post<{ data: EmailTemplate }>(`/api/tq/v1/configurations/email-template?type=${type}`, data);
     return response.data;
   },
 
   /**
    * Reset email template to default based on tenant locale
    */
-  async resetTemplate(): Promise<EmailTemplate> {
-    const response = await api.post<{ data: EmailTemplate }>('/api/tq/v1/configurations/email-template/reset', {});
+  async resetTemplate(type: EmailTemplateType = 'quote'): Promise<EmailTemplate> {
+    const response = await api.post<{ data: EmailTemplate }>(`/api/tq/v1/configurations/email-template/reset?type=${type}`, {});
     return response.data;
   },
 

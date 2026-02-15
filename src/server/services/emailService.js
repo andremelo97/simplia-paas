@@ -110,7 +110,8 @@ class EmailService {
         password = null,
         patientId,
         quoteId,
-        publicQuoteId
+        publicQuoteId,
+        documentType = 'quote'
       } = params;
 
       // Load dependencies
@@ -120,8 +121,8 @@ class EmailService {
       const { TenantBranding } = require('../infra/models/TenantBranding');
       const { Tenant } = require('../infra/models/Tenant');
 
-      // 1. Fetch email template
-      const template = await TQEmailTemplate.find(tenantSchema);
+      // 1. Fetch email template by document type
+      const template = await TQEmailTemplate.findByType(tenantSchema, documentType);
 
       if (!template) {
         throw new Error(`Email template not found for tenant schema: ${tenantSchema}`);

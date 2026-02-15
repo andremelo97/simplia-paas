@@ -285,17 +285,18 @@ button[data-variant="secondary"] {
     overflow: visible !important;
   }
 
-  /* Hide sidebar and header in print */
+  /* Hide sidebar, header, and nav in print */
   aside,
   header,
   nav {
     display: none !important;
   }
 
-  /* Print container */
+  /* Print container - force display:block to override Tailwind 'hidden' class */
   .print-report-content,
   .print-note-content,
   .print-prevention-content {
+    display: block !important;
     width: 100%;
     max-width: 100%;
     margin: 0;

@@ -2,11 +2,11 @@ const database = require('../db/database');
 
 /**
  * TQEmailTemplate Model (TQ-Specific)
- * Manages email template for TQ application in tenant schema
+ * Manages email templates for TQ application in tenant schema
  *
- * Structure: Single template per tenant
+ * Structure: One template per type per tenant (quote, prevention)
  * - No locale field (determined by tenant timezone at send time)
- * - No template_type field (TQ only has 1 email type: public quote link)
+ * - template_type field distinguishes between quote and prevention emails
  * - Subject and body with template variables ($quoteNumber$, $patientName$, etc.)
  * - Settings JSONB for customizable options (CTA text, contact info, toggles)
  */
@@ -16,37 +16,78 @@ class TQEmailTemplate {
     this.subject = data.subject;
     this.body = data.body;
     this.settings = data.settings || {};
+    this.templateType = data.template_type || 'quote';
     this.createdAt = data.created_at;
     this.updatedAt = data.updated_at;
   }
 
   /**
-   * Find the email template for tenant (only 1 per tenant)
+   * Ensure template_type column exists (self-migration for existing tenants)
    * @param {string} schema - Tenant schema name
+   */
+  static async ensureTemplateTypeColumn(schema) {
+    try {
+      await database.query(`
+        ALTER TABLE ${schema}.tq_email_template
+        ADD COLUMN IF NOT EXISTS template_type VARCHAR(50) NOT NULL DEFAULT 'quote'
+      `);
+    } catch (err) {
+      // 42701 = duplicate_column (concurrent migration), safe to ignore
+      if (err.code !== '42701') throw err;
+    }
+  }
+
+  /**
+   * Find email template by type for tenant
+   * @param {string} schema - Tenant schema name
+   * @param {string} templateType - Template type ('quote' or 'prevention')
    * @returns {Promise<TQEmailTemplate|null>}
    */
-  static async find(schema) {
+  static async findByType(schema, templateType = 'quote') {
     if (!schema) {
       throw new Error('Schema is required');
     }
 
-    const result = await database.query(
-      `SELECT * FROM ${schema}.tq_email_template LIMIT 1`
-    );
-
-    return result.rows.length > 0 ? new TQEmailTemplate(result.rows[0]) : null;
+    try {
+      const result = await database.query(
+        `SELECT * FROM ${schema}.tq_email_template WHERE template_type = $1 LIMIT 1`,
+        [templateType]
+      );
+      return result.rows.length > 0 ? new TQEmailTemplate(result.rows[0]) : null;
+    } catch (err) {
+      // 42703 = undefined_column - column doesn't exist yet, self-migrate
+      if (err.code === '42703') {
+        await this.ensureTemplateTypeColumn(schema);
+        const result = await database.query(
+          `SELECT * FROM ${schema}.tq_email_template WHERE template_type = $1 LIMIT 1`,
+          [templateType]
+        );
+        return result.rows.length > 0 ? new TQEmailTemplate(result.rows[0]) : null;
+      }
+      throw err;
+    }
   }
 
   /**
-   * Create or update email template (upsert)
+   * Backward-compatible alias for findByType with 'quote'
+   * @param {string} schema - Tenant schema name
+   * @returns {Promise<TQEmailTemplate|null>}
+   */
+  static async find(schema) {
+    return this.findByType(schema, 'quote');
+  }
+
+  /**
+   * Create or update email template (upsert) by type
    * @param {Object} data - Template data
    * @param {string} data.subject - Email subject with variables
    * @param {string} data.body - Email body with variables
    * @param {Object} data.settings - Template settings (optional)
    * @param {string} schema - Tenant schema name
+   * @param {string} templateType - Template type ('quote' or 'prevention')
    * @returns {Promise<TQEmailTemplate>}
    */
-  static async upsert(data, schema) {
+  static async upsert(data, schema, templateType = 'quote') {
     if (!schema) {
       throw new Error('Schema is required');
     }
@@ -62,7 +103,7 @@ class TQEmailTemplate {
       throw new Error('Body is required and must be a string');
     }
 
-    // Validate $PUBLIC_LINK$ presence (mandatory for public quote emails)
+    // Validate $PUBLIC_LINK$ presence (mandatory for document link emails)
     if (!body.includes('$PUBLIC_LINK$')) {
       throw new Error('Template body must contain $PUBLIC_LINK$ variable');
     }
@@ -72,8 +113,8 @@ class TQEmailTemplate {
       throw new Error('Template body must contain $PASSWORD_BLOCK$ variable');
     }
 
-    // Check if template exists
-    const existing = await this.find(schema);
+    // Check if template exists for this type
+    const existing = await this.findByType(schema, templateType);
 
     let query;
     let params;
@@ -93,16 +134,19 @@ class TQEmailTemplate {
         existing.id
       ];
     } else {
+      // Ensure column exists before insert
+      await this.ensureTemplateTypeColumn(schema);
       // Insert new template
       query = `
-        INSERT INTO ${schema}.tq_email_template (subject, body, settings)
-        VALUES ($1, $2, $3::jsonb)
+        INSERT INTO ${schema}.tq_email_template (subject, body, settings, template_type)
+        VALUES ($1, $2, $3::jsonb, $4)
         RETURNING *
       `;
       params = [
         subject.trim(),
         body.trim(),
-        JSON.stringify(settings || {})
+        JSON.stringify(settings || {}),
+        templateType
       ];
     }
 
@@ -114,14 +158,15 @@ class TQEmailTemplate {
    * Update only settings (preserves subject/body)
    * @param {Object} settings - New settings object
    * @param {string} schema - Tenant schema name
+   * @param {string} templateType - Template type ('quote' or 'prevention')
    * @returns {Promise<TQEmailTemplate>}
    */
-  static async updateSettings(settings, schema) {
+  static async updateSettings(settings, schema, templateType = 'quote') {
     if (!schema) {
       throw new Error('Schema is required');
     }
 
-    const existing = await this.find(schema);
+    const existing = await this.findByType(schema, templateType);
     if (!existing) {
       throw new Error('Email template not found');
     }
@@ -142,77 +187,90 @@ class TQEmailTemplate {
   }
 
   /**
-   * Get default template content by locale
-   * Used for seeding during tenant provisioning
+   * Get default template content by locale and type
    * @param {string} locale - Locale code (e.g., 'pt-BR', 'en-US')
+   * @param {string} templateType - Template type ('quote' or 'prevention')
    * @returns {Object} Default template data { subject, body }
    */
-  static getDefaultTemplate(locale) {
+  static getDefaultTemplate(locale, templateType = 'quote') {
     const defaults = {
-      'pt-BR': {
-        subject: 'Cotação $quoteNumber$ - $clinicName$',
-        body: `Olá $patientName$,
+      quote: {
+        'pt-BR': {
+          subject: 'Cotação $quoteNumber$ - $clinicName$',
+          body: `Olá $patientName$,
 
 Sua cotação $quoteNumber$ está disponível para visualização online.
 
 $PUBLIC_LINK$
 
 $PASSWORD_BLOCK$`
-      },
-      'en-US': {
-        subject: 'Quote $quoteNumber$ - $clinicName$',
-        body: `Hello $patientName$,
+        },
+        'en-US': {
+          subject: 'Quote $quoteNumber$ - $clinicName$',
+          body: `Hello $patientName$,
 
 Your quote $quoteNumber$ is now available for online viewing.
 
 $PUBLIC_LINK$
 
 $PASSWORD_BLOCK$`
+        }
+      },
+      prevention: {
+        'pt-BR': {
+          subject: 'Plano Preventivo $quoteNumber$ - $clinicName$',
+          body: `Olá $patientName$,
+
+Seu plano preventivo $quoteNumber$ está disponível para visualização online.
+
+$PUBLIC_LINK$
+
+$PASSWORD_BLOCK$`
+        },
+        'en-US': {
+          subject: 'Prevention Plan $quoteNumber$ - $clinicName$',
+          body: `Hello $patientName$,
+
+Your prevention plan $quoteNumber$ is now available for online viewing.
+
+$PUBLIC_LINK$
+
+$PASSWORD_BLOCK$`
+        }
       }
     };
 
-    return defaults[locale] || defaults['en-US'];
+    const typeDefaults = defaults[templateType] || defaults.quote;
+    return typeDefaults[locale] || typeDefaults['en-US'];
   }
 
   /**
-   * Get default settings by locale
-   * Used for seeding during tenant provisioning
+   * Get default settings by locale and type
    * @param {string} locale - Locale code (e.g., 'pt-BR', 'en-US')
+   * @param {string} templateType - Template type ('quote' or 'prevention')
    * @returns {Object} Default settings
    */
-  static getDefaultSettings(locale) {
-    const defaults = {
-      'pt-BR': {
-        ctaButtonText: 'Ver Cotação',
-        showLogo: true,
-        headerText: '',
-        headerColor: 'primary-gradient',
-        headerTextColor: 'white',
-        buttonColor: 'primary-gradient',
-        buttonTextColor: 'white',
-        // Contact info visibility (data comes from Branding)
-        showEmail: true,
-        showPhone: true,
-        showAddress: true,
-        showSocialLinks: true
-      },
-      'en-US': {
-        ctaButtonText: 'View Quote',
-        showLogo: true,
-        headerText: '',
-        headerColor: 'primary-gradient',
-        headerTextColor: 'white',
-        buttonColor: 'primary-gradient',
-        buttonTextColor: 'white',
-        // Contact info visibility (data comes from Branding)
-        showEmail: true,
-        showPhone: true,
-        showAddress: true,
-        showSocialLinks: true
-      }
+  static getDefaultSettings(locale, templateType = 'quote') {
+    const ctaText = {
+      quote: { 'pt-BR': 'Ver Cotação', 'en-US': 'View Quote' },
+      prevention: { 'pt-BR': 'Ver Plano Preventivo', 'en-US': 'View Prevention Plan' }
     };
 
-    return defaults[locale] || defaults['en-US'];
+    const typeCta = ctaText[templateType] || ctaText.quote;
+
+    return {
+      ctaButtonText: typeCta[locale] || typeCta['en-US'],
+      showLogo: true,
+      headerText: '',
+      headerColor: 'primary-gradient',
+      headerTextColor: 'white',
+      buttonColor: 'primary-gradient',
+      buttonTextColor: 'white',
+      showEmail: true,
+      showPhone: true,
+      showAddress: true,
+      showSocialLinks: true
+    };
   }
 
   toJSON() {
@@ -221,6 +279,7 @@ $PASSWORD_BLOCK$`
       subject: this.subject,
       body: this.body,
       settings: this.settings,
+      templateType: this.templateType,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

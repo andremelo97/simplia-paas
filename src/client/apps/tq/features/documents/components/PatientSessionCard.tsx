@@ -28,6 +28,7 @@ interface PatientSessionCardProps {
   patientErrors?: PatientErrors
   disabled?: boolean
   i18nKey: string
+  emailRequired?: boolean
 }
 
 export const PatientSessionCard: React.FC<PatientSessionCardProps> = ({
@@ -36,7 +37,8 @@ export const PatientSessionCard: React.FC<PatientSessionCardProps> = ({
   onPatientChange,
   patientErrors = { firstName: '', lastName: '', email: '' },
   disabled = false,
-  i18nKey
+  i18nKey,
+  emailRequired = true
 }) => {
   const { t } = useTranslation('tq')
 
@@ -79,7 +81,7 @@ export const PatientSessionCard: React.FC<PatientSessionCardProps> = ({
                   value={patient.email}
                   onChange={(e) => onPatientChange('email', e.target.value)}
                   disabled={disabled}
-                  required
+                  required={emailRequired}
                   error={patientErrors.email}
                 />
 

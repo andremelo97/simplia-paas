@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useFeedbackStore } from './store'
 import { AppFeedback } from './types'
 import { cn } from '../utils/cn'
@@ -201,7 +202,7 @@ export const FeedbackHost: React.FC = () => {
   const globalErrors = feedbacks.filter(f => f.kind === 'error' && !f.path?.includes('field'))
   const toasts = feedbacks.filter(f => f.kind !== 'error' || f.path?.includes('field'))
 
-  return (
+  return createPortal(
     <>
       {/* Global error banners */}
       {globalErrors.map(feedback => (
@@ -222,6 +223,7 @@ export const FeedbackHost: React.FC = () => {
           />
         ))}
       </div>
-    </>
+    </>,
+    document.body
   )
 }

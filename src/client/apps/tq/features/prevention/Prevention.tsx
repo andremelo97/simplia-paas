@@ -52,9 +52,6 @@ export const Prevention: React.FC = () => {
     navigate(`/prevention/${prevention.id}/edit`)
   }
 
-  const handleViewPrevention = (prevention: PreventionType) => {
-    navigate(`/prevention/${prevention.id}/view`)
-  }
 
   return (
     <div className="space-y-8">
@@ -145,7 +142,6 @@ export const Prevention: React.FC = () => {
                     key={prevention.id}
                     prevention={prevention}
                     onEdit={handleEditPrevention}
-                    onView={handleViewPrevention}
                   />
                 ))}
               </div>

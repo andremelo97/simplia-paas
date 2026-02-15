@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit, FileText } from 'lucide-react'
+import { Edit } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { Prevention } from '../../services/prevention'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -9,13 +9,11 @@ import { useAuthStore } from '../../shared/store'
 interface PreventionRowProps {
   prevention: Prevention
   onEdit?: (prevention: Prevention) => void
-  onView?: (prevention: Prevention) => void
 }
 
 export const PreventionRow: React.FC<PreventionRowProps> = ({
   prevention,
-  onEdit,
-  onView
+  onEdit
 }) => {
   const { t } = useTranslation('tq')
   const [isHovered, setIsHovered] = useState(false)
@@ -27,11 +25,6 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
     onEdit?.(prevention)
   }
 
-  const handleView = () => {
-    onView?.(prevention)
-  }
-
-  const viewLabel = t('common:view')
   const editLabel = t('common:edit')
 
   return (
@@ -85,18 +78,6 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
       <div className={`w-24 flex items-center justify-end gap-1 transition-opacity duration-200 ${
         isHovered ? 'opacity-100' : 'opacity-0'
       }`}>
-        <Tooltip content={viewLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleView}
-            className="h-8 w-8 p-0 hover:bg-purple-100"
-            aria-label={viewLabel}
-          >
-            <FileText className="w-4 h-4 text-purple-600" />
-          </Button>
-        </Tooltip>
-
         {canEdit && (
           <Tooltip content={editLabel}>
             <Button

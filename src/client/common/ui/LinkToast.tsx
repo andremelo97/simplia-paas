@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, X, ExternalLink, Copy, Check } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
@@ -113,7 +114,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
     return t('link_toast.actions.item')
   }
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {show && (
         <motion.div
@@ -122,7 +123,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
           exit={{ y: -100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 500, damping: 30 }}
           className="fixed top-0 left-0 right-0 w-full z-[10000]"
-          style={{ 
+          style={{
             margin: 0,
             padding: 0
           }}
@@ -150,7 +151,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
                         {t('link_toast.created_successfully', { type: getTypeText() })}
                       </span>
                     </div>
-                    
+
                     {type === 'landing-page' ? (
                       /* Landing Page: Show URL and Password with copy buttons */
                       <div className="space-y-2">
@@ -228,6 +229,7 @@ export const LinkToast: React.FC<LinkToastProps> = ({
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

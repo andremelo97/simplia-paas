@@ -1296,6 +1296,7 @@
       "welcome": "Boas-vindas",
       "transcription": "Transcrição",
       "templates": "Templates",
+      "documents": "Docs",
       "landing_pages": "LP",
       "email_config": "E-mail",
       "workflow": "Fluxo",
@@ -1331,8 +1332,10 @@
       "types": "Templates disponíveis:",
       "quote": "Orçamentos",
       "quote_desc": "Propostas de tratamento com preços",
-      "report": "Relatórios Clínicos",
-      "report_desc": "Documentação médica",
+      "clinical_note": "Notas Clínicas",
+      "clinical_note_desc": "Documentação de consultas médicas",
+      "prevention": "Planos Preventivos",
+      "prevention_desc": "Planos de cuidados preventivos",
       "syntax_title": "Sintaxe do Template:",
       "syntax_placeholder": "IA preenche da transcrição",
       "syntax_variable": "Dados do sistema (paciente, data)",
@@ -1343,6 +1346,23 @@
       "ai_agent_config_hint": "Você pode personalizar as instruções iniciais do Agente de IA nas configurações.",
       "configure_ai_agent": "Configurar Agente de IA",
       "view_templates": "Ver Templates"
+    },
+    "documents": {
+      "title": "Documentos",
+      "description": "Quando você combina uma transcrição com um template, o TQ gera um documento usando IA. Cada tipo de documento tem uma finalidade diferente.",
+      "flow_transcription": "Transcrição",
+      "flow_template": "Template",
+      "flow_document": "Documento",
+      "types_title": "Tipos de documento:",
+      "type_quote": "Orçamentos",
+      "type_quote_desc": "Propostas de tratamento com preços. Compartilhe com pacientes para aprovação via landing pages.",
+      "type_clinical_note": "Notas Clínicas",
+      "type_clinical_note_desc": "Notas detalhadas de consultas. Usadas para prontuário médico, podem ser impressas ou salvas em PDF.",
+      "type_prevention": "Planos Preventivos",
+      "type_prevention_desc": "Planos de cuidados preventivos com recomendações. Compartilhe com pacientes via landing pages.",
+      "type_patient_summary": "Resumos do Paciente",
+      "type_patient_summary_desc": "Resumos simplificados da consulta para pacientes. Fáceis de entender e compartilhar.",
+      "view_documents": "Ver Documentos"
     },
     "landing_pages": {
       "title": "Landing Pages",
@@ -1372,8 +1392,9 @@
       "description": "Veja como tudo se conecta:",
       "step1": "Grave ou faça upload do áudio",
       "step2": "Selecione ou crie um paciente",
-      "step3": "Escolha o template e deixe a IA preencher",
-      "step4": "Revise, edite e envie ao paciente"
+      "step3": "Escolha o template e gere o documento com IA",
+      "step4": "Revise e edite seu documento",
+      "step5": "Compartilhe via landing page ou envie por e-mail"
     },
     "complete": {
       "title": "Você está Pronto!",

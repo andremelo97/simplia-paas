@@ -1296,6 +1296,7 @@
       "welcome": "Welcome",
       "transcription": "Transcription",
       "templates": "Templates",
+      "documents": "Docs",
       "landing_pages": "LP",
       "email_config": "Email",
       "workflow": "Workflow",
@@ -1331,8 +1332,10 @@
       "types": "Available templates:",
       "quote": "Quotes",
       "quote_desc": "Treatment proposals with pricing",
-      "report": "Clinical Reports",
-      "report_desc": "Medical documentation",
+      "clinical_note": "Clinical Notes",
+      "clinical_note_desc": "Medical consultation documentation",
+      "prevention": "Prevention Plans",
+      "prevention_desc": "Preventive care plans",
       "syntax_title": "Template Syntax:",
       "syntax_placeholder": "AI fills from transcription",
       "syntax_variable": "System data (patient, date)",
@@ -1343,6 +1346,23 @@
       "ai_agent_config_hint": "You can customize the AI Agent's initial instructions in the configurations.",
       "configure_ai_agent": "Configure AI Agent",
       "view_templates": "View Templates"
+    },
+    "documents": {
+      "title": "Documents",
+      "description": "When you combine a transcription with a template, TQ generates a document using AI. Each document type serves a different purpose.",
+      "flow_transcription": "Transcription",
+      "flow_template": "Template",
+      "flow_document": "Document",
+      "types_title": "Document types:",
+      "type_quote": "Quotes",
+      "type_quote_desc": "Treatment proposals with pricing. Share with patients for approval via landing pages.",
+      "type_clinical_note": "Clinical Notes",
+      "type_clinical_note_desc": "Detailed consultation notes. Used for medical records and can be printed or saved as PDF.",
+      "type_prevention": "Prevention Plans",
+      "type_prevention_desc": "Preventive care plans with recommendations. Share with patients via landing pages.",
+      "type_patient_summary": "Patient Summaries",
+      "type_patient_summary_desc": "Simplified visit summaries for patients. Easy to understand and share.",
+      "view_documents": "View Documents"
     },
     "landing_pages": {
       "title": "Landing Pages",
@@ -1372,8 +1392,9 @@
       "description": "Here's how everything connects:",
       "step1": "Record or upload audio",
       "step2": "Select or create patient",
-      "step3": "Choose template & let AI fill it",
-      "step4": "Review, edit & send to patient"
+      "step3": "Choose template & generate document with AI",
+      "step4": "Review and edit your document",
+      "step5": "Share via landing page or send by email"
     },
     "complete": {
       "title": "You're Ready!",

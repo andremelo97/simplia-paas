@@ -16,11 +16,12 @@ import {
   ClipboardList,
   Layout,
   Mail,
-  Palette,
   ExternalLink,
   Rocket,
   Bot,
-  Headphones
+  Headphones,
+  ShieldCheck,
+  FolderOpen
 } from 'lucide-react'
 
 export const TQOnboardingWizard: React.FC = () => {
@@ -289,10 +290,21 @@ export const TQOnboardingWizard: React.FC = () => {
                   <ClipboardList className="w-4 h-4 text-[#B725B7]" />
                   <div>
                     <p className="font-medium text-gray-900 text-sm">
-                      {t('onboarding.templates.report', 'Clinical Reports')}
+                      {t('onboarding.templates.clinical_note', 'Clinical Notes')}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {t('onboarding.templates.report_desc', 'Medical documentation')}
+                      {t('onboarding.templates.clinical_note_desc', 'Medical consultation documentation')}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200">
+                  <ShieldCheck className="w-4 h-4 text-green-600" />
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">
+                      {t('onboarding.templates.prevention', 'Prevention Plans')}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {t('onboarding.templates.prevention_desc', 'Preventive care plans')}
                     </p>
                   </div>
                 </div>
@@ -371,7 +383,111 @@ export const TQOnboardingWizard: React.FC = () => {
         </div>
       )
     },
-    // Step 4: Landing Page Templates (Public Quotes)
+    // Step 4: Documents - How transcription + template = document
+    {
+      id: 'documents',
+      title: t('onboarding.steps.documents', 'Docs'),
+      content: (
+        <div className="py-4">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <FolderOpen className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {t('onboarding.documents.title', 'Documents')}
+              </h3>
+              <p className="text-gray-600 text-sm">
+                {t('onboarding.documents.description',
+                  'When you combine a transcription with a template, TQ generates a document using AI. Each document type serves a different purpose.'
+                )}
+              </p>
+            </div>
+          </div>
+
+          {/* Visual flow: Transcription + Template = Document */}
+          <div className="flex items-center justify-center gap-2 mb-4 py-3 bg-gradient-to-r from-purple-50 via-blue-50 to-green-50 rounded-lg">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded border border-purple-200 text-sm">
+              <Mic className="w-3.5 h-3.5 text-[#B725B7]" />
+              <span className="text-gray-700 font-medium">{t('onboarding.documents.flow_transcription', 'Transcription')}</span>
+            </div>
+            <span className="text-gray-400 font-bold">+</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded border border-pink-200 text-sm">
+              <FileText className="w-3.5 h-3.5 text-[#E91E63]" />
+              <span className="text-gray-700 font-medium">{t('onboarding.documents.flow_template', 'Template')}</span>
+            </div>
+            <span className="text-gray-400 font-bold">=</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white rounded border border-blue-200 text-sm">
+              <FolderOpen className="w-3.5 h-3.5 text-blue-600" />
+              <span className="text-gray-700 font-medium">{t('onboarding.documents.flow_document', 'Document')}</span>
+            </div>
+          </div>
+
+          {/* Document Types */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <h4 className="font-medium text-gray-900 mb-3 text-sm">
+              {t('onboarding.documents.types_title', 'Document types:')}
+            </h4>
+            <div className="space-y-2.5">
+              <div className="flex items-start gap-3">
+                <Receipt className="w-4 h-4 text-[#E91E63] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {t('onboarding.documents.type_quote', 'Quotes')}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {t('onboarding.documents.type_quote_desc', 'Treatment proposals with pricing. Share with patients for approval via landing pages.')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <ClipboardList className="w-4 h-4 text-[#B725B7] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {t('onboarding.documents.type_clinical_note', 'Clinical Notes')}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {t('onboarding.documents.type_clinical_note_desc', 'Detailed consultation notes. Used for medical records and can be printed or saved as PDF.')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {t('onboarding.documents.type_prevention', 'Prevention Plans')}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {t('onboarding.documents.type_prevention_desc', 'Preventive care plans with recommendations. Share with patients via landing pages.')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Users className="w-4 h-4 text-[#5ED6CE] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-gray-900 text-sm">
+                    {t('onboarding.documents.type_patient_summary', 'Patient Summaries')}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {t('onboarding.documents.type_patient_summary_desc', 'Simplified visit summaries for patients. Easy to understand and share.')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => goToPage('/documents/quotes')}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm"
+          >
+            <FolderOpen className="w-4 h-4" />
+            {t('onboarding.documents.view_documents', 'View Documents')}
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      )
+    },
+    // Step 5: Landing Page Templates (Public Quotes)
     {
       id: 'landing-pages',
       title: t('onboarding.steps.landing_pages', 'LP'),
@@ -465,7 +581,7 @@ export const TQOnboardingWizard: React.FC = () => {
               </h4>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-center gap-2">
-                  <Palette className="w-4 h-4 text-[#B725B7] flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                   {t('onboarding.email_config.customize1', 'Header and button colors')}
                 </li>
                 <li className="flex items-center gap-2">
@@ -555,7 +671,19 @@ export const TQOnboardingWizard: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className="font-medium text-gray-900 text-sm">
-                  {t('onboarding.workflow.step3', 'Choose template & let AI fill it')}
+                  {t('onboarding.workflow.step3', 'Choose template & generate document with AI')}
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-gray-400" />
+            </div>
+
+            <div className="flex items-center gap-4 p-3 bg-blue-50 rounded-lg">
+              <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center flex-shrink-0">
+                <FolderOpen className="w-5 h-5" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-gray-900 text-sm">
+                  {t('onboarding.workflow.step4', 'Review and edit your document')}
                 </p>
               </div>
               <ArrowRight className="w-5 h-5 text-gray-400" />
@@ -567,7 +695,7 @@ export const TQOnboardingWizard: React.FC = () => {
               </div>
               <div className="flex-1">
                 <p className="font-medium text-gray-900 text-sm">
-                  {t('onboarding.workflow.step4', 'Review, edit & send to patient')}
+                  {t('onboarding.workflow.step5', 'Share via landing page or send by email')}
                 </p>
               </div>
             </div>

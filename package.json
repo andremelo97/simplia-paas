@@ -28,6 +28,7 @@
     "db:drop": "node src/server/infra/scripts/db-drop-test.js",
     "db:reset": "npm run db:drop && npm run db:create && npm run migrate",
     "db:reset:railway": "node scripts/reset-railway-db.js",
+    "db:reset:test": "node scripts/reset-test-db.js && npm run migrate",
     "pretest": "npm run db:create",
     "test": "jest --runInBand",
     "test:watch": "jest --watch --runInBand",

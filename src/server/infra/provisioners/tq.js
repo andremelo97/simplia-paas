@@ -643,9 +643,9 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         EXECUTE FUNCTION update_updated_at_column()
     `);
 
-    const { patientSummary, clinicalReport, landingPageTemplate } = templatesByLocale;
+    const { patientSummary, clinicalNote, prevention, landingPageTemplate } = templatesByLocale;
 
-    // Seed default templates for quotes and clinical notes
+    // Seed default templates for quotes, clinical notes, and prevention
     await client.query(
       `
       INSERT INTO template (title, description, content, active)
@@ -665,7 +665,18 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         SELECT 1 FROM template WHERE title = $1
       )
       `,
-      [clinicalReport.title, clinicalReport.description, clinicalReport.content]
+      [clinicalNote.title, clinicalNote.description, clinicalNote.content]
+    );
+
+    await client.query(
+      `
+      INSERT INTO template (title, description, content, active)
+      SELECT $1, $2, $3, true
+      WHERE NOT EXISTS (
+        SELECT 1 FROM template WHERE title = $1
+      )
+      `,
+      [prevention.title, prevention.description, prevention.content]
     );
 
     // Seed default landing_page_template

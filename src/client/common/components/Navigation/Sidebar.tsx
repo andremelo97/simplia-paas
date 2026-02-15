@@ -91,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       animate={{ x: 0 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        "relative flex flex-col bg-white border-r border-gray-200 transition-all duration-300",
+        "relative flex flex-col h-full bg-white border-r border-gray-200 transition-all duration-300",
         isOpen ? "w-64" : "w-16",
         className
       )}

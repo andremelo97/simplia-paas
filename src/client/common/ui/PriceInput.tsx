@@ -19,11 +19,13 @@ const PriceInput = React.forwardRef<HTMLInputElement, PriceInputProps>(
     const isBrazil = currency === 'BRL'
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
     const [displayValue, setDisplayValue] = React.useState('')
+    const isTypingRef = React.useRef(false)
 
-    // Initialize display value with 2 decimal places
+    // Initialize display value from prop — only when not actively typing
     React.useEffect(() => {
+      if (isTypingRef.current) return
       if (value !== undefined && value !== null && value !== 0) {
-        const numValue = typeof value === 'number' ? value : parseFloat(value)
+        const numValue = typeof value === 'number' ? value : parseFloat(value as any)
         setDisplayValue(numValue.toFixed(2))
       } else {
         setDisplayValue('')
@@ -36,6 +38,7 @@ const PriceInput = React.forwardRef<HTMLInputElement, PriceInputProps>(
       // Allow only numbers and one decimal point
       const regex = /^\d*\.?\d*$/
       if (regex.test(inputValue) || inputValue === '') {
+        isTypingRef.current = true
         setDisplayValue(inputValue)
 
         if (onChange) {
@@ -43,6 +46,18 @@ const PriceInput = React.forwardRef<HTMLInputElement, PriceInputProps>(
           onChange(isNaN(numericValue) ? 0 : numericValue)
         }
       }
+    }
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+      isTypingRef.current = false
+      // Format to 2 decimal places on blur
+      if (displayValue !== '') {
+        const numValue = parseFloat(displayValue)
+        if (!isNaN(numValue)) {
+          setDisplayValue(numValue.toFixed(2))
+        }
+      }
+      props.onBlur?.(e)
     }
 
     return (
@@ -71,6 +86,7 @@ const PriceInput = React.forwardRef<HTMLInputElement, PriceInputProps>(
             id={inputId}
             value={displayValue}
             onChange={handleInputChange}
+            onBlur={handleBlur}
             placeholder={placeholder}
             disabled={disabled}
             ref={ref}

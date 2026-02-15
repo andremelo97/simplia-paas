@@ -132,7 +132,6 @@ export const ClinicalNotesDocumentsTab: React.FC = () => {
                     key={note.id}
                     note={note}
                     onEdit={handleEditNote}
-                    onView={handleViewNote}
                   />
                 ))}
               </div>

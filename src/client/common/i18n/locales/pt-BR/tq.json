@@ -1146,7 +1146,8 @@
     "design": "Design",
     "history": "Histórico",
     "ai_agent": "Agentes de IA",
-    "email_template": "Template de Email"
+    "email_template": "Template de Email",
+    "items": "Itens"
   },
   "configurations": {
     "ai_agent": {

@@ -145,7 +145,6 @@ export const ClinicalNotes: React.FC = () => {
                     key={note.id}
                     note={note}
                     onEdit={handleEditNote}
-                    onDelete={handleDeleteNote}
                   />
                 ))}
               </div>

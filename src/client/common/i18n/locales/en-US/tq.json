@@ -1179,7 +1179,8 @@
     "design": "Design",
     "history": "History",
     "ai_agent": "AI Agents",
-    "email_template": "Email Template"
+    "email_template": "Email Template",
+    "items": "Items"
   },
   "configurations": {
     "ai_agent": {

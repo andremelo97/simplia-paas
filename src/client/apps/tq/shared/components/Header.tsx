@@ -15,108 +15,130 @@ import { HelpCircle, Headphones } from 'lucide-react'
 import { Tooltip, Button, SupportModal } from '@client/common/ui'
 
 const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
+  const home = { label: t('breadcrumbs.home'), href: '/' }
   const segments = pathname.split('/').filter(Boolean)
 
-  if (segments.length === 0 || pathname === '/') {
-    return [{ label: t('breadcrumbs.home'), href: '/' }]
+  if (segments.length === 0 || pathname === '/' || pathname === '/home') {
+    return [home]
   }
 
-  const breadcrumbs = [
-    { label: t('breadcrumbs.home'), href: '/' }
-  ]
+  const isId = (s: string) =>
+    /^\d+$/.test(s) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s)
 
-  // Helper function to check if a segment is a numeric ID or UUID
-  const isId = (segment: string) => {
-    return /^\d+$/.test(segment) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment)
+  const s = segments
+
+  // --- Patients ---
+  if (s[0] === 'patients') {
+    const patients = { label: t('breadcrumbs.patients'), href: '/patients' }
+    if (s[1] === 'create') return [home, patients, { label: t('breadcrumbs.create'), href: '#' }]
+    if (s[2] === 'edit') return [home, patients, { label: t('breadcrumbs.edit'), href: '#' }]
+    if (s[2] === 'history') return [home, patients, { label: t('breadcrumbs.history'), href: '#' }]
+    return [home, patients]
   }
 
-  // Helper function to map segments to user-friendly labels
-  const mapSegmentToLabel = (segment: string) => {
-    switch (segment) {
-      case 'patients': return t('breadcrumbs.patients')
-      case 'sessions': return t('breadcrumbs.sessions')
-      case 'quotes': return t('breadcrumbs.quotes')
-      case 'clinical-notes': return t('breadcrumbs.clinical_notes')
-      case 'prevention': return t('breadcrumbs.prevention')
-      case 'templates': return t('breadcrumbs.templates')
-      case 'configurations': return t('breadcrumbs.configurations')
-      case 'landing-pages': return t('breadcrumbs.landing_pages')
-      case 'new-session': return t('breadcrumbs.new_session')
-      case 'create': return t('breadcrumbs.create')
-      case 'edit': return t('breadcrumbs.edit')
-      case 'design': return t('breadcrumbs.design')
-      case 'history': return t('breadcrumbs.history')
-      case 'ai-agent': return t('breadcrumbs.ai_agent')
-      case 'email-template': return t('breadcrumbs.email_template')
-      default: return segment.charAt(0).toUpperCase() + segment.slice(1)
-    }
+  // --- Sessions ---
+  if (s[0] === 'sessions') {
+    const sessions = { label: t('breadcrumbs.sessions'), href: '/sessions' }
+    if (s.length >= 2 && isId(s[1])) return [home, sessions, { label: t('breadcrumbs.edit'), href: '#' }]
+    return [home, sessions]
   }
 
-  segments.forEach((segment, index) => {
-    // Skip numeric IDs and UUIDs - never show them in breadcrumbs
-    if (isId(segment)) {
-      return
-    }
+  // --- New Session ---
+  if (s[0] === 'new-session') {
+    return [home, { label: t('breadcrumbs.new_session'), href: '#' }]
+  }
 
-    // For patients create route: /patients/create -> Home > Patients > Create
-    if (segments[0] === 'patients' && segments[1] === 'create') {
-      if (index === 0) {
-        breadcrumbs.push({ label: t('breadcrumbs.patients'), href: '/patients' })
-      } else if (index === 1) {
-        breadcrumbs.push({ label: t('breadcrumbs.create'), href: '#' })
-      }
-      return
+  // --- Documents (skip "Documents" level, go straight to sub-section) ---
+  if (s[0] === 'documents') {
+    // /documents/items/create
+    if (s[1] === 'items' && s[2] === 'create') {
+      return [home, { label: t('breadcrumbs.items'), href: '/documents/items' }, { label: t('breadcrumbs.create'), href: '#' }]
     }
-
-    // For patient edit routes: /patients/:id/edit -> Home > Patients > Edit
-    if (segments[0] === 'patients' && segments[2] === 'edit') {
-      if (index === 0) {
-        breadcrumbs.push({ label: t('breadcrumbs.patients'), href: '/patients' })
-      } else if (index === 2) {
-        breadcrumbs.push({ label: t('breadcrumbs.edit'), href: '#' })
-      }
-      return
+    // /documents/items/:id/edit
+    if (s[1] === 'items' && s.length >= 4 && isId(s[2])) {
+      return [home, { label: t('breadcrumbs.items'), href: '/documents/items' }, { label: t('breadcrumbs.edit'), href: '#' }]
     }
-
-    // For documents routes: /documents/quote/:id/edit -> Home > Documents > Quotes > Edit
-    if (segments[0] === 'documents' && segments.length >= 4 && isId(segments[2])) {
-      if (index === 0) {
-        breadcrumbs.push({ label: t('breadcrumbs.documents'), href: '/documents/quotes' })
-      } else if (index === 1) {
-        const docType = segment
-        if (docType === 'quote') {
-          breadcrumbs.push({ label: t('breadcrumbs.quotes'), href: '/documents/quotes' })
-        } else if (docType === 'clinical-note') {
-          breadcrumbs.push({ label: t('breadcrumbs.clinical_notes'), href: '/documents/clinical-notes' })
-        } else if (docType === 'prevention') {
-          breadcrumbs.push({ label: t('breadcrumbs.prevention'), href: '/documents/prevention' })
-        }
-      } else if (index === 3) {
-        breadcrumbs.push({ label: t('breadcrumbs.edit'), href: '#' })
-      }
-      return
+    // /documents/items
+    if (s[1] === 'items') {
+      return [home, { label: t('breadcrumbs.items'), href: '/documents/items' }]
     }
-
-    // For landing-pages template design: /landing-pages/templates/:id/design -> Home > Landing Pages > Templates > Edit > Design
-    if (segments[0] === 'landing-pages' && segments[1] === 'templates' && segments[3] === 'design') {
-      if (index === 0) {
-        breadcrumbs.push({ label: t('breadcrumbs.landing_pages'), href: '/landing-pages' })
-      } else if (index === 1) {
-        breadcrumbs.push({ label: t('breadcrumbs.templates'), href: '/landing-pages/templates' })
-      } else if (index === 3) {
-        const templateId = segments[2]
-        breadcrumbs.push({ label: t('breadcrumbs.edit'), href: `/landing-pages/templates/${templateId}/edit` })
-        breadcrumbs.push({ label: t('breadcrumbs.design'), href: '#' })
-      }
-      return
+    // /documents/quote/:id/edit or /documents/:docType/:id/edit
+    if (s.length >= 4 && isId(s[2])) {
+      const docType = s[1]
+      if (docType === 'quote') return [home, { label: t('breadcrumbs.quotes'), href: '/documents/quotes' }, { label: t('breadcrumbs.edit'), href: '#' }]
+      if (docType === 'clinical-note') return [home, { label: t('breadcrumbs.clinical_notes'), href: '/documents/clinical-notes' }, { label: t('breadcrumbs.edit'), href: '#' }]
+      if (docType === 'prevention') return [home, { label: t('breadcrumbs.prevention'), href: '/documents/prevention' }, { label: t('breadcrumbs.edit'), href: '#' }]
     }
+    // /documents/quotes, /documents/clinical-notes, /documents/prevention
+    if (s[1] === 'quotes') return [home, { label: t('breadcrumbs.quotes'), href: '/documents/quotes' }]
+    if (s[1] === 'clinical-notes') return [home, { label: t('breadcrumbs.clinical_notes'), href: '/documents/clinical-notes' }]
+    if (s[1] === 'prevention') return [home, { label: t('breadcrumbs.prevention'), href: '/documents/prevention' }]
+    // /documents (redirects to quotes)
+    return [home, { label: t('breadcrumbs.quotes'), href: '/documents/quotes' }]
+  }
 
-    // Default case: add non-ID segments as breadcrumbs
-    const href = '/' + segments.slice(0, index + 1).join('/')
-    const label = mapSegmentToLabel(segment)
-    breadcrumbs.push({ label, href })
+  // --- Templates ---
+  if (s[0] === 'templates') {
+    const templates = { label: t('breadcrumbs.templates'), href: '/templates' }
+    if (s[1] === 'create') return [home, templates, { label: t('breadcrumbs.create'), href: '#' }]
+    if (s.length >= 3 && isId(s[1]) && s[2] === 'edit') return [home, templates, { label: t('breadcrumbs.edit'), href: '#' }]
+    return [home, templates]
+  }
+
+  // --- Landing Pages ---
+  if (s[0] === 'landing-pages') {
+    const lp = { label: t('breadcrumbs.landing_pages'), href: '/landing-pages' }
+    if (s[1] === 'templates') {
+      const lpTemplates = { label: t('breadcrumbs.templates'), href: '/landing-pages/templates' }
+      if (s[2] === 'create') return [home, lp, lpTemplates, { label: t('breadcrumbs.create'), href: '#' }]
+      if (s.length >= 4 && isId(s[2]) && s[3] === 'edit') return [home, lp, lpTemplates, { label: t('breadcrumbs.edit'), href: '#' }]
+      if (s.length >= 4 && isId(s[2]) && s[3] === 'design') return [home, lp, lpTemplates, { label: t('breadcrumbs.design'), href: '#' }]
+      return [home, lp, lpTemplates]
+    }
+    return [home, lp]
+  }
+
+  // --- Configurations ---
+  if (s[0] === 'configurations') {
+    const config = { label: t('breadcrumbs.configurations'), href: '/configurations' }
+    if (s[1] === 'ai-agent') return [home, config, { label: t('breadcrumbs.ai_agent'), href: '#' }]
+    if (s[1] === 'email-template') return [home, config, { label: t('breadcrumbs.email_template'), href: '#' }]
+    return [home, config]
+  }
+
+  // --- OLD routes (backwards compat) ---
+  if (s[0] === 'clinical-notes') {
+    const cn = { label: t('breadcrumbs.clinical_notes'), href: '/documents/clinical-notes' }
+    if (s.length >= 3 && isId(s[1]) && s[2] === 'edit') return [home, cn, { label: t('breadcrumbs.edit'), href: '#' }]
+    return [home, cn]
+  }
+  if (s[0] === 'prevention') {
+    const prev = { label: t('breadcrumbs.prevention'), href: '/documents/prevention' }
+    if (s.length >= 3 && isId(s[1]) && s[2] === 'edit') return [home, prev, { label: t('breadcrumbs.edit'), href: '#' }]
+    return [home, prev]
+  }
+  if (s[0] === 'quotes') {
+    if (s[1] === 'items') {
+      const items = { label: t('breadcrumbs.items'), href: '/documents/items' }
+      if (s[2] === 'create') return [home, items, { label: t('breadcrumbs.create'), href: '#' }]
+      if (s.length >= 4 && isId(s[2]) && s[3] === 'edit') return [home, items, { label: t('breadcrumbs.edit'), href: '#' }]
+      return [home, items]
+    }
+    const quotes = { label: t('breadcrumbs.quotes'), href: '/documents/quotes' }
+    if (s.length >= 3 && isId(s[1]) && s[2] === 'edit') return [home, quotes, { label: t('breadcrumbs.edit'), href: '#' }]
+    return [home, quotes]
+  }
+
+  // --- Fallback: capitalize segments ---
+  const breadcrumbs = [home]
+  segments.forEach((seg, i) => {
+    if (!isId(seg)) {
+      breadcrumbs.push({
+        label: seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '),
+        href: i === segments.length - 1 ? '#' : '/' + segments.slice(0, i + 1).join('/')
+      })
+    }
   })
-
   return breadcrumbs
 }
 

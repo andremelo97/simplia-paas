@@ -92,7 +92,7 @@ export const ApplicationsList: React.FC = () => {
 
   const getStatusBadge = (status: string, active: boolean) => {
     if (active) {
-      return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full" style={{color: 'var(--brand-tertiary)', backgroundColor: 'var(--brand-tertiary-bg)', fontFamily: 'Montserrat, sans-serif'}}>Active</span>
+      return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full" style={{color: 'var(--brand-tertiary)', backgroundColor: 'var(--brand-tertiary-bg)', fontFamily: 'Inter, sans-serif'}}>Active</span>
     } else {
       return <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Inactive</span>
     }

@@ -35,7 +35,7 @@ export const DOCUMENT_CONFIGS: Record<DocumentType, DocumentConfig> = {
     hasLandingPage: true,
     hasViewPage: false,
     backPath: '/documents/quotes',
-    previewPath: (id, templateId) => `/quotes/${id}/preview-public-quote/${templateId}`,
+    previewPath: (id, templateId) => `/documents/quote/${id}/preview/${templateId}`,
     i18nKey: 'quotes',
     getById: (id) => quotesService.getQuote(id),
     update: (id, data) => quotesService.updateQuote(id, data)
@@ -59,6 +59,7 @@ export const DOCUMENT_CONFIGS: Record<DocumentType, DocumentConfig> = {
     hasLandingPage: true,
     hasViewPage: false,
     backPath: '/documents/prevention',
+    previewPath: (id, templateId) => `/documents/prevention/${id}/preview/${templateId}`,
     i18nKey: 'prevention',
     getById: (id) => preventionService.getById(id),
     update: (id, data) => preventionService.update(id, data)

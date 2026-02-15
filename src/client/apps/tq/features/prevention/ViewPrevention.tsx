@@ -47,7 +47,7 @@ export const ViewPrevention: React.FC = () => {
   }
 
   const handleEdit = () => {
-    navigate(`/prevention/${id}/edit`)
+    navigate(`/documents/prevention/${id}/edit`)
   }
 
   const formatDate = (dateString?: string) => {

@@ -36,11 +36,11 @@ const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
         style={variant === 'tertiary' ? { 
           color: 'var(--brand-tertiary)',
           backgroundColor: 'var(--brand-tertiary-bg)', 
-          fontFamily: 'Montserrat, sans-serif' 
+          fontFamily: 'Inter, sans-serif' 
         } : variant === 'success' ? {
           color: 'var(--brand-tertiary)',
           backgroundColor: 'var(--brand-tertiary-bg)',
-          fontFamily: 'Montserrat, sans-serif'
+          fontFamily: 'Inter, sans-serif'
         } : undefined}
         {...props}
       />

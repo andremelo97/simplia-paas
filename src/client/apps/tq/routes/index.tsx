@@ -93,9 +93,9 @@ export const AppRoutes: React.FC = () => {
       {/* Preview Landing Page Template - Completely isolated, no auth/layout */}
       <Route path="/landing-pages/templates/:id/preview" element={<PreviewLandingPageTemplate />} />
 
-      {/* Preview Public Quote - Isolated preview with auth but no layout */}
+      {/* Preview Document Landing Page - Isolated preview with auth but no layout */}
       <Route
-        path="/quotes/:id/preview-public-quote/:templateId"
+        path="/documents/:documentType/:id/preview/:templateId"
         element={
           <RouteGuard requireAuth requiredApp="tq">
             <PreviewPublicQuote />

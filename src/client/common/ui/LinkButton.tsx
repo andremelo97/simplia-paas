@@ -19,7 +19,7 @@ export const LinkButton: React.FC<LinkButtonProps> = ({
 }) => {
   // Custom styles for all variants (matching Button component)
   const customStyles = {
-    fontFamily: 'Montserrat, sans-serif',
+    fontFamily: 'Inter, sans-serif',
     height: '32px',
     minHeight: '32px',
     ...(variant === 'default' && {

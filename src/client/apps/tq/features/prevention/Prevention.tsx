@@ -49,7 +49,7 @@ export const Prevention: React.FC = () => {
   }
 
   const handleEditPrevention = (prevention: PreventionType) => {
-    navigate(`/prevention/${prevention.id}/edit`)
+    navigate(`/documents/prevention/${prevention.id}/edit`)
   }
 
 

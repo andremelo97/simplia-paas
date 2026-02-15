@@ -52,7 +52,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       style={status === 'active' ? { 
         color: 'var(--brand-tertiary)',
         backgroundColor: 'var(--brand-tertiary-bg)',
-        fontFamily: 'Montserrat, sans-serif' 
+        fontFamily: 'Inter, sans-serif' 
       } : undefined}
     >
       {getStatusLabel(status)}

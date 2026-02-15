@@ -340,7 +340,7 @@ export const TQOnboardingWizard: React.FC = () => {
                   )}
                 </p>
                 {/* Visual representation of the button - exact copy from NewSession */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-[5px] text-sm font-medium cursor-default" style={{ fontFamily: 'Montserrat, sans-serif', height: '32px' }}>
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-[5px] text-sm font-medium cursor-default" style={{ fontFamily: 'Inter, sans-serif', height: '32px' }}>
                   <Bot className="w-4 h-4" />
                   {t('sessions.call_ai_agent', 'Call AI Agent')}
                 </div>

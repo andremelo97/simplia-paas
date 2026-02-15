@@ -593,7 +593,7 @@ export const EditQuote: React.FC = () => {
                       <Button
                         type="button"
                         variant="secondary"
-                        onClick={() => window.open(`/quotes/${id}/preview-public-quote/${selectedTemplateId}`, '_blank')}
+                        onClick={() => window.open(`/documents/quote/${id}/preview/${selectedTemplateId}`, '_blank')}
                         disabled={!selectedTemplateId}
                       >
                         {t('quotes.preview_template')}

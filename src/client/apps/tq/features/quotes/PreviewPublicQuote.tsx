@@ -5,15 +5,16 @@ import '@measured/puck/puck.css'
 import { Button } from '@client/common/ui'
 import { X } from 'lucide-react'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
-import { quotesService, Quote } from '../../services/quotes'
+import { quotesService } from '../../services/quotes'
+import { preventionService } from '../../services/prevention'
 import { brandingService, BrandingData } from '../../services/branding'
 import { usePublicQuoteRenderer } from '../../hooks/usePublicQuoteRenderer'
 
 export const PreviewPublicQuote: React.FC = () => {
-  const { id: quoteId, templateId } = useParams<{ id: string; templateId: string }>()
+  const { id: documentId, templateId, documentType } = useParams<{ id: string; templateId: string; documentType: string }>()
   const navigate = useNavigate()
 
-  const [quote, setQuote] = useState<Quote | null>(null)
+  const [document, setDocument] = useState<any | null>(null)
   const [template, setTemplate] = useState<LandingPageTemplate | null>(null)
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -37,22 +38,27 @@ export const PreviewPublicQuote: React.FC = () => {
 
   useEffect(() => {
     loadData()
-  }, [quoteId, templateId])
+  }, [documentId, templateId, documentType])
 
   const loadData = async () => {
-    if (!quoteId || !templateId) return
+    if (!documentId || !templateId) return
 
     try {
       setIsLoading(true)
 
+      // Load document based on type
+      const fetchDocument = documentType === 'prevention'
+        ? preventionService.getById(documentId)
+        : quotesService.getQuote(documentId)
+
       // Load all data in parallel
-      const [fetchedQuote, templateData, brandingData] = await Promise.all([
-        quotesService.getQuote(quoteId),
+      const [fetchedDocument, templateData, brandingData] = await Promise.all([
+        fetchDocument,
         landingPagesService.getTemplate(templateId),
         brandingService.getBranding()
       ])
 
-      setQuote(fetchedQuote)
+      setDocument(fetchedDocument)
       setTemplate(templateData)
       setBranding(brandingData)
 
@@ -63,13 +69,14 @@ export const PreviewPublicQuote: React.FC = () => {
     }
   }
 
-  // Create config with resolved quote data using reusable hook
-  const previewConfig = usePublicQuoteRenderer(template, quote, branding, {
+  // Create config with resolved document data using reusable hook
+  const previewConfig = usePublicQuoteRenderer(template, document, branding, {
     onOpenWidget: handleOpenWidget
   })
 
   const handleBack = () => {
-    navigate(`/quotes/${quoteId}/edit`)
+    const docType = documentType || 'quote'
+    navigate(`/documents/${docType}/${documentId}/edit`)
   }
 
   if (isLoading) {
@@ -80,13 +87,13 @@ export const PreviewPublicQuote: React.FC = () => {
     )
   }
 
-  if (!quote || !template || !previewConfig || !branding) {
+  if (!document || !template || !previewConfig || !branding) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <p className="text-red-600 mb-4">Failed to load preview</p>
           <Button variant="secondary" onClick={handleBack}>
-            Back to Quote
+            Back to Document
           </Button>
         </div>
       </div>

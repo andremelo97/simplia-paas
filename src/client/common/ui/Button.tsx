@@ -44,7 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     
     // Custom styles for all variants
     const customStyles = {
-      fontFamily: 'Montserrat, sans-serif',
+      fontFamily: 'Inter, sans-serif',
       height: '32px',
       minHeight: '32px',
       ...((variant === 'default' || variant === 'primary') && {

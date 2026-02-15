@@ -1,24 +1,38 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Puck, Render } from '@measured/puck'
+import { Render } from '@measured/puck'
 import { X } from 'lucide-react'
-import { landingPagesService, LandingPage } from '../../services/landingPages'
-import { quotesService } from '../../services/quotes'
-import { brandingService, BrandingData } from '../../services/branding'
-import { useLandingPageRenderer } from '../../hooks/useLandingPageRenderer'
+import { landingPagesService } from '../../services/landingPages'
+import { createConfigWithResolvedData } from './puck-config-preview'
 import '@measured/puck/puck.css'
+
+interface PreviewData {
+  content: {
+    template: any
+    resolvedData: any
+  }
+  branding: {
+    primaryColor: string
+    secondaryColor: string
+    tertiaryColor: string
+    logo: string | null
+    socialLinks?: Record<string, string> | null
+    email?: string | null
+    phone?: string | null
+    address?: string | null
+    companyName?: string | null
+  }
+}
 
 /**
  * Preview page for authenticated users to see what patients will see
- * This is a read-only preview within the application context
+ * Uses the stored content package (same as public access) - no password needed
  */
 export const PreviewLandingPageLink: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
-  const [landingPage, setLandingPage] = useState<LandingPage | null>(null)
-  const [quote, setQuote] = useState<any>(null)
-  const [branding, setBranding] = useState<BrandingData | null>(null)
+  const [data, setData] = useState<PreviewData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -40,59 +54,62 @@ export const PreviewLandingPageLink: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    if (id) {
-      loadData()
-    }
-  }, [id])
-
-  const loadData = async () => {
     if (!id) return
 
-    try {
-      setIsLoading(true)
-      setError(null)
-
-      // Load landing page
-      const pages = await landingPagesService.listAllLandingPages()
-      const foundLandingPage = pages.find(p => p.id === id)
-
-      if (!foundLandingPage) {
-        setError('Landing page not found')
-        return
+    const loadData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const result = await landingPagesService.getLandingPagePreview(id)
+        setData(result)
+      } catch (err) {
+        setError(t('landing_pages.failed_to_load'))
+      } finally {
+        setIsLoading(false)
       }
-
-      setLandingPage(foundLandingPage)
-
-      // Load full quote data if it's a quote landing page
-      if (foundLandingPage.quote?.id) {
-        const fullQuote = await quotesService.getQuote(foundLandingPage.quote.id)
-        setQuote(fullQuote)
-      }
-
-      // Load branding
-      const brandingData = await brandingService.getBranding()
-      setBranding(brandingData)
-    } catch (err) {
-      setError('Failed to load preview')
-    } finally {
-      setIsLoading(false)
     }
-  }
 
-  const previewConfig = useLandingPageRenderer(
-    landingPage?.template ? {
-      id: landingPage.template.id,
-      name: landingPage.template.name,
-      content: landingPage.template.content,
-      createdAt: '',
-      updatedAt: '',
-      isDefault: false,
-      active: true
-    } : null,
-    quote,
-    branding,
-    { onOpenWidget: handleOpenWidget }
-  )
+    loadData()
+  }, [id])
+
+  const quoteLabels = useMemo(() => ({
+    quoteNumber: t('landing_pages.labels.quote_number'),
+    total: t('landing_pages.labels.total'),
+    noItems: t('landing_pages.labels.items_empty'),
+    item: t('landing_pages.labels.item'),
+    quantity: t('landing_pages.labels.quantity'),
+    price: t('landing_pages.labels.price'),
+    discount: t('landing_pages.labels.discount')
+  }), [t])
+
+  const footerLabels = useMemo(() => ({
+    socialTitle: t('landing_pages.footer.social_title'),
+    quickLinksTitle: t('landing_pages.footer.quick_links_title'),
+    contactTitle: t('landing_pages.footer.contact_title')
+  }), [t])
+
+  const previewConfig = useMemo(() => {
+    if (!data?.content || !data?.branding) return null
+
+    const branding = {
+      tenantId: 0,
+      primaryColor: data.branding.primaryColor,
+      secondaryColor: data.branding.secondaryColor,
+      tertiaryColor: data.branding.tertiaryColor,
+      logoUrl: data.branding.logo || null,
+      companyName: data.branding.companyName || null,
+      socialLinks: data.branding.socialLinks || null,
+      email: data.branding.email || null,
+      phone: data.branding.phone || null,
+      address: data.branding.address || null
+    }
+
+    return createConfigWithResolvedData(branding, data.content.resolvedData, {
+      labels: quoteLabels,
+      footerLabels,
+      onOpenWidget: handleOpenWidget
+    })
+  }, [data, quoteLabels, footerLabels, handleOpenWidget])
 
   if (isLoading) {
     return (
@@ -102,7 +119,7 @@ export const PreviewLandingPageLink: React.FC = () => {
     )
   }
 
-  if (error || !previewConfig) {
+  if (error || !previewConfig || !data) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="text-red-600">{error || t('landing_pages.failed_to_load')}</div>
@@ -110,12 +127,21 @@ export const PreviewLandingPageLink: React.FC = () => {
     )
   }
 
+  // Check if template has content
+  if (!data.content.template || !data.content.template.content || data.content.template.content.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t('landing_pages.access.no_content_title')}</h1>
+          <p className="text-gray-600">{t('landing_pages.access.no_content_description')}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      <Render
-        config={previewConfig}
-        data={landingPage?.template?.content || { root: {}, content: [], zones: {} }}
-      />
+      <Render config={previewConfig} data={data.content.template} />
 
       {/* Widget modal with iframe */}
       {widgetModal.isOpen && (

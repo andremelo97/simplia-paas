@@ -166,6 +166,11 @@ export const landingPagesService = {
     return Array.isArray(response.data) ? response.data : (response.data?.data || [])
   },
 
+  async getLandingPagePreview(id: string): Promise<{ content: any; branding: any }> {
+    const response = await api.get(`/api/tq/v1/landing-pages/link/${id}`)
+    return response.data
+  },
+
   async getLandingPagesByDocument(documentId: string, documentType: 'quote' | 'prevention' = 'quote'): Promise<LandingPage[]> {
     const response = await api.get(`/api/tq/v1/landing-pages/${documentId}?document_type=${documentType}`)
     return response.data.data

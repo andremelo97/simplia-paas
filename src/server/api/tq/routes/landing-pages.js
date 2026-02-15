@@ -464,6 +464,105 @@ router.post('/', async (req, res) => {
 
 /**
  * @openapi
+ * /tq/landing-pages/link/{id}:
+ *   get:
+ *     tags: [TQ - Landing Pages]
+ *     summary: Get single landing page with content for preview
+ *     description: |
+ *       **Scope:** Tenant (x-tenant-id required)
+ *
+ *       Returns a single landing page by its own ID, including stored content package and branding.
+ *       Used for authenticated preview (no password needed).
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: header
+ *         name: x-tenant-id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Landing page with content and branding
+ *       404:
+ *         description: Landing page not found
+ */
+router.get('/link/:id', async (req, res) => {
+  try {
+    const schema = req.tenant?.schema;
+    const { id } = req.params;
+
+    if (!schema) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Missing tenant context'
+      });
+    }
+
+    // Get landing page with content
+    const query = `
+      SELECT lp.*, lpt.name as template_name, lpt.content as template_content
+      FROM ${schema}.landing_page lp
+      LEFT JOIN ${schema}.landing_page_template lpt ON lp.template_id = lpt.id
+      WHERE lp.id = $1 AND lp.tenant_id = $2
+    `;
+
+    const result = await database.query(query, [id, req.tenant.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Landing page not found'
+      });
+    }
+
+    const row = result.rows[0];
+
+    // Get branding
+    const brandingQuery = `
+      SELECT primary_color, secondary_color, tertiary_color, logo_url,
+             social_links, email, phone, address, company_name
+      FROM public.tenant_branding
+      WHERE tenant_id_fk = $1
+      LIMIT 1
+    `;
+
+    const brandingResult = await database.query(brandingQuery, [req.tenant.id]);
+    const brandingData = brandingResult.rows[0] || {};
+
+    res.json({
+      data: {
+        content: row.content,
+        branding: {
+          primaryColor: brandingData.primary_color || '#3B82F6',
+          secondaryColor: brandingData.secondary_color || '#1E40AF',
+          tertiaryColor: brandingData.tertiary_color || '#60A5FA',
+          logo: brandingData.logo_url || null,
+          socialLinks: brandingData.social_links || null,
+          email: brandingData.email || null,
+          phone: brandingData.phone || null,
+          address: brandingData.address || null,
+          companyName: brandingData.company_name || null
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get landing page preview error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to load landing page preview'
+    });
+  }
+});
+
+/**
+ * @openapi
  * /tq/landing-pages/{documentIdentifier}:
  *   get:
  *     tags: [TQ - Landing Pages]

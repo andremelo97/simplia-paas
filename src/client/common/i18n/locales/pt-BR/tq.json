@@ -1311,7 +1311,7 @@
       "feature2": "Gerenciar registros de pacientes",
       "feature3": "Criar orçamentos com assistência de IA",
       "feature4": "Gerar relatórios clínicos",
-      "feature5": "Compartilhar orçamentos com landing pages personalizadas"
+      "feature5": "Compartilhar documentos com landing pages personalizadas"
     },
     "transcription": {
       "title": "Transcrição de Áudio",
@@ -1345,8 +1345,8 @@
       "view_templates": "Ver Templates"
     },
     "landing_pages": {
-      "title": "Páginas de Orçamento Público",
-      "description": "Crie páginas bonitas para compartilhar orçamentos com seus pacientes. Eles podem ver os detalhes do orçamento sem precisar fazer login.",
+      "title": "Landing Pages",
+      "description": "Crie landing pages para compartilhar documentos com seus pacientes. Eles podem ver os detalhes sem precisar fazer login.",
       "features_title": "Recursos:",
       "feature1": "Editor de página arrastar e soltar",
       "feature2": "Cores e marca personalizadas",
@@ -1357,7 +1357,7 @@
     },
     "email_config": {
       "title": "Template de E-mail",
-      "description": "Personalize o template de e-mail usado ao enviar orçamentos para pacientes. Adicione seu logo, cores e informações de contato.",
+      "description": "Personalize o template de e-mail usado ao enviar documentos para pacientes. Adicione seu logo, cores e informações de contato.",
       "customize_title": "Você pode personalizar:",
       "customize1": "Cores do cabeçalho e botões",
       "customize2": "Logo da empresa",

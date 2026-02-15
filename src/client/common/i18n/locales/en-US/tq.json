@@ -1311,7 +1311,7 @@
       "feature2": "Manage patient records",
       "feature3": "Create quotes with AI assistance",
       "feature4": "Generate clinical reports",
-      "feature5": "Share quotes with custom landing pages"
+      "feature5": "Share documents with custom landing pages"
     },
     "transcription": {
       "title": "Audio Transcription",
@@ -1345,8 +1345,8 @@
       "view_templates": "View Templates"
     },
     "landing_pages": {
-      "title": "Public Quote Pages",
-      "description": "Create beautiful landing pages to share quotes with your patients. They can view the quote details without needing to log in.",
+      "title": "Landing Pages",
+      "description": "Create beautiful landing pages to share documents with your patients. They can view details without needing to log in.",
       "features_title": "Features:",
       "feature1": "Drag-and-drop page builder",
       "feature2": "Custom branding and colors",
@@ -1357,7 +1357,7 @@
     },
     "email_config": {
       "title": "Email Template",
-      "description": "Customize the email template used when sending quotes to patients. Add your logo, colors, and contact information.",
+      "description": "Customize the email template used when sending documents to patients. Add your logo, colors, and contact information.",
       "customize_title": "You can customize:",
       "customize1": "Header and button colors",
       "customize2": "Company logo",

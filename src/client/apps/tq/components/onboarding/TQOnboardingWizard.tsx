@@ -157,7 +157,7 @@ export const TQOnboardingWizard: React.FC = () => {
                 </li>
                 <li className="flex items-center gap-2">
                   <Layout className="w-4 h-4 text-[#E91E63] flex-shrink-0" />
-                  {t('onboarding.welcome.feature5', 'Share quotes with custom landing pages')}
+                  {t('onboarding.welcome.feature5', 'Share documents with custom landing pages')}
                 </li>
               </ul>
             </div>
@@ -383,11 +383,11 @@ export const TQOnboardingWizard: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {t('onboarding.landing_pages.title', 'Public Quote Pages')}
+                {t('onboarding.landing_pages.title', 'Landing Pages')}
               </h3>
               <p className="text-gray-600 text-sm">
                 {t('onboarding.landing_pages.description',
-                  'Create beautiful landing pages to share quotes with your patients. They can view the quote details without needing to log in.'
+                  'Create beautiful landing pages to share documents with your patients. They can view details without needing to log in.'
                 )}
               </p>
             </div>
@@ -452,7 +452,7 @@ export const TQOnboardingWizard: React.FC = () => {
               </h3>
               <p className="text-gray-600 text-sm">
                 {t('onboarding.email_config.description',
-                  'Customize the email template used when sending quotes to patients. Add your logo, colors, and contact information.'
+                  'Customize the email template used when sending documents to patients. Add your logo, colors, and contact information.'
                 )}
               </p>
             </div>

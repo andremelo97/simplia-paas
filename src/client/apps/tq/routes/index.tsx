@@ -23,7 +23,6 @@ import { EditQuote } from '../features/quotes/EditQuote'
 import { PreviewPublicQuote } from '../features/quotes/PreviewPublicQuote'
 import { ClinicalNotes } from '../features/clinical-notes/ClinicalNotes'
 import { EditClinicalNote } from '../features/clinical-notes/EditClinicalNote'
-import { ViewClinicalNote } from '../features/clinical-notes/ViewClinicalNote'
 import { Prevention } from '../features/prevention/Prevention'
 import { EditPrevention } from '../features/prevention/EditPrevention'
 import { LandingPagesLayout } from '../features/landing-pages/LandingPagesLayout'
@@ -155,8 +154,6 @@ export const AppRoutes: React.FC = () => {
         {/* Documents Edit routes (outside layout for full page) - Using unified EditDocument */}
         <Route path="documents/:documentType/:id/edit" element={<EditDocument />} />
 
-        {/* Documents View routes */}
-        <Route path="documents/clinical-note/:id/view" element={<ViewClinicalNote />} />
         <Route path="documents/items/create" element={
           <RouteGuard requireAuth requiredRole="manager" requiredApp="tq">
             <CreateItem />
@@ -166,7 +163,6 @@ export const AppRoutes: React.FC = () => {
 
         {/* Clinical Notes (OLD routes - kept for backwards compatibility) */}
         <Route path="clinical-notes" element={<ClinicalNotes />} />
-        <Route path="clinical-notes/:id/view" element={<ViewClinicalNote />} />
         <Route path="clinical-notes/:id/edit" element={<EditClinicalNote />} />
 
         {/* Prevention (OLD routes - kept for backwards compatibility) */}

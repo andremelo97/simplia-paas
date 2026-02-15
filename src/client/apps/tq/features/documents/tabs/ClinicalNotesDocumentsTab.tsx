@@ -53,11 +53,6 @@ export const ClinicalNotesDocumentsTab: React.FC = () => {
     navigate(`/documents/clinical-note/${note.id}/edit`)
   }
 
-  const handleViewNote = (note: ClinicalNote) => {
-    // Navigate to the new documents view path
-    navigate(`/documents/clinical-note/${note.id}/view`)
-  }
-
   return (
     <div className="space-y-8">
       {/* Search and Filters */}

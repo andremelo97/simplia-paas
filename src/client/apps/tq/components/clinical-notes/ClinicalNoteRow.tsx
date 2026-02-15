@@ -9,13 +9,11 @@ import { useAuthStore } from '../../shared/store'
 interface ClinicalNoteRowProps {
   note: ClinicalNote
   onEdit?: (note: ClinicalNote) => void
-  onView?: (note: ClinicalNote) => void
 }
 
 export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
   note,
-  onEdit,
-  onView
+  onEdit
 }) => {
   const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
@@ -26,11 +24,6 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
     onEdit?.(note)
   }
 
-  const handleView = () => {
-    onView?.(note)
-  }
-
-  const viewLabel = t('common:view')
   const editLabel = t('common:edit')
 
   return (
@@ -81,19 +74,18 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
 
       {/* Actions */}
       <div className="w-24 flex items-center justify-end gap-1">
-        {canEdit && (
-          <Tooltip content={editLabel}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleEdit}
-              className="h-8 w-8 p-0 hover:bg-gray-100"
-              aria-label={editLabel}
-            >
-              <Edit className="w-4 h-4 text-gray-600" />
-            </Button>
-          </Tooltip>
-        )}
+        <Tooltip content={canEdit ? editLabel : t('common.no_permission')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEdit}
+            disabled={!canEdit}
+            className="h-8 w-8 p-0 hover:bg-gray-100"
+            aria-label={editLabel}
+          >
+            <Edit className="w-4 h-4 text-gray-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )

@@ -95,19 +95,18 @@ export const SessionRow: React.FC<SessionRowProps> = ({
           </Button>
         </Tooltip>
 
-        {canEdit && (
-          <Tooltip content={deleteLabel}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              className="h-8 w-8 p-0 hover:bg-red-100"
-              aria-label={deleteLabel}
-            >
-              <Trash2 className="w-4 h-4 text-red-600" />
-            </Button>
-          </Tooltip>
-        )}
+        <Tooltip content={canEdit ? deleteLabel : t('common.no_permission')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            disabled={!canEdit}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            aria-label={deleteLabel}
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )

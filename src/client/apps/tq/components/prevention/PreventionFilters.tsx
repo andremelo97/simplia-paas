@@ -40,7 +40,7 @@ export const PreventionFilters: React.FC<PreventionFiltersProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <div className="col-span-1">
             <Input
               label={t('prevention.filters.find_quickly')}

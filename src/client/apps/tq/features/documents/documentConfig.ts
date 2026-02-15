@@ -45,9 +45,8 @@ export const DOCUMENT_CONFIGS: Record<DocumentType, DocumentConfig> = {
     hasStatus: false,
     hasItems: false,
     hasLandingPage: false,
-    hasViewPage: true,
+    hasViewPage: false,
     backPath: '/documents/clinical-notes',
-    viewPath: (id) => `/documents/clinical-note/${id}/view`,
     i18nKey: 'clinical_notes',
     getById: (id) => clinicalNotesService.getById(id),
     update: (id, data) => clinicalNotesService.update(id, data)

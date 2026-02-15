@@ -120,7 +120,8 @@
     "never": "Never",
     "quote": "Quote",
     "prevention": "Prevention",
-    "clinical_note": "Clinical Note"
+    "clinical_note": "Clinical Note",
+    "no_permission": "You don't have permission for this action"
   },
   "filters": {
     "select_patient": "Select patient...",
@@ -290,7 +291,8 @@
       "no_patients": "No patients yet",
       "not_found": "No patients found",
       "no_match": "No patients match \"{{query}}\". Try adjusting your search.",
-      "get_started": "Get started by adding your first patient to begin managing transcription sessions."
+      "get_started": "Get started by adding your first patient to begin managing transcription sessions.",
+      "create_first": "Add Patient"
     },
     "filters": {
       "search_placeholder": "Search patients by name or email"
@@ -561,7 +563,8 @@
       "no_items": "No items yet",
       "not_found": "No items found",
       "no_match": "No items match \"{{query}}\". Try adjusting your search.",
-      "get_started": "Create your first item to start building quotes."
+      "get_started": "Create your first item to start building quotes.",
+      "create_first": "Create Item"
     }
   },
   "clinical_reports": {
@@ -776,7 +779,8 @@
       "no_templates": "No templates yet",
       "not_found": "No templates found",
       "no_match": "No templates match \"{{query}}\". Try adjusting your search.",
-      "get_started": "Get started by creating your first clinical documentation template."
+      "get_started": "Get started by creating your first clinical documentation template.",
+      "create_first": "Create Template"
     },
     "filters": {
       "title": "Search and Filters",

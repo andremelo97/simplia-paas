@@ -120,7 +120,8 @@
     "never": "Nunca",
     "quote": "Orçamento",
     "prevention": "Prevenção",
-    "clinical_note": "Nota Clínica"
+    "clinical_note": "Nota Clínica",
+    "no_permission": "Você não tem permissão para esta ação"
   },
   "filters": {
     "select_patient": "Selecionar paciente...",
@@ -257,7 +258,8 @@
       "no_patients": "Nenhum paciente ainda",
       "not_found": "Nenhum paciente encontrado",
       "no_match": "Nenhum paciente corresponde a \"{{query}}\". Tente ajustar sua busca.",
-      "get_started": "Comece adicionando seu primeiro paciente para gerenciar sessões de transcrição."
+      "get_started": "Comece adicionando seu primeiro paciente para gerenciar sessões de transcrição.",
+      "create_first": "Adicionar Paciente"
     },
     "filters": {
       "search_placeholder": "Buscar pacientes por nome ou e-mail"
@@ -528,7 +530,8 @@
       "no_items": "Nenhum item ainda",
       "not_found": "Nenhum item encontrado",
       "no_match": "Nenhum item corresponde a \"{{query}}\". Tente ajustar sua busca.",
-      "get_started": "Crie seu primeiro item para começar a construir cotações."
+      "get_started": "Crie seu primeiro item para começar a construir cotações.",
+      "create_first": "Criar Item"
     }
   },
   "clinical_reports": {
@@ -743,7 +746,8 @@
       "no_templates": "Nenhum template ainda",
       "not_found": "Nenhum template encontrado",
       "no_match": "Nenhum template corresponde a \"{{query}}\". Tente ajustar sua busca.",
-      "get_started": "Comece criando seu primeiro template de documentação clínica."
+      "get_started": "Comece criando seu primeiro template de documentação clínica.",
+      "create_first": "Criar Template"
     },
     "filters": {
       "title": "Busca e filtros",

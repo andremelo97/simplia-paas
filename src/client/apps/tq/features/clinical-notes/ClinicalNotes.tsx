@@ -52,10 +52,6 @@ export const ClinicalNotes: React.FC = () => {
     navigate(`/clinical-notes/${note.id}/edit`)
   }
 
-  const handleViewNote = (note: ClinicalNote) => {
-    navigate(`/clinical-notes/${note.id}/view`)
-  }
-
   const handleDeleteNote = (note: ClinicalNote) => {
     // Placeholder: Will be implemented later
   }
@@ -149,7 +145,6 @@ export const ClinicalNotes: React.FC = () => {
                     key={note.id}
                     note={note}
                     onEdit={handleEditNote}
-                    onView={handleViewNote}
                     onDelete={handleDeleteNote}
                   />
                 ))}

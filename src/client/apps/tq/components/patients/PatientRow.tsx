@@ -102,19 +102,18 @@ export const PatientRow: React.FC<PatientRowProps> = ({
           </Button>
         </Tooltip>
 
-        {canDelete && (
-          <Tooltip content={deleteLabel}>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDelete}
-              className="h-8 w-8 p-0 hover:bg-red-100"
-              aria-label={deleteLabel}
-            >
-              <Trash2 className="w-4 h-4 text-red-600" />
-            </Button>
-          </Tooltip>
-        )}
+        <Tooltip content={canDelete ? deleteLabel : t('common.no_permission')}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDelete}
+            disabled={!canDelete}
+            className="h-8 w-8 p-0 hover:bg-red-100"
+            aria-label={deleteLabel}
+          >
+            <Trash2 className="w-4 h-4 text-red-600" />
+          </Button>
+        </Tooltip>
       </div>
     </div>
   )

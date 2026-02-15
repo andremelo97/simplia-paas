@@ -25,8 +25,8 @@ export const ItemFilters: React.FC<ItemFiltersProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3">
             <Input
               label={t('quote_items.filters.find_quickly')}
               type="text"

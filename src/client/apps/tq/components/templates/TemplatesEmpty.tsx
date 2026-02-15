@@ -1,6 +1,8 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FileType } from 'lucide-react'
+import { FileType, Plus } from 'lucide-react'
+import { Button } from '@client/common/ui'
 
 interface TemplatesEmptyProps {
   hasQuery?: boolean
@@ -12,6 +14,7 @@ export const TemplatesEmpty: React.FC<TemplatesEmptyProps> = ({
   query = ''
 }) => {
   const { t } = useTranslation('tq')
+  const navigate = useNavigate()
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -29,6 +32,13 @@ export const TemplatesEmpty: React.FC<TemplatesEmptyProps> = ({
           : t('templates.empty.get_started')
         }
       </p>
+
+      {!hasQuery && (
+        <Button variant="secondary" onClick={() => navigate('/templates/create')} className="mt-4 flex items-center gap-2">
+          <Plus className="w-4 h-4" />
+          {t('templates.empty.create_first')}
+        </Button>
+      )}
     </div>
   )
 }

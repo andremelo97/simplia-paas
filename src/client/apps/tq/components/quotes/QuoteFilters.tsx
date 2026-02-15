@@ -50,7 +50,7 @@ export const QuoteFilters: React.FC<QuoteFiltersProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
-        <div className="grid grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <div className="col-span-1">
             <Input
               label={t('quotes.filters.find_quickly')}

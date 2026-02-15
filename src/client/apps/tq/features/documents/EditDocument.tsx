@@ -308,7 +308,7 @@ export const EditDocument: React.FC = () => {
 
     switch (config.type) {
       case 'clinical-note':
-        return <ClinicalNoteHeaderAction documentId={id} config={config} />
+        return <ClinicalNoteHeaderAction documentId={id} config={config} document={document} patientName={`${patient.firstName} ${patient.lastName}`.trim()} />
       default:
         return null
     }

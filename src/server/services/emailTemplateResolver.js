@@ -21,8 +21,10 @@ function resolveEmailTemplate(template, context) {
   const locale = getLocaleFromTimezone(timezone);
 
   // Use the full email renderer with branding support
+  // Both quoteNumber and preventionNumber resolve to the same document number
   const variables = {
     quoteNumber: quoteNumber || '',
+    preventionNumber: quoteNumber || '',
     patientName: patientName || '',
     clinicName: clinicName || '',
     publicLink: publicLink || '#',
@@ -58,7 +60,7 @@ function resolveEmailTemplate(template, context) {
  */
 function renderSimpleEmail(template, variables, locale) {
   const isPtBr = locale === 'pt-BR';
-  const { quoteNumber, patientName, clinicName, publicLink, password } = variables;
+  const { quoteNumber, preventionNumber, patientName, clinicName, publicLink, password } = variables;
 
   // Build password block HTML
   const passwordBlockHtml = password
@@ -82,6 +84,7 @@ function renderSimpleEmail(template, variables, locale) {
   // Replace variables in subject
   let resolvedSubject = template.subject
     .replace(/\$quoteNumber\$/g, quoteNumber)
+    .replace(/\$preventionNumber\$/g, preventionNumber)
     .replace(/\$patientName\$/g, patientName)
     .replace(/\$clinicName\$/g, clinicName)
     .replace(/\$greeting\$/g, isPtBr ? 'Olá' : 'Hello')
@@ -90,6 +93,7 @@ function renderSimpleEmail(template, variables, locale) {
   // Replace variables in body
   let resolvedBody = template.body
     .replace(/\$quoteNumber\$/g, quoteNumber)
+    .replace(/\$preventionNumber\$/g, preventionNumber)
     .replace(/\$patientName\$/g, patientName)
     .replace(/\$clinicName\$/g, clinicName)
     .replace(/\$greeting\$/g, isPtBr ? 'Olá' : 'Hello')

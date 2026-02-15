@@ -199,7 +199,7 @@ class TQEmailTemplate {
           subject: 'Cotação $quoteNumber$ - $clinicName$',
           body: `Olá $patientName$,
 
-Sua cotação $quoteNumber$ está disponível para visualização online.
+Sua cotação está disponível para visualização online.
 
 $PUBLIC_LINK$
 
@@ -209,7 +209,7 @@ $PASSWORD_BLOCK$`
           subject: 'Quote $quoteNumber$ - $clinicName$',
           body: `Hello $patientName$,
 
-Your quote $quoteNumber$ is now available for online viewing.
+Your quote is now available for online viewing.
 
 $PUBLIC_LINK$
 
@@ -218,20 +218,20 @@ $PASSWORD_BLOCK$`
       },
       prevention: {
         'pt-BR': {
-          subject: 'Plano Preventivo $quoteNumber$ - $clinicName$',
+          subject: 'Plano Preventivo $preventionNumber$ - $clinicName$',
           body: `Olá $patientName$,
 
-Seu plano preventivo $quoteNumber$ está disponível para visualização online.
+Seu plano preventivo está disponível para visualização online.
 
 $PUBLIC_LINK$
 
 $PASSWORD_BLOCK$`
         },
         'en-US': {
-          subject: 'Prevention Plan $quoteNumber$ - $clinicName$',
+          subject: 'Prevention Plan $preventionNumber$ - $clinicName$',
           body: `Hello $patientName$,
 
-Your prevention plan $quoteNumber$ is now available for online viewing.
+Your prevention plan is now available for online viewing.
 
 $PUBLIC_LINK$
 

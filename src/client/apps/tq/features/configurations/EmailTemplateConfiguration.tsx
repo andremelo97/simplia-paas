@@ -586,6 +586,12 @@ export const EmailTemplateConfiguration: React.FC = () => {
                   <li>
                     <code
                       className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
+                      onClick={() => setBody(prev => prev + '$preventionNumber$')}
+                    >$preventionNumber$</code> - {t('configurations.email_template.var_prevention_number')}
+                  </li>
+                  <li>
+                    <code
+                      className="bg-white/70 border border-[#B725B7]/20 px-1.5 py-0.5 rounded cursor-pointer hover:bg-purple-50 transition-colors"
                       onClick={() => setBody(prev => prev + '$clinicName$')}
                     >$clinicName$</code> - {t('configurations.email_template.var_clinic_name')}
                   </li>

@@ -316,6 +316,7 @@ function generatePlainTextEmail({ bodyText, variables }) {
 function renderPreview({ template, branding, locale = 'en-US' }) {
   const sampleVariables = {
     quoteNumber: 'QUO000123',
+    preventionNumber: 'PRE000123',
     patientName: locale === 'pt-BR' ? 'Maria Silva' : 'John Doe',
     clinicName: branding.companyName || (locale === 'pt-BR' ? 'Clínica Exemplo' : 'Example Clinic'),
     publicLink: 'https://example.com/quote/abc123',

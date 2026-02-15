@@ -2,30 +2,18 @@ require('dotenv').config();
 const { Client } = require('pg');
 
 async function resetTestDatabase() {
-  const {
-    DATABASE_HOST = 'localhost',
-    DATABASE_PORT = '5432',
-    DATABASE_USER,
-    DATABASE_PASSWORD,
-    DATABASE_NAME = 'livocare',
-  } = process.env;
+  const connectionString = process.env.TEST_DATABASE_URL;
 
-  if (!DATABASE_USER) {
-    console.error('[db:reset:test] DATABASE_USER not defined in .env');
+  if (!connectionString) {
+    console.error('TEST_DATABASE_URL not defined in .env');
     process.exit(1);
   }
 
-  const client = new Client({
-    host: DATABASE_HOST,
-    port: Number(DATABASE_PORT),
-    user: DATABASE_USER,
-    password: String(DATABASE_PASSWORD),
-    database: DATABASE_NAME,
-  });
+  const client = new Client({ connectionString });
 
   try {
     await client.connect();
-    console.log(`Connected to test database '${DATABASE_NAME}'`);
+    console.log('Connected to test database');
 
     // Get all tenant schemas
     const { rows: schemas } = await client.query(`
@@ -52,11 +40,12 @@ async function resetTestDatabase() {
 
     console.log('\nDatabase reset complete!');
     console.log('\nNext steps:');
-    console.log('   1. Run: npm run migrate');
-    console.log('   2. Start the application');
+    console.log('   1. Go to Railway → Deployments (test)');
+    console.log('   2. Click ... (three dots) → Redeploy');
+    console.log('   3. Migrations will run automatically on deploy');
 
   } catch (error) {
-    console.error('Error resetting database:', error.message);
+    console.error('Error resetting database:', error.message || error);
     process.exit(1);
   } finally {
     await client.end();

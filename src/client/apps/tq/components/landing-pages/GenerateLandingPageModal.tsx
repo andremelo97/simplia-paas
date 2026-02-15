@@ -191,13 +191,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
     : ''
 
   const expirationDate = expiresAt
-    ? (() => {
-        const date = new Date(expiresAt)
-        const day = String(date.getDate()).padStart(2, '0')
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const year = date.getFullYear()
-        return `${day}/${month}/${year}`
-      })()
+    ? formatShortDate(expiresAt)
     : t('common:never') || 'Never'
 
   const documentTypeLabel = documentType === 'quote'

@@ -1431,5 +1431,9 @@
   },
   "header": {
     "help_tooltip": "Assistente de Configuração"
+  },
+  "mobile": {
+    "desktop_only_title": "Funcionalidade Desktop",
+    "desktop_only_description": "Esta funcionalidade está disponível no tablet ou computador"
   }
 }

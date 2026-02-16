@@ -1431,5 +1431,9 @@
   },
   "header": {
     "help_tooltip": "Setup Assistant"
+  },
+  "mobile": {
+    "desktop_only_title": "Desktop Feature",
+    "desktop_only_description": "This feature is available on tablet or computer"
   }
 }

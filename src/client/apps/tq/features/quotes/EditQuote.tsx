@@ -307,7 +307,7 @@ export const EditQuote: React.FC = () => {
           <p className="text-gray-600 mt-1">{t('quotes.loading_quote')}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
           <div className="lg:col-span-3">
             <Card>
               <CardContent className="p-6">
@@ -349,7 +349,7 @@ export const EditQuote: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
         {/* Left Column - 60% - Quote Details */}
         <div className="lg:col-span-3">
           <div className="space-y-6">
@@ -455,7 +455,7 @@ export const EditQuote: React.FC = () => {
 
         {/* Right Column - 40% - Patient & Items */}
         <div className="lg:col-span-2">
-          <div className="space-y-6 sticky top-6">
+          <div className="space-y-6 lg:sticky lg:top-6">
             {/* Patient and Session Information */}
             <Card>
               <CardHeader className="p-6 pb-4">

@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { Sparkles, X } from 'lucide-react'
 import { Header } from './Header'
@@ -10,6 +10,8 @@ import { useAuthStore } from '../store/auth'
 import { useOnboardingStore } from '../store/onboarding'
 import { FeedbackHost } from '@client/common/feedback'
 import { TQOnboardingWizard } from '../../components/onboarding/TQOnboardingWizard'
+import { MobileRouteGuard } from './MobileRouteGuard'
+import { MobileBottomNav } from './MobileBottomNav'
 
 export const Layout: React.FC = () => {
   const { t } = useTranslation('tq')
@@ -17,45 +19,81 @@ export const Layout: React.FC = () => {
   const { user } = useAuthStore()
   const { showResumeHint, openWizard, hideResumeHint } = useOnboardingStore()
   const location = useLocation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   // Configurations page needs full height without padding (like Hub)
   const isConfigurationsPage = location.pathname.startsWith('/configurations')
   const isAdmin = user?.role === 'admin'
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname])
+
+  const handleMenuToggle = useCallback(() => {
+    setMobileMenuOpen(prev => !prev)
+  }, [])
+
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden print:block print:h-auto print:overflow-visible">
-      {/* Sidebar - hidden in print */}
-      <div className="h-full print:hidden">
+      {/* Sidebar - desktop only (lg+), hidden in print */}
+      <div className="hidden lg:block h-full print:hidden">
         <Sidebar />
       </div>
 
+      {/* Mobile/Tablet sidebar overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="fixed inset-y-0 left-0 z-50 lg:hidden"
+            >
+              <Sidebar forceOpen />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden print:block print:overflow-visible">
-        <Header />
+        <Header onMenuToggle={handleMenuToggle} />
 
-        <main className={`flex-1 ${isConfigurationsPage ? 'overflow-hidden relative' : 'overflow-y-auto overflow-x-visible'}`}>
+
+        <main className={`flex-1 ${isConfigurationsPage ? 'overflow-hidden relative' : 'overflow-y-auto overflow-x-visible'} pb-16 lg:pb-0`}>
           {isConfigurationsPage ? (
-            <Outlet />
+            <MobileRouteGuard>
+              <Outlet />
+            </MobileRouteGuard>
           ) : (
-            <div className="p-6">
+            <div className="p-4 lg:p-6">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <Outlet />
+                <MobileRouteGuard>
+                  <Outlet />
+                </MobileRouteGuard>
               </motion.div>
             </div>
           )}
         </main>
-      </div>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 flex z-40 md:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
-        </div>
-      )}
+        {/* Mobile bottom navigation */}
+        <MobileBottomNav />
+      </div>
 
       {/* Floating Resume Wizard Button (admin only, when navigated away from wizard) */}
       {isAdmin && showResumeHint && (

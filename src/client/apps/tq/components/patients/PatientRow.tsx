@@ -46,7 +46,7 @@ export const PatientRow: React.FC<PatientRowProps> = ({
       className="flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
       onDoubleClick={handleEdit}
     >
-      <div className="flex items-center gap-6 flex-1 min-w-0">
+      <div className="flex items-center gap-3 lg:gap-6 flex-1 min-w-0">
         {/* Created At */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
@@ -68,8 +68,8 @@ export const PatientRow: React.FC<PatientRowProps> = ({
           </span>
         </div>
 
-        {/* Phone */}
-        <div className="min-w-0 flex-1">
+        {/* Phone - hidden on tablet */}
+        <div className="min-w-0 flex-1 hidden lg:block">
           <span className="text-gray-600 truncate">
             {patient.phone || '—'}
           </span>

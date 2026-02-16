@@ -126,7 +126,7 @@ export const CreateTemplate: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
         {/* Main Form - 60% */}
         <div className="lg:col-span-3">
           <form onSubmit={handleSubmit}>
@@ -212,7 +212,7 @@ export const CreateTemplate: React.FC = () => {
 
         {/* Template Creation Guide - 40% */}
         <div className="lg:col-span-2">
-          <Card className="sticky top-6">
+          <Card className="lg:sticky lg:top-6">
             <CardHeader className="p-6 pb-4">
               <h2 className="text-lg font-semibold text-gray-900">{t('templates.guide.title')}</h2>
               <p className="text-sm text-gray-600 mt-1">

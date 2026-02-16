@@ -37,7 +37,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
       className="flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
       onDoubleClick={() => onEdit?.(item)}
     >
-      <div className="flex items-center gap-6 flex-1 min-w-0">
+      <div className="flex items-center gap-3 lg:gap-6 flex-1 min-w-0">
         {/* Created Date */}
         <div className="w-24">
           <span className="text-sm text-gray-600">
@@ -52,8 +52,8 @@ export const ItemRow: React.FC<ItemRowProps> = ({
           </span>
         </div>
 
-        {/* Description */}
-        <div className="min-w-0 flex-1">
+        {/* Description - hidden on tablet */}
+        <div className="min-w-0 flex-1 hidden lg:block">
           <span className={`text-sm truncate ${item.active ? 'text-gray-600' : 'text-gray-400'}`}>
             {item.description || t('quote_items.no_description')}
           </span>

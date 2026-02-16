@@ -275,16 +275,16 @@ export const EditSession: React.FC = () => {
   const hasAudioAvailable = Boolean(session.transcription_id)
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 lg:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.edit')}</h1>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t('sessions.edit')}</h1>
           <p className="text-gray-600 mt-1">
             {t('sessions.session')} {session.number} • {patientName}
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {/* Download Audio Button - Only show if session has audio upload */}
           {hasAudioAvailable && (
             <Tooltip content={t('sessions.audioDeletedAfter24h')} side="bottom">
@@ -316,7 +316,7 @@ export const EditSession: React.FC = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="space-y-8">
+        <div className="space-y-4 lg:space-y-8">
           {/* Session Details */}
           <Card>
             <CardHeader className="p-6 pb-4">
@@ -399,7 +399,7 @@ export const EditSession: React.FC = () => {
                     setTranscriptionError('')
                   }
                 }}
-                className="min-h-96 resize-none font-mono"
+                className="min-h-48 lg:min-h-96 resize-none font-mono"
                 helperText={t('sessions.helper_text.edit_transcription')}
                 disabled={!canEdit || isSubmitting}
                 required

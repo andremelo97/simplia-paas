@@ -4,7 +4,11 @@ import { useUIStore, useAuthStore } from '../store'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
 
-export const Sidebar: React.FC = () => {
+interface TQSidebarProps {
+  forceOpen?: boolean
+}
+
+export const Sidebar: React.FC<TQSidebarProps> = ({ forceOpen }) => {
   const { t } = useTranslation('tq')
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { user } = useAuthStore()
@@ -22,14 +26,14 @@ export const Sidebar: React.FC = () => {
       icon: Plus
     }] : []),
     {
-      name: t('sidebar.patients'),
-      href: '/patients',
-      icon: Users
-    },
-    {
       name: t('sidebar.sessions'),
       href: '/sessions',
       icon: Mic
+    },
+    {
+      name: t('sidebar.patients'),
+      href: '/patients',
+      icon: Users
     },
     {
       name: t('sidebar.documents'),
@@ -82,7 +86,7 @@ export const Sidebar: React.FC = () => {
   return (
     <CommonSidebar
       navigation={navigation}
-      isOpen={sidebarOpen}
+      isOpen={forceOpen || sidebarOpen}
       onToggle={toggleSidebar}
       title="TQ"
       subtitle="Transcription & Quote"

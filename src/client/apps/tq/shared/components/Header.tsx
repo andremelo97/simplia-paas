@@ -154,7 +154,11 @@ const getDisplayRole = (user: any) => {
   return user?.role || 'User'
 }
 
-export const Header: React.FC = () => {
+interface TQHeaderProps {
+  onMenuToggle?: () => void
+}
+
+export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle }) => {
   const { t } = useTranslation('tq')
   const { user } = useAuthStore()
   const { openWizard } = useOnboardingStore()
@@ -250,6 +254,7 @@ export const Header: React.FC = () => {
           />
         }
         rightActions={rightActions}
+        onMenuToggle={onMenuToggle}
       />
 
       <SupportModal

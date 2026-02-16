@@ -5,7 +5,11 @@ import { useUIStore } from '../store/ui'
 import { useAuthStore } from '../store/auth'
 import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
 
-export const Sidebar: React.FC = () => {
+interface HubSidebarProps {
+  forceOpen?: boolean
+}
+
+export const Sidebar: React.FC<HubSidebarProps> = ({ forceOpen }) => {
   const { t } = useTranslation('hub')
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { user } = useAuthStore()
@@ -30,7 +34,7 @@ export const Sidebar: React.FC = () => {
   return (
     <CommonSidebar
       navigation={navigation}
-      isOpen={sidebarOpen}
+      isOpen={forceOpen || sidebarOpen}
       onToggle={toggleSidebar}
       title="Hub"
       subtitle={t('sidebar.application_portal')}

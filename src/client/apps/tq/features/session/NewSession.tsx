@@ -1220,12 +1220,12 @@ export const NewSession: React.FC = () => {
   // Session is now mocked, so no need for null check
 
   return (
-    <div className="space-y-8"> {/* Increased main vertical spacing */}
+    <div className="space-y-4 lg:space-y-8">
       {/* Header with Title and Controls */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
             {/* Session badge - shows after session is created */}
             {session && (
               <Link
@@ -1251,7 +1251,7 @@ export const NewSession: React.FC = () => {
         </div>
 
         {/* Top Controls */}
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-3 lg:gap-4">
           {/* Timer */}
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600">Time:</span>
@@ -1280,12 +1280,12 @@ export const NewSession: React.FC = () => {
               label: device.label || `Microphone ${device.deviceId.slice(0, 8)}...`
             }))}
             placeholder={t('sessions.select_microphone')}
-            className="w-40"
+            className="w-full sm:w-40"
           />
 
           {/* Transcribing Button Group - When NOT recording */}
           {!isTranscribing && (
-            <div className="flex items-center bg-gray-900 hover:bg-gray-800 rounded-lg shadow-sm transition-colors">
+            <div className="flex items-center bg-gray-900 hover:bg-gray-800 rounded-lg shadow-sm transition-colors w-full sm:w-auto">
               {/* Main Action Button */}
               <Button
                 onClick={transcribeMode === 'start' ? toggleTranscribing : () => setShowUploadModal(true)}
@@ -1340,7 +1340,7 @@ export const NewSession: React.FC = () => {
 
           {/* Recording Controls - When recording */}
           {isTranscribing && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               {/* Pause/Resume Button */}
               <Button
                 onClick={toggleTranscribing}
@@ -1415,11 +1415,11 @@ export const NewSession: React.FC = () => {
           {t('sessions.add_patient_details')}
         </h2>
 
-        {/* Input and buttons in same line - left side: patient input, right side: action buttons */}
-        <div className="flex items-center justify-between w-full">
+        {/* Input and buttons - stacks on mobile, inline on desktop */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full gap-3">
           {/* Left side: Patient input and create button */}
-          <div className="flex items-center gap-3">
-            <div ref={searchContainerRef} className="relative w-80">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div ref={searchContainerRef} className="relative w-full sm:w-80">
               <Input
                 placeholder={
                   patientMode === 'search'
@@ -1527,7 +1527,7 @@ export const NewSession: React.FC = () => {
           </div>
 
           {/* Right side: Action Buttons */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Clear draft button - always visible */}
             <button
               onClick={clearDraft}
@@ -1662,7 +1662,7 @@ export const NewSession: React.FC = () => {
             placeholder={t('sessions.placeholders.transcription')}
             value={transcription}
             onChange={(e) => setTranscription(e.target.value)}
-            className="min-h-96 resize-none font-mono"
+            className="min-h-48 lg:min-h-96 resize-none font-mono"
           />
         </CardContent>
       </Card>

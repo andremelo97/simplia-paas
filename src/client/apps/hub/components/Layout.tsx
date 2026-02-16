@@ -1,44 +1,73 @@
-import React from 'react'
-import { Outlet } from 'react-router-dom'
+import React, { useState, useCallback, useEffect } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
-import { useUIStore } from '../store/ui'
 import { useOnboardingStore } from '../store/onboarding'
 import { useAuthStore } from '../store/auth'
 import { HubOnboardingWizard } from './onboarding/HubOnboardingWizard'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@client/common/ui'
 import { Sparkles, X } from 'lucide-react'
 
 export const Layout: React.FC = () => {
-  const { sidebarOpen } = useUIStore()
   const { showResumeHint, openWizard, hideResumeHint } = useOnboardingStore()
   const { user } = useAuthStore()
   const { t } = useTranslation('hub')
+  const location = useLocation()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const isAdmin = user?.role === 'admin'
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [location.pathname])
+
+  const handleMenuToggle = useCallback(() => {
+    setMobileMenuOpen(prev => !prev)
+  }, [])
 
   return (
     <div className="h-screen bg-gray-50 flex overflow-hidden">
 
-      {/* Sidebar */}
-      <Sidebar />
+      {/* Sidebar - desktop only (lg+) */}
+      <div className="hidden lg:block h-full">
+        <Sidebar />
+      </div>
+
+      {/* Mobile/Tablet sidebar overlay */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="fixed inset-y-0 left-0 z-50 lg:hidden"
+            >
+              <Sidebar forceOpen />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
+        <Header onMenuToggle={handleMenuToggle} />
 
         <main className="flex-1 overflow-y-auto relative">
           <Outlet />
         </main>
       </div>
-
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 flex z-40 md:hidden">
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-75" />
-        </div>
-      )}
 
       {/* Floating Resume Wizard Button */}
       {isAdmin && showResumeHint && (

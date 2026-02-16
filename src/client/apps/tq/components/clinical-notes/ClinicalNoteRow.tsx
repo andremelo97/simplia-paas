@@ -28,7 +28,7 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
 
   return (
     <div
-      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+      className="flex items-center gap-3 lg:gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
       onDoubleClick={handleEdit}
     >
       {/* Created At */}
@@ -62,8 +62,8 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
         </span>
       </div>
 
-      {/* Created By */}
-      <div className="min-w-0 flex-1">
+      {/* Created By - hidden on tablet */}
+      <div className="min-w-0 flex-1 hidden lg:block">
         <span className="text-gray-600 truncate">
           {note.createdBy
             ? `${note.createdBy.firstName || ''} ${note.createdBy.lastName || ''}`.trim()

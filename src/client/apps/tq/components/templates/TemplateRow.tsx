@@ -38,7 +38,7 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
 
   return (
     <div
-      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+      className="flex items-center gap-3 lg:gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
       onDoubleClick={() => onEdit(template)}
     >
       {/* Created At */}
@@ -55,15 +55,15 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
         </span>
       </div>
 
-      {/* Description or Content Preview */}
-      <div className="min-w-0 flex-1">
+      {/* Description or Content Preview - hidden on tablet */}
+      <div className="min-w-0 flex-1 hidden lg:block">
         <span className="text-gray-600 truncate">
           {template.description || truncateContent(template.content)}
         </span>
       </div>
 
-      {/* Usage Count */}
-      <div className="w-20">
+      {/* Usage Count - hidden on tablet */}
+      <div className="w-20 hidden lg:block">
         <span className="text-gray-600 text-sm">
           {template.usageCount}
         </span>

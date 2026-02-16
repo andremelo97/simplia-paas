@@ -62,7 +62,11 @@ const getDisplayRole = (user: any) => {
   return user?.role || 'User'
 }
 
-export const Header: React.FC = () => {
+interface HubHeaderProps {
+  onMenuToggle?: () => void
+}
+
+export const Header: React.FC<HubHeaderProps> = ({ onMenuToggle }) => {
   const { user, tenantName, tenantSlug } = useAuthStore()
   const { openWizard } = useOnboardingStore()
   const { t } = useTranslation('hub')
@@ -152,6 +156,7 @@ export const Header: React.FC = () => {
         showSearch={false}
         showNotifications={false}
         rightActions={rightActions}
+        onMenuToggle={onMenuToggle}
       />
 
       <UserSettingsModal

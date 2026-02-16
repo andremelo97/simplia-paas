@@ -160,12 +160,12 @@ export const Templates: React.FC = () => {
           ) : (
             <>
               {/* Header Row */}
-              <div className="flex items-center gap-6 py-3 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+              <div className="flex items-center gap-3 lg:gap-6 py-3 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
                 <div className="w-24">{t('common.created')}</div>
                 <div className="flex-1">{t('common.title')}</div>
-                <div className="flex-1">{t('common.description')}</div>
-                <div className="w-20">{t('common.usage')}</div>
-                <div className="w-24"></div> {/* Space for actions */}
+                <div className="flex-1 hidden lg:block">{t('common.description')}</div>
+                <div className="w-20 hidden lg:block">{t('common.usage')}</div>
+                <div className="w-24"></div>
               </div>
 
               {/* Template Rows */}

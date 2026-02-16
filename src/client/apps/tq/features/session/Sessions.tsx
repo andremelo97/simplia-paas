@@ -95,11 +95,11 @@ export const Sessions: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8"> {/* Increased main vertical spacing - same as NewSession */}
+    <div className="space-y-4 lg:space-y-8">
       {/* Header with Title */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t('sessions.pages.management_title')}</h1>
+          <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t('sessions.pages.management_title')}</h1>
           <p className="text-gray-600 mt-1">
             {t('sessions.pages.management_subtitle')}
           </p>
@@ -168,14 +168,14 @@ export const Sessions: React.FC = () => {
           {/* Session List */}
           {!loading && !error && (sessions?.length || 0) > 0 && (
             <>
-              {/* Header Row */}
-              <div className="flex items-center gap-6 py-3 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+              {/* Header Row - hidden on mobile (rows become cards) */}
+              <div className="hidden md:flex items-center gap-3 lg:gap-6 py-3 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
                 <div className="w-24">{t('common.created')}</div>
                 <div className="flex-1">{t('common.session')}</div>
                 <div className="flex-1">{t('common.status')}</div>
                 <div className="flex-1">{t('common.patient')}</div>
-                <div className="flex-1">{t('common.created_by')}</div>
-                <div className="w-24"></div> {/* Space for actions */}
+                <div className="flex-1 hidden lg:block">{t('common.created_by')}</div>
+                <div className="w-24"></div>
               </div>
 
               {/* Session Rows */}

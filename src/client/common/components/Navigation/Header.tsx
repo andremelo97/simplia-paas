@@ -1,7 +1,7 @@
 import React from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { LogOut, Bell, Search } from 'lucide-react'
+import { LogOut, Bell, Search, Menu } from 'lucide-react'
 import {
   Button,
   Avatar,
@@ -50,6 +50,7 @@ export interface HeaderProps {
   getDisplayRole?: (user: User) => string
   searchComponent?: React.ReactNode
   rightActions?: React.ReactNode
+  onMenuToggle?: () => void
 }
 
 const defaultGetBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
@@ -120,7 +121,8 @@ export const Header: React.FC<HeaderProps> = ({
   className,
   getDisplayRole = defaultGetDisplayRole,
   searchComponent,
-  rightActions
+  rightActions,
+  onMenuToggle
 }) => {
   const location = useLocation()
   
@@ -165,8 +167,18 @@ export const Header: React.FC<HeaderProps> = ({
       )}
     >
       <div className="flex h-16 items-center justify-between pr-6">
-        {/* Left Side - Breadcrumb */}
-        <div className="flex items-center space-x-4 pl-6">
+        {/* Left Side - Hamburger + Breadcrumb */}
+        <div className="flex items-center space-x-4 pl-4 lg:pl-6">
+          {/* Hamburger menu - visible on mobile/tablet only */}
+          {onMenuToggle && (
+            <button
+              onClick={onMenuToggle}
+              className="lg:hidden p-1.5 rounded-md text-gray-600 hover:text-[#B725B7] hover:bg-purple-50/50 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
           <Breadcrumb>
             <BreadcrumbList>
               {parentBreadcrumbs.map((crumb, index) => (

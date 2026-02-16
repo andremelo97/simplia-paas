@@ -451,7 +451,7 @@ export const Home: React.FC = () => {
       <div className="border-t border-gray-200"></div>
 
       {/* Two-column layout for Patients and Activity Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
         {/* Patients Recently Added */}
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('patients.recently_added')}</h2>

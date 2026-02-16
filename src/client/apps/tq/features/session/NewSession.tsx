@@ -1222,7 +1222,7 @@ export const NewSession: React.FC = () => {
   return (
     <div className="space-y-4 lg:space-y-8">
       {/* Header with Title and Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
@@ -1251,7 +1251,7 @@ export const NewSession: React.FC = () => {
         </div>
 
         {/* Top Controls */}
-        <div className="flex flex-wrap items-center gap-3 lg:gap-4">
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 lg:space-x-4 lg:gap-0">
           {/* Timer */}
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600">Time:</span>
@@ -1416,7 +1416,7 @@ export const NewSession: React.FC = () => {
         </h2>
 
         {/* Input and buttons - stacks on mobile, inline on desktop */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between w-full gap-3">
+        <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between w-full">
           {/* Left side: Patient input and create button */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <div ref={searchContainerRef} className="relative w-full sm:w-80">

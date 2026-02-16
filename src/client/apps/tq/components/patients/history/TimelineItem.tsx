@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button } from '@client/common/ui'
+import { Button, StatusBadge, Status } from '@client/common/ui'
 
 interface TimelineItemProps {
   id: string
@@ -92,19 +92,23 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                   {title}
                 </h3>
                 {status && (
-                  <span
-                    className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${
-                      status === 'completed' || status === 'approved'
-                        ? 'bg-green-100 text-green-700'
-                        : status === 'draft'
-                        ? 'bg-gray-100 text-gray-700'
-                        : status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-700'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}
-                  >
-                    {getTranslatedStatus(status, type)}
-                  </span>
+                  type === 'landing_page' ? (
+                    <StatusBadge status={status as Status} />
+                  ) : (
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${
+                        status === 'completed' || status === 'approved'
+                          ? 'bg-green-100 text-green-700'
+                          : status === 'draft'
+                          ? 'bg-gray-100 text-gray-700'
+                          : status === 'pending'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-blue-100 text-blue-700'
+                      }`}
+                    >
+                      {getTranslatedStatus(status, type)}
+                    </span>
+                  )
                 )}
               </div>
 
@@ -122,7 +126,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                 onClick={onView}
                 className="text-sm flex-shrink-0"
               >
-                {t('common.view')}
+                {type === 'landing_page' ? t('landing_pages.links.card.preview') : t('common.view')}
               </Button>
             )}
           </div>

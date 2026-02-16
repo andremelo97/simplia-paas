@@ -56,21 +56,21 @@ export const PatientRow: React.FC<PatientRowProps> = ({
 
         {/* Nome */}
         <div className="min-w-0 flex-1">
-          <span className="font-medium text-gray-900 truncate">
+          <span className="font-medium text-gray-900 block truncate">
             {formatPatientName(patient)}
           </span>
         </div>
 
         {/* Email */}
         <div className="min-w-0 flex-1">
-          <span className="text-gray-600 truncate">
+          <span className="text-gray-600 block truncate">
             {patient.email || '—'}
           </span>
         </div>
 
         {/* Phone - hidden on tablet */}
         <div className="min-w-0 flex-1 hidden lg:block">
-          <span className="text-gray-600 truncate">
+          <span className="text-gray-600 block truncate">
             {patient.phone || '—'}
           </span>
         </div>

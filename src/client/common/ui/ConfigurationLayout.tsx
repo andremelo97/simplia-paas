@@ -31,14 +31,14 @@ export function ConfigurationLayout<T extends string>({
 
   return (
     <div className="h-full flex">
-      {/* Configuration Options Sidebar - 20% width, full height */}
+      {/* Configuration Options Sidebar - responsive width */}
       <div
-        className={`w-1/5 bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-transform duration-300 ease-out ${
+        className={`w-[200px] lg:w-1/5 lg:min-w-[220px] bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-transform duration-300 ease-out flex-shrink-0 ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>
+        <div className="p-4 lg:p-6">
+          <h2 className="text-base lg:text-lg font-semibold text-gray-900 mb-4">{title}</h2>
           <nav className="space-y-2">
             {options.map((option) => {
               const Icon = option.icon;
@@ -62,7 +62,7 @@ export function ConfigurationLayout<T extends string>({
                         <div className={`font-medium ${isActive ? 'text-[#B725B7]' : 'text-gray-900'}`}>
                           {option.name}
                         </div>
-                        <div className="text-xs text-gray-500 mt-0.5">
+                        <div className="text-xs text-gray-500 mt-0.5 hidden lg:block">
                           {option.description}
                         </div>
                       </div>

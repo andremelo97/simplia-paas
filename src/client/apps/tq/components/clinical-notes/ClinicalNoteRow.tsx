@@ -40,21 +40,21 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
 
       {/* Note Number */}
       <div className="min-w-0 flex-1">
-        <span className="font-medium text-gray-900 truncate">
+        <span className="font-medium text-gray-900 block truncate">
           {note.number}
         </span>
       </div>
 
       {/* Session Number */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {note.session_number || '—'}
         </span>
       </div>
 
       {/* Patient Name */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {note.patient_first_name || note.patient_last_name
             ? `${note.patient_first_name || ''} ${note.patient_last_name || ''}`.trim()
             : '—'
@@ -64,7 +64,7 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
 
       {/* Created By - hidden on tablet */}
       <div className="min-w-0 flex-1 hidden lg:block">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {note.createdBy
             ? `${note.createdBy.firstName || ''} ${note.createdBy.lastName || ''}`.trim()
             : '—'

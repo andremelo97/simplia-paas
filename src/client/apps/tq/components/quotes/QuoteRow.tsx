@@ -41,14 +41,14 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
 
       {/* Quote Number */}
       <div className="min-w-0 flex-1">
-        <span className="font-medium text-gray-900 truncate">
+        <span className="font-medium text-gray-900 block truncate">
           {quote.number}
         </span>
       </div>
 
       {/* Session Number */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {quote.session_number || '—'}
         </span>
       </div>
@@ -62,7 +62,7 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
 
       {/* Patient Name */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {quote.patient_first_name || quote.patient_last_name
             ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim()
             : '—'
@@ -72,7 +72,7 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
 
       {/* Created By - hidden on tablet */}
       <div className="min-w-0 flex-1 hidden lg:block">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {quote.createdBy
             ? `${quote.createdBy.firstName || ''} ${quote.createdBy.lastName || ''}`.trim()
             : '—'

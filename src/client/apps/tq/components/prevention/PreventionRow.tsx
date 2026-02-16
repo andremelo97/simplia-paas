@@ -40,21 +40,21 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
 
       {/* Prevention Number */}
       <div className="min-w-0 flex-1">
-        <span className="font-medium text-gray-900 truncate">
+        <span className="font-medium text-gray-900 block truncate">
           {prevention.number}
         </span>
       </div>
 
       {/* Session Number */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {prevention.session_number || '—'}
         </span>
       </div>
 
       {/* Patient Name */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {prevention.patient_first_name || prevention.patient_last_name
             ? `${prevention.patient_first_name || ''} ${prevention.patient_last_name || ''}`.trim()
             : '—'
@@ -64,7 +64,7 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
 
       {/* Created By */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 truncate">
+        <span className="text-gray-600 block truncate">
           {prevention.createdBy
             ? `${prevention.createdBy.firstName || ''} ${prevention.createdBy.lastName || ''}`.trim()
             : '—'

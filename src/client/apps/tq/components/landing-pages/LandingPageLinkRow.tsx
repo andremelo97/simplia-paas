@@ -121,12 +121,12 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-1.5 lg:gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={handleCopy}
-          className="flex items-center gap-1.5"
+          className="flex items-center gap-1 text-xs lg:text-sm lg:gap-1.5"
           disabled={!landingPage.publicUrl}
         >
           {copied ? (
@@ -146,7 +146,7 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
           variant="outline"
           size="sm"
           onClick={() => window.open(`/landing-pages/links/${landingPage.id}/preview`, '_blank')}
-          className="flex items-center gap-1.5"
+          className="flex items-center gap-1 text-xs lg:text-sm lg:gap-1.5"
         >
           <Eye size={14} />
           {t('landing_pages.links.card.preview')}
@@ -156,7 +156,7 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
           variant="outline"
           size="sm"
           onClick={handleOpenExternal}
-          className="flex items-center gap-1.5"
+          className="flex items-center gap-1 text-xs lg:text-sm lg:gap-1.5"
           disabled={!landingPage.publicUrl}
         >
           <ExternalLink size={14} />
@@ -167,7 +167,7 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
           variant="outline"
           size="sm"
           onClick={handleOpenDocument}
-          className="flex items-center gap-1.5"
+          className="flex items-center gap-1 text-xs lg:text-sm lg:gap-1.5"
           disabled={!landingPage.quote?.id && !landingPage.prevention?.id}
         >
           <FileText size={14} />
@@ -181,7 +181,7 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
             onClick={onNewPassword}
             disabled={!landingPage.active}
             isLoading={isNewPasswordLoading}
-            className="flex items-center gap-1.5"
+            className="flex items-center gap-1 text-xs lg:text-sm lg:gap-1.5"
           >
             <Key size={14} />
             {t('landing_pages.links.card.new_password')}
@@ -194,7 +194,7 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
             size="sm"
             onClick={onRevoke}
             disabled={!landingPage.active}
-            className="flex items-center gap-1.5 text-red-600 hover:bg-red-50 ml-auto"
+            className="flex items-center gap-1 text-xs lg:text-sm lg:gap-1.5 text-red-600 hover:bg-red-50 ml-auto"
           >
             <Trash2 size={14} />
             {t('landing_pages.links.card.revoke')}

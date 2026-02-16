@@ -74,7 +74,7 @@ export const SessionRow: React.FC<SessionRowProps> = ({
 
         {/* Session Number */}
         <div className="min-w-0 flex-1">
-          <span className="font-medium text-gray-900 truncate">
+          <span className="font-medium text-gray-900 block truncate">
             {session.number}
           </span>
         </div>
@@ -88,12 +88,12 @@ export const SessionRow: React.FC<SessionRowProps> = ({
 
         {/* Patient Name */}
         <div className="min-w-0 flex-1">
-          <span className="text-gray-600 truncate">{patientName}</span>
+          <span className="text-gray-600 block truncate">{patientName}</span>
         </div>
 
         {/* Created By - hidden on tablet */}
         <div className="min-w-0 flex-1 hidden lg:block">
-          <span className="text-gray-600 truncate">{createdByName}</span>
+          <span className="text-gray-600 block truncate">{createdByName}</span>
         </div>
 
         {/* Actions */}

@@ -47,14 +47,14 @@ export const ItemRow: React.FC<ItemRowProps> = ({
 
         {/* Item Name */}
         <div className="min-w-0 flex-1">
-          <span className={`font-medium truncate ${item.active ? 'text-gray-900' : 'text-gray-500'}`}>
+          <span className={`font-medium block truncate ${item.active ? 'text-gray-900' : 'text-gray-500'}`}>
             {item.name}
           </span>
         </div>
 
         {/* Description - hidden on tablet */}
         <div className="min-w-0 flex-1 hidden lg:block">
-          <span className={`text-sm truncate ${item.active ? 'text-gray-600' : 'text-gray-400'}`}>
+          <span className={`text-sm block truncate ${item.active ? 'text-gray-600' : 'text-gray-400'}`}>
             {item.description || t('quote_items.no_description')}
           </span>
         </div>

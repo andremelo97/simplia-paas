@@ -1220,9 +1220,9 @@ export const NewSession: React.FC = () => {
   // Session is now mocked, so no need for null check
 
   return (
-    <div className="space-y-4 lg:space-y-8">
+    <div className="flex flex-col gap-4 md:gap-4 lg:gap-8">
       {/* Header with Title and Controls */}
-      <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between order-1 md:order-none">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
@@ -1254,8 +1254,8 @@ export const NewSession: React.FC = () => {
         <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 lg:space-x-4 lg:gap-0">
           {/* Timer */}
           <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-600">Time:</span>
-            <span className="font-mono text-lg font-semibold">
+            <span className="text-xs md:text-sm text-gray-600">Time:</span>
+            <span className="font-mono text-base md:text-lg font-semibold">
               {timer.formatTime(timer.time)}
             </span>
           </div>
@@ -1378,7 +1378,7 @@ export const NewSession: React.FC = () => {
 
       {/* Quota Alerts */}
       {!isLoadingQuota && isQuotaExceeded && (
-        <Alert variant="gradient">
+        <Alert variant="gradient" className="order-1 md:order-none">
           <AlertCircle className="h-5 w-5 text-[#E91E63] mt-0.5" />
           <div>
             <AlertTitle>{t('transcription.quota_exceeded_title')}</AlertTitle>
@@ -1390,7 +1390,7 @@ export const NewSession: React.FC = () => {
       )}
 
       {!isLoadingQuota && isQuotaWarning && !isQuotaExceeded && (
-        <Alert variant="warning">
+        <Alert variant="warning" className="order-1 md:order-none">
           <AlertCircle className="h-5 w-5 text-[#EAB308] mt-0.5" />
           <div>
             <AlertTitle>{t('transcription.quota_warning_title')}</AlertTitle>
@@ -1405,12 +1405,12 @@ export const NewSession: React.FC = () => {
         </Alert>
       )}
 
-      <div className="border-t border-gray-200" />
+      <div className="border-t border-gray-200 hidden md:block" />
 
-      {/* Patient Details Section - Simplified (no Card wrapper) */}
-      <div className="space-y-4"> {/* Adjusted internal spacing */}
+      {/* Patient Details Section - shows first on mobile */}
+      <div className="space-y-3 md:space-y-4 order-2 md:order-none">
         {/* Title with icon */}
-        <h2 className="flex items-center text-lg font-semibold text-gray-900">
+        <h2 className="flex items-center text-base md:text-lg font-semibold text-gray-900">
           <User className="w-5 h-5 mr-2" />
           {t('sessions.add_patient_details')}
         </h2>
@@ -1418,7 +1418,7 @@ export const NewSession: React.FC = () => {
         {/* Input and buttons - stacks on mobile, inline on desktop */}
         <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between w-full">
           {/* Left side: Patient input and create button */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div ref={searchContainerRef} className="relative w-full sm:w-80">
               <Input
                 placeholder={
@@ -1528,10 +1528,10 @@ export const NewSession: React.FC = () => {
 
           {/* Right side: Action Buttons */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Clear draft button */}
+            {/* Clear draft button - desktop only, moved to transcription card on mobile */}
             <button
               onClick={clearDraft}
-              className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              className="hidden md:flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
               title={t('sessions.clear_draft')}
             >
               <RotateCcw className="w-4 h-4" />
@@ -1554,7 +1554,7 @@ export const NewSession: React.FC = () => {
                 variant="primary"
                 disabled={!isNewSessionEnabled()}
                 onClick={handleNewSession}
-                className="flex items-center gap-2 relative z-10"
+                className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm relative z-10"
               >
                 {isCreatingSession ? (
                   <>
@@ -1563,7 +1563,7 @@ export const NewSession: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
                     {t('sessions.create')}
                   </>
                 )}
@@ -1586,25 +1586,25 @@ export const NewSession: React.FC = () => {
               `
             }} />
 
-            {/* New Quote or Clinical Report - hidden on mobile */}
+            {/* New Quote or Clinical Report */}
             <Button
               variant="primary"
               disabled={!isQuoteOrReportEnabled()}
               onClick={() => setShowTemplateQuoteModal(true)}
-              className="hidden md:flex items-center gap-2"
+              className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm"
             >
-              <FileText className="w-4 h-4" />
+              <FileText className="w-3.5 h-3.5 md:w-4 md:h-4" />
               {t('sessions.create_documents')}
             </Button>
 
-            {/* Call AI Agent - hidden on mobile */}
+            {/* Call AI Agent */}
             <Button
               variant="primary"
               disabled={!isQuoteOrReportEnabled()}
               onClick={() => setShowAIAgentModal(true)}
-              className="hidden md:flex items-center gap-2"
+              className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm"
             >
-              <Bot className="w-4 h-4" />
+              <Bot className="w-3.5 h-3.5 md:w-4 md:h-4" />
               {t('sessions.call_ai_agent')}
             </Button>
           </div>
@@ -1614,19 +1614,29 @@ export const NewSession: React.FC = () => {
 
 
       {/* Session Transcription */}
-      <Card>
-        <CardHeader className="py-4 px-6"> {/* Reduced vertical padding, kept horizontal */}
-          <CardTitle className="flex items-center justify-between text-base"> {/* Reduced font size from default */}
+      <Card className="order-4 md:order-none">
+        <CardHeader className="py-3 px-4 md:py-4 md:px-6">
+          <CardTitle className="flex items-center justify-between text-sm md:text-base">
             {t('sessions.session_transcription')}
-            {isSaving && (
-              <div className="flex items-center text-sm" style={{ color: 'var(--brand-primary)' }}>
-                <Save className="w-4 h-4 mr-1 animate-pulse" />
-                {t('common.saving')}
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Clear draft button - mobile only, inside card header */}
+              <button
+                onClick={clearDraft}
+                className="md:hidden flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                title={t('sessions.clear_draft')}
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+              {isSaving && (
+                <div className="flex items-center text-xs md:text-sm" style={{ color: 'var(--brand-primary)' }}>
+                  <Save className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1 animate-pulse" />
+                  {t('common.saving')}
+                </div>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="px-6 pb-6"> {/* Added horizontal and bottom padding to match header */}
+        <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
           {/* Processing feedback - show when uploading/transcribing or when there's info message */}
           {isProcessingAudio && (
             <Alert className="mb-4" style={{
@@ -1662,7 +1672,7 @@ export const NewSession: React.FC = () => {
             placeholder={t('sessions.placeholders.transcription')}
             value={transcription}
             onChange={(e) => setTranscription(e.target.value)}
-            className="min-h-48 lg:min-h-96 resize-none font-mono"
+            className="min-h-64 lg:min-h-96 resize-y md:resize-none font-mono text-sm md:text-base"
           />
         </CardContent>
       </Card>

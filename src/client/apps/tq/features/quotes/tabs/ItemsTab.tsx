@@ -54,11 +54,11 @@ export const ItemsTab: React.FC = () => {
   }
 
   const handleCreateItem = () => {
-    navigate('/quotes/items/create')
+    navigate('/documents/items/create')
   }
 
   const handleEditItem = (item: Item) => {
-    navigate(`/quotes/items/${item.id}/edit`)
+    navigate(`/documents/items/${item.id}/edit`)
   }
 
   const handleDeleteItem = (item: Item) => {

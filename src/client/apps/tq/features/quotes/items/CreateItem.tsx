@@ -83,7 +83,7 @@ export const CreateItem: React.FC = () => {
       // Success feedback is handled automatically by the HTTP interceptor
 
       // Navigate immediately - toast will show on the items list page
-      navigate('/quotes/items')
+      navigate('/documents/items')
 
     } catch (error: any) {
       // Error is handled by HTTP interceptor
@@ -93,7 +93,7 @@ export const CreateItem: React.FC = () => {
   }
 
   const handleCancel = () => {
-    navigate('/quotes/items')
+    navigate('/documents/items')
   }
 
   return (

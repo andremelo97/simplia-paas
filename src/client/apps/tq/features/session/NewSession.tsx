@@ -1220,9 +1220,9 @@ export const NewSession: React.FC = () => {
   // Session is now mocked, so no need for null check
 
   return (
-    <div className="flex flex-col gap-4 md:gap-4 lg:gap-8">
-      {/* Header with Title and Controls */}
-      <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between order-1 md:order-none">
+    <div className="flex flex-col gap-5 md:gap-4 lg:gap-8">
+      {/* Title */}
+      <div className="order-1 md:order-none flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t('sessions.create')}</h1>
@@ -1250,12 +1250,12 @@ export const NewSession: React.FC = () => {
           </p>
         </div>
 
-        {/* Top Controls */}
-        <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 lg:space-x-4 lg:gap-0">
+        {/* Controls - inline with title on desktop only */}
+        <div className="hidden lg:flex flex-nowrap items-center space-x-4">
           {/* Timer */}
           <div className="flex items-center space-x-2">
-            <span className="text-xs md:text-sm text-gray-600">Time:</span>
-            <span className="font-mono text-base md:text-lg font-semibold">
+            <span className="text-sm text-gray-600">Time:</span>
+            <span className="font-mono text-lg font-semibold">
               {timer.formatTime(timer.time)}
             </span>
           </div>
@@ -1280,13 +1280,12 @@ export const NewSession: React.FC = () => {
               label: device.label || `Microphone ${device.deviceId.slice(0, 8)}...`
             }))}
             placeholder={t('sessions.select_microphone')}
-            className="w-full sm:w-40"
+            className="w-40"
           />
 
           {/* Transcribing Button Group - When NOT recording */}
           {!isTranscribing && (
-            <div className="flex items-center bg-gray-900 hover:bg-gray-800 rounded-lg shadow-sm transition-colors w-full sm:w-auto">
-              {/* Main Action Button */}
+            <div className="flex items-center bg-gray-900 hover:bg-gray-800 rounded-lg shadow-sm transition-colors">
               <Button
                 onClick={transcribeMode === 'start' ? toggleTranscribing : () => setShowUploadModal(true)}
                 variant="primary"
@@ -1306,11 +1305,7 @@ export const NewSession: React.FC = () => {
                   </>
                 )}
               </Button>
-
-              {/* Separator line */}
               <div className="w-px h-6 bg-white/20"></div>
-
-              {/* Dropdown Trigger */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -1340,36 +1335,12 @@ export const NewSession: React.FC = () => {
 
           {/* Recording Controls - When recording */}
           {isTranscribing && (
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              {/* Pause/Resume Button */}
-              <Button
-                onClick={toggleTranscribing}
-                variant="secondary"
-                size="lg"
-                className="font-semibold"
-              >
-                {isPaused ? (
-                  <>
-                    <Play className="w-4 h-4 mr-2" />
-                    {t('sessions.resume')}
-                  </>
-                ) : (
-                  <>
-                    <Pause className="w-4 h-4 mr-2" />
-                    {t('sessions.pause')}
-                  </>
-                )}
+            <div className="flex items-center gap-2">
+              <Button onClick={toggleTranscribing} variant="secondary" size="lg" className="font-semibold">
+                {isPaused ? (<><Play className="w-4 h-4 mr-2" />{t('sessions.resume')}</>) : (<><Pause className="w-4 h-4 mr-2" />{t('sessions.pause')}</>)}
               </Button>
-
-              {/* Stop Button */}
-              <Button
-                onClick={stopTranscribing}
-                variant="destructive"
-                size="lg"
-                className="font-semibold"
-              >
-                <Square className="w-4 h-4 mr-2" />
-                {t('sessions.stop')}
+              <Button onClick={stopTranscribing} variant="destructive" size="lg" className="font-semibold">
+                <Square className="w-4 h-4 mr-2" />{t('sessions.stop')}
               </Button>
             </div>
           )}
@@ -1407,17 +1378,16 @@ export const NewSession: React.FC = () => {
 
       <div className="border-t border-gray-200 hidden md:block" />
 
-      {/* Patient Details Section - shows first on mobile */}
+      {/* Patient Details Section */}
       <div className="space-y-3 md:space-y-4 order-2 md:order-none">
-        {/* Title with icon */}
         <h2 className="flex items-center text-base md:text-lg font-semibold text-gray-900">
           <User className="w-5 h-5 mr-2" />
           {t('sessions.add_patient_details')}
         </h2>
 
-        {/* Input and buttons - stacks on mobile, inline on desktop */}
+        {/* On desktop: patient input + action buttons in one row. On mobile: patient only */}
         <div className="flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between w-full">
-          {/* Left side: Patient input and create button */}
+          {/* Patient input and create button */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <div ref={searchContainerRef} className="relative w-full sm:w-80">
               <Input
@@ -1526,18 +1496,16 @@ export const NewSession: React.FC = () => {
             )}
           </div>
 
-          {/* Right side: Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Clear draft button - desktop only, moved to transcription card on mobile */}
+          {/* Action Buttons - desktop only (inline with patient) */}
+          <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={clearDraft}
-              className="hidden md:flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
               title={t('sessions.clear_draft')}
             >
               <RotateCcw className="w-4 h-4" />
             </button>
 
-            {/* New Session - Primary action with animated gradient border when enabled */}
             <div className="relative inline-block">
               {isNewSessionEnabled() && (
                 <div
@@ -1554,67 +1522,113 @@ export const NewSession: React.FC = () => {
                 variant="primary"
                 disabled={!isNewSessionEnabled()}
                 onClick={handleNewSession}
-                className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm relative z-10"
+                className="flex items-center gap-2 relative z-10"
               >
                 {isCreatingSession ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />
-                    {t('common.saving')}
-                  </>
+                  <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1" />{t('common.saving')}</>
                 ) : (
-                  <>
-                    <Plus className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    {t('sessions.create')}
-                  </>
+                  <><Plus className="w-4 h-4" />{t('sessions.create')}</>
                 )}
               </Button>
             </div>
 
-            <style dangerouslySetInnerHTML={{
-              __html: `
-                @keyframes gradient-shift {
-                  0% {
-                    background-position: 0% 50%;
-                  }
-                  50% {
-                    background-position: 100% 50%;
-                  }
-                  100% {
-                    background-position: 0% 50%;
-                  }
-                }
-              `
-            }} />
-
-            {/* New Quote or Clinical Report */}
-            <Button
-              variant="primary"
-              disabled={!isQuoteOrReportEnabled()}
-              onClick={() => setShowTemplateQuoteModal(true)}
-              className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm"
-            >
-              <FileText className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              {t('sessions.create_documents')}
+            <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowTemplateQuoteModal(true)} className="flex items-center gap-2">
+              <FileText className="w-4 h-4" />{t('sessions.create_documents')}
             </Button>
-
-            {/* Call AI Agent */}
-            <Button
-              variant="primary"
-              disabled={!isQuoteOrReportEnabled()}
-              onClick={() => setShowAIAgentModal(true)}
-              className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm"
-            >
-              <Bot className="w-3.5 h-3.5 md:w-4 md:h-4" />
-              {t('sessions.call_ai_agent')}
+            <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowAIAgentModal(true)} className="flex items-center gap-2">
+              <Bot className="w-4 h-4" />{t('sessions.call_ai_agent')}
             </Button>
           </div>
         </div>
+      </div>
 
-       </div>
+      {/* Mobile/Tablet Controls - visible below lg */}
+      <div className="lg:hidden order-3 md:order-none flex flex-col gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs md:text-sm text-gray-600">Time:</span>
+            <span className="font-mono text-base md:text-lg font-semibold">{timer.formatTime(timer.time)}</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Mic className="w-4 h-4 text-gray-600" />
+            <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-full bg-green-500 transition-all duration-100" style={{ width: `${vuLevel}%` }} />
+            </div>
+          </div>
+        </div>
+        <Select
+          value={selectedDevice}
+          onChange={(e) => setSelectedDevice(e.target.value)}
+          options={audioDevices.map(device => ({
+            value: device.deviceId,
+            label: device.label || `Microphone ${device.deviceId.slice(0, 8)}...`
+          }))}
+          placeholder={t('sessions.select_microphone')}
+          className="w-full md:w-60"
+        />
+        {/* Transcribing Button Group */}
+        {!isTranscribing && (
+          <div className="flex items-center bg-gray-900 hover:bg-gray-800 rounded-lg shadow-sm transition-colors self-start">
+            <Button
+              onClick={transcribeMode === 'start' ? toggleTranscribing : () => setShowUploadModal(true)}
+              variant="primary"
+              size="lg"
+              disabled={shouldDisableTranscription}
+              className="font-semibold rounded-r-none border-r-0 bg-transparent hover:bg-transparent shadow-none border-0 text-white text-sm"
+            >
+              {transcribeMode === 'start' ? (<><Play className="w-4 h-4 mr-2" />{t('sessions.start_transcribing')}</>) : (<><Upload className="w-4 h-4 mr-2" />{t('sessions.upload_audio')}</>)}
+            </Button>
+            <div className="w-px h-6 bg-white/20"></div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="primary" size="lg" className="px-3 rounded-l-none bg-transparent hover:bg-white/10 shadow-none border-0 text-white transition-colors">
+                  <ChevronDown className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {transcribeMode === 'start' ? (
+                  <DropdownMenuItem onClick={() => handleTranscribeModeSelect('upload')}><Upload className="w-4 h-4 mr-2" />{t('sessions.upload_audio')}</DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => handleTranscribeModeSelect('start')}><Play className="w-4 h-4 mr-2" />{t('sessions.start_transcribing')}</DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+        {isTranscribing && (
+          <div className="flex items-center gap-2">
+            <Button onClick={toggleTranscribing} variant="secondary" size="lg" className="font-semibold text-sm">
+              {isPaused ? (<><Play className="w-4 h-4 mr-2" />{t('sessions.resume')}</>) : (<><Pause className="w-4 h-4 mr-2" />{t('sessions.pause')}</>)}
+            </Button>
+            <Button onClick={stopTranscribing} variant="destructive" size="lg" className="font-semibold text-sm">
+              <Square className="w-4 h-4 mr-2" />{t('sessions.stop')}
+            </Button>
+          </div>
+        )}
+      </div>
 
+      {/* Mobile/Tablet Action Buttons - visible below lg */}
+      <div className="lg:hidden order-4 md:order-none flex flex-wrap items-center gap-2">
+        <div className="relative inline-block">
+          {isNewSessionEnabled() && (
+            <div className="absolute -inset-[3px] rounded-md animate-pulse" style={{ background: 'linear-gradient(90deg, #B725B7, #E91E63, #B725B7)', backgroundSize: '200% 100%', animation: 'gradient-shift 3s ease infinite, pulse 2s ease-in-out infinite', zIndex: 0 }} />
+          )}
+          <Button variant="primary" disabled={!isNewSessionEnabled()} onClick={handleNewSession} className="flex items-center gap-1.5 text-xs relative z-10">
+            {isCreatingSession ? (<><div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1" />{t('common.saving')}</>) : (<><Plus className="w-3.5 h-3.5" />{t('sessions.create')}</>)}
+          </Button>
+        </div>
+        <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowTemplateQuoteModal(true)} className="flex items-center gap-1.5 text-xs">
+          <FileText className="w-3.5 h-3.5" />{t('sessions.create_documents')}
+        </Button>
+        <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowAIAgentModal(true)} className="flex items-center gap-1.5 text-xs">
+          <Bot className="w-3.5 h-3.5" />{t('sessions.call_ai_agent')}
+        </Button>
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }` }} />
 
       {/* Session Transcription */}
-      <Card className="order-4 md:order-none">
+      <Card className="order-5 md:order-none">
         <CardHeader className="py-3 px-4 md:py-4 md:px-6">
           <CardTitle className="flex items-center justify-between text-sm md:text-base">
             {t('sessions.session_transcription')}

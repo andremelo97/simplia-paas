@@ -8,7 +8,7 @@ export const MobileBottomNav: React.FC = () => {
   const { t } = useTranslation('tq')
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 lg:hidden safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 md:hidden safe-area-bottom">
       <div className="flex items-center justify-around h-14">
         <NavLink
           to="/new-session"

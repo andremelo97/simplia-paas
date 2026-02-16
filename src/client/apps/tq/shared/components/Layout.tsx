@@ -71,7 +71,7 @@ export const Layout: React.FC = () => {
         <Header onMenuToggle={handleMenuToggle} />
 
 
-        <main className={`flex-1 ${isConfigurationsPage ? 'overflow-hidden relative' : 'overflow-y-auto overflow-x-visible'} pb-16 lg:pb-0`}>
+        <main className={`flex-1 ${isConfigurationsPage ? 'overflow-hidden relative' : 'overflow-y-auto overflow-x-visible'} pb-16 md:pb-0`}>
           {isConfigurationsPage ? (
             <MobileRouteGuard>
               <Outlet />

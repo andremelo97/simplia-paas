@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X, Shield, Share2, Eye } from 'lucide-react'
+import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X, Shield, Share2, Eye, Mic, Receipt, ClipboardList } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -468,6 +468,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
+              <Mic className="w-4 h-4 inline-block mr-1" />
               {t('tabs.sessions')}
             </button>
             <button
@@ -478,6 +479,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
+              <Receipt className="w-4 h-4 inline-block mr-1" />
               {t('tabs.quotes')}
             </button>
             <button
@@ -488,6 +490,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
+              <ClipboardList className="w-4 h-4 inline-block mr-1" />
               {t('tabs.clinical')}
             </button>
             <button
@@ -498,6 +501,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
+              <Shield className="w-4 h-4 inline-block mr-1" />
               {t('tabs.prevention')}
             </button>
             <button
@@ -508,6 +512,7 @@ export const PatientHistory: React.FC = () => {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
+              <Share2 className="w-4 h-4 inline-block mr-1" />
               {t('tabs.landing_pages')}
             </button>
             <button

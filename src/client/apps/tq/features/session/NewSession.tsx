@@ -1245,7 +1245,7 @@ export const NewSession: React.FC = () => {
               {t('sessions.workflow_guide.title')}
             </button>
           </div>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 mt-1 hidden sm:block">
             {t('sessions.pages.new_session_subtitle')}
           </p>
         </div>
@@ -1527,8 +1527,8 @@ export const NewSession: React.FC = () => {
           </div>
 
           {/* Right side: Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Clear draft button - always visible */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Clear draft button */}
             <button
               onClick={clearDraft}
               className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
@@ -1586,23 +1586,23 @@ export const NewSession: React.FC = () => {
               `
             }} />
 
-            {/* New Quote or Clinical Report - Only enabled after session created */}
+            {/* New Quote or Clinical Report - hidden on mobile */}
             <Button
               variant="primary"
               disabled={!isQuoteOrReportEnabled()}
               onClick={() => setShowTemplateQuoteModal(true)}
-              className="flex items-center gap-2"
+              className="hidden md:flex items-center gap-2"
             >
               <FileText className="w-4 h-4" />
               {t('sessions.create_documents')}
             </Button>
 
-            {/* Call AI Agent - Only enabled after session created */}
+            {/* Call AI Agent - hidden on mobile */}
             <Button
               variant="primary"
               disabled={!isQuoteOrReportEnabled()}
               onClick={() => setShowAIAgentModal(true)}
-              className="flex items-center gap-2"
+              className="hidden md:flex items-center gap-2"
             >
               <Bot className="w-4 h-4" />
               {t('sessions.call_ai_agent')}

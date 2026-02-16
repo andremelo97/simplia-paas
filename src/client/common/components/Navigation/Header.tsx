@@ -169,11 +169,11 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex h-16 items-center justify-between pr-6">
         {/* Left Side - Hamburger + Breadcrumb */}
         <div className="flex items-center space-x-4 pl-4 lg:pl-6">
-          {/* Hamburger menu - visible on mobile/tablet only */}
+          {/* Hamburger menu - visible on tablet only (md to lg) */}
           {onMenuToggle && (
             <button
               onClick={onMenuToggle}
-              className="lg:hidden p-1.5 rounded-md text-gray-600 hover:text-[#B725B7] hover:bg-purple-50/50 transition-colors"
+              className="hidden md:block lg:hidden p-1.5 rounded-md text-gray-600 hover:text-[#B725B7] hover:bg-purple-50/50 transition-colors"
               aria-label="Toggle menu"
             >
               <Menu className="w-5 h-5" />

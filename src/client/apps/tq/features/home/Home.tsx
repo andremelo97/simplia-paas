@@ -20,12 +20,14 @@ import { PreventionCard } from '../../components/home/PreventionCard'
 import { RecentPatientRow } from '../../components/home/RecentPatientRow'
 import { ActivityFeed } from '../../components/home/ActivityFeed'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Home: React.FC = () => {
   const { t } = useTranslation('tq')
   const { user } = useAuthStore()
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
+  const isMobile = useIsMobile(768)
 
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
@@ -293,19 +295,21 @@ export const Home: React.FC = () => {
       {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('home.quick_actions')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 overflow-x-auto md:overflow-visible">
+        <div className={`grid gap-4 overflow-x-auto md:overflow-visible ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
           <QuickActionCard
             icon={Mic}
             title={t('home.start_new_session')}
             onClick={() => navigate('/new-session')}
             colorClass="purple"
           />
-          <QuickActionCard
-            icon={UserPlus}
-            title={t('home.add_patient')}
-            onClick={() => navigate('/patients/create')}
-            colorClass="pink"
-          />
+          {!isMobile && (
+            <QuickActionCard
+              icon={UserPlus}
+              title={t('home.add_patient')}
+              onClick={() => navigate('/patients/create')}
+              colorClass="pink"
+            />
+          )}
           <QuickActionCard
             icon={List}
             title={t('home.view_sessions')}
@@ -315,6 +319,8 @@ export const Home: React.FC = () => {
         </div>
       </div>
 
+      {/* Everything below quick actions is hidden on mobile */}
+      {!isMobile && <>
       {/* Divider */}
       <div className="border-t border-gray-200"></div>
 
@@ -497,6 +503,7 @@ export const Home: React.FC = () => {
           />
         </div>
       </div>
+      </>}
     </div>
   )
 }

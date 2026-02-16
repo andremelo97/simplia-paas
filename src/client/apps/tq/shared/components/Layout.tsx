@@ -12,6 +12,7 @@ import { FeedbackHost } from '@client/common/feedback'
 import { TQOnboardingWizard } from '../../components/onboarding/TQOnboardingWizard'
 import { MobileRouteGuard } from './MobileRouteGuard'
 import { MobileBottomNav } from './MobileBottomNav'
+import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
   const { t } = useTranslation('tq')
@@ -20,6 +21,7 @@ export const Layout: React.FC = () => {
   const { showResumeHint, openWizard, hideResumeHint } = useOnboardingStore()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const isMobile = useIsMobile(768)
 
   // Configurations page needs full height without padding (like Hub)
   const isConfigurationsPage = location.pathname.startsWith('/configurations')
@@ -95,8 +97,8 @@ export const Layout: React.FC = () => {
         <MobileBottomNav />
       </div>
 
-      {/* Floating Resume Wizard Button (admin only, when navigated away from wizard) */}
-      {isAdmin && showResumeHint && (
+      {/* Floating Resume Wizard Button (admin only, not on mobile) */}
+      {isAdmin && showResumeHint && !isMobile && (
         <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
             <div className="flex items-start gap-3">
@@ -139,8 +141,8 @@ export const Layout: React.FC = () => {
       {/* Global Feedback Host */}
       <FeedbackHost />
 
-      {/* Onboarding Wizard (admin-only) */}
-      <TQOnboardingWizard />
+      {/* Onboarding Wizard (admin-only, not on mobile) */}
+      {!isMobile && <TQOnboardingWizard />}
     </div>
   )
 }

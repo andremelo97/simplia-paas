@@ -1,11 +1,13 @@
 import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { ExternalLink, Grid3x3, AlertTriangle } from 'lucide-react'
+import { ExternalLink, Grid3x3, AlertTriangle, LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Card, Button, StatusBadge, Badge } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
 import { publishFeedback } from '@client/common/feedback'
 import { TenantEntitlementsSection } from '../components/TenantEntitlementsSection'
+import { hubService } from '../services/hub'
+import { useIsMobile } from '@shared/hooks/use-mobile'
 
 // Stripe Customer Portal URL
 const STRIPE_PORTAL_URL = 'https://billing.stripe.com/p/login/eVqeVc21raBtc3p9Kdawo00'
@@ -24,6 +26,7 @@ interface UserApp {
 export const Home: React.FC = () => {
   const { t } = useTranslation('hub')
   const { user, tenantName, isLoading, loadUserProfile } = useAuthStore()
+  const isMobile = useIsMobile(768)
 
   // Get apps directly from user state
   const apps = user?.allowedApps || []
@@ -159,6 +162,73 @@ export const Home: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="text-lg text-gray-600">{t('home.loading')}</div>
+      </div>
+    )
+  }
+
+  // Mobile view: only TQ card + logout
+  if (isMobile) {
+    const tqApp = apps.find(app => app.slug === 'tq')
+
+    return (
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">
+            {user?.firstName
+              ? `${t('home.welcome_back')}, ${user.firstName}!`
+              : `${t('home.welcome_back')}!`
+            }
+          </h1>
+          <p className="text-gray-600 mt-1 text-sm">
+            {tenantName ? `${t('home.your_apps_at')} ${tenantName}` : t('home.your_apps')}
+          </p>
+        </div>
+
+        {tqApp && (
+          <Card
+            className={`p-6 cursor-pointer transition-all duration-200 hover:shadow-lg ${
+              tqApp.slug === 'tq' && tqTrialState?.isTrialExpired
+                ? 'ring-2 ring-red-300 bg-red-50/50'
+                : 'ring-2 ring-[#5ED6CE]/30 hover:ring-[#5ED6CE]'
+            }`}
+            onClick={() => handleAppClick(tqApp)}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-2 rounded-lg" style={{ backgroundColor: `${getAppColor(tqApp)}20` }}>
+                <div style={{ color: getAppColor(tqApp) }}>{getAppIcon(tqApp)}</div>
+              </div>
+              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+                <span>{t('home.access_app', 'Acessar')}</span>
+                <ExternalLink className="w-4 h-4" />
+              </div>
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">{tqApp.name}</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              {tqTrialState?.isTrialExpired ? (
+                <Badge variant="error" size="sm" className="inline-flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  {t('transcription_usage.trial_expired')}
+                </Badge>
+              ) : tqTrialState?.isTrial && tqTrialState.remainingDays !== null ? (
+                <Badge variant={tqTrialState.remainingDays <= 2 ? 'warning' : 'info'} size="sm">
+                  {t('transcription_usage.expires_in')} {tqTrialState.remainingDays} {t('transcription_usage.days')}
+                </Badge>
+              ) : (
+                <StatusBadge status={tqApp.licenseStatus as 'active' | 'inactive' | 'suspended' | 'expired'} size="sm" />
+              )}
+              {tqApp.roleInApp && <Badge variant="secondary" size="sm">{tqApp.roleInApp}</Badge>}
+            </div>
+          </Card>
+        )}
+
+        <Button
+          onClick={() => hubService.logout()}
+          variant="tertiary"
+          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-red-600"
+        >
+          <LogOut className="w-4 h-4" />
+          {t('header.logout', 'Logout')}
+        </Button>
       </div>
     )
   }

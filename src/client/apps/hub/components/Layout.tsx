@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/auth'
 import { HubOnboardingWizard } from './onboarding/HubOnboardingWizard'
 import { useTranslation } from 'react-i18next'
 import { Sparkles, X } from 'lucide-react'
+import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
   const { showResumeHint, openWizard, hideResumeHint } = useOnboardingStore()
@@ -16,6 +17,7 @@ export const Layout: React.FC = () => {
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
+  const isMobile = useIsMobile(768)
   const isAdmin = user?.role === 'admin'
 
   // Close mobile menu on route change
@@ -69,8 +71,8 @@ export const Layout: React.FC = () => {
         </main>
       </div>
 
-      {/* Floating Resume Wizard Button */}
-      {isAdmin && showResumeHint && (
+      {/* Floating Resume Wizard Button (not on mobile) */}
+      {isAdmin && showResumeHint && !isMobile && (
         <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
             <div className="flex items-start gap-3">
@@ -113,8 +115,8 @@ export const Layout: React.FC = () => {
         </div>
       )}
 
-      {/* Onboarding Wizard (admin-only) */}
-      <HubOnboardingWizard />
+      {/* Onboarding Wizard (admin-only, not on mobile) */}
+      {!isMobile && <HubOnboardingWizard />}
     </div>
   )
 }

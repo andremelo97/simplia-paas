@@ -343,7 +343,8 @@
   "header": {
     "user_settings_tooltip": "Configurações de Usuário",
     "help_tooltip": "Assistente de Configuração",
-    "bug_report_tooltip": "Reportar um Bug"
+    "bug_report_tooltip": "Reportar um Bug",
+    "logout": "Sair"
   },
   "bug_report": {
     "title": "Reportar Bug",

@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/auth'
 import { HubOnboardingWizard } from './onboarding/HubOnboardingWizard'
 import { useTranslation } from 'react-i18next'
 import { Sparkles, X } from 'lucide-react'
+import { Button } from '@client/common/ui'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {

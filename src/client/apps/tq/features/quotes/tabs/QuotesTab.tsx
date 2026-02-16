@@ -136,7 +136,7 @@ export const QuotesTab: React.FC = () => {
                 <div className="flex-1">{t('common.session')}</div>
                 <div className="flex-1">{t('common.status')}</div>
                 <div className="flex-1">{t('common.patient')}</div>
-                <div className="flex-1 hidden lg:block">{t('common.created_by')}</div>
+                <div className="flex-1">{t('common.created_by')}</div>
                 <div className="w-24">{t('common.total')}</div>
                 <div className="w-20"></div>
               </div>

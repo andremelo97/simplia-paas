@@ -68,8 +68,8 @@ export const PatientRow: React.FC<PatientRowProps> = ({
           </span>
         </div>
 
-        {/* Phone - hidden on tablet */}
-        <div className="min-w-0 flex-1 hidden lg:block">
+        {/* Phone */}
+        <div className="min-w-0 flex-1">
           <span className="text-gray-600 block truncate">
             {patient.phone || '—'}
           </span>

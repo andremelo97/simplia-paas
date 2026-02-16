@@ -169,7 +169,7 @@ export const Patients: React.FC = () => {
                 <div className="w-24">{t('common.created')}</div>
                 <div className="flex-1">{t('common.name')}</div>
                 <div className="flex-1">{t('patients.email')}</div>
-                <div className="flex-1 hidden lg:block">{t('patients.phone')}</div>
+                <div className="flex-1">{t('patients.phone')}</div>
                 <div className="w-24"></div>
               </div>
 

@@ -70,8 +70,8 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         </span>
       </div>
 
-      {/* Created By - hidden on tablet */}
-      <div className="min-w-0 flex-1 hidden lg:block">
+      {/* Created By */}
+      <div className="min-w-0 flex-1">
         <span className="text-gray-600 block truncate">
           {quote.createdBy
             ? `${quote.createdBy.firstName || ''} ${quote.createdBy.lastName || ''}`.trim()

@@ -91,8 +91,8 @@ export const SessionRow: React.FC<SessionRowProps> = ({
           <span className="text-gray-600 block truncate">{patientName}</span>
         </div>
 
-        {/* Created By - hidden on tablet */}
-        <div className="min-w-0 flex-1 hidden lg:block">
+        {/* Created By */}
+        <div className="min-w-0 flex-1">
           <span className="text-gray-600 block truncate">{createdByName}</span>
         </div>
 

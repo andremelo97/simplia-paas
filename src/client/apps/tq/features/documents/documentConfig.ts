@@ -16,9 +16,7 @@ export interface DocumentConfig {
   statusOptions?: () => SelectOption[]
   hasItems: boolean
   hasLandingPage: boolean
-  hasViewPage: boolean
   backPath: string
-  viewPath?: (id: string) => string
   previewPath?: (id: string, templateId: string) => string
   i18nKey: string
   // Service methods
@@ -33,7 +31,6 @@ export const DOCUMENT_CONFIGS: Record<DocumentType, DocumentConfig> = {
     statusOptions: getQuoteStatusOptions,
     hasItems: true,
     hasLandingPage: true,
-    hasViewPage: false,
     backPath: '/documents/quotes',
     previewPath: (id, templateId) => `/documents/quote/${id}/preview/${templateId}`,
     i18nKey: 'quotes',
@@ -45,7 +42,6 @@ export const DOCUMENT_CONFIGS: Record<DocumentType, DocumentConfig> = {
     hasStatus: false,
     hasItems: false,
     hasLandingPage: false,
-    hasViewPage: false,
     backPath: '/documents/clinical-notes',
     i18nKey: 'clinical_notes',
     getById: (id) => clinicalNotesService.getById(id),
@@ -56,7 +52,6 @@ export const DOCUMENT_CONFIGS: Record<DocumentType, DocumentConfig> = {
     hasStatus: false,
     hasItems: false,
     hasLandingPage: true,
-    hasViewPage: false,
     backPath: '/documents/prevention',
     previewPath: (id, templateId) => `/documents/prevention/${id}/preview/${templateId}`,
     i18nKey: 'prevention',

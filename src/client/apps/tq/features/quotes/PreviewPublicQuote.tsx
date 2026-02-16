@@ -8,7 +8,7 @@ import { landingPagesService, LandingPageTemplate } from '../../services/landing
 import { quotesService } from '../../services/quotes'
 import { preventionService } from '../../services/prevention'
 import { brandingService, BrandingData } from '../../services/branding'
-import { usePublicQuoteRenderer } from '../../hooks/usePublicQuoteRenderer'
+import { useLandingPageRenderer } from '../../hooks/useLandingPageRenderer'
 
 export const PreviewPublicQuote: React.FC = () => {
   const { id: documentId, templateId, documentType } = useParams<{ id: string; templateId: string; documentType: string }>()
@@ -70,7 +70,7 @@ export const PreviewPublicQuote: React.FC = () => {
   }
 
   // Create config with resolved document data using reusable hook
-  const previewConfig = usePublicQuoteRenderer(template, document, branding, {
+  const previewConfig = useLandingPageRenderer(template, document, branding, {
     onOpenWidget: handleOpenWidget
   })
 

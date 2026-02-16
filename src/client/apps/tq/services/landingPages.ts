@@ -188,31 +188,3 @@ export const landingPagesService = {
     }
   }
 }
-
-// Backwards compatibility - alias for existing code using publicQuotesService
-export const publicQuotesService = {
-  listTemplates: landingPagesService.listTemplates,
-  getTemplate: landingPagesService.getTemplate,
-  createTemplate: landingPagesService.createTemplate,
-  updateTemplate: landingPagesService.updateTemplate,
-  deleteTemplate: landingPagesService.deleteTemplate,
-  createPublicQuote: async (data: { quoteId: string; templateId?: string; password?: string; expiresAt?: string }) => {
-    // Transform old API to new
-    return landingPagesService.createLandingPage({
-      documentId: data.quoteId,
-      documentType: 'quote',
-      templateId: data.templateId,
-      expiresAt: data.expiresAt,
-      tenantId: 0 // Will be set by backend from tenant context
-    })
-  },
-  listAllPublicQuotes: (filters?: { active?: boolean; created_from?: string; created_to?: string }) => {
-    return landingPagesService.listAllLandingPages({
-      ...filters,
-      document_type: 'quote'
-    })
-  },
-  getPublicQuotesByQuote: (quoteId: string) => landingPagesService.getLandingPagesByDocument(quoteId, 'quote'),
-  revokePublicQuote: landingPagesService.revokeLandingPage,
-  generateNewPassword: landingPagesService.generateNewPassword
-}

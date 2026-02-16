@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Eye } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import {
   Card,
@@ -153,10 +152,6 @@ export const EditPrevention: React.FC = () => {
     navigate('/documents/prevention')
   }
 
-  const handleView = () => {
-    navigate(`/documents/prevention/${id}/edit`)
-  }
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A'
     return formatDateTime(dateString)
@@ -210,14 +205,6 @@ export const EditPrevention: React.FC = () => {
             {t('prevention.prevention')} {prevention.number} • {prevention.patient_first_name || prevention.patient_last_name ? `${prevention.patient_first_name || ''} ${prevention.patient_last_name || ''}`.trim() : ''}
           </p>
         </div>
-        <Button
-          variant="secondary"
-          onClick={handleView}
-          className="flex items-center gap-2"
-        >
-          <Eye className="w-4 h-4" />
-          {t('prevention.view')}
-        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">

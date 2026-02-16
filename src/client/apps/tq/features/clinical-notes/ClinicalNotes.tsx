@@ -52,10 +52,6 @@ export const ClinicalNotes: React.FC = () => {
     navigate(`/clinical-notes/${note.id}/edit`)
   }
 
-  const handleDeleteNote = (note: ClinicalNote) => {
-    // Placeholder: Will be implemented later
-  }
-
   return (
     <div className="space-y-8">
       {/* Header with Title */}

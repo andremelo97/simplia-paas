@@ -51,7 +51,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   LinkToast,
-  Modal
+  Modal,
+  Tooltip
 } from '@client/common/ui'
 import { useAuthStore } from '../../shared/store'
 import { sessionsService, Session } from '../../services/sessions'
@@ -66,6 +67,7 @@ import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 import { AIAgentModal } from '../../components/ai-agent/AIAgentModal'
 import { useTranscription } from '../../hooks/useTranscription'
+import { useIsMobile } from '@shared/hooks/use-mobile'
 import { transcriptionService, QuotaResponse } from '../../services/transcriptionService'
 
 // Hook para debounce
@@ -125,6 +127,7 @@ function useTimer(initialTime: number = 0) {
 export const NewSession: React.FC = () => {
   const { t } = useTranslation('tq')
   const { user } = useAuthStore()
+  const isMobile = useIsMobile(768)
   const { state: transcriptionState, transcriptionId, actions: transcriptionActions } = useTranscription()
 
   // Session State Management - single session per patient + transcription context
@@ -1617,12 +1620,16 @@ export const NewSession: React.FC = () => {
             {isCreatingSession ? (<><div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1" />{t('common.saving')}</>) : (<><Plus className="w-3.5 h-3.5" />{t('sessions.create')}</>)}
           </Button>
         </div>
-        <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowTemplateQuoteModal(true)} className="flex items-center gap-1.5 text-xs">
-          <FileText className="w-3.5 h-3.5" />{t('sessions.create_documents')}
-        </Button>
-        <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowAIAgentModal(true)} className="flex items-center gap-1.5 text-xs">
-          <Bot className="w-3.5 h-3.5" />{t('sessions.call_ai_agent')}
-        </Button>
+        <Tooltip content={isMobile ? t('mobile.desktop_only_description') : ''} disabled={!isMobile} side="top">
+          <Button variant="primary" disabled={isMobile || !isQuoteOrReportEnabled()} onClick={() => setShowTemplateQuoteModal(true)} className="flex items-center gap-1.5 text-xs">
+            <FileText className="w-3.5 h-3.5" />{t('sessions.create_documents')}
+          </Button>
+        </Tooltip>
+        <Tooltip content={isMobile ? t('mobile.desktop_only_description') : ''} disabled={!isMobile} side="top">
+          <Button variant="primary" disabled={isMobile || !isQuoteOrReportEnabled()} onClick={() => setShowAIAgentModal(true)} className="flex items-center gap-1.5 text-xs">
+            <Bot className="w-3.5 h-3.5" />{t('sessions.call_ai_agent')}
+          </Button>
+        </Tooltip>
       </div>
 
       <style dangerouslySetInnerHTML={{ __html: `@keyframes gradient-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }` }} />
@@ -1745,6 +1752,19 @@ export const NewSession: React.FC = () => {
           <p className="text-gray-600 mb-8">
             {t('sessions.workflow_guide.intro')}
           </p>
+
+          {/* Mobile notice */}
+          {isMobile && (
+            <div className="mb-8 bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+                <HelpCircle className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-amber-900 text-sm">{t('mobile.desktop_only_title')}</h4>
+                <p className="text-amber-700 text-sm mt-0.5">{t('mobile.desktop_only_description')}</p>
+              </div>
+            </div>
+          )}
 
           {/* Step 1 - Transcription */}
           <div className="flex gap-4 pb-6 border-b border-gray-200">

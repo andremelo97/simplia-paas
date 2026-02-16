@@ -23,12 +23,14 @@ import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteMo
 import { aiAgentService, FillTemplateRequest } from '../../services/aiAgentService'
 import { clinicalNotesService, CreateClinicalNoteRequest } from '../../services/clinicalNotes'
 import { useAuthStore } from '../../shared/store'
+import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const EditSession: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const isMobile = useIsMobile(768)
   const canEdit = user?.role !== 'operations'
 
   const [session, setSession] = useState<Session | null>(null)
@@ -303,14 +305,16 @@ export const EditSession: React.FC = () => {
 
           {/* Create Documents Button - Show if has any transcription text and user can edit */}
           {canEdit && hasTranscription && (
-            <Button
-              variant="primary"
-              onClick={() => setShowTemplateModal(true)}
-              disabled={isSubmitting}
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {t('sessions.create_documents')}
-            </Button>
+            <Tooltip content={t('mobile.desktop_only_description')} disabled={!isMobile} side="bottom">
+              <Button
+                variant="primary"
+                onClick={() => setShowTemplateModal(true)}
+                disabled={isMobile || isSubmitting}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {t('sessions.create_documents')}
+              </Button>
+            </Tooltip>
           )}
         </div>
       </div>

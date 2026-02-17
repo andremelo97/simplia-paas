@@ -16,7 +16,9 @@ import {
   HelpCircle,
   ExternalLink,
   RotateCcw,
-  FileText
+  FileText,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 
 // LocalStorage key for draft persistence
@@ -201,6 +203,9 @@ export const NewSession: React.FC = () => {
   // Link toast state
   const [showLinkToast, setShowLinkToast] = useState(false)
   const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'session' | 'quote' | 'clinical-report' | 'clinical-note' | 'prevention'} | null>(null)
+
+  // Fullscreen transcription view (mobile)
+  const [isTranscriptionFullscreen, setIsTranscriptionFullscreen] = useState(false)
 
   // UI state for dropdown and patient flow
   const [transcribeMode, setTranscribeMode] = useState<'start' | 'upload'>('start')
@@ -1640,6 +1645,16 @@ export const NewSession: React.FC = () => {
           <CardTitle className="flex items-center justify-between text-sm md:text-base">
             {t('sessions.session_transcription')}
             <div className="flex items-center gap-2">
+              {/* Fullscreen toggle - mobile only */}
+              {isMobile && transcription.trim() && (
+                <button
+                  onClick={() => setIsTranscriptionFullscreen(true)}
+                  className="md:hidden flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                  title={t('sessions.expand_transcription', 'Expand')}
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+              )}
               {/* Clear draft button - mobile only, inside card header */}
               <button
                 onClick={clearDraft}
@@ -1697,6 +1712,29 @@ export const NewSession: React.FC = () => {
           />
         </CardContent>
       </Card>
+
+      {/* Fullscreen Transcription Overlay (mobile) */}
+      {isTranscriptionFullscreen && (
+        <div className="fixed inset-0 z-50 bg-white flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900">{t('sessions.session_transcription')}</h2>
+            <button
+              onClick={() => setIsTranscriptionFullscreen(false)}
+              className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <Minimize2 className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-4">
+            <Textarea
+              value={transcription}
+              onChange={(e) => setTranscription(e.target.value)}
+              className="w-full h-full min-h-full resize-none font-mono text-sm leading-relaxed border-0 focus:ring-0 shadow-none"
+              style={{ outline: 'none', boxShadow: 'none' }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Audio Upload Modal */}
       <AudioUploadModal

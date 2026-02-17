@@ -65,18 +65,15 @@ class MarketplaceService {
     const query = searchParams.toString()
     const url = `/internal/api/v1/marketplace${query ? `?${query}` : ''}`
 
-    const response = await api.get(url)
-    return response.data
+    return api.get(url)
   }
 
   async getItem(id: number): Promise<MarketplaceDetailResponse> {
-    const response = await api.get(`/internal/api/v1/marketplace/${id}`)
-    return response.data
+    return api.get(`/internal/api/v1/marketplace/${id}`)
   }
 
   async importItem(id: number): Promise<MarketplaceImportResponse> {
-    const response = await api.post(`/internal/api/v1/marketplace/${id}/import`)
-    return response.data
+    return api.post(`/internal/api/v1/marketplace/${id}/import`)
   }
 }
 

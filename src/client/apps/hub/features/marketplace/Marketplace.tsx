@@ -2,8 +2,11 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Search, Loader2, Package } from 'lucide-react'
+import { Paginator } from '@client/common/ui'
 import { marketplaceService, type MarketplaceItem } from '../../services/marketplaceService'
 import { MarketplaceCard } from './MarketplaceCard'
+
+const ITEMS_PER_PAGE = 8
 
 const SPECIALTIES = ['general', 'dentistry', 'nutrition'] as const
 const TYPES = ['template', 'landing_page'] as const
@@ -23,16 +26,19 @@ export const Marketplace: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('')
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('')
   const [selectedLocale, setSelectedLocale] = useState<string>(i18n.language || 'pt-BR')
+  const [currentPage, setCurrentPage] = useState(1)
 
   const fetchItems = useCallback(async () => {
     setIsLoading(true)
     try {
+      const offset = (currentPage - 1) * ITEMS_PER_PAGE
       const response = await marketplaceService.getItems({
         type: selectedType || undefined,
         specialty: selectedSpecialty || undefined,
         locale: selectedLocale || undefined,
         search: search || undefined,
-        limit: 50
+        limit: ITEMS_PER_PAGE,
+        offset
       })
       setItems(response.data)
       setTotal(response.meta.total)
@@ -41,7 +47,7 @@ export const Marketplace: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedType, selectedSpecialty, selectedLocale, search])
+  }, [selectedType, selectedSpecialty, selectedLocale, search, currentPage])
 
   useEffect(() => {
     fetchItems()
@@ -50,7 +56,10 @@ export const Marketplace: React.FC = () => {
   // Debounced search
   const [searchInput, setSearchInput] = useState('')
   useEffect(() => {
-    const timer = setTimeout(() => setSearch(searchInput), 300)
+    const timer = setTimeout(() => {
+      setSearch(searchInput)
+      setCurrentPage(1)
+    }, 300)
     return () => clearTimeout(timer)
   }, [searchInput])
 
@@ -102,7 +111,7 @@ export const Marketplace: React.FC = () => {
         {/* Type filter */}
         <select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
+          onChange={(e) => { setSelectedType(e.target.value); setCurrentPage(1) }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white"
         >
           <option value="">{t('marketplace.filter_type')}</option>
@@ -116,7 +125,7 @@ export const Marketplace: React.FC = () => {
         {/* Specialty filter */}
         <select
           value={selectedSpecialty}
-          onChange={(e) => setSelectedSpecialty(e.target.value)}
+          onChange={(e) => { setSelectedSpecialty(e.target.value); setCurrentPage(1) }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white"
         >
           <option value="">{t('marketplace.filter_specialty')}</option>
@@ -130,7 +139,7 @@ export const Marketplace: React.FC = () => {
         {/* Locale filter */}
         <select
           value={selectedLocale}
-          onChange={(e) => setSelectedLocale(e.target.value)}
+          onChange={(e) => { setSelectedLocale(e.target.value); setCurrentPage(1) }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white"
         >
           <option value="">{t('marketplace.filter_locale')}</option>
@@ -165,17 +174,26 @@ export const Marketplace: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {items.map(item => (
-            <MarketplaceCard
-              key={item.id}
-              item={item}
-              onImport={handleImport}
-              onView={handleView}
-              isImporting={importingId === item.id}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {items.map(item => (
+              <MarketplaceCard
+                key={item.id}
+                item={item}
+                onImport={handleImport}
+                onView={handleView}
+                isImporting={importingId === item.id}
+              />
+            ))}
+          </div>
+
+          <Paginator
+            currentPage={currentPage}
+            totalItems={total}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
+        </>
       )}
     </div>
   )

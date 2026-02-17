@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 import { Sparkles, X } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { InstallAppBanner } from '@client/common/components'
+import { MobileBottomNav } from './MobileBottomNav'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
@@ -68,9 +69,12 @@ export const Layout: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuToggle={handleMenuToggle} />
 
-        <main className="flex-1 overflow-y-auto relative">
+        <main className="flex-1 overflow-y-auto relative pb-16 md:pb-0">
           <Outlet />
         </main>
+
+        {/* Mobile bottom navigation */}
+        <MobileBottomNav />
       </div>
 
       {/* Floating Resume Wizard Button (not on mobile) */}

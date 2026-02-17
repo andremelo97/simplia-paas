@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { ExternalLink, Grid3x3, AlertTriangle, LogOut } from 'lucide-react'
+import { ExternalLink, Grid3x3, AlertTriangle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Card, Button, StatusBadge, Badge } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
 import { publishFeedback } from '@client/common/feedback'
 import { TenantEntitlementsSection } from '../components/TenantEntitlementsSection'
-import { hubService } from '../services/hub'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 // Stripe Customer Portal URL
@@ -220,15 +219,6 @@ export const Home: React.FC = () => {
             </div>
           </Card>
         )}
-
-        <Button
-          onClick={() => hubService.logout()}
-          variant="tertiary"
-          className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-red-600"
-        >
-          <LogOut className="w-4 h-4" />
-          {t('header.logout', 'Logout')}
-        </Button>
       </div>
     )
   }

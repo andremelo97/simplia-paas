@@ -463,5 +463,8 @@
       "button": "Retomar",
       "dismiss": "Dispensar"
     }
+  },
+  "mobile": {
+    "open_tq": "Abrir TQ"
   }
 }

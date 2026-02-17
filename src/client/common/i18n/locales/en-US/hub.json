@@ -463,5 +463,8 @@
       "button": "Resume",
       "dismiss": "Dismiss"
     }
+  },
+  "mobile": {
+    "open_tq": "Open TQ"
   }
 }

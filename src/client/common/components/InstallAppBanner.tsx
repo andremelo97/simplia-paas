@@ -19,7 +19,11 @@ function isStandalone(): boolean {
     (navigator as any).standalone === true
 }
 
-export const InstallAppBanner: React.FC = () => {
+interface InstallAppBannerProps {
+  ignoreDismiss?: boolean
+}
+
+export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({ ignoreDismiss = false }) => {
   const { t } = useTranslation()
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)
@@ -28,8 +32,10 @@ export const InstallAppBanner: React.FC = () => {
   useEffect(() => {
     if (isStandalone()) return
 
-    const dismissed = localStorage.getItem(DISMISS_KEY)
-    if (dismissed && Date.now() - parseInt(dismissed) < 24 * 60 * 60 * 1000) return
+    if (!ignoreDismiss) {
+      const dismissed = localStorage.getItem(DISMISS_KEY)
+      if (dismissed && Date.now() - parseInt(dismissed) < 24 * 60 * 60 * 1000) return
+    }
 
     // iOS: show manual instructions
     if (isIOS()) {
@@ -47,7 +53,7 @@ export const InstallAppBanner: React.FC = () => {
 
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
-  }, [])
+  }, [ignoreDismiss])
 
   const handleInstall = async () => {
     if (!deferredPrompt) return

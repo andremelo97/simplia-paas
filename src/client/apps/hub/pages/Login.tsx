@@ -268,6 +268,15 @@ export const Login: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="w-full max-w-[400px]"
         >
+          {/* Logo - mobile only */}
+          <div className="flex justify-center mb-6 lg:hidden">
+            <img
+              src="/logo-512x256.png"
+              alt="LivoCare"
+              className="h-10"
+            />
+          </div>
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-semibold text-gray-900">
@@ -642,7 +651,7 @@ export const Login: React.FC = () => {
       </div>
 
       {/* PWA Install Banner (mobile only) */}
-      <InstallAppBanner />
+      <InstallAppBanner ignoreDismiss />
     </div>
   )
 }

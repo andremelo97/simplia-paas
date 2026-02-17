@@ -488,6 +488,7 @@
     "preview": "Pré-visualização",
     "fullscreen": "Tela cheia",
     "import_to_tq": "Importar para o TQ",
+    "preview_disclaimer": "Esta é uma pré-visualização genérica. Importe para ver com as cores, logo e configurações da sua marca.",
     "lp_preview_note": "Pré-visualização estrutural — a landing page será renderizada completamente após a importação.",
     "empty_title": "Nenhum template encontrado",
     "empty_description": "Tente ajustar os filtros ou volte mais tarde para novos templates."

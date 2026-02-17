@@ -488,6 +488,7 @@
     "preview": "Preview",
     "fullscreen": "Fullscreen",
     "import_to_tq": "Import to TQ",
+    "preview_disclaimer": "This is a generic preview. Import to see it with your brand's colors, logo and settings.",
     "lp_preview_note": "Structural preview — the actual landing page will be fully rendered after import.",
     "empty_title": "No templates found",
     "empty_description": "Try adjusting your filters or check back later for new templates."

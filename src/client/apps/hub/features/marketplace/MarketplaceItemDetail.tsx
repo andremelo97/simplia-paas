@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { Render } from '@measured/puck'
 import '@measured/puck/puck.css'
-import { FileText, Layout, Download, Loader2, Maximize2, Minimize2, X } from 'lucide-react'
+import { FileText, Layout, Download, Loader2, Maximize2, Minimize2, X, Info } from 'lucide-react'
 import { marketplaceService, type MarketplaceItem as MarketplaceItemType } from '../../services/marketplaceService'
 import { createConfigWithResolvedData } from '@client/apps/tq/features/landing-pages/puck-config-preview'
 import type { BrandingData } from '@client/apps/tq/services/branding'
@@ -213,6 +213,11 @@ export const MarketplaceItemDetail: React.FC = () => {
           </div>
 
           {previewContent}
+
+          <div className="px-5 py-3 bg-gray-50 border-t border-gray-200 flex items-center gap-2 text-xs text-gray-400">
+            <Info className="w-3.5 h-3.5 flex-shrink-0" />
+            {t('marketplace.preview_disclaimer')}
+          </div>
         </div>
       </div>
 

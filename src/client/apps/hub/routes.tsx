@@ -64,7 +64,10 @@ const PublicRoute: React.FC = () => {
     )
   }
 
-  if (isAuthenticated) {
+  // Allow Login page to render when ?action=logout is present (cross-domain logout from TQ)
+  const hasLogoutAction = new URLSearchParams(window.location.search).get('action') === 'logout'
+
+  if (isAuthenticated && !hasLogoutAction) {
     return <Navigate to="/" replace />
   }
 

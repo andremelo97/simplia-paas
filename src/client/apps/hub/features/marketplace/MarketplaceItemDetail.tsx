@@ -1,8 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
+import { Render } from '@measured/puck'
+import '@measured/puck/puck.css'
 import { FileText, Layout, Download, Loader2 } from 'lucide-react'
 import { marketplaceService, type MarketplaceItem as MarketplaceItemType } from '../../services/marketplaceService'
+import { createConfigWithResolvedData } from '@client/apps/tq/features/landing-pages/puck-config-preview'
+import type { BrandingData } from '@client/apps/tq/services/branding'
 
 const specialtyColors: Record<string, string> = {
   general: 'bg-blue-100 text-blue-700',
@@ -10,19 +14,13 @@ const specialtyColors: Record<string, string> = {
   nutrition: 'bg-orange-100 text-orange-700'
 }
 
-const extractPuckComponents = (content: string): { title: string | null; description: string | null; components: string[] } => {
-  try {
-    const parsed = JSON.parse(content)
-    const hero = parsed?.content?.find((c: any) => c.type === 'Hero')
-    const components = (parsed?.content || []).map((c: any) => c.type)
-    return {
-      title: hero?.props?.title || null,
-      description: hero?.props?.description || null,
-      components
-    }
-  } catch {
-    return { title: null, description: null, components: [] }
-  }
+const defaultBranding: BrandingData = {
+  tenantId: 0,
+  primaryColor: '#B725B7',
+  secondaryColor: '#5ED6CE',
+  tertiaryColor: '#E91E63',
+  logoUrl: null,
+  companyName: 'LivoCare',
 }
 
 export const MarketplaceItemDetail: React.FC = () => {
@@ -63,9 +61,20 @@ export const MarketplaceItemDetail: React.FC = () => {
     }
   }
 
-  const puckInfo = useMemo(() => {
+  const puckConfig = useMemo(() => {
+    if (item?.type === 'landing_page') {
+      return createConfigWithResolvedData(defaultBranding, {})
+    }
+    return null
+  }, [item?.type])
+
+  const puckData = useMemo(() => {
     if (item?.type === 'landing_page' && item.content) {
-      return extractPuckComponents(item.content)
+      try {
+        return JSON.parse(item.content)
+      } catch {
+        return null
+      }
     }
     return null
   }, [item?.type, item?.content])
@@ -161,47 +170,11 @@ export const MarketplaceItemDetail: React.FC = () => {
             className="p-6 lg:p-8 prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{ __html: item.content }}
           />
-        ) : puckInfo ? (
-          <div className="p-6">
-            {/* Puck LP structure preview */}
-            <div className="border border-gray-200 rounded-lg overflow-hidden max-w-2xl mx-auto">
-              {/* Mock header */}
-              <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                <div className="w-20 h-5 bg-gray-200 rounded" />
-                <div className="w-24 h-8 bg-[#B725B7]/20 rounded-md" />
-              </div>
-              {/* Mock hero */}
-              <div className="bg-gray-50 px-6 py-12 text-center">
-                {puckInfo.title && (
-                  <h3 className="text-lg font-bold text-gray-800">{puckInfo.title}</h3>
-                )}
-                {puckInfo.description && (
-                  <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">{puckInfo.description}</p>
-                )}
-              </div>
-              {/* Mock content blocks */}
-              <div className="px-6 py-6 space-y-3">
-                {puckInfo.components
-                  .filter(c => !['Header', 'Hero', 'Footer', 'Space'].includes(c))
-                  .map((comp, i) => (
-                    <div key={i} className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded border border-gray-100">
-                      <Layout className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
-                      <span className="text-xs text-gray-500">{comp}</span>
-                    </div>
-                  ))}
-              </div>
-              {/* Mock footer */}
-              <div className="bg-gray-800 px-6 py-4">
-                <div className="flex gap-3">
-                  <div className="w-16 h-3 bg-gray-600 rounded" />
-                  <div className="w-12 h-3 bg-gray-600 rounded" />
-                  <div className="w-20 h-3 bg-gray-600 rounded" />
-                </div>
-              </div>
+        ) : puckConfig && puckData ? (
+          <div className="relative">
+            <div className="pointer-events-none">
+              <Render config={puckConfig} data={puckData} />
             </div>
-            <p className="text-xs text-gray-400 text-center mt-3">
-              {t('marketplace.lp_preview_note')}
-            </p>
           </div>
         ) : (
           <div className="p-6 flex flex-col items-center justify-center text-gray-400 py-20">

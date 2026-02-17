@@ -10,7 +10,8 @@
     "branding": "Branding",
     "communication": "Communication",
     "transcription": "Transcription",
-    "marketplace": "Marketplace"
+    "marketplace": "Marketplace",
+    "preview": "Preview"
   },
   "login": {
     "title": "Sign in to continue",

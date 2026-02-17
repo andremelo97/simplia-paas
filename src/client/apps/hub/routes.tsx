@@ -104,7 +104,7 @@ export const router = createBrowserRouter([
             element: <Marketplace />
           },
           {
-            path: 'marketplace/:id',
+            path: 'marketplace/:id/preview',
             element: <MarketplaceItemDetail />
           },
           {

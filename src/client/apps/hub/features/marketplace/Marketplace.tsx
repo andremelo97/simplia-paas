@@ -68,7 +68,7 @@ export const Marketplace: React.FC = () => {
   }
 
   const handleView = (item: MarketplaceItem) => {
-    navigate(`/marketplace/${item.id}`)
+    navigate(`/marketplace/${item.id}/preview`)
   }
 
   return (

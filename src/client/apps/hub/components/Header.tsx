@@ -33,6 +33,7 @@ const buildBreadcrumbs = (pathname: string, t: TFunction<'hub'>): BreadcrumbItem
     const mapping: Record<string, string> = {
       configurations: t('breadcrumbs.configurations'),
       marketplace: t('breadcrumbs.marketplace'),
+      preview: t('breadcrumbs.preview'),
       branding: t('breadcrumbs.branding'),
       communication: t('breadcrumbs.communication'),
       transcription: t('breadcrumbs.transcription')

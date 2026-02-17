@@ -431,6 +431,12 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   API_KEY_REVOKED: {
     title: "API Key Revoked",
     message: "API key revoked successfully."
+  },
+
+  // Marketplace operations
+  MARKETPLACE_TEMPLATE_IMPORTED: {
+    title: "Template Imported",
+    message: "Template imported to your TQ successfully."
   }
 }
 

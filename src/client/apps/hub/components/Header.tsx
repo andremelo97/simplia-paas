@@ -32,7 +32,7 @@ const buildBreadcrumbs = (pathname: string, t: TFunction<'hub'>): BreadcrumbItem
   const mapSegmentToLabel = (segment: string) => {
     const mapping: Record<string, string> = {
       configurations: t('breadcrumbs.configurations'),
-      // 'user-configurations': removed - no longer a route (modal opens from header)
+      marketplace: t('breadcrumbs.marketplace'),
       branding: t('breadcrumbs.branding'),
       communication: t('breadcrumbs.communication'),
       transcription: t('breadcrumbs.transcription')

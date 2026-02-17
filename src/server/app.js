@@ -26,6 +26,7 @@ const jobsRoutes = require('./api/internal/routes/jobs');
 const apiKeysRoutes = require('./api/internal/routes/api-keys');
 const onboardingRoutes = require('./api/internal/routes/onboarding');
 const bugReportsRoutes = require('./api/internal/routes/bug-reports');
+const { browsingRouter: marketplaceBrowsingRoutes, importRouter: marketplaceImportRoutes } = require('./api/internal/routes/marketplace');
 
 // TQ App Routes
 const tqRoutes = require('./api/tq');
@@ -182,6 +183,9 @@ internalRouter.use('/configurations/smtp', communicationRoutes);
 // Onboarding routes (platform-scoped, for wizard completion tracking)
 internalRouter.use('/onboarding', onboardingRoutes);
 
+// Marketplace browsing routes (auth only, no tenant context — reads from public schema)
+internalRouter.use('/marketplace', marketplaceBrowsingRoutes);
+
 // Create tenant-scoped router for routes that need tenant context
 const tenantScopedRouter = express.Router();
 tenantScopedRouter.use(tenantMiddleware, requireAuth);
@@ -189,6 +193,7 @@ tenantScopedRouter.use(tenantMiddleware, requireAuth);
 tenantScopedRouter.use('/users', userRoutes); // Re-enabled for pricing system grant/revoke functionality
 tenantScopedRouter.use('/entitlements', entitlementsRoutes);
 tenantScopedRouter.use('/bug-reports', bugReportsRoutes);
+tenantScopedRouter.use('/marketplace', marketplaceImportRoutes);
 
 // TQ App API Routes (require TQ app access)
 tenantScopedRouter.use('/tq', requireTranscriptionQuoteAccess(), tqRoutes);

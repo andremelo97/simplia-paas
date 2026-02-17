@@ -9,6 +9,8 @@ import { Configurations } from './features/configurations/Configurations'
 import { BrandingConfiguration } from './features/configurations/BrandingConfiguration'
 import { CommunicationConfiguration } from './features/configurations/CommunicationConfiguration'
 import { TranscriptionUsageConfiguration } from './features/configurations/TranscriptionUsageConfiguration'
+import { Marketplace } from './features/marketplace/Marketplace'
+import { MarketplaceItemDetail } from './features/marketplace/MarketplaceItemDetail'
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, isLoading, isHydrated } = useAuthStore()
@@ -97,11 +99,14 @@ export const router = createBrowserRouter([
             index: true,
             element: <Home />
           },
-          // Commented: user settings now opens as modal from header click
-          // {
-          //   path: 'user-configurations',
-          //   element: <UserConfigurations />
-          // },
+          {
+            path: 'marketplace',
+            element: <Marketplace />
+          },
+          {
+            path: 'marketplace/:id',
+            element: <MarketplaceItemDetail />
+          },
           {
             path: 'configurations',
             element: <AdminRoute />,

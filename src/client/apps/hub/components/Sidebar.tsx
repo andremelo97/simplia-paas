@@ -1,5 +1,5 @@
 import React from 'react'
-import { Home, Settings } from 'lucide-react'
+import { Home, Settings, ShoppingBag } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '../store/ui'
 import { useAuthStore } from '../store/auth'
@@ -19,6 +19,11 @@ export const Sidebar: React.FC<HubSidebarProps> = ({ forceOpen }) => {
       name: t('sidebar.home'),
       href: '/',
       icon: Home
+    },
+    {
+      name: t('sidebar.marketplace'),
+      href: '/marketplace',
+      icon: ShoppingBag
     }
   ]
 

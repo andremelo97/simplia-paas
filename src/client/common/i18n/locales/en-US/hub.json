@@ -9,7 +9,8 @@
     "user_configurations": "User Settings",
     "branding": "Branding",
     "communication": "Communication",
-    "transcription": "Transcription"
+    "transcription": "Transcription",
+    "marketplace": "Marketplace"
   },
   "login": {
     "title": "Sign in to continue",
@@ -62,6 +63,7 @@
   },
   "sidebar": {
     "home": "Home",
+    "marketplace": "Marketplace",
     "configurations": "Configurations",
     "application_portal": "Application Portal"
   },
@@ -463,6 +465,26 @@
       "button": "Resume",
       "dismiss": "Dismiss"
     }
+  },
+  "marketplace": {
+    "title": "Template Marketplace",
+    "subtitle": "Browse curated templates by specialty and import them to your TQ",
+    "search_placeholder": "Search templates...",
+    "filter_type": "All types",
+    "filter_specialty": "All specialties",
+    "filter_all": "All",
+    "type_template": "Template",
+    "type_landing_page": "Landing Page",
+    "specialty_general": "General",
+    "specialty_dentistry": "Dentistry",
+    "specialty_nutrition": "Nutrition",
+    "import": "Import",
+    "importing": "Importing...",
+    "imported_count": "{{count}} imports",
+    "preview": "Preview",
+    "import_to_tq": "Import to TQ",
+    "empty_title": "No templates found",
+    "empty_description": "Try adjusting your filters or check back later for new templates."
   },
   "mobile": {
     "open_tq": "Open TQ",

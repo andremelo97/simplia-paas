@@ -40,6 +40,8 @@ export const Login: React.FC = () => {
       const hasParams = hasSsoParams()
 
       if (!hasParams) {
+        // No SSO params — auto-redirect to Hub login (avoids manual click on iOS PWA reopens)
+        window.location.href = getHubLoginUrl()
         return
       }
 

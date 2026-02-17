@@ -7,15 +7,12 @@ export interface MarketplaceItem {
   type: 'template' | 'landing_page'
   title: string
   description: string | null
+  content: string
   specialty: string
   locale: string
   thumbnailUrl: string | null
   importCount: number
   active: boolean
-}
-
-export interface MarketplaceItemDetail extends MarketplaceItem {
-  content: string
 }
 
 interface MarketplaceListParams {
@@ -37,7 +34,7 @@ interface MarketplaceListResponse {
 }
 
 interface MarketplaceDetailResponse {
-  data: MarketplaceItemDetail
+  data: MarketplaceItem
 }
 
 interface MarketplaceImportResponse {

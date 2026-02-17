@@ -29,7 +29,7 @@ class MarketplaceItem {
   static async findAll(options = {}) {
     const { type, specialty, locale, search, limit = 50, offset = 0 } = options;
 
-    let query = `SELECT id, created_at, updated_at, type, title, description, specialty, locale, thumbnail_url, import_count, active FROM public.marketplace_items`;
+    let query = `SELECT id, created_at, updated_at, type, title, description, content, specialty, locale, thumbnail_url, import_count, active FROM public.marketplace_items`;
 
     const params = [];
     const conditions = ['active = true'];
@@ -137,6 +137,7 @@ class MarketplaceItem {
       type: this.type,
       title: this.title,
       description: this.description,
+      content: this.content,
       specialty: this.specialty,
       locale: this.locale,
       thumbnailUrl: this.thumbnailUrl,

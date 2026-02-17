@@ -1,15 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Loader2, Package } from 'lucide-react'
+import { Search, Loader2, Package } from 'lucide-react'
 import { marketplaceService, type MarketplaceItem } from '../../services/marketplaceService'
 import { MarketplaceCard } from './MarketplaceCard'
 
 const SPECIALTIES = ['general', 'dentistry', 'nutrition'] as const
 const TYPES = ['template', 'landing_page'] as const
+const LOCALES = ['pt-BR', 'en-US'] as const
 
 export const Marketplace: React.FC = () => {
-  const { t } = useTranslation('hub')
+  const { t, i18n } = useTranslation('hub')
   const navigate = useNavigate()
 
   const [items, setItems] = useState<MarketplaceItem[]>([])
@@ -21,6 +22,7 @@ export const Marketplace: React.FC = () => {
   const [search, setSearch] = useState('')
   const [selectedType, setSelectedType] = useState<string>('')
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>('')
+  const [selectedLocale, setSelectedLocale] = useState<string>(i18n.language || 'pt-BR')
 
   const fetchItems = useCallback(async () => {
     setIsLoading(true)
@@ -28,6 +30,7 @@ export const Marketplace: React.FC = () => {
       const response = await marketplaceService.getItems({
         type: selectedType || undefined,
         specialty: selectedSpecialty || undefined,
+        locale: selectedLocale || undefined,
         search: search || undefined,
         limit: 50
       })
@@ -38,7 +41,7 @@ export const Marketplace: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [selectedType, selectedSpecialty, search])
+  }, [selectedType, selectedSpecialty, selectedLocale, search])
 
   useEffect(() => {
     fetchItems()
@@ -56,7 +59,6 @@ export const Marketplace: React.FC = () => {
     setImportingId(item.id)
     try {
       await marketplaceService.importItem(item.id)
-      // Refresh to update import counts
       fetchItems()
     } catch (error) {
       console.error('Failed to import item:', error)
@@ -70,21 +72,23 @@ export const Marketplace: React.FC = () => {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">
-          {t('marketplace.title')}
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          {t('marketplace.subtitle')}
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {t('marketplace.title')}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {t('marketplace.subtitle')}
+          </p>
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+      <div className="flex flex-wrap items-center gap-3">
         {/* Search */}
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="relative flex-1 min-w-[200px] max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
@@ -123,9 +127,23 @@ export const Marketplace: React.FC = () => {
           ))}
         </select>
 
+        {/* Locale filter */}
+        <select
+          value={selectedLocale}
+          onChange={(e) => setSelectedLocale(e.target.value)}
+          className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white"
+        >
+          <option value="">{t('marketplace.filter_locale')}</option>
+          {LOCALES.map(locale => (
+            <option key={locale} value={locale}>
+              {t(`marketplace.locale_${locale.replace('-', '_')}`)}
+            </option>
+          ))}
+        </select>
+
         {/* Result count */}
         {!isLoading && (
-          <span className="text-xs text-gray-400 ml-auto">
+          <span className="text-sm text-gray-400 ml-auto">
             {total} {total === 1 ? 'item' : 'items'}
           </span>
         )}
@@ -139,15 +157,15 @@ export const Marketplace: React.FC = () => {
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Package className="w-12 h-12 text-gray-300 mb-3" />
-          <h3 className="text-sm font-medium text-gray-900">
+          <h3 className="text-base font-medium text-gray-900">
             {t('marketplace.empty_title')}
           </h3>
-          <p className="text-xs text-gray-500 mt-1 max-w-sm">
+          <p className="text-sm text-gray-500 mt-1 max-w-sm">
             {t('marketplace.empty_description')}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
           {items.map(item => (
             <MarketplaceCard
               key={item.id}

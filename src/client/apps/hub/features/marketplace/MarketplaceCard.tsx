@@ -40,7 +40,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
       className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer flex flex-col"
       onClick={() => onView(item)}
     >
-      {/* Thumbnail or placeholder */}
+      {/* Thumbnail / Preview */}
       {item.thumbnailUrl ? (
         <div className="aspect-[16/10] w-full overflow-hidden rounded-t-lg bg-gray-50">
           <img
@@ -49,13 +49,18 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
             className="w-full h-full object-cover"
           />
         </div>
+      ) : item.type === 'template' && item.content ? (
+        <div className="aspect-[16/10] w-full rounded-t-lg bg-white overflow-hidden relative">
+          <div
+            className="absolute inset-0 origin-top-left scale-[0.35] w-[286%] h-[286%] p-6 prose prose-sm max-w-none pointer-events-none"
+            dangerouslySetInnerHTML={{ __html: item.content }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white" />
+        </div>
       ) : (
         <div className="aspect-[16/10] w-full rounded-t-lg bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
           <div className="text-gray-300">
-            {item.type === 'template'
-              ? <FileText className="w-10 h-10" />
-              : <Layout className="w-10 h-10" />
-            }
+            <Layout className="w-10 h-10" />
           </div>
         </div>
       )}

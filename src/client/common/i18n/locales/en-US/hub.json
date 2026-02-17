@@ -486,6 +486,7 @@
     "imported_count": "{{count}} imports",
     "preview": "Preview",
     "import_to_tq": "Import to TQ",
+    "lp_preview_note": "Structural preview — the actual landing page will be fully rendered after import.",
     "empty_title": "No templates found",
     "empty_description": "Try adjusting your filters or check back later for new templates."
   },

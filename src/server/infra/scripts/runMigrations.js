@@ -40,18 +40,35 @@ async function runMigrations() {
       const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
       // Split by semicolon to handle multiple statements
-      // BUT respect dollar-quoted strings (e.g., $tag$...$tag$) used in functions/triggers
+      // Respects dollar-quoted strings ($tag$...$tag$) and single-quoted strings ('...')
       const statements = [];
       let currentStatement = '';
       let insideDollarQuote = false;
       let dollarQuoteTag = null;
+      let insideSingleQuote = false;
 
       for (let i = 0; i < migrationSQL.length; i++) {
         const char = migrationSQL[i];
         currentStatement += char;
 
+        // Track single-quoted strings (handle '' escape for literal single quotes)
+        if (char === "'" && !insideDollarQuote) {
+          if (insideSingleQuote) {
+            // Check if this is an escaped quote ('') — if next char is also ', stay inside
+            if (i + 1 < migrationSQL.length && migrationSQL[i + 1] === "'") {
+              currentStatement += "'";
+              i++; // Skip the escaped quote
+              continue;
+            }
+            insideSingleQuote = false;
+          } else {
+            insideSingleQuote = true;
+          }
+          continue;
+        }
+
         // Detect dollar-quote start/end (e.g., $tag$ or $$)
-        if (char === '$') {
+        if (char === '$' && !insideSingleQuote) {
           let tag = '$';
           let j = i + 1;
 
@@ -80,8 +97,8 @@ async function runMigrations() {
           }
         }
 
-        // Only split on semicolon if we're NOT inside a dollar-quoted string
-        if (char === ';' && !insideDollarQuote) {
+        // Only split on semicolon if we're NOT inside any quoted string
+        if (char === ';' && !insideDollarQuote && !insideSingleQuote) {
           const stmt = currentStatement.trim();
           if (stmt.length > 0) {
             statements.push(stmt);

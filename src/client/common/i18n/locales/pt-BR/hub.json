@@ -486,6 +486,7 @@
     "importing": "Importando...",
     "imported_count": "{{count}} importações",
     "preview": "Pré-visualização",
+    "fullscreen": "Tela cheia",
     "import_to_tq": "Importar para o TQ",
     "lp_preview_note": "Pré-visualização estrutural — a landing page será renderizada completamente após a importação.",
     "empty_title": "Nenhum template encontrado",

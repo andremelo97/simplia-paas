@@ -5,16 +5,18 @@ import { useAuthStore } from '../store/auth'
 import { hubService } from '../services/hub'
 
 function getTqBaseUrl(): string {
+  if (import.meta.env.VITE_TQ_URL) {
+    return import.meta.env.VITE_TQ_URL
+  }
+
   const hostname = window.location.hostname
 
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:3005'
+  // hub-test.livocare.ai -> tq-test.livocare.ai
+  if (hostname.includes('hub-test')) {
+    return 'https://tq-test.livocare.ai'
   }
 
-  if (hostname.includes('hub.')) {
-    return window.location.origin.replace('hub.', 'tq.')
-  }
-
+  // hub.livocare.ai -> tq.livocare.ai
   return 'https://tq.livocare.ai'
 }
 

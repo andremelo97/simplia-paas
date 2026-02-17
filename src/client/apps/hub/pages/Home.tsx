@@ -67,17 +67,10 @@ export const Home: React.FC = () => {
 
   // Dynamically determine TQ URL based on current Hub hostname
   const getTqBaseUrl = (): string => {
-    // Check for explicit env var first
     if (import.meta.env.VITE_TQ_URL) {
       return import.meta.env.VITE_TQ_URL
     }
 
-    // Development mode
-    if (import.meta.env.DEV) {
-      return 'http://localhost:3005'
-    }
-
-    // Production: detect environment from current hostname
     const hostname = window.location.hostname
 
     // hub-test.livocare.ai -> tq-test.livocare.ai
@@ -85,7 +78,7 @@ export const Home: React.FC = () => {
       return 'https://tq-test.livocare.ai'
     }
 
-    // hub.livocare.ai -> tq.livocare.ai (default production)
+    // hub.livocare.ai -> tq.livocare.ai
     return 'https://tq.livocare.ai'
   }
 

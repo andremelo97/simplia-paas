@@ -40,6 +40,16 @@ export const Login: React.FC = () => {
   // Get current language
   const currentLanguage = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0]
 
+  // Handle logout action from TQ (cross-domain logout)
+  const isLoggingOut = searchParams.get('action') === 'logout'
+  useEffect(() => {
+    if (isLoggingOut) {
+      hubService.logout()
+      searchParams.delete('action')
+      setSearchParams(searchParams, { replace: true })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Check for session invalidated redirect
   useEffect(() => {
     const reason = searchParams.get('reason')
@@ -211,7 +221,7 @@ export const Login: React.FC = () => {
     }
   }
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !isLoggingOut) {
     return <Navigate to="/" replace />
   }
 

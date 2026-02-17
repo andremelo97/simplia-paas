@@ -161,7 +161,7 @@ interface TQHeaderProps {
 
 export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle }) => {
   const { t } = useTranslation('tq')
-  const { user, logout } = useAuthStore()
+  const { user } = useAuthStore()
   const { openWizard } = useOnboardingStore()
   const [patients, setPatients] = useState<Patient[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
@@ -189,14 +189,15 @@ export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle }) => {
 
   const handleMobileLogout = () => {
     setShowMobileMenu(false)
-    logout()
+    // Clear TQ auth state
+    localStorage.removeItem('auth-storage')
+    // Redirect to Hub with logout action — Hub will handle full logout (backend + frontend)
     const hostname = window.location.hostname
-    const hubLoginUrl = import.meta.env.VITE_HUB_ORIGIN
-      ? `${import.meta.env.VITE_HUB_ORIGIN}/login`
-      : hostname.includes('tq-test')
-        ? 'https://hub-test.livocare.ai/login'
-        : 'https://hub.livocare.ai/login'
-    window.location.href = hubLoginUrl
+    const hubOrigin = import.meta.env.VITE_HUB_ORIGIN
+      || (hostname.includes('tq-test')
+        ? 'https://hub-test.livocare.ai'
+        : 'https://hub.livocare.ai')
+    window.location.href = `${hubOrigin}/login?action=logout`
   }
 
   // Load data for search

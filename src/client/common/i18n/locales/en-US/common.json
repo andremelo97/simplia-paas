@@ -311,6 +311,8 @@
   "pwa": {
     "install_title": "Install App",
     "install_description": "Add to your home screen for quick access",
-    "install_button": "Install"
+    "install_button": "Install",
+    "ios_instructions": "Tap the Share button",
+    "ios_instructions_then": "then \"Add to Home Screen\""
   }
 }

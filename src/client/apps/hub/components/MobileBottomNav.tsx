@@ -27,7 +27,7 @@ export const MobileBottomNav: React.FC = () => {
     if (token && tenantId) {
       const baseUrl = getTqBaseUrl()
       const tqUrl = `${baseUrl}/?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
-      window.open(tqUrl, '_blank', 'noopener,noreferrer')
+      window.location.href = tqUrl
     }
   }
 

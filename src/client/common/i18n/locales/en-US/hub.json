@@ -465,6 +465,8 @@
     }
   },
   "mobile": {
-    "open_tq": "Open TQ"
+    "open_tq": "Open TQ",
+    "desktop_only_title": "Desktop Feature",
+    "desktop_only_description": "This feature is available on tablet or computer"
   }
 }

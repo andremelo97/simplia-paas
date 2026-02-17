@@ -105,7 +105,11 @@ export const Home: React.FC = () => {
         // Dynamically determine TQ URL based on current environment
         const baseUrl = getTqBaseUrl()
         const tqUrl = `${baseUrl}/?token=${encodeURIComponent(token)}&tenantId=${tenantId}`
-        window.open(tqUrl, '_blank', 'noopener,noreferrer')
+        if (isMobile) {
+          window.location.href = tqUrl
+        } else {
+          window.open(tqUrl, '_blank', 'noopener,noreferrer')
+        }
       } else {
         publishFeedback({
           kind: 'error',

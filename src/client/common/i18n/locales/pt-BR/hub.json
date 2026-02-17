@@ -465,6 +465,8 @@
     }
   },
   "mobile": {
-    "open_tq": "Abrir TQ"
+    "open_tq": "Abrir TQ",
+    "desktop_only_title": "Funcionalidade Desktop",
+    "desktop_only_description": "Esta funcionalidade está disponível no tablet ou computador"
   }
 }

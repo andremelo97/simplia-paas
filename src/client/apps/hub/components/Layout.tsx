@@ -11,6 +11,7 @@ import { Sparkles, X } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { InstallAppBanner } from '@client/common/components'
 import { MobileBottomNav } from './MobileBottomNav'
+import { MobileRouteGuard } from './MobileRouteGuard'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
@@ -70,7 +71,9 @@ export const Layout: React.FC = () => {
         <Header onMenuToggle={handleMenuToggle} />
 
         <main className="flex-1 overflow-y-auto relative pb-16 md:pb-0">
-          <Outlet />
+          <MobileRouteGuard>
+            <Outlet />
+          </MobileRouteGuard>
         </main>
 
         {/* Mobile bottom navigation */}

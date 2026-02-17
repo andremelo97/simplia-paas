@@ -1434,6 +1434,7 @@
   },
   "mobile": {
     "desktop_only_title": "Desktop Feature",
-    "desktop_only_description": "This feature is available on tablet or computer"
+    "desktop_only_description": "This feature is available on tablet or computer",
+    "logout": "Logout"
   }
 }

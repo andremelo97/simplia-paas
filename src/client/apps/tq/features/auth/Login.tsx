@@ -15,7 +15,18 @@ import {
 } from '@client/common/ui'
 import { consumeSso, hasSsoParams } from '../../lib/consumeSso'
 
-const HUB_LOGIN_URL = `${import.meta.env.VITE_HUB_ORIGIN || 'http://localhost:3003'}/login`
+function getHubLoginUrl(): string {
+  if (import.meta.env.VITE_HUB_ORIGIN) {
+    return `${import.meta.env.VITE_HUB_ORIGIN}/login`
+  }
+  const hostname = window.location.hostname
+  // tq-test.livocare.ai -> hub-test.livocare.ai
+  if (hostname.includes('tq-test')) {
+    return 'https://hub-test.livocare.ai/login'
+  }
+  // tq.livocare.ai -> hub.livocare.ai
+  return 'https://hub.livocare.ai/login'
+}
 
 export const Login: React.FC = () => {
   const { t } = useTranslation('tq')
@@ -53,7 +64,7 @@ export const Login: React.FC = () => {
   }
 
   const handleGoToHub = () => {
-    window.location.href = HUB_LOGIN_URL
+    window.location.href = getHubLoginUrl()
   }
 
   const showLoadingState = isSsoLoading || isLoading

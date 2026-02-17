@@ -238,17 +238,22 @@ class HttpClient {
     const hostname = window.location.hostname
 
     // TQ app detection: port 3005 (dev) or tq subdomain (prod)
-    const isTQ = port === '3005' || hostname.startsWith('tq.')
+    const isTQ = port === '3005' || hostname.includes('tq')
 
     // Hub app detection: port 3003 (dev) or hub subdomain (prod)
-    const isHub = port === '3003' || hostname.startsWith('hub.')
+    const isHub = port === '3003' || hostname.includes('hub')
 
     // Build redirect URL with optional reason parameter
     const reasonParam = reason ? `?reason=${reason}` : ''
 
     if (isTQ) {
       // TQ uses SSO from Hub - redirect to Hub login
-      const hubOrigin = (import.meta as any).env?.VITE_HUB_ORIGIN || 'http://localhost:3003'
+      let hubOrigin = (import.meta as any).env?.VITE_HUB_ORIGIN
+      if (!hubOrigin) {
+        hubOrigin = hostname.includes('tq-test')
+          ? 'https://hub-test.livocare.ai'
+          : 'https://hub.livocare.ai'
+      }
       window.location.href = `${hubOrigin}/login${reasonParam}`
     } else if (isHub) {
       // Hub has its own login page

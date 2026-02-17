@@ -61,7 +61,11 @@ const Unauthorized: React.FC = () => (
 // Redirect to Hub helper component
 const RedirectToHub: React.FC = () => {
   React.useEffect(() => {
-    window.location.href = 'http://localhost:3003'
+    const hubUrl = import.meta.env.VITE_HUB_ORIGIN
+      || (window.location.hostname.includes('tq-test')
+        ? 'https://hub-test.livocare.ai'
+        : 'https://hub.livocare.ai')
+    window.location.href = hubUrl
   }, [])
 
   return (

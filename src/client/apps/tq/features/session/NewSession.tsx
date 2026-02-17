@@ -1725,12 +1725,11 @@ export const NewSession: React.FC = () => {
               <Minimize2 className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex-1 overflow-auto p-4">
-            <Textarea
+          <div className="flex-1 relative">
+            <textarea
               value={transcription}
               onChange={(e) => setTranscription(e.target.value)}
-              className="w-full h-full min-h-full resize-none font-mono text-sm leading-relaxed border-0 focus:ring-0 shadow-none"
-              style={{ outline: 'none', boxShadow: 'none' }}
+              className="absolute inset-0 w-full h-full p-4 resize-none font-mono text-sm leading-relaxed border-0 focus:outline-none focus:ring-0 bg-white"
             />
           </div>
         </div>

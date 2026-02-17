@@ -146,7 +146,7 @@ router.get('/:id', async (req, res) => {
  *       **Scope:** Tenant (x-tenant-id required)
  *
  *       Create a new landing page template with Puck layout configuration.
- *       Limits: Max 10 templates total, max 3 active templates per tenant.
+ *       Limits: Max 10 templates total, max 5 active templates per tenant.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -206,15 +206,15 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Check active template limit (max 3 active per tenant)
+    // Check active template limit (max 5 active per tenant)
     // Only check if creating as active (default is active=true)
     const isActive = active !== false;
     if (isActive) {
       const activeTemplates = await LandingPageTemplate.count(schema, { active: true });
-      if (activeTemplates >= 3) {
+      if (activeTemplates >= 5) {
         return res.status(400).json({
           error: 'Validation error',
-          message: 'Maximum of 3 active templates allowed. Deactivate one before creating a new active template.'
+          message: 'Maximum of 5 active templates allowed. Deactivate one before creating a new active template.'
         });
       }
     }
@@ -254,7 +254,7 @@ router.post('/', async (req, res) => {
  *
  *       Update an existing landing page template.
  *       Setting isDefault=true will unset all other defaults.
- *       Setting active=true is limited to max 3 active templates per tenant.
+ *       Setting active=true is limited to max 5 active templates per tenant.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -302,10 +302,10 @@ router.put('/:id', async (req, res) => {
       if (!currentTemplate.active) {
         // Template is being activated, check limit
         const activeTemplates = await LandingPageTemplate.count(schema, { active: true });
-        if (activeTemplates >= 3) {
+        if (activeTemplates >= 5) {
           return res.status(400).json({
             error: 'Validation error',
-            message: 'Maximum of 3 active templates allowed. Deactivate one before activating this template.'
+            message: 'Maximum of 5 active templates allowed. Deactivate one before activating this template.'
           });
         }
       }

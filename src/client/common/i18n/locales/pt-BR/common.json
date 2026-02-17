@@ -307,6 +307,14 @@
     "SESSION_INVALIDATED": {
       "title": "Sessão Encerrada",
       "message": "Sua sessão foi encerrada porque você entrou em outro dispositivo."
+    },
+    "MARKETPLACE_TEMPLATE_IMPORTED": {
+      "title": "Template Importado",
+      "message": "Template importado para o seu TQ com sucesso."
+    },
+    "MARKETPLACE_LP_LIMIT_REACHED": {
+      "title": "Limite Atingido",
+      "message": "Você já possui o máximo de 10 templates de landing page. Exclua um antes de importar outro."
     }
   },
   "support_modal": {

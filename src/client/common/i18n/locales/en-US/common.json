@@ -291,6 +291,14 @@
     "SESSION_INVALIDATED": {
       "title": "Session Ended",
       "message": "Your session was ended because you signed in on another device."
+    },
+    "MARKETPLACE_TEMPLATE_IMPORTED": {
+      "title": "Template Imported",
+      "message": "Template imported to your TQ successfully."
+    },
+    "MARKETPLACE_LP_LIMIT_REACHED": {
+      "title": "Limit Reached",
+      "message": "You already have the maximum of 10 landing page templates. Delete one before importing another."
     }
   },
   "support_modal": {

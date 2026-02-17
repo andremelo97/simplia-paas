@@ -10,7 +10,7 @@ import { TemplateCard } from '../../../components/landing-pages/TemplateCard'
 import { useAuthStore } from '../../../shared/store'
 
 const MAX_TOTAL_TEMPLATES = 10
-const MAX_ACTIVE_TEMPLATES = 3
+const MAX_ACTIVE_TEMPLATES = 5
 const TEMPLATES_PER_PAGE = 6
 
 export const TemplatesTab: React.FC = () => {

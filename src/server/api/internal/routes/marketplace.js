@@ -122,13 +122,27 @@ importRouter.post('/:id/import', async (req, res) => {
       }, schema);
       importedId = created.id;
     } else if (item.type === 'landing_page') {
+      // Check total LP template limit (max 10 per tenant)
+      const totalCount = await LandingPageTemplate.count(schema, {});
+      if (totalCount >= 10) {
+        return res.status(400).json({
+          error: 'Validation Error',
+          message: 'Maximum of 10 landing page templates allowed.',
+          meta: { code: 'MARKETPLACE_LP_LIMIT_REACHED' }
+        });
+      }
+
+      // Check active LP template count — import succeeds but enters inactive if at limit
+      const activeCount = await LandingPageTemplate.count(schema, { active: true });
+      const shouldBeActive = activeCount < 5;
+
       // LandingPageTemplate.create(schema, data) — schema first, data second
       const created = await LandingPageTemplate.create(schema, {
         name: item.title,
         description: item.description,
         content: item.content,
         isDefault: false,
-        active: true
+        active: shouldBeActive
       });
       importedId = created.id;
     }

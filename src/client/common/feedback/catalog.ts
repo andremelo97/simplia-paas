@@ -437,6 +437,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   MARKETPLACE_TEMPLATE_IMPORTED: {
     title: "Template Imported",
     message: "Template imported to your TQ successfully."
+  },
+  MARKETPLACE_LP_LIMIT_REACHED: {
+    title: "Limit Reached",
+    message: "You already have the maximum of 10 landing page templates. Delete one before importing another."
   }
 }
 

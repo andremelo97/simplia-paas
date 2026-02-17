@@ -307,5 +307,10 @@
     "email": "Email",
     "copy": "Copy",
     "contact_channels": "Contact channels"
+  },
+  "pwa": {
+    "install_title": "Install App",
+    "install_description": "Add to your home screen for quick access",
+    "install_button": "Install"
   }
 }

@@ -12,6 +12,7 @@ import { FeedbackHost } from '@client/common/feedback'
 import { TQOnboardingWizard } from '../../components/onboarding/TQOnboardingWizard'
 import { MobileRouteGuard } from './MobileRouteGuard'
 import { MobileBottomNav } from './MobileBottomNav'
+import { InstallAppBanner } from '@client/common/components'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
@@ -143,6 +144,9 @@ export const Layout: React.FC = () => {
 
       {/* Onboarding Wizard (admin-only, not on mobile) */}
       {!isMobile && <TQOnboardingWizard />}
+
+      {/* PWA Install Banner (mobile only) */}
+      <InstallAppBanner />
     </div>
   )
 }

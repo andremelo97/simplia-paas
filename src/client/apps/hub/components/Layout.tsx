@@ -9,6 +9,7 @@ import { HubOnboardingWizard } from './onboarding/HubOnboardingWizard'
 import { useTranslation } from 'react-i18next'
 import { Sparkles, X } from 'lucide-react'
 import { Button } from '@client/common/ui'
+import { InstallAppBanner } from '@client/common/components'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
@@ -118,6 +119,9 @@ export const Layout: React.FC = () => {
 
       {/* Onboarding Wizard (admin-only, not on mobile) */}
       {!isMobile && <HubOnboardingWizard />}
+
+      {/* PWA Install Banner (mobile only) */}
+      <InstallAppBanner />
     </div>
   )
 }

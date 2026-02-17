@@ -8,6 +8,7 @@ import { Button, Input, Alert, AlertDescription, Checkbox } from '@client/common
 import { cn } from '@client/common/utils/cn'
 import { AppError, suppressFeedbackCode } from '@client/common/feedback'
 import { shouldShowAsBanner, shouldShowFieldErrors } from '@client/common/feedback'
+import { InstallAppBanner } from '@client/common/components'
 import { hubService } from '../services/hub'
 
 const REMEMBERED_EMAIL_KEY = 'hub-remembered-email'
@@ -629,6 +630,9 @@ export const Login: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* PWA Install Banner (mobile only) */}
+      <InstallAppBanner />
     </div>
   )
 }

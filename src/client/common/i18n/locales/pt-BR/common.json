@@ -323,5 +323,10 @@
     "email": "E-mail",
     "copy": "Copiar",
     "contact_channels": "Canais de atendimento"
+  },
+  "pwa": {
+    "install_title": "Instalar App",
+    "install_description": "Adicione à tela inicial para acesso rápido",
+    "install_button": "Instalar"
   }
 }

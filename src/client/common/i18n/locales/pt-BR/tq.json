@@ -1390,7 +1390,7 @@
       "feature2": "Cores e marca personalizadas",
       "feature3": "Proteção por senha",
       "feature4": "Links compartilháveis via e-mail",
-      "hint": "Este é um recurso avançado. Você pode criar até 3 templates e personalizá-los com o editor visual.",
+      "hint": "Este é um recurso avançado. Você pode criar templates e personalizá-los com o editor visual.",
       "view_templates": "Ver Templates de Landing Page"
     },
     "email_config": {

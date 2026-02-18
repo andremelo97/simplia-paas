@@ -525,7 +525,7 @@ export const TQOnboardingWizard: React.FC = () => {
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-5">
             <p className="text-sm text-amber-800">
               {t('onboarding.landing_pages.hint',
-                'This is an advanced feature. You can create up to 3 templates and customize them with the visual editor.'
+                'This is an advanced feature. You can create templates and customize them with the visual editor.'
               )}
             </p>
           </div>

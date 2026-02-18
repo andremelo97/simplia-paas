@@ -1390,7 +1390,7 @@
       "feature2": "Custom branding and colors",
       "feature3": "Password protection",
       "feature4": "Shareable links via email",
-      "hint": "This is an advanced feature. You can create up to 3 templates and customize them with the visual editor.",
+      "hint": "This is an advanced feature. You can create templates and customize them with the visual editor.",
       "view_templates": "View Landing Page Templates"
     },
     "email_config": {

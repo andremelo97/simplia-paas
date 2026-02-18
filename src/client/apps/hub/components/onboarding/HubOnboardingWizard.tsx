@@ -13,7 +13,8 @@ import {
   ArrowRight,
   Settings,
   Rocket,
-  Headphones
+  Headphones,
+  ShoppingBag
 } from 'lucide-react'
 
 export const HubOnboardingWizard: React.FC = () => {
@@ -140,6 +141,10 @@ export const HubOnboardingWizard: React.FC = () => {
                   <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
                   {t('onboarding.welcome.feature4', 'Monitor transcription usage and quotas')}
                 </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  {t('onboarding.welcome.feature5', 'Browse and import templates from the Marketplace')}
+                </li>
               </ul>
             </div>
           </div>
@@ -245,6 +250,62 @@ export const HubOnboardingWizard: React.FC = () => {
           >
             <Mail className="w-5 h-5" />
             {t('onboarding.communication.configure_now', 'Configure Email Now')}
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      )
+    },
+    {
+      id: 'marketplace',
+      title: t('onboarding.steps.marketplace', 'Marketplace'),
+      content: (
+        <div className="py-6">
+          <div className="flex items-start gap-4 mb-6">
+            <div className="w-12 h-12 rounded-lg bg-[#5ED6CE]/20 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag className="w-6 h-6 text-[#5ED6CE]" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {t('onboarding.marketplace.title', 'Template Marketplace')}
+              </h3>
+              <p className="text-gray-600">
+                {t('onboarding.marketplace.description',
+                  'Browse curated templates by medical specialty and import them to your TQ with one click. Start with ready-made templates and customize them to your needs.'
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-gray-900 mb-3">
+              {t('onboarding.marketplace.features', 'Available in the Marketplace:')}
+            </h4>
+            <ul className="space-y-2 text-sm text-gray-600">
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                {t('onboarding.marketplace.feature1', 'Clinical document templates by specialty')}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                {t('onboarding.marketplace.feature2', 'Landing page templates for public quotes')}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                {t('onboarding.marketplace.feature3', 'Filter by specialty: General, Dentistry, Nutrition')}
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                {t('onboarding.marketplace.feature4', 'Preview before importing to your TQ')}
+              </li>
+            </ul>
+          </div>
+
+          <button
+            onClick={() => goToConfiguration('/marketplace')}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#5ED6CE] text-[#5ED6CE] rounded-lg hover:bg-teal-50 transition-colors"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            {t('onboarding.marketplace.browse_now', 'Browse Marketplace Now')}
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

@@ -415,6 +415,7 @@
       "welcome": "Welcome",
       "branding": "Branding",
       "communication": "Email",
+      "marketplace": "Marketplace",
       "complete": "Ready!"
     },
     "welcome": {
@@ -428,7 +429,8 @@
       "feature1": "Access all your licensed applications",
       "feature2": "Customize branding with your logo and colors",
       "feature3": "Configure email settings for notifications",
-      "feature4": "Monitor transcription usage and quotas"
+      "feature4": "Monitor transcription usage and quotas",
+      "feature5": "Browse and import templates from the Marketplace"
     },
     "branding": {
       "title": "Customize Your Brand",
@@ -447,6 +449,16 @@
       "feature1": "Send quotes via email",
       "feature3": "Custom sender name and email",
       "configure_now": "Configure Email Now"
+    },
+    "marketplace": {
+      "title": "Template Marketplace",
+      "description": "Browse curated templates by medical specialty and import them to your TQ with one click. Start with ready-made templates and customize them to your needs.",
+      "features": "Available in the Marketplace:",
+      "feature1": "Clinical document templates by specialty",
+      "feature2": "Landing page templates for public quotes",
+      "feature3": "Filter by specialty: General, Dentistry, Nutrition",
+      "feature4": "Preview before importing to your TQ",
+      "browse_now": "Browse Marketplace Now"
     },
     "complete": {
       "title": "You're All Set!",

@@ -415,6 +415,7 @@
       "welcome": "Boas-vindas",
       "branding": "Marca",
       "communication": "Email",
+      "marketplace": "Marketplace",
       "complete": "Pronto!"
     },
     "welcome": {
@@ -428,7 +429,8 @@
       "feature1": "Acessar todas as suas aplicações licenciadas",
       "feature2": "Personalizar a marca com seu logo e cores",
       "feature3": "Configurar email para notificações",
-      "feature4": "Monitorar uso de transcrição e cotas"
+      "feature4": "Monitorar uso de transcrição e cotas",
+      "feature5": "Explorar e importar templates do Marketplace"
     },
     "branding": {
       "title": "Personalize Sua Marca",
@@ -447,6 +449,16 @@
       "feature1": "Enviar orçamentos por email",
       "feature3": "Nome e email do remetente personalizados",
       "configure_now": "Configurar Email Agora"
+    },
+    "marketplace": {
+      "title": "Marketplace de Templates",
+      "description": "Explore templates curados por especialidade médica e importe para o seu TQ com um clique. Comece com templates prontos e personalize conforme sua necessidade.",
+      "features": "Disponível no Marketplace:",
+      "feature1": "Templates de documentos clínicos por especialidade",
+      "feature2": "Templates de landing page para orçamentos públicos",
+      "feature3": "Filtre por especialidade: Geral, Odontologia, Nutrição",
+      "feature4": "Visualize antes de importar para o seu TQ",
+      "browse_now": "Explorar Marketplace Agora"
     },
     "complete": {
       "title": "Tudo Pronto!",

@@ -50,7 +50,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
 
   return (
     <div
-      className="bg-white rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer flex flex-col"
+      className="bg-white rounded-lg border border-gray-200 hover:border-[#B725B7]/30 hover:shadow-md active:scale-[0.98] transition-all duration-150 cursor-pointer flex flex-col"
       onClick={() => onView(item)}
     >
       {/* Preview area */}

@@ -336,7 +336,7 @@
     "install_title": "Instalar App",
     "install_description": "Adicione à tela inicial para acesso rápido",
     "install_button": "Instalar",
-    "ios_instructions": "Toque no botão Compartilhar",
-    "ios_instructions_then": "e depois \"Adicionar à Tela de Início\""
+    "ios_instructions": "Toque em ⋯ na barra, depois em",
+    "ios_instructions_then": "Compartilhar, role para baixo e toque \"Adicionar à Tela de Início\""
   }
 }

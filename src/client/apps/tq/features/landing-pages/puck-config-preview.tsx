@@ -1,8 +1,8 @@
 import { BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
 
-interface QuotePreviewLabels {
-  quoteNumber: string
+interface DocumentPreviewLabels {
+  documentNumber: string
   total: string
   noItems: string
   item: string
@@ -23,18 +23,18 @@ interface WidgetConfig {
   height: string
 }
 
-interface QuotePreviewOptions {
-  labels?: Partial<QuotePreviewLabels>
+interface DocumentPreviewOptions {
+  labels?: Partial<DocumentPreviewLabels>
   footerLabels?: Partial<FooterLabels>
   accessToken?: string
   onApprove?: () => void
   onOpenWidget?: (config: WidgetConfig) => void
 }
 
-const defaultLabels: QuotePreviewLabels = {
-  quoteNumber: 'Quote #',
+const defaultLabels: DocumentPreviewLabels = {
+  documentNumber: 'Document #',
   total: 'Total',
-  noItems: 'No items in this quote',
+  noItems: 'No items in this document',
   item: 'Item',
   quantity: 'Qty',
   price: 'Price',
@@ -61,16 +61,16 @@ const ensureProtocol = (url: string): string => {
 }
 
 /**
- * Create Puck config with resolved quote data for preview
- * This overrides the quote components to render actual values instead of placeholders
+ * Create Puck config with resolved document data for preview
+ * This overrides the document components to render actual values instead of placeholders
  */
 export const createConfigWithResolvedData = (
   branding: BrandingData,
-  quoteData: any,
-  options: QuotePreviewOptions = {}
+  documentData: any,
+  options: DocumentPreviewOptions = {}
 ) => {
   const baseConfig = createConfig(branding)
-  const labels: QuotePreviewLabels = {
+  const labels: DocumentPreviewLabels = {
     ...defaultLabels,
     ...(options.labels || {})
   }
@@ -406,8 +406,8 @@ export const createConfigWithResolvedData = (
           )
         },
       },
-      QuoteNumber: {
-        ...baseConfig.components.QuoteNumber,
+      DocumentNumber: {
+        ...baseConfig.components.DocumentNumber,
         render: ({ label, fontFamily, showNumber, size = 'm' }: any) => {
           const baseSizeStyles = {
             xs: { label: '12px', number: '14px' },
@@ -431,8 +431,8 @@ export const createConfigWithResolvedData = (
 
           const sizeStyle = baseSizeStyles[size as keyof typeof baseSizeStyles]
           const responsiveStyle = responsiveSizeStyles[size as keyof typeof responsiveSizeStyles]
-          const uniqueId = `quote-number-${Math.random().toString(36).substr(2, 9)}`
-          const effectiveLabel = getEffectiveLabel(label, labels.quoteNumber)
+          const uniqueId = `document-number-${Math.random().toString(36).substr(2, 9)}`
+          const effectiveLabel = getEffectiveLabel(label, labels.documentNumber)
           const fontFamilyStyle = fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit'
 
           return (
@@ -443,7 +443,7 @@ export const createConfigWithResolvedData = (
                 </span>
                 {showNumber !== false && (
                   <span className={`${uniqueId}-number`} style={{ fontFamily: fontFamilyStyle, fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
-                    {quoteData?.quote?.number || 'N/A'}
+                    {documentData?.document?.number || 'N/A'}
                   </span>
                 )}
               </div>
@@ -461,8 +461,8 @@ export const createConfigWithResolvedData = (
           )
         }
       },
-      QuoteTotal: {
-        ...baseConfig.components.QuoteTotal,
+      DocumentTotal: {
+        ...baseConfig.components.DocumentTotal,
         render: ({ label, fontFamily, totalColor }: any) => {
           const totalColorResolved = resolveColor(totalColor)
           const effectiveLabel = getEffectiveLabel(label, labels.total)
@@ -483,14 +483,14 @@ export const createConfigWithResolvedData = (
                 {effectiveLabel}:
               </span>
               <span style={{ fontFamily: fontFamilyStyle, fontSize: '24px', fontWeight: '700', color: totalColorResolved }}>
-                {quoteData?.quote?.total || '$0.00'}
+                {documentData?.document?.total || '$0.00'}
               </span>
             </div>
           )
         }
       },
-      QuoteItems: {
-        ...baseConfig.components.QuoteItems,
+      DocumentItems: {
+        ...baseConfig.components.DocumentItems,
         render: ({
           showPrice,
           showDiscount,
@@ -501,8 +501,8 @@ export const createConfigWithResolvedData = (
           discountLabel,
           totalLabel
         }: any) => {
-          const uniqueId = `quote-items-${Math.random().toString(36).substr(2, 9)}`
-          const items = quoteData?.items || []
+          const uniqueId = `document-items-${Math.random().toString(36).substr(2, 9)}`
+          const items = documentData?.items || []
 
           const effectiveEmptyMessage = getEffectiveLabel(emptyMessage, labels.noItems)
           const effectiveItemLabel = getEffectiveLabel(itemLabel, labels.item)
@@ -648,12 +648,12 @@ export const createConfigWithResolvedData = (
           )
         }
       },
-      QuoteContent: {
-        ...baseConfig.components.QuoteContent,
+      DocumentContent: {
+        ...baseConfig.components.DocumentContent,
         render: () => {
           return (
             <div className="prose max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: quoteData?.quote?.content || '' }} />
+              <div dangerouslySetInnerHTML={{ __html: documentData?.document?.content || '' }} />
             </div>
           )
         }

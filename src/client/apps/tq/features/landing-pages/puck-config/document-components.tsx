@@ -5,8 +5,8 @@ import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './c
 const withFallback = (value: string | undefined, fallback: string) =>
   (typeof value === 'string' && value.trim().length > 0) ? value : fallback
 
-export const createQuoteComponents = (branding: BrandingData) => ({
-  QuoteNumber: {
+export const createDocumentComponents = (branding: BrandingData) => ({
+  DocumentNumber: {
     fields: {
       label: {
         type: 'text' as const
@@ -18,7 +18,7 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       },
       showNumber: {
         type: 'radio' as const,
-        label: 'Show Quote Number',
+        label: 'Show Document Number',
         options: [
           { label: 'Yes', value: true },
           { label: 'No', value: false }
@@ -39,7 +39,7 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       }
     },
     defaultProps: {
-      label: 'Quote #',
+      label: 'Document #',
       fontFamily: 'inherit',
       showNumber: false,
       size: 'm'
@@ -70,8 +70,8 @@ export const createQuoteComponents = (branding: BrandingData) => ({
 
       const sizeStyle = baseSizeStyles[size as keyof typeof baseSizeStyles]
       const responsiveStyle = responsiveSizeStyles[size as keyof typeof responsiveSizeStyles]
-      const uniqueId = `quote-number-${Math.random().toString(36).substr(2, 9)}`
-      const effectiveLabel = withFallback(label, 'Quote #')
+      const uniqueId = `document-number-${Math.random().toString(36).substr(2, 9)}`
+      const effectiveLabel = withFallback(label, 'Document #')
 
       const fontFamilyStyle = fontFamily !== 'inherit' ? `'${fontFamily}', sans-serif` : 'inherit'
 
@@ -83,7 +83,7 @@ export const createQuoteComponents = (branding: BrandingData) => ({
             </span>
             {showNumber !== false && (
               <span className={`${uniqueId}-number`} style={{ fontFamily: fontFamilyStyle, fontSize: sizeStyle.number, fontWeight: '700', color: '#111827' }}>
-                {'{{quote.number}}'}
+                {'{{document.number}}'}
               </span>
             )}
           </div>
@@ -101,7 +101,7 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       )
     }
   },
-  QuoteTotal: {
+  DocumentTotal: {
     fields: {
       label: {
         type: 'text' as const
@@ -146,13 +146,13 @@ export const createQuoteComponents = (branding: BrandingData) => ({
         >
           <span style={{ fontFamily: fontFamilyStyle, fontSize: '18px', fontWeight: '600' }}>{effectiveLabel}:</span>
           <span style={{ fontFamily: fontFamilyStyle, fontSize: '24px', fontWeight: '700', color: totalColorResolved }}>
-            {'{{quote.total}}'}
+            {'{{document.total}}'}
           </span>
         </div>
       )
     }
   },
-  QuoteItems: {
+  DocumentItems: {
     fields: {
       showPrice: {
         type: 'radio' as const,
@@ -207,7 +207,7 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       discountLabel,
       totalLabel
     }: any) => {
-      const uniqueId = `quote-items-${Math.random().toString(36).substr(2, 9)}`
+      const uniqueId = `document-items-${Math.random().toString(36).substr(2, 9)}`
 
       const effectiveItemLabel = withFallback(itemLabel, 'Item')
       const effectiveQuantityLabel = withFallback(quantityLabel, 'Qty')
@@ -337,14 +337,14 @@ export const createQuoteComponents = (branding: BrandingData) => ({
       )
     }
   },
-  QuoteContent: {
+  DocumentContent: {
     fields: {
       // No configuration needed
     },
     render: () => {
       return (
         <div className="prose max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: '{{quote.content}}' }} />
+          <div dangerouslySetInnerHTML={{ __html: '{{document.content}}' }} />
         </div>
       )
     }

@@ -1,7 +1,7 @@
 import { Quote } from '../services/quotes'
 
-export interface ResolvedQuoteData {
-  quote: {
+export interface ResolvedDocumentData {
+  document: {
     number: string
     total: string
     content: string
@@ -58,19 +58,19 @@ const toNumber = (value: unknown): number => {
 }
 
 /**
- * Resolve quote data into structured format for preview rendering
+ * Resolve document data into structured format for preview rendering
  * Formats numbers, dates, and prepares data for Puck components
  */
 export const resolveTemplateVariables = (
   _templateContent: any,
   quote: Quote,
   options: ResolveTemplateOptions = {}
-): ResolvedQuoteData => {
+): ResolvedDocumentData => {
   const formatCurrency = options.formatCurrency ?? defaultFormatCurrency
   const formatDate = options.formatDate ?? defaultFormatDate
 
-  const quoteData: ResolvedQuoteData = {
-    quote: {
+  const documentData: ResolvedDocumentData = {
+    document: {
       number: quote.number || '',
       total: formatCurrency(quote.total ?? 0),
       content: quote.content || '',
@@ -100,5 +100,5 @@ export const resolveTemplateVariables = (
     })
   }
 
-  return quoteData
+  return documentData
 }

@@ -62,7 +62,7 @@ function resolveDocumentData(document, patient, items, options = {}) {
 
   // Build base document data (works for both quote and prevention)
   const result = {
-    quote: {
+    document: {
       number: document.number || '',
       total: formatCurrency(document.total ?? 0),
       content: document.content || '',

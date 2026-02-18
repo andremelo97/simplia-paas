@@ -35,7 +35,7 @@ export function useLandingPageRenderer(
   const { formatShortDate } = useDateFormatter()
 
   const localizedLabels = useMemo(() => ({
-    quoteNumber: t('landing_pages.labels.quote_number'),
+    documentNumber: t('landing_pages.labels.document_number'),
     total: t('landing_pages.labels.total'),
     noItems: t('landing_pages.labels.items_empty'),
     item: t('landing_pages.labels.item'),

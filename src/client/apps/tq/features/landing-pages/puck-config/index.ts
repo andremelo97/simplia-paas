@@ -2,7 +2,7 @@ import { BrandingData } from '../../../services/branding'
 import { createLayoutComponents } from './layout-components'
 import { createTypographyComponents } from './typography-components'
 import { createActionComponents } from './action-components'
-import { createQuoteComponents } from './quote-components'
+import { createDocumentComponents } from './document-components'
 import { createOtherComponents } from './other-components'
 import { createHeaderFooterComponents } from './header-component'
 import { createMediaComponents } from './media-components'
@@ -12,7 +12,7 @@ export const createConfig = (branding: BrandingData) => ({
     ...createLayoutComponents(branding),
     ...createTypographyComponents(branding),
     ...createActionComponents(branding),
-    ...createQuoteComponents(branding),
+    ...createDocumentComponents(branding),
     ...createMediaComponents(branding),
     ...createOtherComponents(branding),
     ...createHeaderFooterComponents(branding),
@@ -30,9 +30,9 @@ export const createConfig = (branding: BrandingData) => ({
       title: 'Actions',
       components: ['Button'],
     },
-    quoteInfo: {
-      title: 'Quote Info',
-      components: ['QuoteNumber', 'QuoteTotal', 'QuoteItems', 'QuoteContent'],
+    documentInfo: {
+      title: 'Document Info',
+      components: ['DocumentNumber', 'DocumentTotal', 'DocumentItems', 'DocumentContent'],
     },
     media: {
       title: 'Media',

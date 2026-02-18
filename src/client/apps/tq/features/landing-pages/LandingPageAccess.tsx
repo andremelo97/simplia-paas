@@ -155,7 +155,7 @@ export const LandingPageAccess: React.FC = () => {
   // Create preview config from saved content package
   // Content package has { template, resolvedData } - already resolved on backend
   const quoteLabels = useMemo(() => ({
-    quoteNumber: t('landing_pages.labels.quote_number'),
+    documentNumber: t('landing_pages.labels.document_number'),
     total: t('landing_pages.labels.total'),
     noItems: t('landing_pages.labels.items_empty'),
     item: t('landing_pages.labels.item'),

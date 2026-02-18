@@ -67,9 +67,9 @@ const LANDING_PAGE_TEMPLATE_BASE = {
               title: '',
               content: [
                 {
-                  type: 'QuoteContent',
+                  type: 'DocumentContent',
                   props: {
-                    id: 'QuoteContent-58aaf5f8-ea6b-460c-977d-63240d6703a6'
+                    id: 'DocumentContent-58aaf5f8-ea6b-460c-977d-63240d6703a6'
                   }
                 }
               ],
@@ -93,26 +93,26 @@ const LANDING_PAGE_TEMPLATE_BASE = {
             }
           },
           {
-            type: 'QuoteNumber',
+            type: 'DocumentNumber',
             props: {
-              id: 'QuoteNumber-a34fcf01-14f0-4ec7-b2e6-9424be452a83',
+              id: 'DocumentNumber-a34fcf01-14f0-4ec7-b2e6-9424be452a83',
               size: 'l',
               label: '',
               showNumber: true
             }
           },
           {
-            type: 'QuoteItems',
+            type: 'DocumentItems',
             props: {
-              id: 'QuoteItems-5cc403ea-a212-4c17-a6bf-aedbcdb6daf9',
+              id: 'DocumentItems-5cc403ea-a212-4c17-a6bf-aedbcdb6daf9',
               showPrice: false,
               showDiscount: false
             }
           },
           {
-            type: 'QuoteTotal',
+            type: 'DocumentTotal',
             props: {
-              id: 'QuoteTotal-437bd2a8-8d84-4172-a276-e49c5965038e',
+              id: 'DocumentTotal-437bd2a8-8d84-4172-a276-e49c5965038e',
               label: '',
               totalColor: 'primary'
             }

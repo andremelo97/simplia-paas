@@ -4,6 +4,7 @@ import { Modal, Button, Textarea, Label } from '@client/common/ui'
 import { Upload, X, Image, Video, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../store/auth'
 import { api } from '@client/config/http'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 interface BugReportModalProps {
   isOpen: boolean
@@ -21,17 +22,13 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
   const { user, tenantName } = useAuthStore()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const { formatShortDate } = useDateFormatter()
   const [description, setDescription] = useState('')
   const [attachments, setAttachments] = useState<AttachmentFile[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Format current date
-  const currentDate = new Date().toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
+  const currentDate = formatShortDate(new Date())
 
   const subject = `[Bug Report] ${tenantName || 'Unknown'} - ${currentDate}`
 

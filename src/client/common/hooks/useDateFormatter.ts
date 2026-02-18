@@ -2,9 +2,10 @@
  * useDateFormatter Hook
  *
  * Provides timezone-aware date formatting functions that automatically use
- * the tenant timezone and locale from Auth Store.
+ * the tenant timezone and locale from the shared auth storage.
  *
- * Works in TQ application by subscribing to the auth store.
+ * Works in both Hub and TQ applications by reading from the shared
+ * 'auth-storage' localStorage key (used by both app auth stores).
  *
  * Usage in any component:
  *   import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -18,6 +19,7 @@
  * The hook returns formatters that automatically use the correct timezone/locale.
  */
 
+import { useState } from 'react'
 import {
   formatShortDate as formatShortDateUtil,
   formatLongDate as formatLongDateUtil,
@@ -28,17 +30,31 @@ import {
   getNowInTimezone as getNowInTimezoneUtil
 } from '@client/common/utils/dateTime'
 
-// Static import - subscribe to TQ auth store reactively
-import { useAuthStore as useTQAuthStore } from '@client/apps/tq/shared/store/auth'
+/** Read timezone/locale from the shared auth-storage (written by both Hub and TQ stores) */
+function readAuthConfig(): { timezone: string; locale: string } {
+  try {
+    const raw = localStorage.getItem('auth-storage')
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      const state = parsed.state || parsed
+      return {
+        timezone: state.tenantTimezone || 'America/Sao_Paulo',
+        locale: state.tenantLocale || 'pt-BR'
+      }
+    }
+  } catch {
+    // Fallback to defaults
+  }
+  return { timezone: 'America/Sao_Paulo', locale: 'pt-BR' }
+}
 
 /**
- * Date formatter hook for TQ application
- * Uses tenant timezone and locale from Auth Store
+ * Date formatter hook — works in any app (Hub, TQ)
+ * Reads tenant timezone and locale from shared auth storage
  */
 export function useDateFormatter() {
-  // Subscribe to TQ auth store (reactively) - updates when timezone/locale change
-  const timezone = useTQAuthStore(state => state.tenantTimezone) || 'America/Sao_Paulo'
-  const locale = useTQAuthStore(state => state.tenantLocale) || 'pt-BR'
+  // Read once on mount — timezone/locale are stable per session (set at login)
+  const [{ timezone, locale }] = useState(readAuthConfig)
 
   return {
     /**

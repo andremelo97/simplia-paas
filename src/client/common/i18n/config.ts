@@ -14,7 +14,7 @@ import hubEnUS from './locales/en-US/hub.json'
 // 1. Hub login page language selector (hub-language key)
 // 2. Tenant locale from auth store (after login)
 // 3. Browser language
-// 4. Default to pt-BR (main market)
+// 4. Default to en-US
 const languageDetector = new LanguageDetector()
 languageDetector.addDetector({
   name: 'customDetector',
@@ -48,8 +48,8 @@ languageDetector.addDetector({
       // Failed to detect language, will use default
     }
 
-    // Default to Portuguese (main market is Brazil)
-    return 'pt-BR'
+    // Default to English
+    return 'en-US'
   },
   cacheUserLanguage(lng: string) {
     // Language is managed via login selector or auth store
@@ -72,7 +72,7 @@ i18n
         hub: hubEnUS
       }
     },
-    fallbackLng: 'pt-BR',
+    fallbackLng: 'en-US',
     defaultNS: 'common',
     ns: ['common', 'tq', 'hub'],
     detection: {

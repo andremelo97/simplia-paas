@@ -42,86 +42,106 @@ export const PatientRow: React.FC<PatientRowProps> = ({
   }
 
   return (
-    <div
-      className="flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-      onDoubleClick={handleEdit}
-    >
-      <div className="flex items-center gap-3 lg:gap-6 flex-1 min-w-0">
-        {/* Created At */}
-        <div className="w-24">
-          <span className="text-sm text-gray-600">
-            {formatShortDate(patient.created_at)}
-          </span>
+    <>
+      {/* Mobile card layout */}
+      <div
+        className="md:hidden py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        onClick={handleEdit}
+      >
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-medium text-gray-900">{formatPatientName(patient)}</span>
+        </div>
+        {patient.email && (
+          <div className="text-sm text-gray-600 truncate">{patient.email}</div>
+        )}
+        {patient.phone && (
+          <div className="text-sm text-gray-500 truncate">{patient.phone}</div>
+        )}
+        <div className="text-xs text-gray-400 mt-0.5">{formatShortDate(patient.created_at)}</div>
+      </div>
+
+      {/* Desktop/Tablet row layout */}
+      <div
+        className="hidden md:flex items-center justify-between py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        onDoubleClick={handleEdit}
+      >
+        <div className="flex items-center gap-3 lg:gap-6 flex-1 min-w-0">
+          {/* Created At */}
+          <div className="w-24">
+            <span className="text-sm text-gray-600">
+              {formatShortDate(patient.created_at)}
+            </span>
+          </div>
+
+          {/* Nome */}
+          <div className="min-w-0 flex-1">
+            <Tooltip content={formatPatientName(patient)}>
+              <span className="font-medium text-gray-900 block truncate">
+                {formatPatientName(patient)}
+              </span>
+            </Tooltip>
+          </div>
+
+          {/* Email */}
+          <div className="min-w-0 flex-1">
+            <Tooltip content={patient.email || '—'} disabled={!patient.email}>
+              <span className="text-gray-600 block truncate">
+                {patient.email || '—'}
+              </span>
+            </Tooltip>
+          </div>
+
+          {/* Phone */}
+          <div className="min-w-0 flex-1">
+            <Tooltip content={patient.phone || '—'} disabled={!patient.phone}>
+              <span className="text-gray-600 block truncate">
+                {patient.phone || '—'}
+              </span>
+            </Tooltip>
+          </div>
         </div>
 
-        {/* Nome */}
-        <div className="min-w-0 flex-1">
-          <Tooltip content={formatPatientName(patient)}>
-            <span className="font-medium text-gray-900 block truncate">
-              {formatPatientName(patient)}
-            </span>
+        {/* Actions */}
+        <div className="flex items-center gap-1">
+          <Tooltip content={historyLabel}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleHistory}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              aria-label={historyLabel}
+            >
+              <History className="w-4 h-4 text-gray-600" />
+            </Button>
           </Tooltip>
-        </div>
 
-        {/* Email */}
-        <div className="min-w-0 flex-1">
-          <Tooltip content={patient.email || '—'} disabled={!patient.email}>
-            <span className="text-gray-600 block truncate">
-              {patient.email || '—'}
-            </span>
+          <Tooltip content={editLabel}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleEdit}
+              className="h-8 w-8 p-0 hover:bg-gray-100"
+              aria-label={editLabel}
+            >
+              <Edit className="w-4 h-4 text-gray-600" />
+            </Button>
           </Tooltip>
-        </div>
 
-        {/* Phone */}
-        <div className="min-w-0 flex-1">
-          <Tooltip content={patient.phone || '—'} disabled={!patient.phone}>
-            <span className="text-gray-600 block truncate">
-              {patient.phone || '—'}
-            </span>
+          <Tooltip content={canDelete ? deleteLabel : t('common.no_permission')}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              disabled={!canDelete}
+              className="h-8 w-8 p-0 hover:bg-red-100"
+              aria-label={deleteLabel}
+            >
+              <Trash2 className="w-4 h-4 text-red-600" />
+            </Button>
           </Tooltip>
         </div>
       </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-1">
-        <Tooltip content={historyLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleHistory}
-            className="h-8 w-8 p-0 hover:bg-gray-100"
-            aria-label={historyLabel}
-          >
-            <History className="w-4 h-4 text-gray-600" />
-          </Button>
-        </Tooltip>
-
-        <Tooltip content={editLabel}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleEdit}
-            className="h-8 w-8 p-0 hover:bg-gray-100"
-            aria-label={editLabel}
-          >
-            <Edit className="w-4 h-4 text-gray-600" />
-          </Button>
-        </Tooltip>
-
-        <Tooltip content={canDelete ? deleteLabel : t('common.no_permission')}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDelete}
-            disabled={!canDelete}
-            className="h-8 w-8 p-0 hover:bg-red-100"
-            aria-label={deleteLabel}
-          >
-            <Trash2 className="w-4 h-4 text-red-600" />
-          </Button>
-        </Tooltip>
-      </div>
-    </div>
+    </>
   )
 }
 

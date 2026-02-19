@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import { Download, Share, X } from 'lucide-react'
+import { Download, X, ChevronRight, SquarePlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+
+/** iOS Share icon — square open at top with arrow pointing up */
+const IOSShareIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
+    <polyline points="16 6 12 2 8 6" />
+    <line x1="12" y1="2" x2="12" y2="15" />
+  </svg>
+)
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -87,9 +96,21 @@ export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({ ignoreDismis
               <p className="text-sm font-medium text-gray-900">
                 {t('common:pwa.install_title', 'Install App')}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
-                {t('common:pwa.ios_instructions', 'Tap ⋯ in the toolbar, then')} <Share className="w-3 h-3 inline" /> {t('common:pwa.ios_instructions_then', 'Share, scroll down and tap "Add to Home Screen"')}
-              </p>
+              <div className="flex items-center gap-1 flex-wrap mt-1">
+                <span className="inline-flex items-center text-xs text-gray-700 bg-gray-100 rounded-md px-1.5 py-0.5 font-bold tracking-wider">
+                  ⋯
+                </span>
+                <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <span className="inline-flex items-center gap-0.5 text-xs text-gray-700 bg-gray-100 rounded-md px-1.5 py-0.5">
+                  <IOSShareIcon className="w-3 h-3" />
+                  {t('common:pwa.ios_step_share', 'Share')}
+                </span>
+                <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                <span className="inline-flex items-center gap-0.5 text-xs text-gray-700 bg-gray-100 rounded-md px-1.5 py-0.5">
+                  <SquarePlus className="w-3 h-3" />
+                  {t('common:pwa.ios_step_home_screen', 'Home Screen')}
+                </span>
+              </div>
             </div>
             <button
               onClick={handleDismiss}

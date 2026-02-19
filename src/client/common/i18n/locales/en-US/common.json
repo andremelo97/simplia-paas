@@ -320,7 +320,7 @@
     "install_title": "Install App",
     "install_description": "Add to your home screen for quick access",
     "install_button": "Install",
-    "ios_instructions": "Tap ⋯ in the toolbar, then",
-    "ios_instructions_then": "Share, scroll down and tap \"Add to Home Screen\""
+    "ios_step_share": "Share",
+    "ios_step_home_screen": "Home Screen"
   }
 }

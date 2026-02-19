@@ -1228,7 +1228,7 @@ export const NewSession: React.FC = () => {
   // Session is now mocked, so no need for null check
 
   return (
-    <div className="flex flex-col gap-5 md:gap-4 lg:gap-8">
+    <div className="flex flex-col gap-5 md:gap-6 lg:gap-8">
       {/* Title */}
       <div className="order-1 md:order-none flex flex-col gap-3 lg:gap-0 lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -1615,6 +1615,8 @@ export const NewSession: React.FC = () => {
         )}
       </div>
 
+      {/* Action Buttons + Transcription grouped together on tablet */}
+      <div className="contents md:flex md:flex-col md:gap-2 lg:contents">
       {/* Mobile/Tablet Action Buttons - visible below lg */}
       <div className="lg:hidden order-4 md:order-none flex flex-wrap items-center gap-2">
         <div className="relative inline-block">
@@ -1645,16 +1647,14 @@ export const NewSession: React.FC = () => {
           <CardTitle className="flex items-center justify-between text-sm md:text-base">
             {t('sessions.session_transcription')}
             <div className="flex items-center gap-2">
-              {/* Fullscreen toggle - mobile only */}
-              {isMobile && transcription.trim() && (
-                <button
-                  onClick={() => setIsTranscriptionFullscreen(true)}
-                  className="md:hidden flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                  title={t('sessions.expand_transcription', 'Expand')}
-                >
-                  <Maximize2 className="w-3.5 h-3.5" />
-                </button>
-              )}
+              {/* Fullscreen toggle */}
+              <button
+                onClick={() => setIsTranscriptionFullscreen(true)}
+                className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                title={t('sessions.expand_transcription', 'Expand')}
+              >
+                <Maximize2 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+              </button>
               {/* Clear draft button - mobile only, inside card header */}
               <button
                 onClick={clearDraft}
@@ -1708,12 +1708,13 @@ export const NewSession: React.FC = () => {
             placeholder={t('sessions.placeholders.transcription')}
             value={transcription}
             onChange={(e) => setTranscription(e.target.value)}
-            className="min-h-64 lg:min-h-96 resize-y md:resize-none font-mono text-sm md:text-base"
+            className="min-h-64 md:min-h-[28rem] lg:min-h-96 resize-y md:resize-none font-mono text-sm md:text-base"
           />
         </CardContent>
       </Card>
+      </div>{/* end Action Buttons + Transcription group */}
 
-      {/* Fullscreen Transcription Overlay (mobile) */}
+      {/* Fullscreen Transcription Overlay */}
       {isTranscriptionFullscreen && (
         <div className="fixed inset-0 z-50 bg-white flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">

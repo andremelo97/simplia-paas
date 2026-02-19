@@ -321,7 +321,7 @@
     "install_description": "Add to your home screen for quick access",
     "install_button": "Install",
     "ios_step1": "Tap \"⋯\" in the browser",
-    "ios_step2": "\"Share\"",
-    "ios_step3": "\"Add to Home Screen\""
+    "ios_step2": "Share",
+    "ios_step3": "Add to Home Screen"
   }
 }

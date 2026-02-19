@@ -337,7 +337,7 @@
     "install_description": "Adicione à tela inicial para acesso rápido",
     "install_button": "Instalar",
     "ios_step1": "Toque em \"⋯\" no navegador",
-    "ios_step2": "\"Compartilhar\"",
-    "ios_step3": "\"Adicionar à Tela de Início\""
+    "ios_step2": "Compartilhar",
+    "ios_step3": "Adicionar à Tela de Início"
   }
 }

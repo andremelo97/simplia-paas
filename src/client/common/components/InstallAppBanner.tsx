@@ -97,7 +97,7 @@ export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({ ignoreDismis
                 {t('common:pwa.install_title', 'Install App')}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                {t('common:pwa.ios_step1', 'Tap "⋯" in the browser')} → <IOSShareIcon className="w-3 h-3 inline" /> {t('common:pwa.ios_step2', '"Share"')} → <SquarePlus className="w-3 h-3 inline" /> {t('common:pwa.ios_step3', '"Add to Home Screen"')}
+                {t('common:pwa.ios_step1', 'Tap "⋯" in the browser')} → "<IOSShareIcon className="w-3 h-3 inline" /> {t('common:pwa.ios_step2', 'Share')}" → "<SquarePlus className="w-3 h-3 inline" /> {t('common:pwa.ios_step3', 'Add to Home Screen')}"
               </p>
             </div>
             <button

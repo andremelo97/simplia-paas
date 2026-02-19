@@ -350,7 +350,8 @@
     "previous": "Anterior",
     "next": "Próximo",
     "go_label": "Ir:",
-    "go_button": "Ir"
+    "go_button": "Ir",
+    "per_page": "por página"
   },
   "breadcrumbs": {
     "home": "Início",

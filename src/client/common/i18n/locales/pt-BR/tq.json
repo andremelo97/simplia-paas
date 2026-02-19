@@ -388,7 +388,8 @@
       "no_sessions": "Nenhuma sessão ainda",
       "not_found": "Nenhuma sessão encontrada",
       "no_match": "Nenhuma sessão corresponde a \"{{query}}\". Tente ajustar sua busca.",
-      "get_started": "Inicie uma nova sessão de transcrição para vê-la aparecer aqui."
+      "get_started": "Inicie uma nova sessão de transcrição para vê-la aparecer aqui.",
+      "create_first": "Nova Sessão"
     },
     "filters": {
       "title": "Busca e filtros",
@@ -471,7 +472,8 @@
       "no_quotes": "Nenhuma cotação ainda",
       "not_found": "Nenhuma cotação encontrada",
       "no_match": "Nenhuma cotação corresponde a \"{{query}}\". Tente ajustar sua busca.",
-      "get_started": "Crie sua primeira cotação a partir de uma sessão para vê-la aparecer aqui."
+      "get_started": "Crie sua primeira cotação a partir de uma sessão para vê-la aparecer aqui.",
+      "create_first": "Nova Sessão"
     },
     "filters": {
       "title": "Busca e filtros",
@@ -640,7 +642,8 @@
       "no_notes": "Nenhuma nota clínica ainda",
       "not_found": "Nenhuma nota clínica encontrada",
       "no_match": "Nenhuma nota clínica corresponde a \"{{query}}\". Tente ajustar sua busca.",
-      "get_started": "Crie uma nota clínica a partir de uma sessão para vê-la aparecer aqui."
+      "get_started": "Crie uma nota clínica a partir de uma sessão para vê-la aparecer aqui.",
+      "create_first": "Nova Sessão"
     },
     "filters": {
       "title": "Busca e filtros",
@@ -695,7 +698,8 @@
       "no_preventions": "Nenhuma prevenção ainda",
       "not_found": "Nenhuma prevenção encontrada",
       "no_match": "Nenhuma prevenção corresponde a \"{{query}}\". Tente ajustar sua busca.",
-      "get_started": "Crie uma prevenção a partir de uma sessão para vê-la aparecer aqui."
+      "get_started": "Crie uma prevenção a partir de uma sessão para vê-la aparecer aqui.",
+      "create_first": "Nova Sessão"
     },
     "filters": {
       "title": "Busca e filtros",

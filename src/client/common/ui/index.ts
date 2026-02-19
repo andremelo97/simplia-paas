@@ -8,18 +8,6 @@ export { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription }
 export { Label } from './Label'
 export { Skeleton } from './Skeleton'
 export { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from './Table'
-export { 
-  Toast, 
-  ToastProvider, 
-  ToastViewport, 
-  ToastTitle, 
-  ToastDescription, 
-  ToastClose, 
-  ToastAction,
-  Toaster,
-  type ToastProps,
-  type ToastActionElement 
-} from './Toaster'
 export { Avatar, AvatarImage, AvatarFallback } from './Avatar'
 export { Alert, AlertTitle, AlertDescription } from './Alert'
 export { 

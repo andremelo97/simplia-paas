@@ -9,6 +9,7 @@ export interface PaginatorProps {
   totalItems: number
   itemsPerPage?: number
   onPageChange: (page: number) => void
+  onItemsPerPageChange?: (perPage: number) => void
   className?: string
 }
 
@@ -17,6 +18,7 @@ export const Paginator: React.FC<PaginatorProps> = ({
   totalItems,
   itemsPerPage = 10,
   onPageChange,
+  onItemsPerPageChange,
   className = ''
 }) => {
   const { t } = useTranslation()
@@ -70,6 +72,24 @@ export const Paginator: React.FC<PaginatorProps> = ({
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Items per page selector */}
+        {onItemsPerPageChange && (
+          <div className="flex items-center gap-1">
+            <select
+              value={itemsPerPage}
+              onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+              className="h-8 rounded border border-gray-200 bg-white px-2 text-sm text-gray-700 focus:border-[#B725B7] focus:outline-none"
+            >
+              {[10, 25, 50].map((n) => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+            <span className="text-sm text-gray-600 whitespace-nowrap">
+              {t('common:paginator.per_page')}
+            </span>
+          </div>
+        )}
+
         {/* Page navigation */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600 whitespace-nowrap">

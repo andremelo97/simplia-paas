@@ -1,6 +1,8 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Shield } from 'lucide-react'
+import { Shield, Mic } from 'lucide-react'
+import { Button } from '@client/common/ui'
 
 interface PreventionEmptyProps {
   hasQuery?: boolean
@@ -12,6 +14,7 @@ export const PreventionEmpty: React.FC<PreventionEmptyProps> = ({
   query = ''
 }) => {
   const { t } = useTranslation('tq')
+  const navigate = useNavigate()
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -29,6 +32,13 @@ export const PreventionEmpty: React.FC<PreventionEmptyProps> = ({
           : t('prevention.empty.get_started')
         }
       </p>
+
+      {!hasQuery && (
+        <Button variant="secondary" onClick={() => navigate('/new-session')} className="mt-4 flex items-center gap-2">
+          <Mic className="w-4 h-4" />
+          {t('prevention.empty.create_first')}
+        </Button>
+      )}
     </div>
   )
 }

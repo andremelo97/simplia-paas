@@ -334,7 +334,8 @@
     "previous": "Previous",
     "next": "Next",
     "go_label": "Go:",
-    "go_button": "Go"
+    "go_button": "Go",
+    "per_page": "per page"
   },
   "breadcrumbs": {
     "home": "Home",

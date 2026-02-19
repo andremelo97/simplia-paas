@@ -421,7 +421,8 @@
       "no_sessions": "No sessions yet",
       "not_found": "No sessions found",
       "no_match": "No sessions match \"{{query}}\". Try adjusting your search.",
-      "get_started": "Start a new transcription session to see it appear here."
+      "get_started": "Start a new transcription session to see it appear here.",
+      "create_first": "Start New Session"
     },
     "filters": {
       "title": "Search and Filters",
@@ -504,7 +505,8 @@
       "no_quotes": "No quotes yet",
       "not_found": "No quotes found",
       "no_match": "No quotes match \"{{query}}\". Try adjusting your search.",
-      "get_started": "Create your first quote from a session to see it appear here."
+      "get_started": "Create your first quote from a session to see it appear here.",
+      "create_first": "Start New Session"
     },
     "filters": {
       "title": "Search and Filters",
@@ -673,7 +675,8 @@
       "no_notes": "No clinical notes yet",
       "not_found": "No clinical notes found",
       "no_match": "No clinical notes match \"{{query}}\". Try adjusting your search.",
-      "get_started": "Create a clinical note from a session to see it appear here."
+      "get_started": "Create a clinical note from a session to see it appear here.",
+      "create_first": "Start New Session"
     },
     "filters": {
       "title": "Search and Filters",
@@ -728,7 +731,8 @@
       "no_preventions": "No preventions yet",
       "not_found": "No preventions found",
       "no_match": "No preventions match \"{{query}}\". Try adjusting your search.",
-      "get_started": "Create a prevention from a session to see it appear here."
+      "get_started": "Create a prevention from a session to see it appear here.",
+      "create_first": "Start New Session"
     },
     "filters": {
       "title": "Search and Filters",

@@ -56,23 +56,29 @@ export const PatientRow: React.FC<PatientRowProps> = ({
 
         {/* Nome */}
         <div className="min-w-0 flex-1">
-          <span className="font-medium text-gray-900 block truncate">
-            {formatPatientName(patient)}
-          </span>
+          <Tooltip content={formatPatientName(patient)}>
+            <span className="font-medium text-gray-900 block truncate">
+              {formatPatientName(patient)}
+            </span>
+          </Tooltip>
         </div>
 
         {/* Email */}
         <div className="min-w-0 flex-1">
-          <span className="text-gray-600 block truncate">
-            {patient.email || '—'}
-          </span>
+          <Tooltip content={patient.email || '—'} disabled={!patient.email}>
+            <span className="text-gray-600 block truncate">
+              {patient.email || '—'}
+            </span>
+          </Tooltip>
         </div>
 
         {/* Phone */}
         <div className="min-w-0 flex-1">
-          <span className="text-gray-600 block truncate">
-            {patient.phone || '—'}
-          </span>
+          <Tooltip content={patient.phone || '—'} disabled={!patient.phone}>
+            <span className="text-gray-600 block truncate">
+              {patient.phone || '—'}
+            </span>
+          </Tooltip>
         </div>
       </div>
 

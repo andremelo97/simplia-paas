@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit } from 'lucide-react'
+import { Edit, Copy, Check } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { Prevention } from '../../services/prevention'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -20,8 +20,17 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
   const { user } = useAuthStore()
   const canEdit = user?.role !== 'operations'
 
+  const [copied, setCopied] = useState(false)
+
   const handleEdit = () => {
     onEdit?.(prevention)
+  }
+
+  const handleCopyNumber = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(prevention.number)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   const editLabel = t('common:edit')
@@ -40,9 +49,23 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
 
       {/* Prevention Number */}
       <div className="min-w-0 flex-1">
-        <span className="font-medium text-gray-900 block truncate">
-          {prevention.number}
-        </span>
+        <div className="flex items-center gap-1 group/copy">
+          <span className="font-medium text-gray-900 truncate">
+            {prevention.number}
+          </span>
+          <Tooltip content={copied ? t('common:copied') : t('common:copy_number')}>
+            <button
+              onClick={handleCopyNumber}
+              className="opacity-0 group-hover/copy:opacity-100 transition-opacity p-0.5 rounded hover:bg-gray-200 flex-shrink-0"
+              aria-label={t('common:copy_number')}
+            >
+              {copied
+                ? <Check className="w-3.5 h-3.5 text-green-600" />
+                : <Copy className="w-3.5 h-3.5 text-gray-400" />
+              }
+            </button>
+          </Tooltip>
+        </div>
       </div>
 
       {/* Session Number */}
@@ -54,22 +77,30 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
 
       {/* Patient Name */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 block truncate">
-          {prevention.patient_first_name || prevention.patient_last_name
+        {(() => {
+          const name = prevention.patient_first_name || prevention.patient_last_name
             ? `${prevention.patient_first_name || ''} ${prevention.patient_last_name || ''}`.trim()
             : '—'
-          }
-        </span>
+          return (
+            <Tooltip content={name} disabled={name === '—'}>
+              <span className="text-gray-600 block truncate">{name}</span>
+            </Tooltip>
+          )
+        })()}
       </div>
 
       {/* Created By */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 block truncate">
-          {prevention.createdBy
+        {(() => {
+          const name = prevention.createdBy
             ? `${prevention.createdBy.firstName || ''} ${prevention.createdBy.lastName || ''}`.trim()
             : '—'
-          }
-        </span>
+          return (
+            <Tooltip content={name} disabled={name === '—'}>
+              <span className="text-gray-600 block truncate">{name}</span>
+            </Tooltip>
+          )
+        })()}
       </div>
 
       {/* Actions */}

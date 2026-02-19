@@ -324,6 +324,10 @@
     "ios_step2": "Share",
     "ios_step3": "Add to Home Screen"
   },
+  "copied": "Copied!",
+  "copy_number": "Copy number",
+  "clear_filters": "Clear filters",
+  "filters_active": "{{count}} active",
   "paginator": {
     "showing": "Showing {{from}} to {{to}} of {{total}} results",
     "page_of": "Page {{current}} of {{total}}",

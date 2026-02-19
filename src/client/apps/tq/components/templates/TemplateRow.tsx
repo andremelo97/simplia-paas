@@ -50,16 +50,20 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
 
       {/* Title */}
       <div className="min-w-0 flex-1">
-        <span className="font-medium text-gray-900 block truncate">
-          {template.title}
-        </span>
+        <Tooltip content={template.title}>
+          <span className="font-medium text-gray-900 block truncate">
+            {template.title}
+          </span>
+        </Tooltip>
       </div>
 
       {/* Description or Content Preview - hidden on tablet */}
       <div className="min-w-0 flex-1 hidden lg:block">
-        <span className="text-gray-600 block truncate">
-          {template.description || truncateContent(template.content)}
-        </span>
+        <Tooltip content={template.description || truncateContent(template.content)}>
+          <span className="text-gray-600 block truncate">
+            {template.description || truncateContent(template.content)}
+          </span>
+        </Tooltip>
       </div>
 
       {/* Usage Count - hidden on tablet */}

@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit } from 'lucide-react'
+import { Edit, Copy, Check } from 'lucide-react'
 import { Button, Tooltip } from '@client/common/ui'
 import { ClinicalNote } from '../../services/clinicalNotes'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -20,8 +20,17 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
   const { user } = useAuthStore()
   const canEdit = user?.role !== 'operations'
 
+  const [copied, setCopied] = useState(false)
+
   const handleEdit = () => {
     onEdit?.(note)
+  }
+
+  const handleCopyNumber = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(note.number)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   const editLabel = t('common:edit')
@@ -40,9 +49,23 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
 
       {/* Note Number */}
       <div className="min-w-0 flex-1">
-        <span className="font-medium text-gray-900 block truncate">
-          {note.number}
-        </span>
+        <div className="flex items-center gap-1 group/copy">
+          <span className="font-medium text-gray-900 truncate">
+            {note.number}
+          </span>
+          <Tooltip content={copied ? t('common:copied') : t('common:copy_number')}>
+            <button
+              onClick={handleCopyNumber}
+              className="opacity-0 group-hover/copy:opacity-100 transition-opacity p-0.5 rounded hover:bg-gray-200 flex-shrink-0"
+              aria-label={t('common:copy_number')}
+            >
+              {copied
+                ? <Check className="w-3.5 h-3.5 text-green-600" />
+                : <Copy className="w-3.5 h-3.5 text-gray-400" />
+              }
+            </button>
+          </Tooltip>
+        </div>
       </div>
 
       {/* Session Number */}
@@ -54,22 +77,30 @@ export const ClinicalNoteRow: React.FC<ClinicalNoteRowProps> = ({
 
       {/* Patient Name */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 block truncate">
-          {note.patient_first_name || note.patient_last_name
+        {(() => {
+          const name = note.patient_first_name || note.patient_last_name
             ? `${note.patient_first_name || ''} ${note.patient_last_name || ''}`.trim()
             : '—'
-          }
-        </span>
+          return (
+            <Tooltip content={name} disabled={name === '—'}>
+              <span className="text-gray-600 block truncate">{name}</span>
+            </Tooltip>
+          )
+        })()}
       </div>
 
       {/* Created By */}
       <div className="min-w-0 flex-1">
-        <span className="text-gray-600 block truncate">
-          {note.createdBy
+        {(() => {
+          const name = note.createdBy
             ? `${note.createdBy.firstName || ''} ${note.createdBy.lastName || ''}`.trim()
             : '—'
-          }
-        </span>
+          return (
+            <Tooltip content={name} disabled={name === '—'}>
+              <span className="text-gray-600 block truncate">{name}</span>
+            </Tooltip>
+          )
+        })()}
       </div>
 
       {/* Actions */}

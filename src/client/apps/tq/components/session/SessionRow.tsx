@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Edit, Trash2 } from 'lucide-react'
+import { Edit, Trash2, Copy, Check } from 'lucide-react'
 import { Button, Badge, Tooltip } from '@client/common/ui'
 import { Session } from '../../services/sessions'
 import { formatSessionStatus } from '../../hooks/useSessions'
@@ -32,6 +32,8 @@ export const SessionRow: React.FC<SessionRowProps> = ({
     onDelete?.(session)
   }
 
+  const [copied, setCopied] = useState(false)
+
   const editLabel = t('common:edit')
   const deleteLabel = t('common:delete')
 
@@ -42,6 +44,13 @@ export const SessionRow: React.FC<SessionRowProps> = ({
   const createdByName = session.createdBy
     ? `${session.createdBy.firstName || ''} ${session.createdBy.lastName || ''}`.trim()
     : '—'
+
+  const handleCopyNumber = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    navigator.clipboard.writeText(session.number)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
   return (
     <>
@@ -74,9 +83,23 @@ export const SessionRow: React.FC<SessionRowProps> = ({
 
         {/* Session Number */}
         <div className="min-w-0 flex-1">
-          <span className="font-medium text-gray-900 block truncate">
-            {session.number}
-          </span>
+          <div className="flex items-center gap-1 group/copy">
+            <span className="font-medium text-gray-900 truncate">
+              {session.number}
+            </span>
+            <Tooltip content={copied ? t('common:copied') : t('common:copy_number')}>
+              <button
+                onClick={handleCopyNumber}
+                className="opacity-0 group-hover/copy:opacity-100 transition-opacity p-0.5 rounded hover:bg-gray-200 flex-shrink-0"
+                aria-label={t('common:copy_number')}
+              >
+                {copied
+                  ? <Check className="w-3.5 h-3.5 text-green-600" />
+                  : <Copy className="w-3.5 h-3.5 text-gray-400" />
+                }
+              </button>
+            </Tooltip>
+          </div>
         </div>
 
         {/* Status */}
@@ -88,12 +111,16 @@ export const SessionRow: React.FC<SessionRowProps> = ({
 
         {/* Patient Name */}
         <div className="min-w-0 flex-1">
-          <span className="text-gray-600 block truncate">{patientName}</span>
+          <Tooltip content={patientName} disabled={patientName === '—'}>
+            <span className="text-gray-600 block truncate">{patientName}</span>
+          </Tooltip>
         </div>
 
         {/* Created By */}
         <div className="min-w-0 flex-1">
-          <span className="text-gray-600 block truncate">{createdByName}</span>
+          <Tooltip content={createdByName} disabled={createdByName === '—'}>
+            <span className="text-gray-600 block truncate">{createdByName}</span>
+          </Tooltip>
         </div>
 
         {/* Actions */}

@@ -340,6 +340,10 @@
     "ios_step2": "Compartilhar",
     "ios_step3": "Adicionar à Tela de Início"
   },
+  "copied": "Copiado!",
+  "copy_number": "Copiar número",
+  "clear_filters": "Limpar filtros",
+  "filters_active": "{{count}} ativo(s)",
   "paginator": {
     "showing": "Mostrando {{from}} a {{to}} de {{total}} resultados",
     "page_of": "Página {{current}} de {{total}}",

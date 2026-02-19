@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Search, Loader2, Package } from 'lucide-react'
+import { Search, Loader2, Package, X } from 'lucide-react'
 import { Paginator } from '@client/common/ui'
 import { marketplaceService, type MarketplaceItem } from '../../services/marketplaceService'
 import { MarketplaceCard } from './MarketplaceCard'
@@ -112,7 +112,7 @@ export const Marketplace: React.FC = () => {
         <select
           value={selectedType}
           onChange={(e) => { setSelectedType(e.target.value); setCurrentPage(1) }}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white"
+          className={`px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white ${selectedType ? 'border-[#B725B7] text-[#B725B7]' : 'border-gray-200'}`}
         >
           <option value="">{t('marketplace.filter_type')}</option>
           {TYPES.map(type => (
@@ -126,7 +126,7 @@ export const Marketplace: React.FC = () => {
         <select
           value={selectedSpecialty}
           onChange={(e) => { setSelectedSpecialty(e.target.value); setCurrentPage(1) }}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white"
+          className={`px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white ${selectedSpecialty ? 'border-[#B725B7] text-[#B725B7]' : 'border-gray-200'}`}
         >
           <option value="">{t('marketplace.filter_specialty')}</option>
           {SPECIALTIES.map(specialty => (
@@ -140,7 +140,7 @@ export const Marketplace: React.FC = () => {
         <select
           value={selectedLocale}
           onChange={(e) => { setSelectedLocale(e.target.value); setCurrentPage(1) }}
-          className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white"
+          className={`px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#B725B7]/20 focus:border-[#B725B7] bg-white ${selectedLocale ? 'border-[#B725B7] text-[#B725B7]' : 'border-gray-200'}`}
         >
           <option value="">{t('marketplace.filter_locale')}</option>
           {LOCALES.map(locale => (
@@ -149,6 +149,24 @@ export const Marketplace: React.FC = () => {
             </option>
           ))}
         </select>
+
+        {/* Clear filters */}
+        {(searchInput || selectedType || selectedSpecialty || selectedLocale) && (
+          <button
+            onClick={() => {
+              setSearchInput('')
+              setSearch('')
+              setSelectedType('')
+              setSelectedSpecialty('')
+              setSelectedLocale('')
+              setCurrentPage(1)
+            }}
+            className="flex items-center gap-1 px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+            {t('common:clear_filters')}
+          </button>
+        )}
 
         {/* Result count */}
         {!isLoading && (

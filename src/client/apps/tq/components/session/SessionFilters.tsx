@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, CardTitle, Input, Select, Combobox, DateInput } from '@client/common/ui'
+import { X } from 'lucide-react'
+import { Card, CardHeader, CardContent, CardTitle, Input, Select, Combobox, DateInput, Badge, Button } from '@client/common/ui'
 import { getSessionStatusOptions, SessionStatus } from '../../types/sessionStatus'
 import { usePatientOptions, useUserOptions } from '../../hooks/useFilterOptions'
 
@@ -42,12 +43,50 @@ export const SessionFilters: React.FC<SessionFiltersProps> = ({
     ...getSessionStatusOptions()
   ]
 
+  const activeFilterCount = [
+    searchQuery !== '',
+    statusFilter !== 'all',
+    patientId !== undefined,
+    createdByUserId !== undefined,
+    createdFrom !== undefined,
+    createdTo !== undefined
+  ].filter(Boolean).length
+
+  const handleClearAll = () => {
+    onSearchChange('')
+    onStatusFilterChange('all')
+    onPatientChange(undefined)
+    onCreatedByChange(undefined)
+    onCreatedFromChange(undefined)
+    onCreatedToChange(undefined)
+  }
+
   return (
     <Card>
       <CardHeader className="py-4 px-6">
-        <CardTitle className="text-base">
-          {t('sessions.filters.title')}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">
+              {t('sessions.filters.title')}
+            </CardTitle>
+            {activeFilterCount > 0 && (
+              <Badge className="bg-[#B725B7] text-white text-xs px-1.5 py-0.5">
+                {t('common:filters_active', { count: activeFilterCount })}
+              </Badge>
+            )}
+          </div>
+          {activeFilterCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearAll}
+              className="text-gray-500 hover:text-gray-700 h-7 px-2 text-xs"
+            >
+              <X className="w-3.5 h-3.5 mr-1" />
+              {t('common:clear_filters')}
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">

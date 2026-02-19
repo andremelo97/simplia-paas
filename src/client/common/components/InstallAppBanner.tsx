@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Download, X, ChevronRight, SquarePlus } from 'lucide-react'
+import { Download, X, SquarePlus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 /** iOS Share icon — square open at top with arrow pointing up */
@@ -96,21 +96,9 @@ export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({ ignoreDismis
               <p className="text-sm font-medium text-gray-900">
                 {t('common:pwa.install_title', 'Install App')}
               </p>
-              <div className="flex items-center gap-1 flex-wrap mt-1">
-                <span className="inline-flex items-center text-xs text-gray-700 bg-gray-100 rounded-md px-1.5 py-0.5 font-bold tracking-wider">
-                  ⋯
-                </span>
-                <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                <span className="inline-flex items-center gap-0.5 text-xs text-gray-700 bg-gray-100 rounded-md px-1.5 py-0.5">
-                  <IOSShareIcon className="w-3 h-3" />
-                  {t('common:pwa.ios_step_share', 'Share')}
-                </span>
-                <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                <span className="inline-flex items-center gap-0.5 text-xs text-gray-700 bg-gray-100 rounded-md px-1.5 py-0.5">
-                  <SquarePlus className="w-3 h-3" />
-                  {t('common:pwa.ios_step_home_screen', 'Home Screen')}
-                </span>
-              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {t('common:pwa.ios_step1', 'Tap "⋯" in the browser')} → <IOSShareIcon className="w-3 h-3 inline" /> {t('common:pwa.ios_step2', '"Share"')} → <SquarePlus className="w-3 h-3 inline" /> {t('common:pwa.ios_step3', '"Add to Home Screen"')}
+              </p>
             </div>
             <button
               onClick={handleDismiss}

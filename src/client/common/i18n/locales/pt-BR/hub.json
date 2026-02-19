@@ -347,7 +347,10 @@
     "user_settings_tooltip": "Configurações de Usuário",
     "help_tooltip": "Assistente de Configuração",
     "bug_report_tooltip": "Reportar um Bug",
-    "logout": "Sair"
+    "logout": "Sair",
+    "logout_confirm_title": "Sair",
+    "logout_confirm_description": "Tem certeza que deseja sair?",
+    "support_tooltip": "Suporte"
   },
   "bug_report": {
     "title": "Reportar Bug",

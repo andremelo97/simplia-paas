@@ -231,6 +231,7 @@ export const NewSession: React.FC = () => {
 
   // Draft restoration flag - prevents saving during initial load
   const [isDraftRestored, setIsDraftRestored] = useState(false)
+  const [hasDraft, setHasDraft] = useState(false)
 
   // Dropdown is now handled by the DropdownMenu component
 
@@ -260,6 +261,7 @@ export const NewSession: React.FC = () => {
           if (draft.searchQuery) setSearchQuery(draft.searchQuery)
           if (draft.selectedPatient) setSelectedPatient(draft.selectedPatient)
           if (draft.createdPatient) setCreatedPatient(draft.createdPatient)
+          setHasDraft(true)
         } else {
           // Draft too old, clear it
           localStorage.removeItem(DRAFT_STORAGE_KEY)
@@ -296,6 +298,9 @@ export const NewSession: React.FC = () => {
         const hasData = transcription.trim() || selectedPatient || createdPatient || patientName.trim()
         if (hasData) {
           localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft))
+          setHasDraft(true)
+        } else {
+          setHasDraft(false)
         }
       } catch {
         // Silent fail
@@ -329,6 +334,7 @@ export const NewSession: React.FC = () => {
       setCreatedPatient(null)
       setSession(null)
       setSessionContext({ patientId: null, transcriptionId: null })
+      setHasDraft(false)
       timer.reset()
     } catch {
       // Silent fail
@@ -1243,6 +1249,13 @@ export const NewSession: React.FC = () => {
                 {session.number}
                 <ExternalLink className="w-3.5 h-3.5" />
               </Link>
+            )}
+            {/* Draft saved indicator */}
+            {hasDraft && !session && (
+              <span className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-50 rounded-full">
+                <Save className="w-3 h-3" />
+                {t('sessions.draft_saved')}
+              </span>
             )}
             {/* Help button */}
             <button

@@ -347,6 +347,7 @@
       "draft_desc": "Your work is automatically saved in the browser. If you accidentally close the page, your transcription and selected patient may be recovered when you return. When you create a session, the data is saved to the session and cleared from this screen. Use the reset button (↺) to clear everything and start fresh."
     },
     "clear_draft": "Clear draft and start fresh",
+    "draft_saved": "Draft saved",
     "session": "Session",
     "number": "Session Number",
     "transcription": "Transcription",

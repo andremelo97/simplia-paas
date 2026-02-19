@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ExternalLink, LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { ConfirmDialog } from '@client/common/ui'
 import { useAuthStore } from '../store/auth'
 import { hubService } from '../services/hub'
 
@@ -23,6 +24,7 @@ function getTqBaseUrl(): string {
 export const MobileBottomNav: React.FC = () => {
   const { t } = useTranslation('hub')
   const { user } = useAuthStore()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const handleOpenTQ = () => {
     const { token, tenantId } = useAuthStore.getState()
@@ -48,13 +50,23 @@ export const MobileBottomNav: React.FC = () => {
           </button>
         )}
         <button
-          onClick={() => hubService.logout()}
+          onClick={() => setShowLogoutConfirm(true)}
           className="flex flex-col items-center justify-center flex-1 h-full text-xs font-medium text-gray-500 active:text-red-600 transition-colors"
         >
           <LogOut className="w-5 h-5 mb-0.5" />
           <span>{t('header.logout', 'Logout')}</span>
         </button>
       </div>
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={() => hubService.logout()}
+        title={t('header.logout_confirm_title')}
+        description={t('header.logout_confirm_description')}
+        confirmText={t('header.logout')}
+        variant="danger"
+      />
     </nav>
   )
 }

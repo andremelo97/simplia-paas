@@ -314,6 +314,7 @@
       "draft_desc": "Seu trabalho é salvo automaticamente no navegador. Se você fechar a página acidentalmente, a transcrição e o paciente selecionado podem ser recuperados quando você voltar. Quando você cria uma sessão, os dados são salvos na sessão e limpos desta tela. Use o botão de reset (↺) para limpar tudo e começar do zero."
     },
     "clear_draft": "Limpar rascunho e começar do zero",
+    "draft_saved": "Rascunho salvo",
     "session": "Sessão",
     "number": "Número da Sessão",
     "transcription": "Transcrição",

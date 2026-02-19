@@ -323,5 +323,38 @@
     "ios_step1": "Tap \"⋯\" in the browser",
     "ios_step2": "Share",
     "ios_step3": "Add to Home Screen"
+  },
+  "paginator": {
+    "showing": "Showing {{from}} to {{to}} of {{total}} results",
+    "page_of": "Page {{current}} of {{total}}",
+    "previous": "Previous",
+    "next": "Next",
+    "go_label": "Go:",
+    "go_button": "Go"
+  },
+  "breadcrumbs": {
+    "home": "Home",
+    "sessions": "Sessions",
+    "patients": "Patients",
+    "quotes": "Quotes",
+    "templates": "Templates",
+    "clinical-notes": "Clinical Notes",
+    "prevention": "Prevention",
+    "landing-pages": "Landing Pages",
+    "documents": "Documents",
+    "items": "Items",
+    "marketplace": "Marketplace",
+    "configurations": "Configurations",
+    "users": "Users",
+    "tenants": "Tenants",
+    "applications": "Applications",
+    "apps": "Apps",
+    "entitlements": "Entitlements",
+    "licenses": "Licenses",
+    "audit": "Audit",
+    "create": "Create",
+    "edit": "Edit",
+    "account": "Account",
+    "profile": "Profile"
   }
 }

@@ -55,7 +55,7 @@ export const Login: React.FC = () => {
     const reason = searchParams.get('reason')
     if (reason === 'session_invalidated') {
       // Use English message as default (tenant language may differ from Hub language)
-      setSessionInvalidatedMessage('Your session was ended because you signed in on another device. Please sign in again.')
+      setSessionInvalidatedMessage(t('login.session_invalidated'))
       // Clear the reason param from URL without reloading
       searchParams.delete('reason')
       setSearchParams(searchParams, { replace: true })

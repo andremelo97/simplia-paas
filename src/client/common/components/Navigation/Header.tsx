@@ -1,6 +1,7 @@
 import React from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import i18next from 'i18next'
 import { LogOut, Bell, Search, Menu } from 'lucide-react'
 import {
   Button,
@@ -55,13 +56,14 @@ export interface HeaderProps {
 
 const defaultGetBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
   const segments = pathname.split('/').filter(Boolean)
-  
+  const t = (key: string, fallback: string) => i18next.t(`common:breadcrumbs.${key}`, fallback)
+
   if (segments.length === 0) {
-    return [{ label: 'Home', href: '/' }]
+    return [{ label: t('home', 'Home'), href: '/' }]
   }
-  
-  const breadcrumbs = [{ label: 'Home', href: '/' }]
-  
+
+  const breadcrumbs = [{ label: t('home', 'Home'), href: '/' }]
+
   // Helper function to check if a segment is a numeric ID or UUID
   const isId = (segment: string) => {
     return /^\d+$/.test(segment) || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(segment)
@@ -69,34 +71,25 @@ const defaultGetBreadcrumbs = (pathname: string): BreadcrumbItem[] => {
 
   // Helper function to map segments to user-friendly labels
   const mapSegmentToLabel = (segment: string) => {
-    switch (segment) {
-      case 'tenants': return 'Tenants'
-      case 'users': return 'Users'
-      case 'applications': return 'Applications'
-      case 'apps': return 'Apps'
-      case 'entitlements': return 'Entitlements'
-      case 'licenses': return 'Licenses'
-      case 'audit': return 'Audit'
-      case 'create': return 'Create'
-      case 'edit': return 'Edit'
-      case 'account': return 'Account'
-      case 'profile': return 'Profile'
-      default: return segment.charAt(0).toUpperCase() + segment.slice(1)
-    }
+    const defaultLabel = segment
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+    return t(segment, defaultLabel)
   }
-  
+
   segments.forEach((segment, index) => {
     // Skip numeric IDs and UUIDs - never show them in breadcrumbs
     if (isId(segment)) {
       return
     }
-    
+
     // Default case: add non-ID segments as breadcrumbs
     const href = '/' + segments.slice(0, index + 1).join('/')
     const label = mapSegmentToLabel(segment)
     breadcrumbs.push({ label, href })
   })
-  
+
   return breadcrumbs
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from './Button'
 import { Input } from './Input'
 
@@ -18,6 +19,7 @@ export const Paginator: React.FC<PaginatorProps> = ({
   onPageChange,
   className = ''
 }) => {
+  const { t } = useTranslation()
   const [inputPage, setInputPage] = useState('')
 
   const totalPages = Math.ceil(totalItems / itemsPerPage)
@@ -47,7 +49,7 @@ export const Paginator: React.FC<PaginatorProps> = ({
     }
   }
 
-  const handleInputKeyPress = (e: React.KeyboardEvent) => {
+  const handleInputKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleGoToPage()
     }
@@ -58,18 +60,20 @@ export const Paginator: React.FC<PaginatorProps> = ({
     return null
   }
 
+  const from = Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)
+  const to = Math.min(currentPage * itemsPerPage, totalItems)
+
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-200 ${className}`}>
       <div className="text-sm text-gray-600">
-        Showing {Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)} to{' '}
-        {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} results
+        {t('common:paginator.showing', { from, to, total: totalItems })}
       </div>
 
       <div className="flex items-center gap-3">
         {/* Page navigation */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600 whitespace-nowrap">
-            Page {currentPage} of {totalPages}
+            {t('common:paginator.page_of', { current: currentPage, total: totalPages })}
           </span>
 
           <Button
@@ -79,7 +83,7 @@ export const Paginator: React.FC<PaginatorProps> = ({
             disabled={currentPage === 1}
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Previous
+            {t('common:paginator.previous')}
           </Button>
 
           <Button
@@ -88,21 +92,21 @@ export const Paginator: React.FC<PaginatorProps> = ({
             onClick={handleNext}
             disabled={currentPage === totalPages}
           >
-            Next
+            {t('common:paginator.next')}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
         </div>
 
         {/* Go to page input */}
         <div className="flex items-center gap-1">
-          <span className="text-sm text-gray-600 whitespace-nowrap">Go:</span>
+          <span className="text-sm text-gray-600 whitespace-nowrap">{t('common:paginator.go_label')}</span>
           <Input
             type="number"
             min="1"
             max={totalPages}
             value={inputPage}
             onChange={(e) => setInputPage(e.target.value)}
-            onKeyPress={handleInputKeyPress}
+            onKeyDown={handleInputKeyDown}
             className="w-14 text-center text-sm h-8"
             placeholder={currentPage.toString()}
           />
@@ -113,7 +117,7 @@ export const Paginator: React.FC<PaginatorProps> = ({
             disabled={!inputPage || parseInt(inputPage) < 1 || parseInt(inputPage) > totalPages}
             className="h-8 px-2"
           >
-            Go
+            {t('common:paginator.go_button')}
           </Button>
         </div>
       </div>

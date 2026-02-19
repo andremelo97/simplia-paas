@@ -36,7 +36,7 @@ export const EditPatient: React.FC = () => {
   useEffect(() => {
     const loadPatientData = async () => {
       if (!id) {
-        setLoadError('Patient ID is required')
+        setLoadError(t('patients.error_id_required'))
         setIsLoading(false)
         return
       }
@@ -154,23 +154,23 @@ export const EditPatient: React.FC = () => {
     } catch (error: any) {
 
       // Map backend errors to user-friendly messages
-      let errorMessage = 'Failed to update patient. Please try again.'
+      let errorMessage = t('patients.error_update_failed')
 
       // Handle specific error cases based on backend responses
       if (error.message?.includes('already exists') || error.message?.includes('duplicate')) {
-        errorMessage = 'A patient with this email already exists. Please use a different email.'
+        errorMessage = t('patients.error_duplicate_email')
       } else if (error.message?.includes('Validation Error')) {
-        errorMessage = 'Please check your input and try again.'
+        errorMessage = t('patients.error_validation')
       } else if (error.status === 409) {
-        errorMessage = 'Conflict detected. Please refresh and try again.'
+        errorMessage = t('patients.error_conflict')
       } else if (error.status === 403) {
-        errorMessage = 'You do not have permission to edit this patient.'
+        errorMessage = t('patients.error_no_permission')
       } else if (error.status === 404) {
-        errorMessage = 'Patient not found. It may have been deleted.'
+        errorMessage = t('patients.error_not_found')
       } else if (error.status === 401) {
-        errorMessage = 'Your session has expired. Please log in again.'
+        errorMessage = t('patients.error_session_expired')
       } else if (error.status >= 500) {
-        errorMessage = 'Server error occurred. Please try again later.'
+        errorMessage = t('patients.error_server')
       }
     } finally {
       setIsSubmitting(false)

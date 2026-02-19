@@ -339,5 +339,38 @@
     "ios_step1": "Toque em \"⋯\" no navegador",
     "ios_step2": "Compartilhar",
     "ios_step3": "Adicionar à Tela de Início"
+  },
+  "paginator": {
+    "showing": "Mostrando {{from}} a {{to}} de {{total}} resultados",
+    "page_of": "Página {{current}} de {{total}}",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "go_label": "Ir:",
+    "go_button": "Ir"
+  },
+  "breadcrumbs": {
+    "home": "Início",
+    "sessions": "Sessões",
+    "patients": "Pacientes",
+    "quotes": "Cotações",
+    "templates": "Modelos",
+    "clinical-notes": "Notas Clínicas",
+    "prevention": "Prevenções",
+    "landing-pages": "Landing Pages",
+    "documents": "Documentos",
+    "items": "Itens",
+    "marketplace": "Marketplace",
+    "configurations": "Configurações",
+    "users": "Usuários",
+    "tenants": "Tenants",
+    "applications": "Aplicações",
+    "apps": "Apps",
+    "entitlements": "Licenças",
+    "licenses": "Licenças",
+    "audit": "Auditoria",
+    "create": "Criar",
+    "edit": "Editar",
+    "account": "Conta",
+    "profile": "Perfil"
   }
 }

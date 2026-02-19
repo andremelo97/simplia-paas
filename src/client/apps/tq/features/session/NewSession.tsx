@@ -628,7 +628,7 @@ export const NewSession: React.FC = () => {
       publishFeedback({
         kind: 'error',
         code: 'PATIENT_REQUIRED',
-        message: 'Please select or create a patient before saving the session'
+        message: t('sessions.patient_required')
       })
       return
     }
@@ -673,7 +673,7 @@ export const NewSession: React.FC = () => {
       publishFeedback({
         kind: 'error',
         code: 'PATIENT_REQUIRED',
-        message: 'Please select or create a patient before saving the session'
+        message: t('sessions.patient_required')
       })
       return
     }
@@ -728,7 +728,7 @@ export const NewSession: React.FC = () => {
       publishFeedback({
         kind: 'error',
         code: 'PATIENT_REQUIRED',
-        message: 'Please select or create a patient before creating clinical report'
+        message: t('sessions.patient_required')
       })
       return
     }
@@ -854,7 +854,7 @@ export const NewSession: React.FC = () => {
       publishFeedback({
         kind: 'error',
         code: 'PATIENT_REQUIRED',
-        message: 'Please select or create a patient before creating clinical report'
+        message: t('sessions.patient_required')
       })
       return
     }

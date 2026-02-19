@@ -8,6 +8,9 @@ const MOBILE_ALLOWED_PATTERNS = [
   /^\/new-session$/,
   /^\/sessions$/,
   /^\/sessions\/[^/]+\/edit$/,
+  /^\/patients$/,
+  /^\/patients\/create$/,
+  /^\/patients\/[^/]+\/edit$/,
   /^\/home$/,
   /^\/$/
 ]

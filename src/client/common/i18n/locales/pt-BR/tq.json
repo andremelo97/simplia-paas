@@ -7,6 +7,8 @@
       "patient_label": "Paciente",
       "create_quote": "Criar Cotação",
       "create_clinical_report": "Criar Relatório Clínico",
+      "create_clinical_note": "Criar Nota Clínica",
+      "create_prevention": "Criar Prevenção",
       "placeholder": "Peça à IA para modificar o resumo, adicionar seções ou fazer alterações...",
       "no_transcription": "Nenhuma transcrição disponível para análise",
       "failed_to_generate": "Falha ao gerar resumo",

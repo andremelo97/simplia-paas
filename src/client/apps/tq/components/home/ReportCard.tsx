@@ -44,7 +44,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onDoubleClick })
         <div className="flex items-start justify-between mb-3">
           <h3 className="font-semibold text-gray-900 text-lg">{report.number}</h3>
           <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700">
-            {t('clinical_reports.report')}
+            {t('clinical_notes.note')}
           </span>
         </div>
 

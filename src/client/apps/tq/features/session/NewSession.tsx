@@ -61,6 +61,7 @@ import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
 import { quotesService, CreateQuoteRequest } from '../../services/quotes'
 import { clinicalNotesService } from '../../services/clinicalNotes'
+import { preventionService } from '../../services/prevention'
 import { aiAgentService } from '../../services/aiAgentService'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
@@ -775,6 +776,54 @@ export const NewSession: React.FC = () => {
       })
       setShowLinkToast(true)
 
+    } catch (error) {
+      // Error feedback is handled automatically by HTTP interceptor
+    }
+  }
+
+  // Handle Prevention creation from AI Agent
+  const handleNewPrevention = async (aiSummary: string) => {
+    if (!transcription.trim() && !aiSummary) {
+      return
+    }
+
+    const patient = selectedPatient || createdPatient
+    if (!patient) {
+      publishFeedback({
+        kind: 'error',
+        code: 'PATIENT_REQUIRED',
+        message: t('sessions.patient_required')
+      })
+      return
+    }
+
+    try {
+      const currentSession = await ensureSession()
+      const rawContent = aiSummary || transcription
+      const htmlContent = plainTextToHtml(rawContent)
+
+      const newPrevention = await preventionService.create({
+        sessionId: currentSession.id,
+        content: htmlContent,
+        status: 'draft'
+      })
+
+      if (!newPrevention || !newPrevention.id || !newPrevention.number) {
+        throw new Error('Invalid prevention response from API')
+      }
+
+      try {
+        localStorage.removeItem(DRAFT_STORAGE_KEY)
+      } catch {
+        // Silent fail
+      }
+
+      setToastData({
+        itemId: newPrevention.id,
+        itemNumber: newPrevention.number,
+        type: 'prevention'
+      })
+      setShowLinkToast(true)
     } catch (error) {
       // Error feedback is handled automatically by HTTP interceptor
     }
@@ -1765,7 +1814,8 @@ export const NewSession: React.FC = () => {
         sessionId={session?.id}
         patientId={(selectedPatient || createdPatient)?.id}
         onCreateSessionAndQuote={handleNewSessionAndQuote}
-        onCreateClinicalReport={handleNewClinicalReport}
+        onCreateClinicalNote={handleNewClinicalReport}
+        onCreatePrevention={handleNewPrevention}
       />
 
       {/* Template Quote Modal */}

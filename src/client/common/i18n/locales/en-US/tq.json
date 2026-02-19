@@ -7,6 +7,8 @@
       "patient_label": "Patient",
       "create_quote": "Create Quote",
       "create_clinical_report": "Create Clinical Report",
+      "create_clinical_note": "Create Clinical Note",
+      "create_prevention": "Create Prevention",
       "placeholder": "Ask the AI to modify the summary, add sections, or make changes...",
       "no_transcription": "No transcription available to analyze",
       "failed_to_generate": "Failed to generate summary",

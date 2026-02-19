@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Plus, Mic } from 'lucide-react'
+import { Plus, Mic, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@client/common/utils/cn'
 
@@ -33,6 +33,18 @@ export const MobileBottomNav: React.FC = () => {
         >
           <Mic className="w-5 h-5 mb-0.5" />
           <span>{t('sidebar.sessions')}</span>
+        </NavLink>
+        <NavLink
+          to="/patients"
+          className={({ isActive }) =>
+            cn(
+              "flex flex-col items-center justify-center flex-1 h-full text-xs font-medium transition-colors",
+              isActive ? "text-[#B725B7]" : "text-gray-500"
+            )
+          }
+        >
+          <Users className="w-5 h-5 mb-0.5" />
+          <span>{t('sidebar.patients')}</span>
         </NavLink>
       </div>
     </nav>

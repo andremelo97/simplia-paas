@@ -8,6 +8,7 @@ import {
   User,
   Receipt,
   FileText,
+  Shield,
   Loader2
 } from 'lucide-react'
 import {
@@ -28,7 +29,8 @@ interface AIAgentModalProps {
   sessionId?: string
   patientId?: string
   onCreateSessionAndQuote: (aiSummary: string) => void
-  onCreateClinicalReport: (aiSummary: string) => void
+  onCreateClinicalNote: (aiSummary: string) => void
+  onCreatePrevention: (aiSummary: string) => void
 }
 
 export const AIAgentModal: React.FC<AIAgentModalProps> = ({
@@ -39,7 +41,8 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
   sessionId,
   patientId,
   onCreateSessionAndQuote,
-  onCreateClinicalReport
+  onCreateClinicalNote,
+  onCreatePrevention
 }) => {
   const { t } = useTranslation('tq')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -167,8 +170,13 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
     // Keep modal open so user can continue using AI Agent
   }
 
-  const handleCreateClinicalReport = (aiSummary: string) => {
-    onCreateClinicalReport(aiSummary)
+  const handleCreateClinicalNote = (aiSummary: string) => {
+    onCreateClinicalNote(aiSummary)
+    // Keep modal open so user can continue using AI Agent
+  }
+
+  const handleCreatePrevention = (aiSummary: string) => {
+    onCreatePrevention(aiSummary)
     // Keep modal open so user can continue using AI Agent
   }
 
@@ -247,7 +255,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                         </div>
 
                         {/* Action buttons for every AI response */}
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex gap-3">
+                        <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-3">
                           <Button
                             onClick={() => handleCreateSessionAndQuote(message.content)}
                             variant="primary"
@@ -257,12 +265,20 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
                             {t('modals.ai_agent.create_quote')}
                           </Button>
                           <Button
-                            onClick={() => handleCreateClinicalReport(message.content)}
+                            onClick={() => handleCreateClinicalNote(message.content)}
                             variant="outline"
                             className="flex items-center gap-2"
                           >
                             <FileText className="w-4 h-4" />
-                            {t('modals.ai_agent.create_clinical_report')}
+                            {t('modals.ai_agent.create_clinical_note')}
+                          </Button>
+                          <Button
+                            onClick={() => handleCreatePrevention(message.content)}
+                            variant="outline"
+                            className="flex items-center gap-2"
+                          >
+                            <Shield className="w-4 h-4" />
+                            {t('modals.ai_agent.create_prevention')}
                           </Button>
                         </div>
                       </CardContent>

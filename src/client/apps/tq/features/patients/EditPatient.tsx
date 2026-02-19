@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { History } from 'lucide-react'
 import { Card, CardHeader, CardContent, Button, Input, Textarea } from '@client/common/ui'
+import { useDeviceType } from '@shared/hooks/use-device-type'
 import { patientsService, Patient } from '../../services/patients'
 import { formatDate } from '@client/common/utils/dateUtils'
 
@@ -31,6 +32,7 @@ export const EditPatient: React.FC = () => {
 
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const device = useDeviceType()
 
   // Load existing patient data
   useEffect(() => {
@@ -258,14 +260,16 @@ export const EditPatient: React.FC = () => {
             {t('patients.edit_subtitle')}
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => navigate(`/patients/${id}/history`)}
-          className="flex items-center gap-2"
-        >
-          <History className="w-4 h-4" />
-          {t('patients.view_history')}
-        </Button>
+        {device !== 'mobile' && (
+          <Button
+            variant="primary"
+            onClick={() => navigate(`/patients/${id}/history`)}
+            className="flex items-center gap-2"
+          >
+            <History className="w-4 h-4" />
+            {t('patients.view_history')}
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit}>

@@ -355,7 +355,7 @@ export const Home: React.FC = () => {
 
       {/* Latest Reports */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clinical_reports.latest')}</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clinical_notes.latest')}</h2>
         {isLoadingReports ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -376,7 +376,7 @@ export const Home: React.FC = () => {
           <Card>
             <CardHeader className="text-center py-8">
               <CardTitle className="text-gray-500 text-base font-normal">
-                {t('clinical_reports.no_reports_home')}
+                {t('clinical_notes.no_notes_home')}
               </CardTitle>
             </CardHeader>
           </Card>

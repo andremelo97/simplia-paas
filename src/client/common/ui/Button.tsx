@@ -8,7 +8,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "",
+        default: "bg-black text-white hover:bg-gray-800 active:scale-[0.98]",
         primary: "bg-black text-white hover:bg-gray-800 active:scale-[0.98]",
         destructive: "bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]",
         outline: "border border-gray-200 bg-background hover:bg-gray-50 hover:text-gray-900 active:scale-[0.98]",
@@ -18,7 +18,7 @@ const buttonVariants = cva(
         link: "text-gray-900 underline-offset-4 hover:underline",
       },
       size: {
-        default: "h-12 px-4 py-2 text-[15px]",
+        default: "h-8 px-4 py-2 text-[15px]",
         sm: "h-9 px-3 text-sm",
         lg: "h-11 px-8 text-base",
         icon: "h-10 w-10 text-[15px]",
@@ -42,27 +42,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, isLoading, children, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     
-    // Custom styles for all variants
-    const customStyles = {
-      fontFamily: 'Inter, sans-serif',
-      height: '32px',
-      minHeight: '32px',
-      ...((variant === 'default' || variant === 'primary') && {
-        backgroundColor: '#000000',
-        color: '#ffffff',
-        border: 'none',
-        borderRadius: '5px'
-      })
-    }
-    
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         data-variant={variant}
-        style={{
-          ...customStyles,
-          ...props.style
-        }}
         ref={ref}
         disabled={disabled || isLoading}
         {...props}

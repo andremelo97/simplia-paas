@@ -92,17 +92,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         required={required}
         placeholder={displayPlaceholder}
         className={cn(
-          "flex h-12 w-full rounded-md border border-gray-200 bg-white/70 px-3 py-2 text-sm shadow-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-8 w-full rounded border border-gray-200 bg-white/70 px-1.5 py-1 text-sm shadow-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50",
           (hasError || shouldShowRequiredState) && "border-red-300 focus-visible:border-red-500 placeholder:text-red-400",
           !hasError && !shouldShowRequiredState && "focus:border-[#B725B7] focus-visible:border-[#B725B7] placeholder:text-gray-400",
           className
         )}
-        style={{
-          height: '32px',
-          minHeight: '32px',
-          borderRadius: '4px',
-          padding: '4px 6px'
-        }}
         onFocus={handleFocus}
         onBlur={handleBlur}
         ref={ref}

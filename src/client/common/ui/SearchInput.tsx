@@ -19,19 +19,13 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
           ref={ref}
           value={value}
           className={cn(
-            'flex w-full rounded-md border border-gray-200 bg-white/70 pl-9 pr-9 text-sm shadow-sm',
+            'flex h-8 w-full rounded border border-gray-200 bg-white/70 pl-8 pr-8 py-1 text-sm shadow-sm',
             'placeholder:text-gray-400',
             'focus:outline-none focus:border-[#B725B7] hover:bg-white/90',
             'disabled:cursor-not-allowed disabled:opacity-50',
             'transition-all',
             className
           )}
-          style={{
-            height: '32px',
-            minHeight: '32px',
-            borderRadius: '4px',
-            padding: '4px 32px 4px 32px'
-          }}
           {...props}
         />
         {showClearButton && hasValue && onClear && (

@@ -261,10 +261,10 @@ export function InstallPage() {
                             {t.install.ios.safari.step1}
                           </StepCard>
                           <StepCard number={2} delay={0.08}>
-                            Toque em "<IOSShareIcon className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" /> {t.install.ios.safari.step2.replace('Toque em ', '').replace('Tap ', '')}
+                            {t.install.ios.tap} "<IOSShareIcon className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" /> {t.install.ios.safari.step2Label}"
                           </StepCard>
                           <StepCard number={3} delay={0.16}>
-                            Toque em "<Plus className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" /> {t.install.ios.safari.step3.replace('Toque em ', '').replace('Tap ', '')}
+                            {t.install.ios.tap} "<Plus className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" /> {t.install.ios.safari.step3Label}"
                           </StepCard>
                         </div>
                       </div>
@@ -274,10 +274,10 @@ export function InstallPage() {
                         <BrowserHeader icon={<Chrome className="w-4 h-4 text-[#5ED6CE]" />} name="Google Chrome" />
                         <div className="space-y-2 pl-0.5">
                           <StepCard number={1} delay={0}>
-                            Toque em "<IOSShareIcon className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" />" no topo, junto à URL
+                            {t.install.ios.tap} "<IOSShareIcon className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" />" {t.install.ios.chrome.step1Hint}
                           </StepCard>
                           <StepCard number={2} delay={0.08}>
-                            Toque em "<MoreHorizontal className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" /> {t.install.ios.chrome.step2.replace('Toque em ', '').replace('Tap ', '')}
+                            {t.install.ios.tap} "<MoreHorizontal className="w-3.5 h-3.5 inline-block align-text-bottom text-[#5ED6CE]" /> {t.install.ios.chrome.step2Label}"
                           </StepCard>
                           <StepCard number={3} delay={0.16}>
                             {t.install.ios.chrome.step3}
@@ -287,14 +287,14 @@ export function InstallPage() {
                     </>
                   ) : (
                     <>
-                      {/* Android install button */}
-                      {deferredPrompt && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="p-6 rounded-xl border border-[#B725B7]/20 bg-[#B725B7]/5"
-                        >
-                          <p className="text-gray-300 text-sm mb-4">{t.install.android.installDescription}</p>
+                      {/* Android install button — always visible */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="p-6 rounded-xl border border-[#B725B7]/20 bg-[#B725B7]/5"
+                      >
+                        <p className="text-gray-300 text-sm mb-4">{t.install.android.installDescription}</p>
+                        {deferredPrompt ? (
                           <button
                             onClick={handleInstall}
                             className="w-full py-3 px-6 rounded-lg font-semibold text-white text-sm transition-all hover:opacity-90 hover:shadow-lg hover:shadow-[#B725B7]/20"
@@ -303,42 +303,44 @@ export function InstallPage() {
                             <Download className="w-4 h-4 inline-block mr-2 align-text-bottom" />
                             {t.install.android.installButton}
                           </button>
-                        </motion.div>
-                      )}
+                        ) : (
+                          <p className="text-gray-500 text-xs italic">{t.install.android.installUnavailable}</p>
+                        )}
+                      </motion.div>
 
-                      {/* Manual instructions */}
-                      {!deferredPrompt && (
-                        <>
-                          {/* Chrome */}
-                          <div className="space-y-2.5">
-                            <BrowserHeader icon={<Chrome className="w-4 h-4 text-[#5ED6CE]" />} name="Google Chrome" />
-                            <div className="space-y-2 pl-0.5">
-                              <StepCard number={1} delay={0}>
-                                {t.install.android.chrome.step1}
-                              </StepCard>
-                              <StepCard number={2} delay={0.08}>
-                                {t.install.android.chrome.step2}
-                              </StepCard>
-                            </div>
-                          </div>
+                      {/* Manual instructions — always visible */}
+                      <div>
+                        <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-4">{t.install.android.manualTitle}</p>
 
-                          {/* Samsung */}
-                          <div className="space-y-2.5">
-                            <BrowserHeader icon={<SamsungIcon className="w-4 h-4 text-[#5ED6CE]" />} name="Samsung Internet" />
-                            <div className="space-y-2 pl-0.5">
-                              <StepCard number={1} delay={0}>
-                                {t.install.android.samsung.step1}
-                              </StepCard>
-                              <StepCard number={2} delay={0.08}>
-                                {t.install.android.samsung.step2}
-                              </StepCard>
-                              <StepCard number={3} delay={0.16}>
-                                {t.install.android.samsung.step3}
-                              </StepCard>
-                            </div>
+                        {/* Chrome */}
+                        <div className="space-y-2.5 mb-6">
+                          <BrowserHeader icon={<Chrome className="w-4 h-4 text-[#5ED6CE]" />} name="Google Chrome" />
+                          <div className="space-y-2 pl-0.5">
+                            <StepCard number={1} delay={0}>
+                              {t.install.android.chrome.step1}
+                            </StepCard>
+                            <StepCard number={2} delay={0.08}>
+                              {t.install.android.chrome.step2}
+                            </StepCard>
                           </div>
-                        </>
-                      )}
+                        </div>
+
+                        {/* Samsung */}
+                        <div className="space-y-2.5">
+                          <BrowserHeader icon={<SamsungIcon className="w-4 h-4 text-[#5ED6CE]" />} name="Samsung Internet" />
+                          <div className="space-y-2 pl-0.5">
+                            <StepCard number={1} delay={0}>
+                              {t.install.android.samsung.step1}
+                            </StepCard>
+                            <StepCard number={2} delay={0.08}>
+                              {t.install.android.samsung.step2}
+                            </StepCard>
+                            <StepCard number={3} delay={0.16}>
+                              {t.install.android.samsung.step3}
+                            </StepCard>
+                          </div>
+                        </div>
+                      </div>
                     </>
                   )}
                 </motion.div>

@@ -387,21 +387,23 @@ export const translations = {
         fullAccess: 'Para acesso completo ao TQ (documentos, templates, cotações e mais), utilize um tablet ou computador.'
       },
       ios: {
+        tap: 'Toque em',
         safari: {
           step1: 'Toque em "⋯" na barra do navegador',
-          step2: 'Toque em "Compartilhar"',
-          step3: 'Toque em "Adicionar à Tela de Início"'
+          step2Label: 'Compartilhar',
+          step3Label: 'Adicionar à Tela de Início'
         },
         chrome: {
-          step1: 'Toque em "" no topo, junto à URL',
-          step2: 'Toque em "⋯ Mais..."',
+          step1Hint: 'no topo, junto à URL',
+          step2Label: 'Mais...',
           step3: 'Role para baixo e toque em "Adicionar à Tela de Início"'
         }
       },
       android: {
-        installButton: 'Instalar App',
-        installDescription: 'Toque no botão abaixo para instalar diretamente:',
-        manualTitle: 'Instalação manual',
+        installButton: 'Clique aqui para instalar',
+        installDescription: 'Instale diretamente ou siga as instruções abaixo:',
+        installUnavailable: 'Abra esta página no seu celular Android para instalar diretamente.',
+        manualTitle: 'Ou instale manualmente:',
         chrome: {
           step1: 'Toque em "⋮" no canto superior direito',
           step2: 'Toque em "Instalar aplicativo" ou "Adicionar à tela inicial"'
@@ -837,21 +839,23 @@ export const translations = {
         fullAccess: 'For full TQ access (documents, templates, quotes and more), use a tablet or computer.'
       },
       ios: {
+        tap: 'Tap',
         safari: {
           step1: 'Tap "⋯" in the browser bar',
-          step2: 'Tap "Share"',
-          step3: 'Tap "Add to Home Screen"'
+          step2Label: 'Share',
+          step3Label: 'Add to Home Screen'
         },
         chrome: {
-          step1: 'Tap "" at the top, next to the URL',
-          step2: 'Tap "⋯ More..."',
+          step1Hint: 'at the top, next to the URL',
+          step2Label: 'More...',
           step3: 'Scroll down and tap "Add to Home Screen"'
         }
       },
       android: {
-        installButton: 'Install App',
-        installDescription: 'Tap the button below to install directly:',
-        manualTitle: 'Manual installation',
+        installButton: 'Click here to install',
+        installDescription: 'Install directly or follow the instructions below:',
+        installUnavailable: 'Open this page on your Android phone to install directly.',
+        manualTitle: 'Or install manually:',
         chrome: {
           step1: 'Tap "⋮" in the top right corner',
           step2: 'Tap "Install app" or "Add to Home screen"'

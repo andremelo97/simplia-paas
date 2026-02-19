@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Clock, AlertCircle, CreditCard, ExternalLink } from 'lucide-react'
+import { Clock, AlertCircle, CreditCard, ExternalLink, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Label, Progress, Alert, AlertTitle, AlertDescription, Checkbox, Select } from '@client/common/ui'
 import { transcriptionUsageService } from '../../services/transcriptionUsageService'
@@ -88,6 +88,11 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
+
+  // History table sorting
+  type HistorySortKey = 'month' | 'minutesUsed' | 'limit' | 'overage' | 'percent'
+  const [historySortKey, setHistorySortKey] = useState<HistorySortKey>('month')
+  const [historySortDir, setHistorySortDir] = useState<'asc' | 'desc'>('desc')
 
   // Calculate plan minimum limit dynamically based on current plan
   const planMinLimit = usage?.current?.limit || 2400
@@ -215,6 +220,38 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
   const formatCost = (costUsd: number): string => {
     return `$${costUsd.toFixed(4)}`
   }
+
+  const toggleHistorySort = (key: HistorySortKey) => {
+    if (historySortKey === key) {
+      setHistorySortDir(historySortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setHistorySortKey(key)
+      setHistorySortDir(key === 'month' ? 'desc' : 'desc')
+    }
+  }
+
+  const HistorySortIcon = ({ col }: { col: HistorySortKey }) => {
+    if (historySortKey !== col) return <ArrowUpDown className="h-3 w-3 text-gray-400" />
+    return historySortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+  }
+
+  const sortedHistory = [...(usage?.history || [])].sort((a, b) => {
+    const dir = historySortDir === 'asc' ? 1 : -1
+    switch (historySortKey) {
+      case 'month':
+        return dir * a.month.localeCompare(b.month)
+      case 'minutesUsed':
+        return dir * (a.minutesUsed - b.minutesUsed)
+      case 'limit':
+        return dir * (a.limit - b.limit)
+      case 'overage':
+        return dir * (a.overage - b.overage)
+      case 'percent':
+        return dir * ((a.minutesUsed / a.limit) - (b.minutesUsed / b.limit))
+      default:
+        return 0
+    }
+  })
 
   const totalPages = Math.ceil(totalRecords / RECORDS_PER_PAGE)
 
@@ -550,15 +587,25 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.month')}</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.minutes_used')}</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.limit')}</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.overage')}</th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">{t('transcription_usage.usage_percent')}</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer select-none" onClick={() => toggleHistorySort('month')}>
+                  <span className="inline-flex items-center gap-1">{t('transcription_usage.month')} <HistorySortIcon col="month" /></span>
+                </th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer select-none" onClick={() => toggleHistorySort('minutesUsed')}>
+                  <span className="inline-flex items-center gap-1 justify-end">{t('transcription_usage.minutes_used')} <HistorySortIcon col="minutesUsed" /></span>
+                </th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer select-none" onClick={() => toggleHistorySort('limit')}>
+                  <span className="inline-flex items-center gap-1 justify-end">{t('transcription_usage.limit')} <HistorySortIcon col="limit" /></span>
+                </th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer select-none" onClick={() => toggleHistorySort('overage')}>
+                  <span className="inline-flex items-center gap-1 justify-end">{t('transcription_usage.overage')} <HistorySortIcon col="overage" /></span>
+                </th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700 cursor-pointer select-none" onClick={() => toggleHistorySort('percent')}>
+                  <span className="inline-flex items-center gap-1 justify-end">{t('transcription_usage.usage_percent')} <HistorySortIcon col="percent" /></span>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {(usage.history || []).map((record) => {
+              {sortedHistory.map((record) => {
                 const usagePercent = (record.minutesUsed / record.limit) * 100
                 return (
                   <tr key={record.month} className="border-b border-gray-100 hover:bg-gray-50">

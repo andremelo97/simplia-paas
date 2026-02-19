@@ -159,4 +159,94 @@ router.post('/', async (req, res) => {
   }
 })
 
+/**
+ * @swagger
+ * /configurations/communication/test:
+ *   post:
+ *     summary: Test SMTP connection with current form settings
+ *     tags: [Configurations]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - smtpHost
+ *               - smtpUsername
+ *               - smtpPassword
+ *             properties:
+ *               smtpHost:
+ *                 type: string
+ *               smtpPort:
+ *                 type: integer
+ *               smtpSecure:
+ *                 type: boolean
+ *               smtpUsername:
+ *                 type: string
+ *               smtpPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: SMTP connection successful
+ *       400:
+ *         description: SMTP connection failed
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/test', async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId
+
+    if (!tenantId) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Tenant ID not found in user context'
+      })
+    }
+
+    const { smtpHost, smtpPort, smtpSecure, smtpUsername, smtpPassword } = req.body
+
+    if (!smtpHost || !smtpUsername || !smtpPassword) {
+      return res.status(400).json({
+        data: null,
+        meta: {
+          code: 'SMTP_TEST_FAILED',
+          message: 'Host, username, and password are required to test the connection.'
+        }
+      })
+    }
+
+    const EmailService = require('../../../services/emailService')
+    const transporter = EmailService.createTransporter({
+      smtpHost,
+      smtpPort: smtpPort || 587,
+      smtpSecure: smtpSecure ?? true,
+      smtpUsername,
+      smtpPassword
+    })
+
+    await transporter.verify()
+
+    return res.json({
+      data: { success: true },
+      meta: {
+        code: 'SMTP_TEST_SUCCESS',
+        message: 'SMTP connection verified successfully.'
+      }
+    })
+  } catch (error) {
+    console.error('[Communication Configuration] SMTP test failed:', error.message)
+    return res.status(400).json({
+      data: { success: false },
+      meta: {
+        code: 'SMTP_TEST_FAILED',
+        message: error.message || 'SMTP connection test failed.'
+      }
+    })
+  }
+})
+
 module.exports = router

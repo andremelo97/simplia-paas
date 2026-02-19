@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Card, CardHeader, CardContent, StatusBadge, Badge, Table, EmptyState, Button } from '@client/common/ui'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { ChevronDown, ChevronUp, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import { getRoleBadgeVariant } from '@client/common/utils/badgeUtils'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useTranslation } from 'react-i18next'
@@ -28,8 +28,13 @@ interface EntitlementAppCardProps {
   license: EntitlementLicense
 }
 
+type SortKey = 'name' | 'role' | 'granted'
+type SortDir = 'asc' | 'desc'
+
 export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
   const [showUsers, setShowUsers] = useState(false)
+  const [sortKey, setSortKey] = useState<SortKey>('name')
+  const [sortDir, setSortDir] = useState<SortDir>('asc')
   const { formatShortDate } = useDateFormatter()
    const { t } = useTranslation('hub')
 
@@ -46,6 +51,34 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
 
   const getRoleLabel = (role: EntitlementUser['role']) =>
     t(`entitlements.roles.${role}`, { defaultValue: role })
+
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
+
+  const SortIcon = ({ col }: { col: SortKey }) => {
+    if (sortKey !== col) return <ArrowUpDown className="h-3 w-3 text-gray-400" />
+    return sortDir === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+  }
+
+  const sortedUsers = [...(license.users || [])].sort((a, b) => {
+    const dir = sortDir === 'asc' ? 1 : -1
+    switch (sortKey) {
+      case 'name':
+        return dir * getUserDisplayName(a).localeCompare(getUserDisplayName(b))
+      case 'role':
+        return dir * a.role.localeCompare(b.role)
+      case 'granted':
+        return dir * (new Date(a.grantedAt).getTime() - new Date(b.grantedAt).getTime())
+      default:
+        return 0
+    }
+  })
 
   return (
     <Card id={`app-${license.slug}`} className="scroll-mt-4">
@@ -86,15 +119,21 @@ export function EntitlementAppCard({ license }: EntitlementAppCardProps) {
                 <Table>
                   <thead>
                     <tr>
-                      <th className="text-left">{t('entitlements.table.name')}</th>
+                      <th className="text-left cursor-pointer select-none" onClick={() => toggleSort('name')}>
+                        <span className="inline-flex items-center gap-1">{t('entitlements.table.name')} <SortIcon col="name" /></span>
+                      </th>
                       <th className="text-left">{t('entitlements.table.email')}</th>
-                      <th className="text-left">{t('entitlements.table.role_in_app')}</th>
+                      <th className="text-left cursor-pointer select-none" onClick={() => toggleSort('role')}>
+                        <span className="inline-flex items-center gap-1">{t('entitlements.table.role_in_app')} <SortIcon col="role" /></span>
+                      </th>
                       <th className="text-left">{t('entitlements.table.access')}</th>
-                      <th className="text-left">{t('entitlements.table.granted')}</th>
+                      <th className="text-left cursor-pointer select-none" onClick={() => toggleSort('granted')}>
+                        <span className="inline-flex items-center gap-1">{t('entitlements.table.granted')} <SortIcon col="granted" /></span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {license.users.map((user, index) => (
+                    {sortedUsers.map((user, index) => (
                       <tr key={index}>
                         <td className="text-gray-600">
                           <div className="font-medium">{getUserDisplayName(user)}</div>

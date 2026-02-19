@@ -382,6 +382,14 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
     message: "Logo uploaded successfully."
   },
   // SMTP operations
+  SMTP_TEST_SUCCESS: {
+    title: "Connection Successful",
+    message: "SMTP server connection verified successfully."
+  },
+  SMTP_TEST_FAILED: {
+    title: "Connection Failed",
+    message: "Could not connect to SMTP server. Check your settings and try again."
+  },
   SMTP_SETTINGS_SAVED: {
     title: "SMTP Settings Saved",
     message: "Email configuration saved successfully."

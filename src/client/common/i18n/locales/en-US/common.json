@@ -299,6 +299,14 @@
     "MARKETPLACE_LP_LIMIT_REACHED": {
       "title": "Limit Reached",
       "message": "You already have the maximum of 10 landing page templates. Delete one before importing another."
+    },
+    "SMTP_TEST_SUCCESS": {
+      "title": "Connection Successful",
+      "message": "SMTP server connection verified successfully."
+    },
+    "SMTP_TEST_FAILED": {
+      "title": "Connection Failed",
+      "message": "Could not connect to SMTP server. Check your settings and try again."
     }
   },
   "support_modal": {

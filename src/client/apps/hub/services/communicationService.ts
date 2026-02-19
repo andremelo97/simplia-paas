@@ -30,6 +30,11 @@ export const communicationService = {
   async updateSettings(settings: CommunicationSettings): Promise<CommunicationSettings> {
     const response = await api.post(RESOURCE, settings) as CommunicationSettingsResponse
     return response?.data as CommunicationSettings
+  },
+
+  async testConnection(settings: Pick<CommunicationSettings, 'smtpHost' | 'smtpPort' | 'smtpSecure' | 'smtpUsername' | 'smtpPassword'>): Promise<boolean> {
+    const response = await api.post(`${RESOURCE}/test`, settings) as { data: { success: boolean } }
+    return response?.data?.success ?? false
   }
 }
 

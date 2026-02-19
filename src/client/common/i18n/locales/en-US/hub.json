@@ -206,7 +206,11 @@
     "cc_emails": "CC Emails",
     "cc_emails_placeholder": "Type an email and press Enter",
     "cc_emails_hint": "These addresses will receive a copy of all emails sent",
-    "save_changes": "Save Changes"
+    "save_changes": "Save Changes",
+    "test_connection": "Test Connection",
+    "testing": "Testing...",
+    "test_success": "Connection OK",
+    "test_failed": "Connection failed"
   },
   "configurations": {
     "transcription": "Transcription",

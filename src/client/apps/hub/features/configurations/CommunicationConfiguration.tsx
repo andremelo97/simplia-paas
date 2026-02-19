@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Mail } from 'lucide-react'
+import { Mail, Plug, CheckCircle, XCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Checkbox, FormFieldWrapper, Alert, AlertDescription, TagInput } from '@client/common/ui'
 import { communicationService, CommunicationSettings } from '../../services/communicationService'
@@ -17,6 +17,8 @@ export const CommunicationConfiguration: React.FC = () => {
     ccEmails: []
   })
   const [loading, setLoading] = useState(true)
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null)
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -49,6 +51,25 @@ export const CommunicationConfiguration: React.FC = () => {
       await communicationService.updateSettings(settings)
     } catch (error) {
       // Error updating communication settings
+    }
+  }
+
+  const handleTestConnection = async () => {
+    setTesting(true)
+    setTestResult(null)
+    try {
+      await communicationService.testConnection({
+        smtpHost: settings.smtpHost,
+        smtpPort: settings.smtpPort,
+        smtpSecure: settings.smtpSecure,
+        smtpUsername: settings.smtpUsername,
+        smtpPassword: settings.smtpPassword
+      })
+      setTestResult('success')
+    } catch {
+      setTestResult('error')
+    } finally {
+      setTesting(false)
     }
   }
 
@@ -194,10 +215,31 @@ export const CommunicationConfiguration: React.FC = () => {
         />
       </Card>
 
-      <div className="flex gap-3">
+      <div className="flex items-center gap-3">
         <Button variant="primary" onClick={handleSave}>
           {t('communication.save_changes')}
         </Button>
+        <Button
+          variant="outline"
+          onClick={handleTestConnection}
+          disabled={testing || !settings.smtpHost || !settings.smtpUsername || !settings.smtpPassword}
+          className="flex items-center gap-2"
+        >
+          <Plug className="h-4 w-4" />
+          {testing ? t('communication.testing') : t('communication.test_connection')}
+        </Button>
+        {testResult === 'success' && (
+          <span className="flex items-center gap-1 text-sm text-green-600">
+            <CheckCircle className="h-4 w-4" />
+            {t('communication.test_success')}
+          </span>
+        )}
+        {testResult === 'error' && (
+          <span className="flex items-center gap-1 text-sm text-red-600">
+            <XCircle className="h-4 w-4" />
+            {t('communication.test_failed')}
+          </span>
+        )}
       </div>
     </div>
   )

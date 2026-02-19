@@ -31,7 +31,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/products/tq" element={<TQPage />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
-              <Route path="/install" element={<InstallPage />} />
+              <Route path="/install-app" element={<InstallPage />} />
             </Routes>
           </main>
           <Footer />

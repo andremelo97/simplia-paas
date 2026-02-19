@@ -379,7 +379,12 @@ export const translations = {
     install: {
       hero: {
         title: 'Instalar LivoCare',
-        subtitle: 'Acesse o LivoCare direto da tela inicial do seu celular, como um app nativo. Rápido, leve e sem precisar baixar nada pela loja.'
+        subtitle: 'Acesse o LivoCare direto da tela inicial do seu celular, como um app nativo. Rápido, leve e sem precisar baixar nada pela loja.',
+        mobileFeatures: 'Funcionalidades disponíveis no celular:',
+        feature1: 'Criar novas sessões de transcrição',
+        feature2: 'Visualizar e editar sessões',
+        feature3: 'Gerenciar pacientes',
+        fullAccess: 'Para acesso completo ao TQ (documentos, templates, cotações e mais), utilize um tablet ou computador.'
       },
       ios: {
         safari: {
@@ -388,18 +393,21 @@ export const translations = {
           step3: 'Toque em "Adicionar à Tela de Início"'
         },
         chrome: {
-          step1: 'Toque no ícone de compartilhar no topo, junto à URL',
+          step1: 'Toque em "" no topo, junto à URL',
           step2: 'Toque em "⋯ Mais..."',
           step3: 'Role para baixo e toque em "Adicionar à Tela de Início"'
         }
       },
       android: {
+        installButton: 'Instalar App',
+        installDescription: 'Toque no botão abaixo para instalar diretamente:',
+        manualTitle: 'Instalação manual',
         chrome: {
-          step1: 'Toque no menu ⋮ (três pontos) no canto superior direito',
+          step1: 'Toque em "⋮" no canto superior direito',
           step2: 'Toque em "Instalar aplicativo" ou "Adicionar à tela inicial"'
         },
         samsung: {
-          step1: 'Toque no menu ≡ (três linhas) na parte inferior',
+          step1: 'Toque em "≡" na parte inferior',
           step2: 'Toque em "Adicionar página a"',
           step3: 'Selecione "Tela inicial"'
         }
@@ -426,10 +434,6 @@ export const translations = {
           {
             question: 'Vou receber notificações?',
             answer: 'Isso depende do navegador e do sistema operacional. No Android com Chrome, notificações push são suportadas. No iOS (Safari), o suporte a notificações está disponível a partir do iOS 16.4.'
-          },
-          {
-            question: 'Funciona sem internet?',
-            answer: 'Algumas funcionalidades podem funcionar offline graças ao cache do PWA, mas para a maioria das ações (transcrição, cotações, etc.) é necessária uma conexão com a internet.'
           }
         ]
       },
@@ -825,7 +829,12 @@ export const translations = {
     install: {
       hero: {
         title: 'Install LivoCare',
-        subtitle: 'Access LivoCare directly from your home screen, just like a native app. Fast, lightweight, and no app store download needed.'
+        subtitle: 'Access LivoCare directly from your home screen, just like a native app. Fast, lightweight, and no app store download needed.',
+        mobileFeatures: 'Features available on mobile:',
+        feature1: 'Create new transcription sessions',
+        feature2: 'View and edit sessions',
+        feature3: 'Manage patients',
+        fullAccess: 'For full TQ access (documents, templates, quotes and more), use a tablet or computer.'
       },
       ios: {
         safari: {
@@ -834,18 +843,21 @@ export const translations = {
           step3: 'Tap "Add to Home Screen"'
         },
         chrome: {
-          step1: 'Tap the share icon at the top, next to the URL',
+          step1: 'Tap "" at the top, next to the URL',
           step2: 'Tap "⋯ More..."',
           step3: 'Scroll down and tap "Add to Home Screen"'
         }
       },
       android: {
+        installButton: 'Install App',
+        installDescription: 'Tap the button below to install directly:',
+        manualTitle: 'Manual installation',
         chrome: {
-          step1: 'Tap the ⋮ menu (three dots) in the top right corner',
+          step1: 'Tap "⋮" in the top right corner',
           step2: 'Tap "Install app" or "Add to Home screen"'
         },
         samsung: {
-          step1: 'Tap the ≡ menu (three lines) at the bottom',
+          step1: 'Tap "≡" at the bottom',
           step2: 'Tap "Add page to"',
           step3: 'Select "Home screen"'
         }
@@ -872,10 +884,6 @@ export const translations = {
           {
             question: 'Will I receive notifications?',
             answer: 'It depends on the browser and operating system. On Android with Chrome, push notifications are supported. On iOS (Safari), notification support is available from iOS 16.4 onwards.'
-          },
-          {
-            question: 'Does it work offline?',
-            answer: 'Some features may work offline thanks to PWA caching, but most actions (transcription, quotes, etc.) require an internet connection.'
           }
         ]
       },

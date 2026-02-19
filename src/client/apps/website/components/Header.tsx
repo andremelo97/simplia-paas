@@ -14,6 +14,7 @@ export function Header() {
   const location = useLocation()
 
   const isProductPage = location.pathname.startsWith('/products/')
+  const isDarkPage = isProductPage || location.pathname === '/install-app'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -207,16 +208,16 @@ export function Header() {
             <button
               onClick={toggleLanguage}
               className={`hidden lg:flex items-center gap-1 px-3 py-1.5 rounded-full transition-colors text-sm font-medium ${
-                isScrolled || !isProductPage
+                isScrolled || !isDarkPage
                   ? 'bg-gray-100 hover:bg-gray-200'
                   : 'bg-white/10 hover:bg-white/20'
               }`}
             >
-              <span className={`${isScrolled || !isProductPage ? (language === 'pt-BR' ? 'text-gray-900' : 'text-gray-400') : (language === 'pt-BR' ? 'text-white' : 'text-white/50')}`}>
+              <span className={`${isScrolled || !isDarkPage ? (language === 'pt-BR' ? 'text-gray-900' : 'text-gray-400') : (language === 'pt-BR' ? 'text-white' : 'text-white/50')}`}>
                 PT
               </span>
-              <span className={isScrolled || !isProductPage ? 'text-gray-300' : 'text-white/30'}>|</span>
-              <span className={`${isScrolled || !isProductPage ? (language === 'en' ? 'text-gray-900' : 'text-gray-400') : (language === 'en' ? 'text-white' : 'text-white/50')}`}>
+              <span className={isScrolled || !isDarkPage ? 'text-gray-300' : 'text-white/30'}>|</span>
+              <span className={`${isScrolled || !isDarkPage ? (language === 'en' ? 'text-gray-900' : 'text-gray-400') : (language === 'en' ? 'text-white' : 'text-white/50')}`}>
                 EN
               </span>
             </button>
@@ -227,7 +228,7 @@ export function Header() {
               target="_blank"
               rel="noopener noreferrer"
               className={`hidden lg:block px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-                isScrolled || !isProductPage
+                isScrolled || !isDarkPage
                   ? 'border border-gray-300 text-gray-700 hover:bg-gray-100'
                   : 'border border-white/30 text-white hover:bg-white/10'
               }`}
@@ -270,7 +271,7 @@ export function Header() {
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6 text-gray-700" />
               ) : (
-                <Menu className={`w-6 h-6 ${isScrolled || !isProductPage ? 'text-gray-700' : 'text-white'}`} />
+                <Menu className={`w-6 h-6 ${isScrolled || !isDarkPage ? 'text-gray-700' : 'text-white'}`} />
               )}
             </button>
           </div>

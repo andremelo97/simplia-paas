@@ -28,31 +28,61 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({ isOpen, on
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const getPasswordStrength = (password: string): { level: number; label: string; color: string } => {
+    if (!password) return { level: 0, label: '', color: '' }
+
+    let score = 0
+    if (password.length >= 6) score++
+    if (password.length >= 10) score++
+    if (/[A-Z]/.test(password)) score++
+    if (/[0-9]/.test(password)) score++
+    if (/[^A-Za-z0-9]/.test(password)) score++
+
+    if (score <= 1) return { level: 1, label: t('user_settings.password.strength.very_weak'), color: 'bg-red-500' }
+    if (score === 2) return { level: 2, label: t('user_settings.password.strength.weak'), color: 'bg-orange-500' }
+    if (score === 3) return { level: 3, label: t('user_settings.password.strength.fair'), color: 'bg-yellow-500' }
+    if (score === 4) return { level: 4, label: t('user_settings.password.strength.strong'), color: 'bg-green-500' }
+    return { level: 5, label: t('user_settings.password.strength.very_strong'), color: 'bg-green-600' }
+  }
+
+  const passwordStrength = getPasswordStrength(newPassword)
+
+  const validateField = (field: string) => {
+    let error = ''
+
+    switch (field) {
+      case 'currentPassword':
+        if (!currentPassword) error = t('user_settings.password.validation.current_required')
+        break
+      case 'newPassword':
+        if (!newPassword) {
+          error = t('user_settings.password.validation.new_required')
+        } else if (newPassword.length < 6) {
+          error = t('user_settings.password.validation.new_min_length')
+        } else if (currentPassword && currentPassword === newPassword) {
+          error = t('user_settings.password.validation.same_as_current')
+        }
+        break
+      case 'confirmPassword':
+        if (!confirmPassword) {
+          error = t('user_settings.password.validation.confirm_required')
+        } else if (newPassword !== confirmPassword) {
+          error = t('user_settings.password.validation.passwords_dont_match')
+        }
+        break
+    }
+
+    setErrors(prev => ({ ...prev, [field]: error }))
+    return !error
+  }
+
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
-
-    if (!currentPassword) {
-      newErrors.currentPassword = t('user_settings.password.validation.current_required')
+    const fields = ['currentPassword', 'newPassword', 'confirmPassword']
+    let allValid = true
+    for (const field of fields) {
+      if (!validateField(field)) allValid = false
     }
-
-    if (!newPassword) {
-      newErrors.newPassword = t('user_settings.password.validation.new_required')
-    } else if (newPassword.length < 6) {
-      newErrors.newPassword = t('user_settings.password.validation.new_min_length')
-    }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = t('user_settings.password.validation.confirm_required')
-    } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = t('user_settings.password.validation.passwords_dont_match')
-    }
-
-    if (currentPassword && newPassword && currentPassword === newPassword) {
-      newErrors.newPassword = t('user_settings.password.validation.same_as_current')
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    return allValid
   }
 
   const handleChangePassword = async () => {
@@ -112,7 +142,11 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({ isOpen, on
                   id="current-password"
                   type={showCurrentPassword ? 'text' : 'password'}
                   value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  onChange={(e) => {
+                    setCurrentPassword(e.target.value)
+                    if (errors.currentPassword) setErrors(prev => ({ ...prev, currentPassword: '' }))
+                  }}
+                  onBlur={() => validateField('currentPassword')}
                   disabled={isLoading}
                   className="pr-10"
                 />
@@ -143,7 +177,11 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({ isOpen, on
                   id="new-password"
                   type={showNewPassword ? 'text' : 'password'}
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value)
+                    if (errors.newPassword) setErrors(prev => ({ ...prev, newPassword: '' }))
+                  }}
+                  onBlur={() => validateField('newPassword')}
                   disabled={isLoading}
                   className="pr-10"
                 />
@@ -160,6 +198,25 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({ isOpen, on
                   )}
                 </button>
               </div>
+              {newPassword && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1.5 flex-1 rounded-full transition-colors ${
+                          i <= passwordStrength.level ? passwordStrength.color : 'bg-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs ${
+                    passwordStrength.level <= 2 ? 'text-red-600' : passwordStrength.level === 3 ? 'text-yellow-600' : 'text-green-600'
+                  }`}>
+                    {passwordStrength.label}
+                  </p>
+                </div>
+              )}
               {errors.newPassword && (
                 <p className="text-sm text-red-600 mt-1">{errors.newPassword}</p>
               )}
@@ -174,7 +231,11 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({ isOpen, on
                   id="confirm-password"
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value)
+                    if (errors.confirmPassword) setErrors(prev => ({ ...prev, confirmPassword: '' }))
+                  }}
+                  onBlur={() => validateField('confirmPassword')}
                   disabled={isLoading}
                   className="pr-10"
                 />

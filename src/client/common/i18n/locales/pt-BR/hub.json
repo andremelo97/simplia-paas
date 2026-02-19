@@ -382,6 +382,13 @@
         "confirm_required": "Confirme sua nova senha",
         "passwords_dont_match": "As senhas não coincidem",
         "same_as_current": "Nova senha deve ser diferente da senha atual"
+      },
+      "strength": {
+        "very_weak": "Muito fraca",
+        "weak": "Fraca",
+        "fair": "Razoável",
+        "strong": "Forte",
+        "very_strong": "Muito forte"
       }
     }
   },

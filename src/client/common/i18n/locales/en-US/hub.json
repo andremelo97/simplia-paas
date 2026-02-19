@@ -382,6 +382,13 @@
         "confirm_required": "Please confirm your new password",
         "passwords_dont_match": "Passwords don't match",
         "same_as_current": "New password must be different from current password"
+      },
+      "strength": {
+        "very_weak": "Very weak",
+        "weak": "Weak",
+        "fair": "Fair",
+        "strong": "Strong",
+        "very_strong": "Very strong"
       }
     }
   },

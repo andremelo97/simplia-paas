@@ -87,40 +87,58 @@ export const EditPatient: React.FC = () => {
     }
   }
 
+  const validateField = (field: keyof PatientFormData, value: string) => {
+    let error = ''
+
+    switch (field) {
+      case 'first_name':
+        if (!value.trim()) {
+          error = t('patients.validation.first_name_required')
+        } else if (value.length < 2) {
+          error = t('patients.validation.first_name_min')
+        } else if (value.length > 50) {
+          error = t('patients.validation.first_name_max')
+        }
+        break
+      case 'last_name':
+        if (value && value.length > 50) {
+          error = t('patients.validation.last_name_max')
+        }
+        break
+      case 'email':
+        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          error = t('patients.validation.email_invalid')
+        }
+        break
+      case 'phone':
+        if (value && value.length > 20) {
+          error = t('patients.validation.phone_max')
+        }
+        break
+      case 'notes':
+        if (value && value.length > 500) {
+          error = t('patients.validation.notes_max')
+        }
+        break
+    }
+
+    setValidationErrors(prev => ({ ...prev, [field]: error }))
+    return !error
+  }
+
+  const handleBlur = (field: keyof PatientFormData) => () => {
+    validateField(field, formData[field])
+  }
+
   const validateForm = () => {
-    const errors: Record<string, string> = {}
-
-    // Validate patient basic info
-    if (!formData.first_name.trim()) {
-      errors.first_name = t('patients.validation.first_name_required')
-    } else if (formData.first_name.length < 2) {
-      errors.first_name = t('patients.validation.first_name_min')
-    } else if (formData.first_name.length > 50) {
-      errors.first_name = t('patients.validation.first_name_max')
+    const fields: (keyof PatientFormData)[] = ['first_name', 'last_name', 'email', 'phone', 'notes']
+    let allValid = true
+    for (const field of fields) {
+      if (!validateField(field, formData[field])) {
+        allValid = false
+      }
     }
-
-    if (formData.last_name && formData.last_name.length > 50) {
-      errors.last_name = t('patients.validation.last_name_max')
-    }
-
-    // Email validation (optional field)
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = t('patients.validation.email_invalid')
-    }
-
-    // Phone validation (optional field)
-    if (formData.phone && formData.phone.length > 20) {
-      errors.phone = t('patients.validation.phone_max')
-    }
-
-    // Notes validation (optional field)
-    if (formData.notes && formData.notes.length > 500) {
-      errors.notes = t('patients.validation.notes_max')
-    }
-
-    setValidationErrors(errors)
-
-    return Object.keys(errors).length === 0
+    return allValid
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -264,6 +282,7 @@ export const EditPatient: React.FC = () => {
                   label={t('patients.first_name')}
                   value={formData.first_name}
                   onChange={handleInputChange('first_name')}
+                  onBlur={handleBlur('first_name')}
                   error={validationErrors.first_name}
                   placeholder={t('patients.placeholders.first_name')}
                   helperText={t('patients.helper.first_name')}
@@ -275,6 +294,7 @@ export const EditPatient: React.FC = () => {
                   label={t('patients.last_name')}
                   value={formData.last_name}
                   onChange={handleInputChange('last_name')}
+                  onBlur={handleBlur('last_name')}
                   error={validationErrors.last_name}
                   placeholder={t('patients.placeholders.last_name')}
                   helperText={t('patients.helper.last_name')}
@@ -288,6 +308,7 @@ export const EditPatient: React.FC = () => {
                   type="email"
                   value={formData.email}
                   onChange={handleInputChange('email')}
+                  onBlur={handleBlur('email')}
                   error={validationErrors.email}
                   placeholder={t('patients.placeholders.email')}
                   helperText={t('patients.helper.email')}
@@ -299,6 +320,7 @@ export const EditPatient: React.FC = () => {
                   type="tel"
                   value={formData.phone}
                   onChange={handleInputChange('phone')}
+                  onBlur={handleBlur('phone')}
                   error={validationErrors.phone}
                   placeholder={t('patients.placeholders.phone')}
                   helperText={t('patients.helper.phone')}
@@ -311,6 +333,7 @@ export const EditPatient: React.FC = () => {
                   label={t('common.notes')}
                   value={formData.notes}
                   onChange={handleInputChange('notes')}
+                  onBlur={handleBlur('notes')}
                   error={validationErrors.notes}
                   placeholder={t('patients.placeholders.notes')}
                   helperText={t('patients.helper.notes')}

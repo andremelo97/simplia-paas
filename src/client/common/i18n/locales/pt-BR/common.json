@@ -346,7 +346,10 @@
     "install_button": "Instalar",
     "ios_step1": "Toque em \"⋯\" no navegador",
     "ios_step2": "Compartilhar",
-    "ios_step3": "Adicionar à Tela de Início"
+    "ios_step3": "Adicionar à Tela de Início",
+    "chrome_step1": "Toque em",
+    "chrome_step2": "Mais",
+    "chrome_hint": "no topo, junto à URL"
   },
   "copied": "Copiado!",
   "copy_number": "Copiar número",

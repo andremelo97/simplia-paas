@@ -330,7 +330,10 @@
     "install_button": "Install",
     "ios_step1": "Tap \"⋯\" in the browser",
     "ios_step2": "Share",
-    "ios_step3": "Add to Home Screen"
+    "ios_step3": "Add to Home Screen",
+    "chrome_step1": "Tap on",
+    "chrome_step2": "More",
+    "chrome_hint": "at the top, next to the URL"
   },
   "copied": "Copied!",
   "copy_number": "Copy number",

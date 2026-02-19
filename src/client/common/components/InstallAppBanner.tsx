@@ -23,6 +23,10 @@ function isIOS(): boolean {
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 }
 
+function isIOSChrome(): boolean {
+  return isIOS() && /CriOS/.test(navigator.userAgent)
+}
+
 function isStandalone(): boolean {
   return window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as any).standalone === true
@@ -37,6 +41,7 @@ export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({ ignoreDismis
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)
   const [isIOSDevice, setIsIOSDevice] = useState(false)
+  const [isIOSChromeDevice, setIsIOSChromeDevice] = useState(false)
 
   useEffect(() => {
     if (isStandalone()) return
@@ -46,9 +51,10 @@ export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({ ignoreDismis
       if (dismissed && Date.now() - parseInt(dismissed) < 24 * 60 * 60 * 1000) return
     }
 
-    // iOS: show manual instructions
+    // iOS: show manual instructions (different for Chrome vs Safari)
     if (isIOS()) {
       setIsIOSDevice(true)
+      setIsIOSChromeDevice(isIOSChrome())
       setShowBanner(true)
       return
     }
@@ -97,7 +103,15 @@ export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({ ignoreDismis
                 {t('common:pwa.install_title', 'Install App')}
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                {t('common:pwa.ios_step1', 'Tap "⋯" in the browser')} → "<IOSShareIcon className="w-3 h-3 inline" /> {t('common:pwa.ios_step2', 'Share')}" → "<SquarePlus className="w-3 h-3 inline" /> {t('common:pwa.ios_step3', 'Add to Home Screen')}"
+                {isIOSChromeDevice ? (
+                  <>
+                    {t('common:pwa.chrome_step1', 'Tap on')} "<IOSShareIcon className="w-3 h-3 inline" />" {t('common:pwa.chrome_hint', 'at the top, next to the URL')} → "⋯ {t('common:pwa.chrome_step2', 'More')}" → "<SquarePlus className="w-3 h-3 inline" /> {t('common:pwa.ios_step3', 'Add to Home Screen')}"
+                  </>
+                ) : (
+                  <>
+                    {t('common:pwa.ios_step1', 'Tap "⋯" in the browser')} → "<IOSShareIcon className="w-3 h-3 inline" /> {t('common:pwa.ios_step2', 'Share')}" → "<SquarePlus className="w-3 h-3 inline" /> {t('common:pwa.ios_step3', 'Add to Home Screen')}"
+                  </>
+                )}
               </p>
             </div>
             <button

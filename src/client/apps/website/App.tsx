@@ -8,6 +8,7 @@ import { Contact } from './components/Contact'
 import { Footer } from './components/Footer'
 import { TQPage } from './products/tq'
 import { CheckoutSuccess } from './components/CheckoutSuccess'
+import { InstallPage } from './components/InstallPage'
 
 function HomePage() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/products/tq" element={<TQPage />} />
               <Route path="/checkout/success" element={<CheckoutSuccess />} />
+              <Route path="/install" element={<InstallPage />} />
             </Routes>
           </main>
           <Footer />

@@ -376,6 +376,64 @@ export const translations = {
         questions: 'Tirar dúvidas sobre a plataforma'
       }
     },
+    install: {
+      hero: {
+        title: 'Instalar LivoCare',
+        subtitle: 'Acesse o LivoCare direto da tela inicial do seu celular, como um app nativo. Rápido, leve e sem precisar baixar nada pela loja.'
+      },
+      ios: {
+        safari: {
+          step1: 'Toque no ícone de compartilhar (quadrado com seta) na barra de navegação',
+          step2: 'Toque em "Adicionar à Tela de Início"'
+        },
+        chrome: {
+          step1: 'Toque no ícone de compartilhar (quadrado com seta) no topo, junto à URL',
+          step2: 'Toque em "⋯ Mais..."',
+          step3: 'Role para baixo e toque em "Adicionar à Tela de Início"'
+        }
+      },
+      android: {
+        chrome: {
+          step1: 'Toque no menu ⋮ (três pontos) no canto superior direito',
+          step2: 'Toque em "Instalar aplicativo" ou "Adicionar à tela inicial"'
+        },
+        samsung: {
+          step1: 'Toque no menu ≡ (três linhas) na parte inferior',
+          step2: 'Toque em "Adicionar página a"',
+          step3: 'Selecione "Tela inicial"'
+        }
+      },
+      faq: {
+        title: 'Perguntas Frequentes',
+        items: [
+          {
+            question: 'O que é um PWA?',
+            answer: 'PWA (Progressive Web App) é uma tecnologia que permite que sites funcionem como aplicativos nativos no seu celular. Você acessa pelo navegador e pode adicionar um atalho na tela inicial — sem precisar baixar pela App Store ou Google Play.'
+          },
+          {
+            question: 'Ocupa espaço no celular?',
+            answer: 'Quase nenhum. Diferente de apps tradicionais que podem ocupar centenas de megabytes, um PWA é muito leve e usa cache inteligente para funcionar de forma rápida.'
+          },
+          {
+            question: 'É igual a um app nativo?',
+            answer: 'A experiência é muito parecida: abre em tela cheia, tem ícone na tela inicial e funciona de forma fluida. A principal diferença é que você não precisa passar pela loja de aplicativos para instalar.'
+          },
+          {
+            question: 'Como desinstalo?',
+            answer: 'Da mesma forma que qualquer app: no iPhone, segure o ícone e toque em "Remover App". No Android, segure o ícone e arraste para "Desinstalar" ou use as configurações do celular.'
+          },
+          {
+            question: 'Vou receber notificações?',
+            answer: 'Isso depende do navegador e do sistema operacional. No Android com Chrome, notificações push são suportadas. No iOS (Safari), o suporte a notificações está disponível a partir do iOS 16.4.'
+          },
+          {
+            question: 'Funciona sem internet?',
+            answer: 'Algumas funcionalidades podem funcionar offline graças ao cache do PWA, mas para a maioria das ações (transcrição, cotações, etc.) é necessária uma conexão com a internet.'
+          }
+        ]
+      },
+      backToTop: 'Voltar ao topo'
+    },
     footer: {
       tagline: 'Onde cuidado encontra conversão.',
       quickLinks: 'Links Rápidos',
@@ -762,6 +820,64 @@ export const translations = {
         automation: 'Request custom integrations',
         questions: 'Ask questions about the platform'
       }
+    },
+    install: {
+      hero: {
+        title: 'Install LivoCare',
+        subtitle: 'Access LivoCare directly from your home screen, just like a native app. Fast, lightweight, and no app store download needed.'
+      },
+      ios: {
+        safari: {
+          step1: 'Tap the share icon (square with arrow) in the navigation bar',
+          step2: 'Tap "Add to Home Screen"'
+        },
+        chrome: {
+          step1: 'Tap the share icon (square with arrow) at the top, next to the URL',
+          step2: 'Tap "⋯ More..."',
+          step3: 'Scroll down and tap "Add to Home Screen"'
+        }
+      },
+      android: {
+        chrome: {
+          step1: 'Tap the ⋮ menu (three dots) in the top right corner',
+          step2: 'Tap "Install app" or "Add to Home screen"'
+        },
+        samsung: {
+          step1: 'Tap the ≡ menu (three lines) at the bottom',
+          step2: 'Tap "Add page to"',
+          step3: 'Select "Home screen"'
+        }
+      },
+      faq: {
+        title: 'Frequently Asked Questions',
+        items: [
+          {
+            question: 'What is a PWA?',
+            answer: 'A PWA (Progressive Web App) is a technology that allows websites to work like native apps on your phone. You access it through the browser and can add a shortcut to your home screen — no need to download from the App Store or Google Play.'
+          },
+          {
+            question: 'Does it take up storage?',
+            answer: 'Barely any. Unlike traditional apps that can take up hundreds of megabytes, a PWA is very lightweight and uses smart caching to run quickly.'
+          },
+          {
+            question: 'Is it the same as a native app?',
+            answer: 'The experience is very similar: it opens in full screen, has an icon on the home screen, and runs smoothly. The main difference is that you don\'t need to go through the app store to install it.'
+          },
+          {
+            question: 'How do I uninstall?',
+            answer: 'Just like any app: on iPhone, hold the icon and tap "Remove App". On Android, hold the icon and drag to "Uninstall" or use your phone settings.'
+          },
+          {
+            question: 'Will I receive notifications?',
+            answer: 'It depends on the browser and operating system. On Android with Chrome, push notifications are supported. On iOS (Safari), notification support is available from iOS 16.4 onwards.'
+          },
+          {
+            question: 'Does it work offline?',
+            answer: 'Some features may work offline thanks to PWA caching, but most actions (transcription, quotes, etc.) require an internet connection.'
+          }
+        ]
+      },
+      backToTop: 'Back to top'
     },
     footer: {
       tagline: 'Where care meets conversion.',

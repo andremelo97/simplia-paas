@@ -287,58 +287,56 @@ export function InstallPage() {
                     </>
                   ) : (
                     <>
-                      {/* Android install button — always visible */}
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="p-6 rounded-xl border border-[#B725B7]/20 bg-[#B725B7]/5"
-                      >
-                        <p className="text-gray-300 text-sm mb-4">{t.install.android.installDescription}</p>
-                        {deferredPrompt ? (
-                          <button
-                            onClick={handleInstall}
-                            className="w-full py-3 px-6 rounded-lg font-semibold text-white text-sm transition-all hover:opacity-90 hover:shadow-lg hover:shadow-[#B725B7]/20"
-                            style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}
+                      {/* Chrome */}
+                      <div className="space-y-2.5">
+                        <BrowserHeader icon={<Chrome className="w-4 h-4 text-[#5ED6CE]" />} name="Google Chrome" />
+                        <div className="space-y-2 pl-0.5">
+                          {/* Install button as a step */}
+                          <motion.div
+                            initial={{ opacity: 0, x: -15 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.4 }}
                           >
-                            <Download className="w-4 h-4 inline-block mr-2 align-text-bottom" />
-                            {t.install.android.installButton}
-                          </button>
-                        ) : (
-                          <p className="text-gray-500 text-xs italic">{t.install.android.installUnavailable}</p>
-                        )}
-                      </motion.div>
+                            <button
+                              onClick={handleInstall}
+                              disabled={!deferredPrompt}
+                              className="w-full flex items-center gap-3 p-3.5 rounded-xl border text-left transition-all disabled:opacity-40 disabled:cursor-not-allowed border-[#B725B7]/30 bg-[#B725B7]/10 hover:bg-[#B725B7]/15"
+                            >
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                                style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}
+                              >
+                                <Download className="w-4 h-4 text-white" />
+                              </div>
+                              <div className="text-sm leading-relaxed">
+                                <span className="text-white font-semibold">{t.install.android.installButton}</span>
+                              </div>
+                            </button>
+                          </motion.div>
 
-                      {/* Manual instructions — always visible */}
-                      <div>
-                        <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-4">{t.install.android.manualTitle}</p>
+                          <p className="text-gray-500 text-xs font-medium uppercase tracking-wide py-2 pl-1">{t.install.android.manualTitle}</p>
 
-                        {/* Chrome */}
-                        <div className="space-y-2.5 mb-6">
-                          <BrowserHeader icon={<Chrome className="w-4 h-4 text-[#5ED6CE]" />} name="Google Chrome" />
-                          <div className="space-y-2 pl-0.5">
-                            <StepCard number={1} delay={0}>
-                              {t.install.android.chrome.step1}
-                            </StepCard>
-                            <StepCard number={2} delay={0.08}>
-                              {t.install.android.chrome.step2}
-                            </StepCard>
-                          </div>
+                          <StepCard number={1} delay={0.08}>
+                            {t.install.android.chrome.step1}
+                          </StepCard>
+                          <StepCard number={2} delay={0.16}>
+                            {t.install.android.chrome.step2}
+                          </StepCard>
                         </div>
+                      </div>
 
-                        {/* Samsung */}
-                        <div className="space-y-2.5">
-                          <BrowserHeader icon={<SamsungIcon className="w-4 h-4 text-[#5ED6CE]" />} name="Samsung Internet" />
-                          <div className="space-y-2 pl-0.5">
-                            <StepCard number={1} delay={0}>
-                              {t.install.android.samsung.step1}
-                            </StepCard>
-                            <StepCard number={2} delay={0.08}>
-                              {t.install.android.samsung.step2}
-                            </StepCard>
-                            <StepCard number={3} delay={0.16}>
-                              {t.install.android.samsung.step3}
-                            </StepCard>
-                          </div>
+                      {/* Samsung */}
+                      <div className="space-y-2.5">
+                        <BrowserHeader icon={<SamsungIcon className="w-4 h-4 text-[#5ED6CE]" />} name="Samsung Internet" />
+                        <div className="space-y-2 pl-0.5">
+                          <StepCard number={1} delay={0}>
+                            {t.install.android.samsung.step1}
+                          </StepCard>
+                          <StepCard number={2} delay={0.08}>
+                            {t.install.android.samsung.step2}
+                          </StepCard>
+                          <StepCard number={3} delay={0.16}>
+                            {t.install.android.samsung.step3}
+                          </StepCard>
                         </div>
                       </div>
                     </>

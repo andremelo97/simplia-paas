@@ -395,7 +395,7 @@ export const translations = {
         },
         chrome: {
           step1Hint: 'no topo, junto à URL',
-          step2Label: 'Mais...',
+          step2Label: 'Mais',
           step3: 'Role para baixo e toque em "Adicionar à Tela de Início"'
         }
       },
@@ -847,7 +847,7 @@ export const translations = {
         },
         chrome: {
           step1Hint: 'at the top, next to the URL',
-          step2Label: 'More...',
+          step2Label: 'More',
           step3: 'Scroll down and tap "Add to Home Screen"'
         }
       },

@@ -126,13 +126,13 @@ export const Prevention: React.FC = () => {
           {!loading && !error && (preventions?.length || 0) > 0 && (
             <>
               {/* Header Row */}
-              <div className="flex items-center gap-3 lg:gap-6 py-3 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
+              <div className="hidden md:flex items-center gap-3 lg:gap-6 py-3 px-4 bg-gray-50 border-b border-gray-200 text-sm font-medium text-gray-700">
                 <div className="w-24">{t('common.created')}</div>
                 <div className="flex-1">{t('prevention.pages.prevention')}</div>
-                <div className="flex-1">{t('common.session')}</div>
+                <div className="hidden lg:block flex-1">{t('common.session')}</div>
                 <div className="flex-1">{t('common.patient')}</div>
-                <div className="flex-1">{t('common.created_by')}</div>
-                <div className="w-24"></div> {/* Space for actions */}
+                <div className="hidden lg:block flex-1">{t('common.created_by')}</div>
+                <div className="w-24"></div>
               </div>
 
               {/* Prevention Rows */}

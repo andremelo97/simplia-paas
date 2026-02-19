@@ -295,21 +295,19 @@ export const Home: React.FC = () => {
       {/* Quick Actions */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('home.quick_actions')}</h2>
-        <div className={`grid gap-4 overflow-x-auto md:overflow-visible ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
           <QuickActionCard
             icon={Mic}
             title={t('home.start_new_session')}
             onClick={() => navigate('/new-session')}
             colorClass="purple"
           />
-          {!isMobile && (
-            <QuickActionCard
-              icon={UserPlus}
-              title={t('home.add_patient')}
-              onClick={() => navigate('/patients/create')}
-              colorClass="pink"
-            />
-          )}
+          <QuickActionCard
+            icon={UserPlus}
+            title={t('home.add_patient')}
+            onClick={() => navigate('/patients/create')}
+            colorClass="pink"
+          />
           <QuickActionCard
             icon={List}
             title={t('home.view_sessions')}
@@ -319,8 +317,6 @@ export const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Everything below quick actions is hidden on mobile */}
-      {!isMobile && <>
       {/* Divider */}
       <div className="border-t border-gray-200"></div>
 
@@ -335,7 +331,7 @@ export const Home: React.FC = () => {
           </div>
         ) : quotes.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {quotes.map((quote) => (
+            {(isMobile ? quotes.slice(0, 3) : quotes).map((quote) => (
               <QuoteCard
                 key={quote.id}
                 quote={quote}
@@ -368,7 +364,7 @@ export const Home: React.FC = () => {
           </div>
         ) : reports.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {reports.map((report) => (
+            {(isMobile ? reports.slice(0, 3) : reports).map((report) => (
               <ReportCard
                 key={report.id}
                 report={report}
@@ -401,7 +397,7 @@ export const Home: React.FC = () => {
           </div>
         ) : prevention.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {prevention.map((prev) => (
+            {(isMobile ? prevention.slice(0, 3) : prevention).map((prev) => (
               <PreventionCard
                 key={prev.id}
                 prevention={prev}
@@ -434,7 +430,7 @@ export const Home: React.FC = () => {
           </div>
         ) : sessions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {sessions.map((session) => (
+            {(isMobile ? sessions.slice(0, 3) : sessions).map((session) => (
               <SessionCard
                 key={session.id}
                 session={session}
@@ -472,7 +468,7 @@ export const Home: React.FC = () => {
           ) : patients.length > 0 ? (
             <Card>
               <div>
-                {patients.map((patient, index) => (
+                {(isMobile ? patients.slice(0, 3) : patients).map((patient, index) => (
                   <RecentPatientRow
                     key={patient.id}
                     patient={patient}
@@ -503,7 +499,6 @@ export const Home: React.FC = () => {
           />
         </div>
       </div>
-      </>}
     </div>
   )
 }

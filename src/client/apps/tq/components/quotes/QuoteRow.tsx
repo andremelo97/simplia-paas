@@ -37,10 +37,34 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
   const editLabel = t('common:edit')
 
   return (
-    <div
-      className="flex items-center gap-3 lg:gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-      onDoubleClick={handleEdit}
-    >
+    <>
+      {/* Mobile card layout */}
+      <div
+        className="md:hidden py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        onClick={handleEdit}
+      >
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-medium text-gray-900">{quote.number}</span>
+          <Badge className={getQuoteStatusColor(quote.status)}>
+            {formatQuoteStatus(quote.status)}
+          </Badge>
+        </div>
+        <div className="text-sm text-gray-600">
+          {quote.patient_first_name || quote.patient_last_name
+            ? `${quote.patient_first_name || ''} ${quote.patient_last_name || ''}`.trim()
+            : '—'}
+        </div>
+        <div className="flex items-center justify-between mt-0.5">
+          <span className="text-xs text-gray-400">{formatShortDate(quote.created_at)}</span>
+          <span className="text-sm font-medium text-gray-900">{formatCurrency(quote.total || 0)}</span>
+        </div>
+      </div>
+
+      {/* Desktop/Tablet row layout */}
+      <div
+        className="hidden md:flex items-center gap-3 lg:gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        onDoubleClick={handleEdit}
+      >
       {/* Created At */}
       <div className="w-24">
         <span className="text-sm text-gray-600">
@@ -69,8 +93,8 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         </div>
       </div>
 
-      {/* Session Number */}
-      <div className="min-w-0 flex-1">
+      {/* Session Number — hidden on tablet */}
+      <div className="hidden lg:block min-w-0 flex-1">
         <span className="text-gray-600 block truncate">
           {quote.session_number || '—'}
         </span>
@@ -97,8 +121,8 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         })()}
       </div>
 
-      {/* Created By */}
-      <div className="min-w-0 flex-1">
+      {/* Created By — hidden on tablet */}
+      <div className="hidden lg:block min-w-0 flex-1">
         {(() => {
           const name = quote.createdBy
             ? `${quote.createdBy.firstName || ''} ${quote.createdBy.lastName || ''}`.trim()
@@ -133,5 +157,6 @@ export const QuoteRow: React.FC<QuoteRowProps> = ({
         </Tooltip>
       </div>
     </div>
+    </>
   )
 }

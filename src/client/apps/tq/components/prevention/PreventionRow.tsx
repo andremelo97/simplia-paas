@@ -35,11 +35,29 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
 
   const editLabel = t('common:edit')
 
+  const patientName = prevention.patient_first_name || prevention.patient_last_name
+    ? `${prevention.patient_first_name || ''} ${prevention.patient_last_name || ''}`.trim()
+    : '—'
+
   return (
-    <div
-      className="flex items-center gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
-      onDoubleClick={handleEdit}
-    >
+    <>
+      {/* Mobile card layout */}
+      <div
+        className="md:hidden py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        onClick={handleEdit}
+      >
+        <div className="flex items-center justify-between mb-1">
+          <span className="font-medium text-gray-900">{prevention.number}</span>
+        </div>
+        <div className="text-sm text-gray-600">{patientName}</div>
+        <div className="text-xs text-gray-400 mt-0.5">{formatShortDate(prevention.createdAt)}</div>
+      </div>
+
+      {/* Desktop/Tablet row layout */}
+      <div
+        className="hidden md:flex items-center gap-3 lg:gap-6 py-3 px-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
+        onDoubleClick={handleEdit}
+      >
       {/* Created At */}
       <div className="w-24">
         <span className="text-sm text-gray-600">
@@ -68,8 +86,8 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
         </div>
       </div>
 
-      {/* Session Number */}
-      <div className="min-w-0 flex-1">
+      {/* Session Number — hidden on tablet */}
+      <div className="hidden lg:block min-w-0 flex-1">
         <span className="text-gray-600 block truncate">
           {prevention.session_number || '—'}
         </span>
@@ -89,8 +107,8 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
         })()}
       </div>
 
-      {/* Created By */}
-      <div className="min-w-0 flex-1">
+      {/* Created By — hidden on tablet */}
+      <div className="hidden lg:block min-w-0 flex-1">
         {(() => {
           const name = prevention.createdBy
             ? `${prevention.createdBy.firstName || ''} ${prevention.createdBy.lastName || ''}`.trim()
@@ -120,5 +138,6 @@ export const PreventionRow: React.FC<PreventionRowProps> = ({
         )}
       </div>
     </div>
+    </>
   )
 }

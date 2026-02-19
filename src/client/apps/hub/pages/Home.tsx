@@ -37,6 +37,11 @@ export const Home: React.FC = () => {
       return null // Not a trial (no expiration date)
     }
 
+    // If licenseStatus is 'active' and no trial indicator, treat as non-trial
+    if (tqApp.licenseStatus === 'active' && !tqApp.expiresAt) {
+      return null
+    }
+
     const expiresAt = new Date(tqApp.expiresAt)
     const now = new Date()
     const isExpired = expiresAt <= now

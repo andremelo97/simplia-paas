@@ -383,11 +383,12 @@ export const translations = {
       },
       ios: {
         safari: {
-          step1: 'Toque no ícone de compartilhar (quadrado com seta) na barra de navegação',
-          step2: 'Toque em "Adicionar à Tela de Início"'
+          step1: 'Toque em "⋯" na barra do navegador',
+          step2: 'Toque em "Compartilhar"',
+          step3: 'Toque em "Adicionar à Tela de Início"'
         },
         chrome: {
-          step1: 'Toque no ícone de compartilhar (quadrado com seta) no topo, junto à URL',
+          step1: 'Toque no ícone de compartilhar no topo, junto à URL',
           step2: 'Toque em "⋯ Mais..."',
           step3: 'Role para baixo e toque em "Adicionar à Tela de Início"'
         }
@@ -828,11 +829,12 @@ export const translations = {
       },
       ios: {
         safari: {
-          step1: 'Tap the share icon (square with arrow) in the navigation bar',
-          step2: 'Tap "Add to Home Screen"'
+          step1: 'Tap "⋯" in the browser bar',
+          step2: 'Tap "Share"',
+          step3: 'Tap "Add to Home Screen"'
         },
         chrome: {
-          step1: 'Tap the share icon (square with arrow) at the top, next to the URL',
+          step1: 'Tap the share icon at the top, next to the URL',
           step2: 'Tap "⋯ More..."',
           step3: 'Scroll down and tap "Add to Home Screen"'
         }

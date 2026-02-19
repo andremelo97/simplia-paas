@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Smartphone, Monitor, ChevronDown, Download, Globe, Chrome, Share2, MoreHorizontal, Menu, Plus, ArrowUp } from 'lucide-react'
+import { Smartphone, ChevronDown, Download, Chrome, MoreHorizontal, Menu, Plus } from 'lucide-react'
 import { useLanguage } from '../i18n/LanguageContext'
 
 type Platform = 'ios' | 'android'
@@ -41,17 +41,17 @@ interface StepCardProps {
 
 const StepCard: React.FC<StepCardProps> = ({ number, icon, text, delay = 0 }) => (
   <motion.div
-    initial={{ opacity: 0, x: -20 }}
+    initial={{ opacity: 0, x: -15 }}
     animate={{ opacity: 1, x: 0 }}
-    transition={{ duration: 0.5, delay }}
-    className="flex items-center gap-4 p-4 rounded-xl border border-white/10 bg-white/[0.03] backdrop-blur-sm hover:bg-white/[0.06] transition-colors"
+    transition={{ duration: 0.4, delay }}
+    className="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 bg-gray-50/50 hover:bg-gray-100/80 transition-colors"
   >
-    <div className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white"
+    <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
       style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}
     >
       {number}
     </div>
-    <div className="flex items-center gap-2.5 text-gray-300 text-sm md:text-base leading-relaxed">
+    <div className="flex items-center gap-2 text-gray-700 text-sm leading-relaxed">
       {icon}
       <span>{text}</span>
     </div>
@@ -72,11 +72,15 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle, d
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, margin: '-50px' }}
     transition={{ duration: 0.4, delay }}
-    className="border border-white/10 rounded-xl overflow-hidden bg-white/[0.02] backdrop-blur-sm"
+    className="rounded-xl overflow-hidden backdrop-blur-sm"
+    style={{
+      background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+      border: '1px solid rgba(183,37,183,0.15)'
+    }}
   >
     <button
       onClick={onToggle}
-      className="w-full flex items-center justify-between p-5 text-left hover:bg-white/[0.03] transition-colors"
+      className="w-full flex items-center justify-between p-5 text-left hover:bg-white/[0.04] transition-colors group"
     >
       <span className="font-medium text-white text-sm md:text-base pr-4">{question}</span>
       <motion.div
@@ -84,7 +88,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ question, answer, isOpen, onToggle, d
         transition={{ duration: 0.3 }}
         className="flex-shrink-0"
       >
-        <ChevronDown className="w-5 h-5 text-gray-400" />
+        <ChevronDown className="w-5 h-5 text-[#B725B7] group-hover:text-[#E91E63] transition-colors" />
       </motion.div>
     </button>
     <AnimatePresence>
@@ -112,20 +116,20 @@ interface BrowserSectionProps {
 
 const BrowserSection: React.FC<BrowserSectionProps> = ({ icon, name, steps }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 15 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-    className="space-y-3"
+    transition={{ duration: 0.4 }}
+    className="space-y-2.5"
   >
-    <div className="flex items-center gap-2.5 mb-4">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.06] border border-white/10">
+    <div className="flex items-center gap-2.5 mb-3">
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-100 border border-gray-200">
         {icon}
       </div>
-      <h3 className="text-white font-semibold text-base">{name}</h3>
+      <h3 className="text-gray-900 font-semibold text-sm">{name}</h3>
     </div>
-    <div className="space-y-2.5 pl-1">
+    <div className="space-y-2 pl-0.5">
       {steps.map((step, i) => (
-        <StepCard key={i} number={i + 1} icon={step.icon} text={step.text} delay={i * 0.1} />
+        <StepCard key={i} number={i + 1} icon={step.icon} text={step.text} delay={i * 0.08} />
       ))}
     </div>
   </motion.div>
@@ -136,28 +140,33 @@ export function InstallPage() {
   const [platform, setPlatform] = useState<Platform>('ios')
   const [openFaq, setOpenFaq] = useState<number | null>(null)
 
+  // Instructions matching the InstallAppBanner exactly
   const iosSteps = {
     safari: [
       {
-        icon: <IOSShareIcon className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <span className="text-gray-400 text-xs font-medium">"⋯"</span>,
         text: t.install.ios.safari.step1
       },
       {
-        icon: <Plus className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <IOSShareIcon className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.ios.safari.step2
+      },
+      {
+        icon: <Plus className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
+        text: t.install.ios.safari.step3
       }
     ],
     chrome: [
       {
-        icon: <IOSShareIcon className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <IOSShareIcon className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.ios.chrome.step1
       },
       {
-        icon: <MoreHorizontal className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <MoreHorizontal className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.ios.chrome.step2
       },
       {
-        icon: <Plus className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <Plus className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.ios.chrome.step3
       }
     ]
@@ -166,25 +175,25 @@ export function InstallPage() {
   const androidSteps = {
     chrome: [
       {
-        icon: <MoreHorizontal className="w-5 h-5 flex-shrink-0 text-[#5ED6CE] rotate-90" />,
+        icon: <MoreHorizontal className="w-4 h-4 flex-shrink-0 text-[#B725B7] rotate-90" />,
         text: t.install.android.chrome.step1
       },
       {
-        icon: <Download className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <Download className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.android.chrome.step2
       }
     ],
     samsung: [
       {
-        icon: <Menu className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <Menu className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.android.samsung.step1
       },
       {
-        icon: <Plus className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <Plus className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.android.samsung.step2
       },
       {
-        icon: <Smartphone className="w-5 h-5 flex-shrink-0 text-[#5ED6CE]" />,
+        icon: <Smartphone className="w-4 h-4 flex-shrink-0 text-[#B725B7]" />,
         text: t.install.android.samsung.step3
       }
     ]
@@ -193,125 +202,150 @@ export function InstallPage() {
   const faqItems = t.install.faq.items
 
   return (
-    <section className="relative min-h-screen bg-[#0a0a0f] overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] opacity-20 pointer-events-none"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(183,37,183,0.3) 0%, rgba(233,30,99,0.1) 40%, transparent 70%)'
-        }}
-      />
+    <>
+      {/* Block 1: White bg — 2-column hero + instructions */}
+      <section className="relative bg-white overflow-hidden">
+        {/* Subtle decoration */}
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] opacity-[0.04] pointer-events-none"
+          style={{ background: 'radial-gradient(circle at top right, #B725B7, transparent 70%)' }}
+        />
 
-      <div className="relative z-10 max-w-3xl mx-auto px-5 pt-32 pb-24">
-        {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
-            style={{ background: 'linear-gradient(135deg, rgba(183,37,183,0.15), rgba(233,30,99,0.15))' }}
-          >
-            <Download className="w-8 h-8 text-[#B725B7]" />
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            {t.install.hero.title}
-          </h1>
-          <p className="text-gray-400 text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-            {t.install.hero.subtitle}
-          </p>
-        </motion.div>
-
-        {/* Platform Selector */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex justify-center mb-12"
-        >
-          <div className="inline-flex rounded-xl p-1 border border-white/10 bg-white/[0.03] backdrop-blur-sm">
-            {(['ios', 'android'] as Platform[]).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPlatform(p)}
-                className={`relative flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  platform === p ? 'text-white' : 'text-gray-400 hover:text-gray-200'
-                }`}
+        <div className="relative z-10 max-w-6xl mx-auto px-5 pt-32 pb-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-start">
+            {/* Left: Hero */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="lg:sticky lg:top-32"
+            >
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-6"
+                style={{ background: 'linear-gradient(135deg, rgba(183,37,183,0.1), rgba(233,30,99,0.1))' }}
               >
-                {platform === p && (
-                  <motion.div
-                    layoutId="platform-pill"
-                    className="absolute inset-0 rounded-lg"
-                    style={{ background: 'linear-gradient(135deg, rgba(183,37,183,0.3), rgba(233,30,99,0.3))' }}
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-2">
-                  {p === 'ios' ? <Smartphone className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
-                  {p === 'ios' ? 'iPhone / iPad' : 'Android'}
-                </span>
-              </button>
-            ))}
+                <Download className="w-7 h-7 text-[#B725B7]" />
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                {t.install.hero.title}
+              </h1>
+              <p className="text-gray-500 text-base md:text-lg leading-relaxed max-w-md">
+                {t.install.hero.subtitle}
+              </p>
+            </motion.div>
+
+            {/* Right: Platform selector + instructions */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              {/* Platform Selector */}
+              <div className="flex mb-8">
+                <div className="inline-flex rounded-xl p-1 border border-gray-200 bg-gray-50">
+                  {(['ios', 'android'] as Platform[]).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPlatform(p)}
+                      className={`relative flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                        platform === p ? 'text-white' : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {platform === p && (
+                        <motion.div
+                          layoutId="platform-pill"
+                          className="absolute inset-0 rounded-lg shadow-sm"
+                          style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}
+                          transition={{ type: 'spring', bounce: 0.2, duration: 0.5 }}
+                        />
+                      )}
+                      <span className="relative z-10 flex items-center gap-2">
+                        <Smartphone className="w-4 h-4" />
+                        {p === 'ios' ? 'iPhone / iPad' : 'Android'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Browser Instructions */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={platform}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-8"
+                >
+                  {platform === 'ios' ? (
+                    <>
+                      <BrowserSection
+                        icon={<SafariIcon className="w-4 h-4 text-[#B725B7]" />}
+                        name="Safari"
+                        steps={iosSteps.safari}
+                      />
+                      <BrowserSection
+                        icon={<Chrome className="w-4 h-4 text-[#B725B7]" />}
+                        name="Google Chrome"
+                        steps={iosSteps.chrome}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <BrowserSection
+                        icon={<Chrome className="w-4 h-4 text-[#B725B7]" />}
+                        name="Google Chrome"
+                        steps={androidSteps.chrome}
+                      />
+                      <BrowserSection
+                        icon={<SamsungIcon className="w-4 h-4 text-[#B725B7]" />}
+                        name="Samsung Internet"
+                        steps={androidSteps.samsung}
+                      />
+                    </>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </motion.div>
           </div>
-        </motion.div>
+        </div>
+      </section>
 
-        {/* Browser Instructions */}
-        <AnimatePresence mode="wait">
+      {/* Block 2: Dark bg — FAQ */}
+      <section className="relative bg-[#0a0a0f] overflow-hidden py-24">
+        {/* Background effects */}
+        <div className="absolute top-0 left-0 w-full h-px"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(183,37,183,0.3), rgba(233,30,99,0.3), transparent)' }}
+        />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] opacity-15 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at center, rgba(183,37,183,0.25) 0%, rgba(94,214,206,0.08) 50%, transparent 70%)' }}
+        />
+        <div className="absolute bottom-0 right-0 w-[300px] h-[300px] opacity-10 pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(94,214,206,0.4), transparent 70%)' }}
+        />
+
+        <div className="relative z-10 max-w-3xl mx-auto px-5">
           <motion.div
-            key={platform}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.35 }}
-            className="space-y-10 mb-20"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-10"
           >
-            {platform === 'ios' ? (
-              <>
-                <BrowserSection
-                  icon={<SafariIcon className="w-5 h-5 text-[#5ED6CE]" />}
-                  name="Safari"
-                  steps={iosSteps.safari}
-                />
-                <BrowserSection
-                  icon={<Chrome className="w-5 h-5 text-[#5ED6CE]" />}
-                  name="Google Chrome"
-                  steps={iosSteps.chrome}
-                />
-              </>
-            ) : (
-              <>
-                <BrowserSection
-                  icon={<Chrome className="w-5 h-5 text-[#5ED6CE]" />}
-                  name="Google Chrome"
-                  steps={androidSteps.chrome}
-                />
-                <BrowserSection
-                  icon={<SamsungIcon className="w-5 h-5 text-[#5ED6CE]" />}
-                  name="Samsung Internet"
-                  steps={androidSteps.samsung}
-                />
-              </>
-            )}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* FAQ */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="text-center mb-8">
-            <span className="inline-block px-3 py-1 rounded-full text-xs font-medium tracking-wide uppercase border border-white/10 text-gray-400 mb-4">
+            <span className="inline-block px-4 py-1.5 rounded-full text-xs font-medium tracking-wide uppercase mb-4"
+              style={{
+                background: 'linear-gradient(135deg, rgba(183,37,183,0.12), rgba(233,30,99,0.12))',
+                border: '1px solid rgba(183,37,183,0.2)',
+                color: '#E91E63'
+              }}
+            >
               FAQ
             </span>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               {t.install.faq.title}
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {faqItems.map((item: { question: string; answer: string }, i: number) => (
               <FAQItem
                 key={i}
@@ -323,24 +357,8 @@ export function InstallPage() {
               />
             ))}
           </div>
-        </motion.div>
-
-        {/* Back to top */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="flex justify-center mt-16"
-        >
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="flex items-center gap-2 text-gray-500 hover:text-gray-300 text-sm transition-colors"
-          >
-            <ArrowUp className="w-4 h-4" />
-            {t.install.backToTop}
-          </button>
-        </motion.div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   )
 }

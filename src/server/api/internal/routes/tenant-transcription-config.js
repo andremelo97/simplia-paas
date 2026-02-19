@@ -212,31 +212,33 @@ router.put('/:tenantId/transcription-config', async (req, res) => {
       overageAllowed: overageAllowed === true  // Explicit boolean conversion (undefined becomes false)
     });
 
-    // If plan is a trial, update TQ app's expires_at in tenant_applications
-    if (plan.isTrial && plan.trialDays) {
-      try {
-        // Find TQ application
-        const tqApp = await Application.findBySlug('tq');
+    // Sync TQ app's expires_at in tenant_applications based on plan type
+    try {
+      // Find TQ application
+      const tqApp = await Application.findBySlug('tq');
 
-        // Find tenant's TQ license
-        const tqLicense = await TenantApplication.findByTenantAndApplication(
-          parseInt(tenantId),
-          tqApp.id
-        );
+      // Find tenant's TQ license
+      const tqLicense = await TenantApplication.findByTenantAndApplication(
+        parseInt(tenantId),
+        tqApp.id
+      );
 
-        if (tqLicense) {
-          // Calculate expiration date: NOW + trial_days
+      if (tqLicense) {
+        if (plan.isTrial && plan.trialDays) {
+          // Trial plan: set expiration date
           const expiresAt = new Date();
           expiresAt.setDate(expiresAt.getDate() + plan.trialDays);
-
-          // Update the license with expiration date
           await tqLicense.update({ expires_at: expiresAt });
           console.log(`✅ [Trial Plan] Updated TQ license expires_at to ${expiresAt.toISOString()} for tenant ${tenantId}`);
+        } else if (tqLicense.expiresAt) {
+          // Non-trial plan: clear expiration if it was set
+          await tqLicense.update({ expires_at: null });
+          console.log(`✅ [Paid Plan] Cleared TQ license expires_at for tenant ${tenantId}`);
         }
-      } catch (error) {
-        console.warn(`[Trial Plan] Could not update TQ license expires_at:`, error.message);
-        // Don't fail the whole request if this fails
       }
+    } catch (error) {
+      console.warn(`[Plan Sync] Could not update TQ license expires_at:`, error.message);
+      // Don't fail the whole request if this fails
     }
 
     // Fetch full config with plan details

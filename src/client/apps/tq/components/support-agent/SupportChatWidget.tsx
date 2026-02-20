@@ -22,6 +22,7 @@ import {
 } from '@client/common/ui'
 import { supportAgentService, SupportChatMessage } from '../../services/supportAgentService'
 import { useAuthStore } from '../../shared/store/auth'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 const formatInlineMarkdown = (text: string, keyPrefix: string) => {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
@@ -51,11 +52,31 @@ interface SupportChatWidgetProps {
   onClose: () => void
 }
 
+const isSameDay = (d1: string | undefined, d2: string | undefined): boolean => {
+  if (!d1 || !d2) return false
+  const a = new Date(d1)
+  const b = new Date(d2)
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+}
+
 export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onClose }) => {
   const { t } = useTranslation('tq')
   const { user, tenantName } = useAuthStore()
+  const { formatTime, formatShortDate } = useDateFormatter()
   const userFirstName = user?.firstName || user?.name?.split(' ')[0] || ''
   const userRole = user?.role || ''
+
+  const getDateLabel = (timestamp: string | undefined): string => {
+    if (!timestamp) return ''
+    const date = new Date(timestamp)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const msgDay = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    const diffDays = Math.floor((today.getTime() - msgDay.getTime()) / 86400000)
+    if (diffDays === 0) return t('modals.support_agent.date_today')
+    if (diffDays === 1) return t('modals.support_agent.date_yesterday')
+    return formatShortDate(timestamp)
+  }
   const [messages, setMessages] = useState<SupportChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
@@ -256,39 +277,60 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
               </div>
             ) : (
               <div className="space-y-3">
-                {messages.map((message, index) =>
-                  message.role === 'assistant' ? (
-                    <div key={`a-${index}`} className="flex gap-2">
-                      <div className="flex-shrink-0">
-                        <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center">
-                          <Headphones className="w-3.5 h-3.5 text-teal-600" />
+                {messages.map((message, index) => {
+                  const prevMessage = index > 0 ? messages[index - 1] : null
+                  const showDateSeparator = !prevMessage || !isSameDay(prevMessage.timestamp, message.timestamp)
+                  const time = message.timestamp ? formatTime(message.timestamp) : ''
+
+                  return (
+                    <React.Fragment key={index}>
+                      {showDateSeparator && message.timestamp && (
+                        <div className="flex items-center justify-center py-1">
+                          <span className="text-[10px] text-gray-400 bg-gray-100 rounded-full px-2.5 py-0.5">
+                            {getDateLabel(message.timestamp)}
+                          </span>
                         </div>
-                      </div>
-                      <Card className="flex-1">
-                        <CardContent className="p-2.5">
-                          <div className="whitespace-pre-wrap font-sans text-xs text-gray-800" style={{ lineHeight: '1.6' }}>
-                            {formatMessageContent(message.content)}
+                      )}
+                      {message.role === 'assistant' ? (
+                        <div className="flex gap-2">
+                          <div className="flex-shrink-0">
+                            <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center">
+                              <Headphones className="w-3.5 h-3.5 text-teal-600" />
+                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  ) : (
-                    <div key={`u-${index}`} className="flex gap-2 justify-end">
-                      <Card className="flex-1 max-w-[280px] bg-teal-50 border-teal-100">
-                        <CardContent className="p-2.5">
-                          <div className="whitespace-pre-wrap font-sans text-xs text-gray-800" style={{ lineHeight: '1.6' }}>
-                            {formatMessageContent(message.content)}
+                          <div className="flex-1">
+                            <Card>
+                              <CardContent className="p-2.5">
+                                <div className="whitespace-pre-wrap font-sans text-xs text-gray-800" style={{ lineHeight: '1.6' }}>
+                                  {formatMessageContent(message.content)}
+                                </div>
+                              </CardContent>
+                            </Card>
+                            {time && <span className="text-[10px] text-gray-300 ml-1 mt-0.5 block">{time}</span>}
                           </div>
-                        </CardContent>
-                      </Card>
-                      <div className="flex-shrink-0">
-                        <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--brand-tertiary-bg, #f3e8ff)' }}>
-                          <User className="w-3.5 h-3.5" style={{ color: 'var(--brand-tertiary, #B725B7)' }} />
                         </div>
-                      </div>
-                    </div>
+                      ) : (
+                        <div className="flex gap-2 justify-end">
+                          <div className="flex-1 max-w-[280px]">
+                            <Card className="bg-teal-50 border-teal-100">
+                              <CardContent className="p-2.5">
+                                <div className="whitespace-pre-wrap font-sans text-xs text-gray-800" style={{ lineHeight: '1.6' }}>
+                                  {formatMessageContent(message.content)}
+                                </div>
+                              </CardContent>
+                            </Card>
+                            {time && <span className="text-[10px] text-gray-300 mt-0.5 block text-right mr-1">{time}</span>}
+                          </div>
+                          <div className="flex-shrink-0">
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--brand-tertiary-bg, #f3e8ff)' }}>
+                              <User className="w-3.5 h-3.5" style={{ color: 'var(--brand-tertiary, #B725B7)' }} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </React.Fragment>
                   )
-                )}
+                })}
 
                 {isLoading && (
                   <div className="flex gap-2">

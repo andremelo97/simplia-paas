@@ -22,6 +22,8 @@
       "role_admin": "Administrator",
       "role_manager": "Manager",
       "role_operations": "Operations",
+      "date_today": "Today",
+      "date_yesterday": "Yesterday",
       "placeholder": "Type your question...",
       "ai_thinking": "Thinking...",
       "clear_chat": "Clear Chat",

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, CardTitle, Input, Combobox, DateInput } from '@client/common/ui'
+import { X } from 'lucide-react'
+import { Card, CardHeader, CardContent, CardTitle, Input, Combobox, DateInput, Badge } from '@client/common/ui'
 import { usePatientOptions, useUserOptions } from '../../hooks/useFilterOptions'
 
 interface ClinicalNotesFiltersProps {
@@ -32,12 +33,46 @@ export const ClinicalNotesFilters: React.FC<ClinicalNotesFiltersProps> = ({
   const patientOptions = usePatientOptions()
   const userOptions = useUserOptions()
 
+  const activeFilterCount = [
+    searchQuery !== '',
+    patientId !== undefined,
+    createdByUserId !== undefined,
+    createdFrom !== undefined,
+    createdTo !== undefined
+  ].filter(Boolean).length
+
+  const handleClearAll = () => {
+    onSearchChange('')
+    onPatientChange(undefined)
+    onCreatedByChange(undefined)
+    onCreatedFromChange(undefined)
+    onCreatedToChange(undefined)
+  }
+
   return (
     <Card>
       <CardHeader className="py-4 px-6">
-        <CardTitle className="text-base">
-          {t('clinical_notes.filters.title')}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">
+              {t('clinical_notes.filters.title')}
+            </CardTitle>
+            {activeFilterCount > 0 && (
+              <Badge className="bg-[#B725B7] text-white text-xs px-1.5 py-0.5">
+                {t('common:filters_active', { count: activeFilterCount })}
+              </Badge>
+            )}
+          </div>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+              {t('common:clear_filters')}
+            </button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">

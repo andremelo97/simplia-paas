@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X, Shield, Share2, Eye, Mic, Receipt, ClipboardList } from 'lucide-react'
+import { ArrowLeft, FileText, DollarSign, Stethoscope, Clock, UserPlus, Edit, Filter, X, Shield, Share2, Mic, Receipt, ClipboardList } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -342,8 +342,8 @@ export const PatientHistory: React.FC = () => {
               <Filter className="w-4 h-4" />
               {t('patients.history.filters')}
               {(createdFrom || createdTo) && (
-                <span className="bg-[#B725B7] text-white text-xs px-2 py-0.5 rounded-full">
-                  {t('patients.history.active')}
+                <span className="bg-[#B725B7] text-white text-xs px-1.5 py-0.5 rounded-full font-medium">
+                  {[createdFrom, createdTo].filter(Boolean).length}
                 </span>
               )}
             </button>
@@ -786,7 +786,6 @@ export const PatientHistory: React.FC = () => {
                             onClick={() => window.open(`/landing-pages/links/${lp.id}/preview`, '_blank')}
                             className="flex items-center gap-1.5 flex-shrink-0"
                           >
-                            <Eye className="w-4 h-4" />
                             {t('landing_pages.links.card.preview')}
                           </Button>
                         </div>

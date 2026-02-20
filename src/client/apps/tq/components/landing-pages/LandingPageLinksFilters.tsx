@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, CardTitle, Input, DateInput, Checkbox, Label, Select } from '@client/common/ui'
+import { Card, CardHeader, CardContent, CardTitle, Input, DateInput, Checkbox, Label, Select, Badge } from '@client/common/ui'
 import { X } from 'lucide-react'
 
 interface LandingPageLinksFiltersProps {
@@ -36,19 +36,39 @@ export const LandingPageLinksFilters: React.FC<LandingPageLinksFiltersProps> = (
 }) => {
   const { t } = useTranslation('tq')
 
+  const activeFilterCount = [
+    documentFilter !== '',
+    documentTypeFilter !== 'all',
+    showActiveOnly,
+    showInactiveOnly,
+    createdFrom !== '',
+    createdTo !== ''
+  ].filter(Boolean).length
+
   return (
     <Card>
-      <CardHeader className="py-4 px-6 flex flex-row items-center justify-between">
-        <CardTitle className="text-base">
-          {t('landing_pages.filters.title')}
-        </CardTitle>
-        <button
-          onClick={onClearFilters}
-          className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors"
-        >
-          <X className="w-4 h-4" />
-          {t('landing_pages.filters.clear_filters')}
-        </button>
+      <CardHeader className="py-4 px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">
+              {t('landing_pages.filters.title')}
+            </CardTitle>
+            {activeFilterCount > 0 && (
+              <Badge className="bg-[#B725B7] text-white text-xs px-1.5 py-0.5">
+                {t('common:filters_active', { count: activeFilterCount })}
+              </Badge>
+            )}
+          </div>
+          {activeFilterCount > 0 && (
+            <button
+              onClick={onClearFilters}
+              className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+              {t('landing_pages.filters.clear_filters')}
+            </button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

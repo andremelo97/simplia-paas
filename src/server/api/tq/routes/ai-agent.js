@@ -5,7 +5,6 @@ const { resolveTemplateVariables } = require('../../../services/templateVariable
 const { Template, TemplateNotFoundError } = require('../../../infra/models/Template');
 const { Patient, PatientNotFoundError } = require('../../../infra/models/Patient');
 const { Session, SessionNotFoundError } = require('../../../infra/models/Session');
-const { AIAgentConfiguration } = require('../../../infra/models/AIAgentConfiguration');
 const { getTemplateFillerPrompt } = require('../../../infra/utils/aiAgentDefaults');
 const { getLocaleFromTimezone } = require('../../../infra/utils/localeMapping');
 

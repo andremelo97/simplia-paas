@@ -8,6 +8,7 @@ import {
   User,
   Loader2,
   Trash2,
+  Minus,
   MessageCircle,
   Mail
 } from 'lucide-react'
@@ -21,12 +22,12 @@ import {
 } from '@client/common/ui'
 import { supportAgentService, SupportChatMessage } from '../../services/supportAgentService'
 
-interface SupportAgentModalProps {
+interface SupportChatWidgetProps {
   open: boolean
   onClose: () => void
 }
 
-export const SupportAgentModal: React.FC<SupportAgentModalProps> = ({ open, onClose }) => {
+export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onClose }) => {
   const { t } = useTranslation('tq')
   const [messages, setMessages] = useState<SupportChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -45,14 +46,14 @@ export const SupportAgentModal: React.FC<SupportAgentModalProps> = ({ open, onCl
     scrollToBottom()
   }, [messages])
 
-  // Load history when modal opens
+  // Load history when widget opens
   useEffect(() => {
     if (open) {
       loadHistory()
     }
   }, [open])
 
-  // Focus input when modal opens
+  // Focus input when widget opens
   useEffect(() => {
     if (open && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100)
@@ -115,117 +116,115 @@ export const SupportAgentModal: React.FC<SupportAgentModalProps> = ({ open, onCl
     }
   }
 
-  if (!open) return null
-
   const whatsappNumber = '5511966874759'
   const email = 'admin@livocare.ai'
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Backdrop */}
+      {open && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60"
-          onClick={onClose}
-        />
-
-        {/* Modal */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          transition={{ type: 'spring', duration: 0.3 }}
-          className="relative bg-white rounded-lg shadow-2xl w-full max-w-2xl h-[80vh] max-h-[700px] flex flex-col mx-4"
-          onClick={(e) => e.stopPropagation()}
+          initial={{ opacity: 0, y: 20, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.95 }}
+          transition={{ type: 'spring', duration: 0.35 }}
+          className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[550px] max-h-[calc(100vh-8rem)] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-teal-100 rounded-lg">
-                <Headphones className="w-5 h-5 text-teal-600" />
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-teal-50 to-white flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="p-1.5 bg-teal-100 rounded-lg">
+                <Headphones className="w-4 h-4 text-teal-600" />
               </div>
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {t('modals.support_agent.title')}
-                </h2>
-              </div>
+              <h2 className="text-sm font-semibold text-gray-900">
+                {t('modals.support_agent.title')}
+              </h2>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               {messages.length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleClearChat}
-                  className="text-gray-400 hover:text-red-500 p-2"
+                  className="text-gray-400 hover:text-red-500 p-1.5 h-auto"
                   title={t('modals.support_agent.clear_chat')}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </Button>
               )}
-              <Button variant="ghost" size="sm" onClick={onClose} className="p-2">
-                <X className="w-5 h-5" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 p-1.5 h-auto"
+              >
+                <Minus className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-600 p-1.5 h-auto"
+              >
+                <X className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 p-4 overflow-y-auto">
+          <div className="flex-1 p-3 overflow-y-auto">
             {error && (
-              <Alert className="mb-4">
-                <AlertDescription>{error}</AlertDescription>
+              <Alert className="mb-3">
+                <AlertDescription className="text-xs">{error}</AlertDescription>
               </Alert>
             )}
 
             {isLoadingHistory ? (
               <div className="flex items-center justify-center h-full">
-                <Loader2 className="w-6 h-6 text-teal-500 animate-spin" />
+                <Loader2 className="w-5 h-5 text-teal-500 animate-spin" />
               </div>
             ) : messages.length === 0 ? (
               /* Welcome message */
-              <div className="flex flex-col items-center justify-center h-full text-center px-6">
-                <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mb-4">
-                  <Headphones className="w-8 h-8 text-teal-600" />
+              <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-3">
+                  <Headphones className="w-6 h-6 text-teal-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-base font-semibold text-gray-900 mb-1.5">
                   {t('modals.support_agent.title')}
                 </h3>
-                <p className="text-sm text-gray-500 max-w-sm">
+                <p className="text-xs text-gray-500 max-w-[280px]">
                   {t('modals.support_agent.welcome_message')}
                 </p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {messages.map((message, index) =>
                   message.role === 'assistant' ? (
-                    <div key={`a-${index}`} className="flex gap-3">
+                    <div key={`a-${index}`} className="flex gap-2">
                       <div className="flex-shrink-0">
-                        <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
-                          <Headphones className="w-4 h-4 text-teal-600" />
+                        <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center">
+                          <Headphones className="w-3.5 h-3.5 text-teal-600" />
                         </div>
                       </div>
                       <Card className="flex-1">
-                        <CardContent className="p-3">
-                          <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800 m-0" style={{ lineHeight: '1.7' }}>
+                        <CardContent className="p-2.5">
+                          <pre className="whitespace-pre-wrap font-sans text-xs text-gray-800 m-0" style={{ lineHeight: '1.6' }}>
                             {message.content}
                           </pre>
                         </CardContent>
                       </Card>
                     </div>
                   ) : (
-                    <div key={`u-${index}`} className="flex gap-3 justify-end">
-                      <Card className="flex-1 max-w-md bg-teal-50 border-teal-100">
-                        <CardContent className="p-3">
-                          <pre className="whitespace-pre-wrap font-sans text-sm text-gray-800 m-0" style={{ lineHeight: '1.7' }}>
+                    <div key={`u-${index}`} className="flex gap-2 justify-end">
+                      <Card className="flex-1 max-w-[280px] bg-teal-50 border-teal-100">
+                        <CardContent className="p-2.5">
+                          <pre className="whitespace-pre-wrap font-sans text-xs text-gray-800 m-0" style={{ lineHeight: '1.6' }}>
                             {message.content}
                           </pre>
                         </CardContent>
                       </Card>
                       <div className="flex-shrink-0">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--brand-tertiary-bg, #f3e8ff)' }}>
-                          <User className="w-4 h-4" style={{ color: 'var(--brand-tertiary, #B725B7)' }} />
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--brand-tertiary-bg, #f3e8ff)' }}>
+                          <User className="w-3.5 h-3.5" style={{ color: 'var(--brand-tertiary, #B725B7)' }} />
                         </div>
                       </div>
                     </div>
@@ -233,15 +232,15 @@ export const SupportAgentModal: React.FC<SupportAgentModalProps> = ({ open, onCl
                 )}
 
                 {isLoading && (
-                  <div className="flex gap-3">
+                  <div className="flex gap-2">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center">
-                        <Loader2 className="w-4 h-4 text-teal-600 animate-spin" />
+                      <div className="w-7 h-7 bg-teal-100 rounded-full flex items-center justify-center">
+                        <Loader2 className="w-3.5 h-3.5 text-teal-600 animate-spin" />
                       </div>
                     </div>
                     <Card className="flex-1">
-                      <CardContent className="p-3">
-                        <div className="text-sm text-gray-500">{t('modals.support_agent.ai_thinking')}</div>
+                      <CardContent className="p-2.5">
+                        <div className="text-xs text-gray-500">{t('modals.support_agent.ai_thinking')}</div>
                       </CardContent>
                     </Card>
                   </div>
@@ -253,9 +252,9 @@ export const SupportAgentModal: React.FC<SupportAgentModalProps> = ({ open, onCl
           </div>
 
           {/* Footer: Input + Contact link */}
-          <div className="border-t border-gray-200">
-            <div className="p-4">
-              <div className="flex gap-3">
+          <div className="border-t border-gray-200 flex-shrink-0">
+            <div className="p-3">
+              <div className="flex gap-2">
                 <Input
                   ref={inputRef}
                   placeholder={t('modals.support_agent.placeholder')}
@@ -263,24 +262,24 @@ export const SupportAgentModal: React.FC<SupportAgentModalProps> = ({ open, onCl
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={handleKeyPress}
                   disabled={isLoading}
-                  className="flex-1 min-w-0"
+                  className="flex-1 min-w-0 text-sm h-9"
                 />
                 <Button
                   onClick={sendMessage}
                   disabled={!userInput.trim() || isLoading}
-                  className="px-4 flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white"
+                  className="px-3 flex-shrink-0 bg-teal-600 hover:bg-teal-700 text-white h-9"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5" />
                   )}
                 </Button>
               </div>
             </div>
 
             {/* Human support link */}
-            <div className="px-4 pb-3 flex items-center justify-center gap-4 text-xs text-gray-400">
+            <div className="px-3 pb-2.5 flex items-center justify-center gap-3 text-[11px] text-gray-400">
               <span>{t('modals.support_agent.contact_human')}</span>
               <a
                 href={`https://wa.me/${whatsappNumber}`}
@@ -288,20 +287,20 @@ export const SupportAgentModal: React.FC<SupportAgentModalProps> = ({ open, onCl
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
               >
-                <MessageCircle className="w-3.5 h-3.5" />
+                <MessageCircle className="w-3 h-3" />
                 WhatsApp
               </a>
               <a
                 href={`mailto:${email}`}
                 className="inline-flex items-center gap-1 text-[#B725B7] hover:text-[#9B1E9B] transition-colors"
               >
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-3 h-3" />
                 Email
               </a>
             </div>
           </div>
         </motion.div>
-      </div>
+      )}
     </AnimatePresence>
   )
 }

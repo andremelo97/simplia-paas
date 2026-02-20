@@ -13,6 +13,7 @@ import { TQOnboardingWizard } from '../../components/onboarding/TQOnboardingWiza
 import { MobileRouteGuard } from './MobileRouteGuard'
 import { MobileBottomNav } from './MobileBottomNav'
 import { InstallAppBanner } from '@client/common/components'
+import { SupportChatWidget } from '../../components/support-agent/SupportChatWidget'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
@@ -22,6 +23,7 @@ export const Layout: React.FC = () => {
   const { showResumeHint, openWizard, hideResumeHint } = useOnboardingStore()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false)
   const isMobile = useIsMobile(768)
 
   // Configurations page needs full height without padding (like Hub)
@@ -71,7 +73,7 @@ export const Layout: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden print:block print:overflow-visible">
-        <Header onMenuToggle={handleMenuToggle} />
+        <Header onMenuToggle={handleMenuToggle} onOpenAIChat={() => setIsChatWidgetOpen(true)} />
 
 
         <main className={`flex-1 ${isConfigurationsPage ? 'overflow-hidden relative' : 'overflow-y-auto overflow-x-visible'} pb-16 md:pb-0`}>
@@ -138,6 +140,9 @@ export const Layout: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Support Chat Widget (floating, persists across routes) */}
+      <SupportChatWidget open={isChatWidgetOpen} onClose={() => setIsChatWidgetOpen(false)} />
 
       {/* Global Feedback Host */}
       <FeedbackHost />

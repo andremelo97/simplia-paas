@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
-import { MessageCircle, Mail, Copy, Check } from 'lucide-react'
+import { MessageCircle, Mail, Copy, Check, Headphones } from 'lucide-react'
 
 interface SupportModalProps {
   isOpen: boolean
   onClose: () => void
+  onOpenAIChat?: () => void
 }
 
-export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) => {
+export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, onOpenAIChat }) => {
   const { t } = useTranslation('common')
   const whatsappNumber = '5511966874759'
   const whatsappDisplay = '+55 11 96687-4759'
@@ -133,6 +134,25 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) =
             )}
           </button>
         </div>
+
+        {/* AI Support Agent */}
+        {onOpenAIChat && (
+          <button
+            onClick={() => {
+              onClose()
+              onOpenAIChat()
+            }}
+            className="w-full flex items-center gap-4 p-4 rounded-lg border border-gray-200 hover:border-teal-500 hover:bg-teal-50 transition-all group text-left"
+          >
+            <div className="flex-shrink-0 w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center group-hover:bg-teal-200 transition-colors">
+              <Headphones className="w-6 h-6 text-teal-600" />
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">{t('support_modal.ai_agent')}</p>
+              <p className="text-sm text-gray-600">{t('support_modal.ai_agent_description')}</p>
+            </div>
+          </button>
+        )}
       </div>
     </Modal>
   )

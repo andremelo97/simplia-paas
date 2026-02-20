@@ -338,7 +338,9 @@
     "whatsapp": "WhatsApp",
     "email": "E-mail",
     "copy": "Copiar",
-    "contact_channels": "Canais de atendimento"
+    "contact_channels": "Canais de atendimento",
+    "ai_agent": "Agente de Suporte 24/7",
+    "ai_agent_description": "Assistência instantânea com IA, disponível a qualquer momento"
   },
   "pwa": {
     "install_title": "Instalar App",

@@ -10,7 +10,6 @@ const clinicalNotesRoutes = require('./routes/clinical-notes');
 const landingPagesRoutes = require('./routes/landing-pages');
 const landingPageTemplatesRoutes = require('./routes/landing-page-templates');
 const preventionRoutes = require('./routes/prevention');
-const aiAgentConfigurationRoutes = require('./routes/ai-agent-configuration');
 const emailTemplatesRoutes = require('./routes/email-templates');
 const usersRoutes = require('./routes/users');
 const supportAgentRoutes = require('./routes/support-agent');
@@ -50,7 +49,6 @@ router.use('/ai-agent', aiAgentRoutes);
 router.use('/support-agent', supportAgentRoutes);
 
 // Mount configurations routes
-router.use('/configurations/ai-agent', aiAgentConfigurationRoutes);
 router.use('/configurations/email-template', emailTemplatesRoutes);
 
 /**

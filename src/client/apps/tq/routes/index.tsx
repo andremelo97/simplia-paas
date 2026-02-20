@@ -36,7 +36,6 @@ import { PreviewLandingPageTemplate } from '../features/landing-pages/PreviewLan
 import { LandingPageAccess } from '../features/landing-pages/LandingPageAccess'
 import { PreviewLandingPageLink } from '../features/landing-pages/PreviewLandingPageLink'
 import { Configurations } from '../features/configurations/Configurations'
-import { AIAgentConfiguration } from '../features/configurations/AIAgentConfiguration'
 import { EmailTemplateConfiguration } from '../features/configurations/EmailTemplateConfiguration'
 
 const NotFound: React.FC = () => (
@@ -215,8 +214,7 @@ export const AppRoutes: React.FC = () => {
             <Configurations />
           </RouteGuard>
         }>
-          <Route index element={<Navigate to="ai-agent" replace />} />
-          <Route path="ai-agent" element={<AIAgentConfiguration />} />
+          <Route index element={<Navigate to="email-template" replace />} />
           <Route path="email-template" element={<EmailTemplateConfiguration />} />
         </Route>
 

@@ -12,8 +12,7 @@ import { templatesService, Template } from '../../services/templates'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useTranslation } from 'react-i18next'
 import { HelpCircle, Headphones, LogOut } from 'lucide-react'
-import { Tooltip, Button } from '@client/common/ui'
-import { SupportAgentModal } from '../../components/support-agent/SupportAgentModal'
+import { Tooltip, Button, SupportModal } from '@client/common/ui'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
@@ -103,7 +102,6 @@ const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
   // --- Configurations ---
   if (s[0] === 'configurations') {
     const config = { label: t('breadcrumbs.configurations'), href: '/configurations' }
-    if (s[1] === 'ai-agent') return [home, config, { label: t('breadcrumbs.ai_agent'), href: '#' }]
     if (s[1] === 'email-template') return [home, config, { label: t('breadcrumbs.email_template'), href: '#' }]
     return [home, config]
   }
@@ -158,9 +156,10 @@ const getDisplayRole = (user: any) => {
 
 interface TQHeaderProps {
   onMenuToggle?: () => void
+  onOpenAIChat?: () => void
 }
 
-export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle }) => {
+export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle, onOpenAIChat }) => {
   const { t } = useTranslation('tq')
   const { user } = useAuthStore()
   const { openWizard } = useOnboardingStore()
@@ -307,9 +306,10 @@ export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle }) => {
         )}
       </div>
 
-      <SupportAgentModal
-        open={isSupportOpen}
+      <SupportModal
+        isOpen={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
+        onOpenAIChat={onOpenAIChat}
       />
     </>
   )

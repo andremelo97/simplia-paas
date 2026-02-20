@@ -322,7 +322,9 @@
     "whatsapp": "WhatsApp",
     "email": "Email",
     "copy": "Copy",
-    "contact_channels": "Contact channels"
+    "contact_channels": "Contact channels",
+    "ai_agent": "24/7 Support Agent",
+    "ai_agent_description": "Instant AI-powered assistance, available anytime"
   },
   "pwa": {
     "install_title": "Install App",

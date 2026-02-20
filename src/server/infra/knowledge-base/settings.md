@@ -10,20 +10,65 @@ Email templates control how the emails look when you share quotes or prevention 
 
 1. Navigate to **Configurations > Email Template** in the TQ sidebar.
 2. Select whether you want to edit the template for **Quotes** or **Prevention Documents** (they have separate templates).
-3. Customize the following fields:
-   - **Subject line**: The email subject the patient sees (e.g., "Your Treatment Quote from [Clinic Name]").
-   - **Greeting**: The opening text of the email (e.g., "Hello, [Patient Name]").
-   - **Body text**: The main message content explaining what the patient is receiving.
-   - **CTA button text**: The label on the call-to-action button (e.g., "View Your Quote", "See Your Care Plan").
-   - **Footer**: Text at the bottom of the email for disclaimers, contact info, or legal text.
-4. Save your changes. All future emails of that type will use the updated template.
+3. Customize the email content (subject, greeting, body) and visual settings (see below).
+4. Use the **live preview** on the right side to see exactly how the email will look.
+5. Save your changes. All future emails of that type will use the updated template.
+6. Use **Reset to Default** if you want to revert all changes back to the original template.
+
+### Email Template Variables
+
+The email template supports variables that are automatically replaced with real data when the email is sent. Wrap variable names in dollar signs.
+
+Available variables:
+
+- `$patientName$` — The patient's full name.
+- `$quoteNumber$` — The quote document number (available in Quote templates).
+- `$preventionNumber$` — The prevention document number (available in Prevention templates).
+- `$clinicName$` — Your clinic's name.
+- `$PUBLIC_LINK$` — The public link to the landing page where the patient views their document. **REQUIRED** — this variable must be included in the template, otherwise the patient will not receive the link.
+- `$PASSWORD_BLOCK$` — The password block that displays the access password for protected links. **REQUIRED** — this variable must be included so the patient can access password-protected documents.
+
+Example usage in the email body:
+
+```
+Hello $patientName$,
+
+Your quote #$quoteNumber$ from $clinicName$ is ready.
+
+$PUBLIC_LINK$
+
+$PASSWORD_BLOCK$
+```
+
+### Visual Settings
+
+In addition to the text content, you can customize the visual appearance of the email:
+
+- **Show Logo**: Toggle to show or hide your clinic logo in the email header. When hidden, a text header with your clinic name is shown instead.
+- **Header Color**: Choose from 8 color options including solid colors and gradients for the email header background.
+- **Button Color**: The background color of the CTA (Call to Action) button.
+- **Button Text Color**: The text color on the CTA button (light or dark, depending on your button color).
+- **CTA Button Text**: The label on the action button (e.g., "View Your Quote", "See Your Care Plan").
+
+### Footer Settings
+
+The email footer automatically pulls contact information from your clinic's branding settings (configured in Hub > Branding). You can toggle which information to display:
+
+- **Email**: Show your clinic's email address.
+- **Phone**: Show your clinic's phone number.
+- **Address**: Show your clinic's physical address.
+- **Social Links**: Show links to your clinic's social media profiles.
+
+If a field is not configured in Hub > Branding, it will not appear in the footer even if toggled on.
 
 ### Tips for Email Templates
 
 - Keep the subject line short and clear so patients open the email.
 - Include your clinic name in the subject so patients recognize the sender.
 - Make the CTA button text action-oriented (e.g., "View Your Quote" rather than "Click Here").
-- Use the footer for your clinic address and contact information.
+- Always keep `$PUBLIC_LINK$` and `$PASSWORD_BLOCK$` in the template — removing them means patients cannot access their documents.
+- Use the live preview to check your changes before saving.
+- Footer contact info comes from Hub > Branding. Update it there if the info is missing or wrong.
 
 ## Communication Settings (SMTP)
 

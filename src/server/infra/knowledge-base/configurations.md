@@ -21,20 +21,41 @@ Email templates control the content and appearance of emails sent to patients wh
 
 1. Navigate to **Configurations > Email Template** in the TQ sidebar.
 2. Select the template type: **Quotes** or **Prevention Documents** (each has its own template).
-3. Customize these fields:
-   - **Subject line** - What the patient sees as the email subject.
-   - **Greeting** - The opening line of the email.
-   - **Body text** - The main content explaining what the patient is receiving.
-   - **CTA (Call to Action) button text** - The button label that the patient clicks to view their document (e.g., "View Your Quote").
-   - **Footer** - Text at the bottom for disclaimers, contact info, or legal notices.
-4. Save. All future emails of that type will use this template.
+3. Customize the email text content and visual settings.
+4. Use the **live preview** on the right to see exactly how the email looks.
+5. Save. All future emails of that type will use this template.
+6. Use **Reset to Default** to revert all changes back to the original template.
+
+#### Email Template Variables
+
+Variables are automatically replaced with real data when the email is sent. Wrap them in dollar signs:
+
+- `$patientName$` — Patient's full name
+- `$quoteNumber$` — Quote number (Quote templates only)
+- `$preventionNumber$` — Prevention number (Prevention templates only)
+- `$clinicName$` — Clinic name
+- `$PUBLIC_LINK$` — Link to the patient's landing page (**REQUIRED** — without it, the patient cannot view their document)
+- `$PASSWORD_BLOCK$` — Password block for protected access (**REQUIRED** — without it, the patient cannot enter password-protected pages)
+
+#### Visual Settings
+
+- **Show Logo**: Toggle clinic logo in the email header. When off, shows a text header instead.
+- **Header Color**: Choose from 8 color options (solid and gradient) for the header background.
+- **Button Color**: CTA button background color.
+- **Button Text Color**: CTA button text color (light or dark).
+- **CTA Button Text**: The label on the action button (e.g., "View Your Quote").
+
+#### Footer Settings
+
+The footer pulls contact info from Hub > Branding. Toggle which fields to show: email, phone, address, and social links. Fields not configured in Branding will not appear.
 
 ### Tips for Email Templates
 
 - Use a clear subject line that includes your clinic name so patients recognize the email.
 - Keep the body text concise. Patients mainly want to click the button and view their document.
 - The CTA button text should be action-oriented: "View Your Quote" is better than "Click Here".
-- Include your clinic's contact information in the footer so patients know how to reach you with questions.
+- Never remove `$PUBLIC_LINK$` or `$PASSWORD_BLOCK$` from the template — they are essential for patient access.
+- Footer contact info is managed in Hub > Branding. Update it there if information is missing.
 
 ## Hub Configurations
 

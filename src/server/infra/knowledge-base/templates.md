@@ -13,10 +13,57 @@ Templates are reusable document structures that standardize your clinical docume
 1. Navigate to **Templates** in the sidebar.
 2. Click **Create Template**.
 3. Choose the template type (clinical note, quote, or prevention).
-4. Give it a clear, descriptive title (e.g., "Dermatology Consultation Note" or "Botox Treatment Quote").
+4. Give it a clear, descriptive title (e.g., "Dermatology Consultation Note" or "Botox Treatment Quote"). The title must be at least 3 characters.
 5. Add an optional description to help other users understand when to use it.
 6. Write the template content using the rich text editor. Use template variables, AI placeholders, and AI instructions as described below.
 7. Save the template.
+
+## Template Creation Guide
+
+When creating or editing a template, a Template Creation Guide appears on the right side of the page. It explains the three types of syntax you can use, with color-coded examples. Here is the full content of the guide:
+
+### Placeholders: `[placeholder]`
+
+Wrapped in square brackets. These will be filled with information from the session dialogue, clinical notes, or contextual notes. The AI reads the transcription and generates content for each placeholder.
+
+Examples: `[Chief Complaint]`, `[Treatment Plan]`, `[summarize the patient's main concerns]`
+
+The more specific you write the placeholder, the better the AI fills it. For example, `[list the three main areas of concern mentioned by the patient]` is more specific than `[concerns]`.
+
+### Instructions: `(instruction)`
+
+Wrapped in round brackets. These guide the AI on how to behave when generating content. Instructions are removed from the final output — the patient never sees them.
+
+Examples: `(Be concise, use 2-3 sentences maximum)`, `(If not mentioned in the transcription, write "Not evaluated")`, `(Use bullet points)`
+
+### System Variables: `$variable$`
+
+Wrapped in double dollar signs. These are filled automatically with database values when the document is created. They do not use AI — they are direct data lookups.
+
+Complete list of available variables:
+
+- `$patient.first_name$` — Patient's first name
+- `$patient.last_name$` — Patient's last name
+- `$patient.fullName$` — Patient's full name (first + last)
+- `$date.now$` — Current date
+- `$session.created_at$` — Session creation date
+- `$me.first_name$` — Your first name (the logged-in professional)
+- `$me.last_name$` — Your last name
+- `$me.fullName$` — Your full name (first + last)
+- `$me.clinic$` — Your clinic name
+- `$transcription$` — The full transcription text from the session
+
+### Complete Example
+
+Here is a full template example combining all three syntax types:
+
+```
+Dear $patient.fullName$, your appointment on $session.created_at$ was [summarize findings].
+
+Dr. $me.fullName$ from $me.clinic$ recommends [treatment plan]. (Only include if mentioned in transcript)
+
+Next appointment: [next appointment details]
+```
 
 ## Template Syntax
 
@@ -29,8 +76,11 @@ System variables are wrapped in dollar signs and are automatically replaced with
 Available system variables:
 
 - `$patient.first_name$` — The patient's first name only.
-- `$patient.fullName$` — The patient's full name.
-- `$me.fullName$` — Your full name (the logged-in professional).
+- `$patient.last_name$` — The patient's last name only.
+- `$patient.fullName$` — The patient's full name (first + last).
+- `$me.first_name$` — Your first name (the logged-in professional).
+- `$me.last_name$` — Your last name.
+- `$me.fullName$` — Your full name (first + last).
 - `$me.clinic$` — Your clinic's name.
 - `$date.now$` — Today's date, formatted for your locale.
 - `$session.created_at$` — The date when the session was created.

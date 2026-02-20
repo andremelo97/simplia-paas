@@ -22,13 +22,26 @@ import {
 } from '@client/common/ui'
 import { supportAgentService, SupportChatMessage } from '../../services/supportAgentService'
 
-const formatMessageContent = (text: string) => {
+const formatInlineMarkdown = (text: string, keyPrefix: string) => {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
   return parts.map((part, i) => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>
+      return <strong key={`${keyPrefix}-${i}`}>{part.slice(2, -2)}</strong>
     }
     return part
+  })
+}
+
+const formatMessageContent = (text: string) => {
+  const lines = text.split('\n')
+  return lines.map((line, i) => {
+    const isLast = i === lines.length - 1
+    // Headers: ### Title → bold semibold line
+    if (line.match(/^#{1,4}\s+/)) {
+      const headerText = line.replace(/^#{1,4}\s+/, '')
+      return <React.Fragment key={i}><strong className="text-gray-900">{formatInlineMarkdown(headerText, `h-${i}`)}</strong>{!isLast && '\n'}</React.Fragment>
+    }
+    return <React.Fragment key={i}>{formatInlineMarkdown(line, `l-${i}`)}{!isLast && '\n'}</React.Fragment>
   })
 }
 

@@ -19,7 +19,7 @@ router.use(supportRateLimit);
 router.post('/chat', async (req, res) => {
   try {
     const schema = req.tenant?.schema;
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
 
     if (!schema) {
       return res.status(400).json({ error: 'Missing tenant context' });
@@ -147,7 +147,7 @@ ${contextDocs || 'No relevant documentation found.'}
 router.get('/history', async (req, res) => {
   try {
     const schema = req.tenant?.schema;
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
 
     if (!schema) {
       return res.status(400).json({ error: 'Missing tenant context' });
@@ -172,7 +172,7 @@ router.get('/history', async (req, res) => {
 router.delete('/history', async (req, res) => {
   try {
     const schema = req.tenant?.schema;
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
 
     if (!schema) {
       return res.status(400).json({ error: 'Missing tenant context' });

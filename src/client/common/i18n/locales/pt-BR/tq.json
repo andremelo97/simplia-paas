@@ -167,7 +167,7 @@
       "unknown_patient": "Paciente Desconhecido",
       "session_created": "Sessão {{number}} criada para {{patientName}}",
       "quote_created": "Cotação {{number}} criada para {{patientName}}",
-      "report_created": "Relatório clínico {{number}} criado para {{patientName}}",
+      "report_created": "Nota clínica {{number}} criada para {{patientName}}",
       "prevention_created": "Prevenção {{number}} criada para {{patientName}}",
       "landing_page_created": "Landing page criada para {{documentNumber}}",
       "lp_template_created": "Template de landing page \"{{name}}\" foi criado",

@@ -200,7 +200,7 @@
       "unknown_patient": "Unknown Patient",
       "session_created": "Session {{number}} created for {{patientName}}",
       "quote_created": "Quote {{number}} created for {{patientName}}",
-      "report_created": "Clinical report {{number}} created for {{patientName}}",
+      "report_created": "Clinical note {{number}} created for {{patientName}}",
       "prevention_created": "Prevention {{number}} created for {{patientName}}",
       "landing_page_created": "Landing page created for {{documentNumber}}",
       "lp_template_created": "Landing page template \"{{name}}\" was created",

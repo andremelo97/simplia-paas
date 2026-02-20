@@ -17,7 +17,11 @@
     },
     "support_agent": {
       "title": "Support Assistant",
-      "welcome_message": "Hi! I'm here to help you with the TQ system. Ask me about sessions, transcriptions, quotes, clinical notes, templates, or any other feature.",
+      "welcome_greeting": "Hi, {{name}}!",
+      "welcome_message": "I'm your TQ support assistant. Ask me about sessions, transcriptions, quotes, clinical notes, templates, or any other feature.",
+      "role_admin": "Administrator",
+      "role_manager": "Manager",
+      "role_operations": "Operations",
       "placeholder": "Type your question...",
       "ai_thinking": "Thinking...",
       "clear_chat": "Clear Chat",

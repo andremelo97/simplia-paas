@@ -21,6 +21,7 @@ import {
   AlertDescription
 } from '@client/common/ui'
 import { supportAgentService, SupportChatMessage } from '../../services/supportAgentService'
+import { useAuthStore } from '../../shared/store/auth'
 
 const formatInlineMarkdown = (text: string, keyPrefix: string) => {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
@@ -52,6 +53,9 @@ interface SupportChatWidgetProps {
 
 export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onClose }) => {
   const { t } = useTranslation('tq')
+  const { user, tenantName } = useAuthStore()
+  const userFirstName = user?.firstName || user?.name?.split(' ')[0] || ''
+  const userRole = user?.role || ''
   const [messages, setMessages] = useState<SupportChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
@@ -238,9 +242,14 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                 <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mb-3">
                   <Headphones className="w-6 h-6 text-teal-600" />
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1.5">
-                  {t('modals.support_agent.title')}
+                <h3 className="text-base font-semibold text-gray-900 mb-1">
+                  {t('modals.support_agent.welcome_greeting', { name: userFirstName })}
                 </h3>
+                {tenantName && (
+                  <p className="text-[11px] text-gray-400 mb-2">
+                    {tenantName} · {t(`modals.support_agent.role_${userRole}`, { defaultValue: userRole })}
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 max-w-[280px]">
                   {t('modals.support_agent.welcome_message')}
                 </p>

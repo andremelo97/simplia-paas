@@ -43,8 +43,22 @@ router.post('/chat', async (req, res) => {
     const documents = await searchDocuments(message.trim(), { matchCount: 5 });
     const contextDocs = documents.map(d => d.content).join('\n---\n');
 
-    // 3. Build system prompt with RAG context
+    // 3. Gather user context for personalization
+    const userName = req.user?.firstName || req.user?.name?.split(' ')[0] || '';
+    const userFullName = req.user?.name || '';
+    const userRole = req.user?.role || '';
+    const clinicName = req.tenant?.name || '';
+
+    // 4. Build system prompt with RAG context + user context
     const systemPrompt = `You are the support assistant for TQ, a clinical management system by LivoCare used by healthcare and aesthetic clinics.
+
+## User Context
+- Name: ${userFullName || 'Unknown'}
+- First name: ${userName || 'User'}
+- Role: ${userRole || 'unknown'}
+- Clinic: ${clinicName || 'Unknown'}
+
+Use this context to personalize your responses. Address the user by their first name naturally. You know their role, so you can tailor explanations accordingly (admins can access configurations, managers and operations users cannot). Never reveal raw system data — use it naturally in conversation.
 
 ## Your Personality
 - You are friendly, warm, and approachable — like an experienced colleague, never robotic.
@@ -85,14 +99,14 @@ Documentation:
 ${contextDocs || 'No relevant documentation found.'}
 ---`;
 
-    // 4. Build messages array for OpenAI
+    // 5. Build messages array for OpenAI
     const openaiInput = [
       systemPrompt,
       ...history.map(m => `${m.role}: ${m.content}`),
       `user: ${message.trim()}`
     ].join('\n\n');
 
-    // 5. Call OpenAI Responses API
+    // 6. Call OpenAI Responses API
     const openaiResponse = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -144,7 +158,7 @@ ${contextDocs || 'No relevant documentation found.'}
       return res.status(500).json({ error: 'Could not extract AI response' });
     }
 
-    // 6. Save updated history
+    // 7. Save updated history
     const updatedMessages = [
       ...history,
       { role: 'user', content: message.trim(), timestamp: new Date().toISOString() },
@@ -153,7 +167,7 @@ ${contextDocs || 'No relevant documentation found.'}
 
     await SupportChatSession.createOrUpdate(userId, schema, updatedMessages);
 
-    // 7. Return response
+    // 8. Return response
     res.json({
       data: {
         response: aiResponse,

@@ -266,7 +266,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                 <h3 className="text-base font-semibold text-gray-900 mb-1">
                   {t('modals.support_agent.welcome_greeting', { name: userFirstName })}
                 </h3>
-                {tenantName && (
+                {tenantName && !tenantName.match(/^Tenant \d+$/) && (
                   <p className="text-[11px] text-gray-400 mb-2">
                     {tenantName} · {t(`modals.support_agent.role_${userRole}`, { defaultValue: userRole })}
                   </p>

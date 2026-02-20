@@ -701,6 +701,32 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
       [defaultSystemMessage]
     );
 
+    // Create support_chat_session table for Support AI Agent chat history
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS support_chat_session (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id_fk INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+        messages JSONB DEFAULT '[]'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )
+    `);
+
+    await client.query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_support_chat_session_user ON support_chat_session(user_id_fk)
+    `);
+
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_support_chat_session_updated_at ON support_chat_session
+    `);
+
+    await client.query(`
+      CREATE TRIGGER update_support_chat_session_updated_at
+        BEFORE UPDATE ON support_chat_session
+        FOR EACH ROW
+        EXECUTE FUNCTION update_updated_at_column()
+    `);
+
     // Seed default email templates based on tenant locale (one per type)
     const TQEmailTemplate = require('../models/TQEmailTemplate');
     for (const templateType of ['quote', 'prevention']) {
@@ -763,10 +789,10 @@ async function isTQAppProvisioned(client, schema) {
       SELECT COUNT(*) as table_count
       FROM information_schema.tables
       WHERE table_schema = $1
-        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_note', 'prevention', 'landing_page', 'landing_page_template', 'ai_agent_configuration', 'tq_email_template')
+        AND table_name IN ('patient', 'transcription', 'session', 'item', 'quote', 'quote_item', 'template', 'clinical_note', 'prevention', 'landing_page', 'landing_page_template', 'ai_agent_configuration', 'tq_email_template', 'support_chat_session')
     `, [schema]);
 
-    return parseInt(result.rows[0].table_count) === 13;
+    return parseInt(result.rows[0].table_count) === 14;
   } catch (error) {
     console.error(`Error checking TQ app provisioning status for ${schema}:`, error);
     return false;

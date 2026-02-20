@@ -13,6 +13,7 @@ const preventionRoutes = require('./routes/prevention');
 const aiAgentConfigurationRoutes = require('./routes/ai-agent-configuration');
 const emailTemplatesRoutes = require('./routes/email-templates');
 const usersRoutes = require('./routes/users');
+const supportAgentRoutes = require('./routes/support-agent');
 
 const router = express.Router();
 
@@ -44,6 +45,9 @@ router.use('/transcriptions', transcriptionRoutes);
 
 // Mount AI agent routes (OpenAI integration)
 router.use('/ai-agent', aiAgentRoutes);
+
+// Mount support agent routes
+router.use('/support-agent', supportAgentRoutes);
 
 // Mount configurations routes
 router.use('/configurations/ai-agent', aiAgentConfigurationRoutes);

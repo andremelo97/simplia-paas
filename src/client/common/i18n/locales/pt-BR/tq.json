@@ -15,6 +15,16 @@
       "failed_to_send": "Falha ao enviar mensagem",
       "ai_thinking": "IA está processando..."
     },
+    "support_agent": {
+      "title": "Assistente de Suporte",
+      "welcome_message": "Olá! Estou aqui para ajudar com o sistema TQ. Pergunte sobre sessões, transcrições, orçamentos, notas clínicas, templates ou qualquer outra funcionalidade.",
+      "placeholder": "Digite sua pergunta...",
+      "ai_thinking": "Processando...",
+      "clear_chat": "Limpar Chat",
+      "contact_human": "Precisa de mais ajuda?",
+      "failed_to_send": "Falha ao enviar mensagem. Tente novamente.",
+      "failed_to_load": "Falha ao carregar histórico."
+    },
     "audio_upload": {
       "title": "Enviar Arquivo de Áudio",
       "drop_here": "Solte o arquivo de áudio aqui",

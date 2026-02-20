@@ -24,6 +24,7 @@
     "start": "node src/server/index.js",
     "start:production": "npm run migrate && node src/server/index.js",
     "migrate": "node src/server/infra/scripts/runMigrations.js",
+    "seed:knowledge-base": "node src/server/infra/scripts/seedKnowledgeBase.js",
     "db:create": "node src/server/infra/scripts/db-create-test.js",
     "db:drop": "node src/server/infra/scripts/db-drop-test.js",
     "db:reset": "npm run db:drop && npm run db:create && npm run migrate",

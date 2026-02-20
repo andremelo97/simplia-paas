@@ -15,6 +15,16 @@
       "failed_to_send": "Failed to send message",
       "ai_thinking": "AI is thinking..."
     },
+    "support_agent": {
+      "title": "Support Assistant",
+      "welcome_message": "Hi! I'm here to help you with the TQ system. Ask me about sessions, transcriptions, quotes, clinical notes, templates, or any other feature.",
+      "placeholder": "Type your question...",
+      "ai_thinking": "Thinking...",
+      "clear_chat": "Clear Chat",
+      "contact_human": "Need more help?",
+      "failed_to_send": "Failed to send message. Please try again.",
+      "failed_to_load": "Failed to load chat history."
+    },
     "audio_upload": {
       "title": "Upload Audio File",
       "drop_here": "Drop audio file here",

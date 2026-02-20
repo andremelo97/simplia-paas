@@ -12,7 +12,8 @@ import { templatesService, Template } from '../../services/templates'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useTranslation } from 'react-i18next'
 import { HelpCircle, Headphones, LogOut } from 'lucide-react'
-import { Tooltip, Button, SupportModal } from '@client/common/ui'
+import { Tooltip, Button } from '@client/common/ui'
+import { SupportAgentModal } from '../../components/support-agent/SupportAgentModal'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
@@ -306,8 +307,8 @@ export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle }) => {
         )}
       </div>
 
-      <SupportModal
-        isOpen={isSupportOpen}
+      <SupportAgentModal
+        open={isSupportOpen}
         onClose={() => setIsSupportOpen(false)}
       />
     </>

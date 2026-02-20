@@ -12,7 +12,6 @@ import {
   AlertCircle,
   Upload,
   Plus,
-  Bot,
   HelpCircle,
   ExternalLink,
   RotateCcw,
@@ -59,16 +58,12 @@ import {
 import { useAuthStore } from '../../shared/store'
 import { sessionsService, Session } from '../../services/sessions'
 import { patientsService, Patient } from '../../services/patients'
-import { quotesService, CreateQuoteRequest } from '../../services/quotes'
 import { clinicalNotesService } from '../../services/clinicalNotes'
-import { preventionService } from '../../services/prevention'
 import { aiAgentService } from '../../services/aiAgentService'
 import { publishFeedback } from '@client/common/feedback'
 import { parsePatientName } from '../../lib/parsePatientName'
-import { plainTextToHtml } from '../../lib/textToHtml'
 import { AudioUploadModal } from '../../components/new-session/AudioUploadModal'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
-import { AIAgentModal } from '../../components/ai-agent/AIAgentModal'
 import { useTranscription } from '../../hooks/useTranscription'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 import { transcriptionService, QuotaResponse } from '../../services/transcriptionService'
@@ -194,9 +189,6 @@ export const NewSession: React.FC = () => {
 
   // Audio upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false)
-
-  // AI Agent modal state
-  const [showAIAgentModal, setShowAIAgentModal] = useState(false)
 
   // Template Quote modal state
   const [showTemplateQuoteModal, setShowTemplateQuoteModal] = useState(false)
@@ -664,168 +656,6 @@ export const NewSession: React.FC = () => {
       // Error feedback is handled automatically by HTTP interceptor
     } finally {
       setIsCreatingSession(false)
-    }
-  }
-
-  // Handle New Session & Quote button click
-  const handleNewSessionAndQuote = async (aiSummary?: string) => {
-    // If called from AI Agent, aiSummary will be provided and we should use it
-    // If called from button, transcription should exist
-    if (!transcription.trim() && !aiSummary) {
-      return
-    }
-
-    const patient = selectedPatient || createdPatient
-    if (!patient) {
-      publishFeedback({
-        kind: 'error',
-        code: 'PATIENT_REQUIRED',
-        message: t('sessions.patient_required')
-      })
-      return
-    }
-
-    try {
-      // Ensure session exists (reuse or create)
-      const currentSession = await ensureSession()
-
-      // Create the quote using the session ID
-      const rawContent = aiSummary || transcription // Use AI summary if provided, otherwise fallback to transcription
-
-      // Convert plain text to HTML for TipTap editor (preserves line breaks and paragraphs)
-      const htmlContent = plainTextToHtml(rawContent)
-
-      const quoteData: CreateQuoteRequest = {
-        sessionId: currentSession.id,
-        content: htmlContent,
-        status: 'draft'
-      }
-      const newQuote = await quotesService.createQuote(quoteData)
-
-      // Clear draft from localStorage after successful creation (but keep form state)
-      try {
-        localStorage.removeItem(DRAFT_STORAGE_KEY)
-      } catch {
-        // Silent fail
-      }
-
-      // Show quote link toast (redirects to /quotes)
-      setToastData({
-        itemId: newQuote.id,
-        itemNumber: newQuote.number,
-        type: 'quote'
-      })
-      setShowLinkToast(true)
-
-    } catch (error) {
-      // Error feedback is handled automatically by HTTP interceptor
-    }
-  }
-
-  // Handle Clinical Report creation from AI Agent
-  const handleNewClinicalReport = async (aiSummary: string) => {
-    // If called from AI Agent, aiSummary will be provided and we should use it
-    // If called from button, transcription should exist
-    if (!transcription.trim() && !aiSummary) {
-      return
-    }
-
-    const patient = selectedPatient || createdPatient
-    if (!patient) {
-      publishFeedback({
-        kind: 'error',
-        code: 'PATIENT_REQUIRED',
-        message: t('sessions.patient_required')
-      })
-      return
-    }
-
-    try {
-      // Ensure session exists (reuse or create)
-      const currentSession = await ensureSession()
-
-      // Create the clinical report using the session ID
-      const rawContent = aiSummary || transcription
-
-      // Convert plain text to HTML for TipTap editor (preserves line breaks and paragraphs)
-      const htmlContent = plainTextToHtml(rawContent)
-
-      const reportData = {
-        sessionId: currentSession.id,
-        content: htmlContent
-      }
-      const newReport = await clinicalNotesService.create(reportData)
-
-      // Defensive: check if report has required fields
-      if (!newReport || !newReport.id || !newReport.number) {
-        throw new Error('Invalid clinical report response from API')
-      }
-
-      // Clear draft from localStorage after successful creation (but keep form state)
-      try {
-        localStorage.removeItem(DRAFT_STORAGE_KEY)
-      } catch {
-        // Silent fail
-      }
-
-      // Show LinkToast for navigation (not publishFeedback - feedback is automatic)
-      setToastData({
-        itemId: newReport.id,
-        itemNumber: newReport.number,
-        type: 'clinical-report'
-      })
-      setShowLinkToast(true)
-
-    } catch (error) {
-      // Error feedback is handled automatically by HTTP interceptor
-    }
-  }
-
-  // Handle Prevention creation from AI Agent
-  const handleNewPrevention = async (aiSummary: string) => {
-    if (!transcription.trim() && !aiSummary) {
-      return
-    }
-
-    const patient = selectedPatient || createdPatient
-    if (!patient) {
-      publishFeedback({
-        kind: 'error',
-        code: 'PATIENT_REQUIRED',
-        message: t('sessions.patient_required')
-      })
-      return
-    }
-
-    try {
-      const currentSession = await ensureSession()
-      const rawContent = aiSummary || transcription
-      const htmlContent = plainTextToHtml(rawContent)
-
-      const newPrevention = await preventionService.create({
-        sessionId: currentSession.id,
-        content: htmlContent,
-        status: 'draft'
-      })
-
-      if (!newPrevention || !newPrevention.id || !newPrevention.number) {
-        throw new Error('Invalid prevention response from API')
-      }
-
-      try {
-        localStorage.removeItem(DRAFT_STORAGE_KEY)
-      } catch {
-        // Silent fail
-      }
-
-      setToastData({
-        itemId: newPrevention.id,
-        itemNumber: newPrevention.number,
-        type: 'prevention'
-      })
-      setShowLinkToast(true)
-    } catch (error) {
-      // Error feedback is handled automatically by HTTP interceptor
     }
   }
 
@@ -1605,9 +1435,6 @@ export const NewSession: React.FC = () => {
             <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowTemplateQuoteModal(true)} className="flex items-center gap-2">
               <FileText className="w-4 h-4" />{t('sessions.create_documents')}
             </Button>
-            <Button variant="primary" disabled={!isQuoteOrReportEnabled()} onClick={() => setShowAIAgentModal(true)} className="flex items-center gap-2">
-              <Bot className="w-4 h-4" />{t('sessions.call_ai_agent')}
-            </Button>
           </div>
         </div>
       </div>
@@ -1692,11 +1519,6 @@ export const NewSession: React.FC = () => {
         <Tooltip content={isMobile ? t('mobile.desktop_only_description') : ''} disabled={!isMobile} side="top">
           <Button variant="primary" disabled={isMobile || !isQuoteOrReportEnabled()} onClick={() => setShowTemplateQuoteModal(true)} className="flex items-center gap-1.5 text-xs">
             <FileText className="w-3.5 h-3.5" />{t('sessions.create_documents')}
-          </Button>
-        </Tooltip>
-        <Tooltip content={isMobile ? t('mobile.desktop_only_description') : ''} disabled={!isMobile} side="top">
-          <Button variant="primary" disabled={isMobile || !isQuoteOrReportEnabled()} onClick={() => setShowAIAgentModal(true)} className="flex items-center gap-1.5 text-xs">
-            <Bot className="w-3.5 h-3.5" />{t('sessions.call_ai_agent')}
           </Button>
         </Tooltip>
       </div>
@@ -1803,19 +1625,6 @@ export const NewSession: React.FC = () => {
         open={showUploadModal}
         onClose={() => setShowUploadModal(false)}
         onTranscriptionComplete={handleTranscriptionComplete}
-      />
-
-      {/* AI Agent Modal */}
-      <AIAgentModal
-        open={showAIAgentModal}
-        onClose={() => setShowAIAgentModal(false)}
-        transcription={transcription}
-        patient={selectedPatient || createdPatient}
-        sessionId={session?.id}
-        patientId={(selectedPatient || createdPatient)?.id}
-        onCreateSessionAndQuote={handleNewSessionAndQuote}
-        onCreateClinicalNote={handleNewClinicalReport}
-        onCreatePrevention={handleNewPrevention}
       />
 
       {/* Template Quote Modal */}
@@ -1948,40 +1757,6 @@ export const NewSession: React.FC = () => {
                     <strong className="text-[#E91E63]">{t('sessions.workflow_guide.step4_template_title')}</strong>
                   </p>
                   <p className="text-gray-600">{t('sessions.workflow_guide.step4_template_desc')}</p>
-                </div>
-                {/* AI Agent Section - Enhanced with visual button and config link */}
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
-                      <Bot className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900 text-sm mb-1">
-                        {t('sessions.workflow_guide.step4_agent_title')}
-                      </p>
-                      <p className="text-gray-600 text-sm mb-3">{t('sessions.workflow_guide.step4_agent_desc')}</p>
-
-                      {/* Visual representation of the button */}
-                      <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-[5px] text-sm font-medium cursor-default mb-3" style={{ fontFamily: 'Inter, sans-serif', height: '32px' }}>
-                        <Bot className="w-4 h-4" />
-                        {t('sessions.call_ai_agent')}
-                      </div>
-
-                      {/* Config hint and link */}
-                      <p className="text-xs text-gray-600 mb-2">
-                        {t('sessions.workflow_guide.step4_agent_config_hint')}
-                      </p>
-                      <a
-                        href="/configurations/ai-agent"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-[#B725B7] hover:text-[#9a1f9a] font-medium flex items-center gap-1"
-                      >
-                        {t('sessions.workflow_guide.step4_agent_config_link')}
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

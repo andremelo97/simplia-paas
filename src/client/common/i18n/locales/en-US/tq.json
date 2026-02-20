@@ -348,13 +348,9 @@
       "step3_button": "\"+ New Session\" button",
       "step3_button_desc": "Becomes enabled when you have a transcription and a selected patient. Click to create the session. Once created, the other buttons are unlocked.",
       "step4_title": "Document",
-      "step4_detail": "With the session created, you can generate documents in two ways:",
+      "step4_detail": "With the session created, you can generate documents using templates:",
       "step4_template_title": "\"Create Documents\" button",
-      "step4_template_desc": "Opens a screen where you choose a template (document model). The AI automatically fills in the template using information from the transcription. Ideal for standardized documents.",
-      "step4_agent_title": "\"Call AI Agent\" button",
-      "step4_agent_desc": "Opens a conversation with the AI where you can ask to create documents freely, without a template. You can chat, request adjustments, and create quotes or clinical reports directly.",
-      "step4_agent_config_hint": "You can customize the initial message we send to the AI agent in the configurations.",
-      "step4_agent_config_link": "Configure AI Agent",
+      "step4_template_desc": "Opens a screen where you choose a template (document model). The AI automatically fills in the template using information from the transcription. You can create quotes, clinical notes, and prevention plans.",
       "draft_title": "Auto-Save Draft",
       "draft_desc": "Your work is automatically saved in the browser. If you accidentally close the page, your transcription and selected patient may be recovered when you return. When you create a session, the data is saved to the session and cleared from this screen. Use the reset button (↺) to clear everything and start fresh."
     },
@@ -1386,10 +1382,6 @@
       "syntax_variable": "System data (patient, date)",
       "syntax_instruction": "AI guidance (removed in output)",
       "guide_hint": "A complete guide is available on the template create/edit page.",
-      "ai_agent_title": "Or use the AI Agent",
-      "ai_agent_description": "Don't want to use templates? The AI Agent can create documents for you directly from the transcription. Just click this button in the session page:",
-      "ai_agent_config_hint": "You can customize the AI Agent's initial instructions in the configurations.",
-      "configure_ai_agent": "Configure AI Agent",
       "view_templates": "View Templates"
     },
     "documents": {

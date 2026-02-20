@@ -315,13 +315,9 @@
       "step3_button": "Botão \"+ Nova Sessão\"",
       "step3_button_desc": "Fica habilitado quando você tem uma transcrição e um paciente selecionado. Clique para criar a sessão. Depois de criada, os outros botões são liberados.",
       "step4_title": "Documento",
-      "step4_detail": "Com a sessão criada, você pode gerar documentos de duas formas:",
+      "step4_detail": "Com a sessão criada, você pode gerar documentos usando templates:",
       "step4_template_title": "Botão \"Criar Documentos\"",
-      "step4_template_desc": "Abre uma tela onde você escolhe um template (modelo de documento). A IA preenche o template automaticamente usando as informações da transcrição. Ideal para documentos padronizados.",
-      "step4_agent_title": "Botão \"Chamar Agente de IA\"",
-      "step4_agent_desc": "Abre uma conversa com a IA onde você pode pedir para criar documentos de forma livre, sem template. Você pode conversar, pedir ajustes e criar cotações ou relatórios clínicos diretamente.",
-      "step4_agent_config_hint": "Você pode personalizar a mensagem inicial que enviamos ao agente de IA nas configurações.",
-      "step4_agent_config_link": "Configurar Agente de IA",
+      "step4_template_desc": "Abre uma tela onde você escolhe um template (modelo de documento). A IA preenche o template automaticamente usando as informações da transcrição. Você pode criar cotações, notas clínicas e planos de prevenção.",
       "draft_title": "Rascunho Automático",
       "draft_desc": "Seu trabalho é salvo automaticamente no navegador. Se você fechar a página acidentalmente, a transcrição e o paciente selecionado podem ser recuperados quando você voltar. Quando você cria uma sessão, os dados são salvos na sessão e limpos desta tela. Use o botão de reset (↺) para limpar tudo e começar do zero."
     },
@@ -1386,10 +1382,6 @@
       "syntax_variable": "Dados do sistema (paciente, data)",
       "syntax_instruction": "Orientação para IA (removido no resultado)",
       "guide_hint": "Um guia completo está disponível na página de criar/editar template.",
-      "ai_agent_title": "Ou use o Agente de IA",
-      "ai_agent_description": "Não quer usar templates? O Agente de IA pode criar documentos diretamente a partir da transcrição. Basta clicar neste botão na página de sessão:",
-      "ai_agent_config_hint": "Você pode personalizar as instruções iniciais do Agente de IA nas configurações.",
-      "configure_ai_agent": "Configurar Agente de IA",
       "view_templates": "Ver Templates"
     },
     "documents": {

@@ -18,7 +18,6 @@ import {
   Mail,
   ExternalLink,
   Rocket,
-  Bot,
   Headphones,
   ShieldCheck,
   FolderOpen
@@ -333,42 +332,6 @@ export const TQOnboardingWizard: React.FC = () => {
               <p className="text-xs text-gray-500 mt-2 italic">
                 {t('onboarding.templates.guide_hint', 'A complete guide is available on the template create/edit page.')}
               </p>
-            </div>
-          </div>
-
-          {/* AI Agent Alternative */}
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium text-gray-900 text-sm mb-1">
-                  {t('onboarding.templates.ai_agent_title', 'Or use the AI Agent')}
-                </h4>
-                <p className="text-xs text-gray-600 mb-2">
-                  {t('onboarding.templates.ai_agent_description',
-                    'Don\'t want to use templates? The AI Agent can create documents for you directly from the transcription. Just click this button in the session page:'
-                  )}
-                </p>
-                {/* Visual representation of the button - exact copy from NewSession */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-[5px] text-sm font-medium cursor-default" style={{ fontFamily: 'Inter, sans-serif', height: '32px' }}>
-                  <Bot className="w-4 h-4" />
-                  {t('sessions.call_ai_agent', 'Call AI Agent')}
-                </div>
-                <p className="text-xs text-gray-600 mt-3">
-                  {t('onboarding.templates.ai_agent_config_hint',
-                    'You can customize the AI Agent\'s initial instructions in the configurations.'
-                  )}
-                </p>
-                <button
-                  onClick={() => goToPage('/configurations/ai-agent')}
-                  className="mt-2 text-xs text-[#B725B7] hover:text-[#9a1f9a] font-medium flex items-center gap-1"
-                >
-                  {t('onboarding.templates.configure_ai_agent', 'Configure AI Agent')}
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
             </div>
           </div>
 

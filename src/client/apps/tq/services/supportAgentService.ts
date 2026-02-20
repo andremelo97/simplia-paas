@@ -6,9 +6,16 @@ export interface SupportChatMessage {
   timestamp?: string
 }
 
+export interface SupportUserContext {
+  firstName: string
+  clinicName: string
+  role: string
+  roleInApp: string
+}
+
 export const supportAgentService = {
-  async sendMessage(message: string): Promise<{ response: string; messages: SupportChatMessage[] }> {
-    const res = await api.post('/api/tq/v1/support-agent/chat', { message })
+  async sendMessage(message: string, userContext?: SupportUserContext): Promise<{ response: string; messages: SupportChatMessage[] }> {
+    const res = await api.post('/api/tq/v1/support-agent/chat', { message, userContext })
     return res.data
   },
 

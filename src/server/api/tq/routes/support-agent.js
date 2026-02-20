@@ -25,7 +25,7 @@ router.post('/chat', async (req, res) => {
       return res.status(400).json({ error: 'Missing tenant context' });
     }
 
-    const { message } = req.body;
+    const { message, userContext } = req.body;
 
     if (!message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
@@ -43,22 +43,27 @@ router.post('/chat', async (req, res) => {
     const documents = await searchDocuments(message.trim(), { matchCount: 5 });
     const contextDocs = documents.map(d => d.content).join('\n---\n');
 
-    // 3. Gather user context for personalization
-    const userName = req.user?.firstName || req.user?.name?.split(' ')[0] || '';
-    const userFullName = req.user?.name || '';
-    const userRole = req.user?.role || '';
-    const clinicName = req.tenant?.name || '';
+    // 3. Gather user context for personalization (prefer client-side data)
+    const userName = userContext?.firstName || req.user?.firstName || req.user?.name?.split(' ')[0] || '';
+    const userRole = userContext?.role || req.user?.role || '';
+    const roleInApp = userContext?.roleInApp || userRole;
+    const clinicName = userContext?.clinicName || req.tenant?.name || '';
+    const isAdmin = roleInApp === 'admin' || userRole === 'admin';
 
     // 4. Build system prompt with RAG context + user context
     const systemPrompt = `You are the support assistant for TQ, a clinical management system by LivoCare used by healthcare and aesthetic clinics.
 
 ## User Context
-- Name: ${userFullName || 'Unknown'}
 - First name: ${userName || 'User'}
-- Role: ${userRole || 'unknown'}
-- Clinic: ${clinicName || 'Unknown'}
+- Role in TQ: ${roleInApp || 'unknown'}
+- Clinic: ${clinicName || 'not available'}
+- Is administrator: ${isAdmin ? 'Yes' : 'No'}
 
-Use this context to personalize your responses. Address the user by their first name naturally. You know their role, so you can tailor explanations accordingly (admins can access configurations, managers and operations users cannot). Never reveal raw system data — use it naturally in conversation.
+Use this context to personalize your responses. Address the user by their first name naturally. You know their clinic name — use it when relevant. You know their role — tailor explanations accordingly.
+
+**IMPORTANT — Admin-only features:** Configuration settings (email templates, SMTP, branding, items catalog) are ONLY accessible by users with the Administrator role. When explaining anything related to configurations or settings:
+- If the user IS an admin: explain how to do it directly.
+- If the user is NOT an admin: explain what the setting does, but clearly tell them that only Administrators can access and change configurations, and they should contact their clinic's administrator to make the change.
 
 ## Your Personality
 - You are friendly, warm, and approachable — like an experienced colleague, never robotic.
@@ -72,8 +77,9 @@ ${history.length === 0 ? `
 Since this is the very first message in the conversation, you MUST introduce yourself properly. Do NOT just say "Hi" back. Your response should:
 1. Greet the user warmly by their first name
 2. Introduce yourself as the TQ support assistant from LivoCare
-3. Briefly list the main topics you can help with (sessions, transcriptions, templates, quotes, clinical notes, prevention docs, settings, installing the app, etc.)
-4. Invite them to ask anything
+3. If you know the clinic name, mention it naturally (e.g., "I see you're from [Clinic Name]!")
+4. Briefly list the main topics you can help with (sessions, transcriptions, templates, quotes, clinical notes, prevention docs, settings, installing the app, etc.)
+5. Invite them to ask anything
 Keep it friendly and concise (4-6 lines max). Do NOT use bullet points for the introduction — write it naturally as a short paragraph.` : ''}
 
 ## Your Knowledge

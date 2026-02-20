@@ -20,7 +20,7 @@ import {
   Alert,
   AlertDescription
 } from '@client/common/ui'
-import { supportAgentService, SupportChatMessage } from '../../services/supportAgentService'
+import { supportAgentService, SupportChatMessage, SupportUserContext } from '../../services/supportAgentService'
 import { useAuthStore } from '../../shared/store/auth'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
@@ -65,6 +65,15 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
   const { formatTime, formatShortDate } = useDateFormatter()
   const userFirstName = user?.firstName || user?.name?.split(' ')[0] || ''
   const userRole = user?.role || ''
+  const tqApp = user?.allowedApps?.find(a => a.slug === 'transcription-quote')
+  const roleInApp = tqApp?.roleInApp || userRole
+
+  const userContext: SupportUserContext = {
+    firstName: userFirstName,
+    clinicName: tenantName && !tenantName.match(/^Tenant \d+$/) ? tenantName : '',
+    role: userRole,
+    roleInApp
+  }
 
   const getDateLabel = (timestamp: string | undefined): string => {
     if (!timestamp) return ''
@@ -138,7 +147,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
     setIsLoading(true)
 
     try {
-      const result = await supportAgentService.sendMessage(text)
+      const result = await supportAgentService.sendMessage(text, userContext)
       setMessages(result.messages)
     } catch {
       setError(t('modals.support_agent.failed_to_send'))

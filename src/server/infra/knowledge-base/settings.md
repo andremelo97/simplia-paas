@@ -1,38 +1,139 @@
 # Settings & Configuration
 
-TQ has configuration options accessible from the **Configurations** menu. **Only Admin users can see and access Configurations.**
+TQ has several configuration areas that let you customize how your clinic uses the system. Most settings are managed by administrators, but understanding them helps all staff members know what is possible. **Only users with the Admin role can see and access the Configurations menu.**
 
 ## Email Templates
 
-- Navigate to **Configurations > Email Template**.
-- Customize email templates for quotes and prevention documents.
-- Configure: subject line, body text, greeting, CTA button text, and footer.
-- Separate templates for quotes and prevention documents.
+Email templates control how the emails look when you share quotes or prevention documents with patients.
 
-## Branding
+### How to Configure
 
-- Your clinic's branding is managed from the **Hub > Branding** settings.
-- Configurable fields: logo, 3 colors (primary, secondary, accent), company info (name, phone, email, address), and social links.
-- Branding appears on printed documents and emails.
-- **Note**: There is no favicon setting in branding.
+1. Navigate to **Configurations > Email Template** in the TQ sidebar.
+2. Select whether you want to edit the template for **Quotes** or **Prevention Documents** (they have separate templates).
+3. Customize the following fields:
+   - **Subject line**: The email subject the patient sees (e.g., "Your Treatment Quote from [Clinic Name]").
+   - **Greeting**: The opening text of the email (e.g., "Hello, [Patient Name]").
+   - **Body text**: The main message content explaining what the patient is receiving.
+   - **CTA button text**: The label on the call-to-action button (e.g., "View Your Quote", "See Your Care Plan").
+   - **Footer**: Text at the bottom of the email for disclaimers, contact info, or legal text.
+4. Save your changes. All future emails of that type will use the updated template.
+
+### Tips for Email Templates
+
+- Keep the subject line short and clear so patients open the email.
+- Include your clinic name in the subject so patients recognize the sender.
+- Make the CTA button text action-oriented (e.g., "View Your Quote" rather than "Click Here").
+- Use the footer for your clinic address and contact information.
 
 ## Communication Settings (SMTP)
 
-- Email sending requires SMTP configuration.
-- SMTP settings are configured by your administrator in the **Hub > Communication**.
-- Default SMTP is provided by LivoCare but can be customized.
+SMTP stands for Simple Mail Transfer Protocol. In simple terms, it is the system that sends emails. TQ needs SMTP settings to send emails on your clinic's behalf when you share documents with patients.
+
+### What SMTP Does
+
+When you share a quote or prevention document, TQ sends an email to the patient with the link and password. SMTP settings determine which email server sends that message and what email address it comes from. Without SMTP configured, TQ cannot send emails.
+
+### How to Configure SMTP
+
+1. Go to **Hub > Communication** (this is in the Hub portal, not TQ).
+2. Enter your SMTP server details:
+   - **SMTP Server** (host): The address of your email server (e.g., smtp.gmail.com, smtp.office365.com).
+   - **Port**: The port number for the SMTP server (common values: 587 for TLS, 465 for SSL).
+   - **Username**: Usually your email address or account username.
+   - **Password**: Your email account password or an app-specific password.
+3. Save and test the configuration.
+
+### Default SMTP
+
+LivoCare provides a default SMTP server so you can start sending emails immediately. However, emails sent through the default server come from a LivoCare address. To have emails come from your own clinic domain (e.g., info@yourclinic.com), configure your own SMTP settings.
 
 ## Transcription Quota
 
-- Default quota: 60 minutes per month.
-- A warning is shown when you reach 80% of your quota.
-- At 100% usage, new transcriptions are disabled until the quota resets monthly.
-- Quota is configurable per tenant based on the subscription plan.
-- Manage your subscription via Hub > Transcription Usage > **Manage Subscription** (Stripe Portal).
+TQ uses AI-powered transcription to convert your session recordings into text. This service has a monthly usage limit based on your subscription plan.
+
+### How the Quota Works
+
+- **Default quota**: 60 minutes of transcription per month.
+- **Tracking**: Your current usage is displayed in **Hub > Transcription Usage**.
+- **Warning at 80%**: When you reach 80% of your monthly quota (48 minutes by default), TQ shows a warning alert. This gives you time to manage your remaining minutes.
+- **Disabled at 100%**: When you reach 100% of your quota, new transcriptions are temporarily disabled until the next billing cycle.
+- **Monthly reset**: Your quota resets automatically every month based on your billing cycle start date.
+
+### Managing Your Subscription
+
+1. Go to **Hub > Transcription Usage**.
+2. Click **Manage Subscription** to open the Stripe billing portal.
+3. From the Stripe portal, you can:
+   - Upgrade your plan for more transcription minutes.
+   - Change your payment method.
+   - View past invoices.
+   - Update billing information.
+
+### Tips for Managing Your Quota
+
+- Check your usage periodically in the Hub to avoid running out mid-month.
+- If you consistently hit the limit, consider upgrading your plan.
+- Longer sessions use more transcription minutes. For very long consultations, consider pausing and resuming recording to capture only the relevant portions.
+- The 80% warning is your signal to be mindful of remaining minutes for the rest of the month.
 
 ## Items Catalog
 
-- Manage your products and services catalog in **Documents > Items**.
-- Items have a name, description, and base price.
-- Items can be activated/deactivated.
-- Active items appear when adding line items to quotes.
+The items catalog is your list of products and services that you include in patient quotes. Managing this catalog well ensures your quotes are consistent and accurate.
+
+### How to Manage Items
+
+1. Navigate to **Documents > Items** in the TQ sidebar.
+2. Here you can:
+   - **Add a new item**: Click the create button and enter the item name, description, and base price.
+   - **Edit an item**: Click on an existing item to update its name, description, or price.
+   - **Deactivate an item**: Toggle an item to inactive. Deactivated items will not appear when creating new quotes but remain on existing quotes.
+   - **Reactivate an item**: Toggle a deactivated item back to active to make it available again.
+
+### Item Fields
+
+- **Name**: The product or service name (e.g., "Botox - Forehead", "Hyaluronic Acid Filler").
+- **Description**: Optional details about the item.
+- **Base Price**: The default price for this item. You can adjust the price per quote when adding it to a specific quote.
+
+### Tips for the Items Catalog
+
+- Use clear, descriptive names so any staff member can find the right item.
+- Set accurate base prices to speed up quote creation. You can always adjust per patient.
+- Deactivate items you no longer offer rather than deleting them, so existing quotes remain intact.
+- Review your catalog periodically to keep prices up to date.
+
+## Branding
+
+Your clinic's visual identity is configured in the Hub and appears on documents, emails, and landing pages.
+
+### How to Configure Branding
+
+1. Go to **Hub > Branding**.
+2. Configure the following:
+   - **Logo**: Upload your clinic logo. It appears on printed documents, emails, and landing pages.
+   - **Colors**: Set 3 colors (primary, secondary, accent) to match your brand.
+   - **Company Info**: Enter your clinic name, phone number, email, and address.
+   - **Social Links**: Add links to your social media profiles.
+3. Save your changes. Branding updates are reflected across TQ.
+
+## Troubleshooting
+
+- **Emails are not being sent**: Check your SMTP configuration in Hub > Communication. If using your own SMTP, verify the server, port, username, and password are correct. Try the default LivoCare SMTP to confirm the issue is with your custom settings.
+- **Transcription stopped working**: You have likely reached your monthly quota. Check Hub > Transcription Usage. If at 100%, wait for the monthly reset or upgrade your plan.
+- **Items not showing in quotes**: Make sure the item is active in the Items catalog. Deactivated items do not appear when creating new quotes.
+- **Branding not appearing on documents**: Ensure your logo and company info are saved in Hub > Branding. Changes may take a moment to propagate.
+- **Cannot access Configurations menu**: Only Admin users can see and access Configurations. Ask your clinic administrator to make changes or to grant you Admin access.
+
+## Frequently Asked Questions
+
+**Q: Can I have different email templates for different doctors?**
+A: No, email templates are configured at the clinic level. All staff use the same quote template and the same prevention document template.
+
+**Q: What happens if I change SMTP settings?**
+A: New emails will be sent using the updated SMTP settings. Previously sent emails are not affected.
+
+**Q: Can I increase my transcription quota without upgrading?**
+A: The quota is tied to your subscription plan. Contact LivoCare support if you need a custom arrangement.
+
+**Q: Do deactivated items disappear from existing quotes?**
+A: No. Deactivated items remain on quotes where they were already added. They simply stop appearing as options when creating new quotes.

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, CardTitle, Input, DateInput, Checkbox, Label, Button, Select } from '@client/common/ui'
-import { Trash2 } from 'lucide-react'
+import { Card, CardHeader, CardContent, CardTitle, Input, DateInput, Checkbox, Label, Select } from '@client/common/ui'
+import { X } from 'lucide-react'
 
 interface LandingPageLinksFiltersProps {
   documentFilter: string
@@ -42,15 +42,13 @@ export const LandingPageLinksFilters: React.FC<LandingPageLinksFiltersProps> = (
         <CardTitle className="text-base">
           {t('landing_pages.filters.title')}
         </CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
+        <button
           onClick={onClearFilters}
-          className="flex items-center gap-1.5 text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors"
         >
-          <Trash2 size={14} className="text-red-600" />
+          <X className="w-4 h-4" />
           {t('landing_pages.filters.clear_filters')}
-        </Button>
+        </button>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

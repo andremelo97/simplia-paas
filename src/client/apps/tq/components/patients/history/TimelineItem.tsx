@@ -8,6 +8,7 @@ interface TimelineItemProps {
   title: string
   preview?: string
   status?: string
+  expiresAt?: string
   date: string
   icon: React.ReactNode
   onView?: () => void
@@ -21,6 +22,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   title,
   preview,
   status,
+  expiresAt,
   date,
   icon,
   onView,
@@ -28,6 +30,8 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   isLast = false
 }) => {
   const { t } = useTranslation('tq')
+
+  const isExpired = type === 'landing_page' && expiresAt ? new Date(expiresAt) < new Date() : false
 
   const getTranslatedStatus = (status: string, type: string) => {
     if (type === 'session') {
@@ -93,7 +97,10 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
                 </h3>
                 {status && (
                   type === 'landing_page' ? (
-                    <StatusBadge status={status as Status} />
+                    <>
+                      <StatusBadge status={status as Status} />
+                      {isExpired && <StatusBadge status="expired" />}
+                    </>
                   ) : (
                     <span
                       className={`px-2 py-0.5 text-xs rounded-full flex-shrink-0 ${
@@ -121,7 +128,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
             {/* View Button */}
             {onView && (
               <Button
-                variant="tertiary"
+                variant={type === 'landing_page' ? 'outline' : 'tertiary'}
                 size="sm"
                 onClick={onView}
                 className="text-sm flex-shrink-0"

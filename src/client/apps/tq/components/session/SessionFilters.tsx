@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
-import { Card, CardHeader, CardContent, CardTitle, Input, Select, Combobox, DateInput, Badge, Button } from '@client/common/ui'
+import { Card, CardHeader, CardContent, CardTitle, Input, Select, Combobox, DateInput, Badge } from '@client/common/ui'
 import { getSessionStatusOptions, SessionStatus } from '../../types/sessionStatus'
 import { usePatientOptions, useUserOptions } from '../../hooks/useFilterOptions'
 
@@ -76,15 +76,13 @@ export const SessionFilters: React.FC<SessionFiltersProps> = ({
             )}
           </div>
           {activeFilterCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={handleClearAll}
-              className="text-gray-500 hover:text-gray-700 h-7 px-2 text-xs"
+              className="flex items-center gap-1 text-sm text-gray-500 hover:text-red-600 transition-colors"
             >
-              <X className="w-3.5 h-3.5 mr-1" />
+              <X className="w-4 h-4" />
               {t('common:clear_filters')}
-            </Button>
+            </button>
           )}
         </div>
       </CardHeader>

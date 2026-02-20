@@ -22,6 +22,16 @@ import {
 } from '@client/common/ui'
 import { supportAgentService, SupportChatMessage } from '../../services/supportAgentService'
 
+const formatMessageContent = (text: string) => {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>
+    }
+    return part
+  })
+}
+
 interface SupportChatWidgetProps {
   open: boolean
   onClose: () => void
@@ -234,9 +244,9 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                       </div>
                       <Card className="flex-1">
                         <CardContent className="p-2.5">
-                          <pre className="whitespace-pre-wrap font-sans text-xs text-gray-800 m-0" style={{ lineHeight: '1.6' }}>
-                            {message.content}
-                          </pre>
+                          <div className="whitespace-pre-wrap font-sans text-xs text-gray-800" style={{ lineHeight: '1.6' }}>
+                            {formatMessageContent(message.content)}
+                          </div>
                         </CardContent>
                       </Card>
                     </div>
@@ -244,9 +254,9 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                     <div key={`u-${index}`} className="flex gap-2 justify-end">
                       <Card className="flex-1 max-w-[280px] bg-teal-50 border-teal-100">
                         <CardContent className="p-2.5">
-                          <pre className="whitespace-pre-wrap font-sans text-xs text-gray-800 m-0" style={{ lineHeight: '1.6' }}>
-                            {message.content}
-                          </pre>
+                          <div className="whitespace-pre-wrap font-sans text-xs text-gray-800" style={{ lineHeight: '1.6' }}>
+                            {formatMessageContent(message.content)}
+                          </div>
                         </CardContent>
                       </Card>
                       <div className="flex-shrink-0">

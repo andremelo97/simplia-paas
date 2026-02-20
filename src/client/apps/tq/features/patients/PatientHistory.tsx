@@ -30,6 +30,7 @@ interface TimelineEvent {
   title: string
   preview?: string
   status?: string
+  expiresAt?: string
   date: string
   timestamp: number
 }
@@ -151,6 +152,7 @@ export const PatientHistory: React.FC = () => {
         type: 'landing_page',
         title: t('patients.history.landing_page_title', { type: docTypeLabel, number: docNumber }),
         status: lp.active ? 'active' : 'revoked',
+        expiresAt: lp.expiresAt,
         date: formatDateTime(lp.createdAt),
         timestamp: new Date(lp.createdAt).getTime()
       })
@@ -855,6 +857,7 @@ export const PatientHistory: React.FC = () => {
                             title={event.title}
                             preview={undefined}
                             status={event.status}
+                            expiresAt={event.expiresAt}
                             date={event.date}
                             icon={getEventIcon(event.type)}
                             onView={getViewHandler()}

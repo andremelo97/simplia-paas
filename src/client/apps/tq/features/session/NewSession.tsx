@@ -1189,7 +1189,6 @@ export const NewSession: React.FC = () => {
               <Button
                 onClick={transcribeMode === 'start' ? toggleTranscribing : () => setShowUploadModal(true)}
                 variant="primary"
-                size="lg"
                 disabled={shouldDisableTranscription}
                 className="font-semibold rounded-r-none border-r-0 bg-transparent hover:bg-transparent shadow-none border-0 text-white"
               >
@@ -1205,12 +1204,11 @@ export const NewSession: React.FC = () => {
                   </>
                 )}
               </Button>
-              <div className="w-px h-6 bg-white/20"></div>
+              <div className="w-px h-5 bg-white/20"></div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="primary"
-                    size="lg"
                     className="px-3 rounded-l-none bg-transparent hover:bg-white/10 shadow-none border-0 text-white transition-colors"
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -1469,16 +1467,15 @@ export const NewSession: React.FC = () => {
             <Button
               onClick={transcribeMode === 'start' ? toggleTranscribing : () => setShowUploadModal(true)}
               variant="primary"
-              size="lg"
               disabled={shouldDisableTranscription}
               className="font-semibold rounded-r-none border-r-0 bg-transparent hover:bg-transparent shadow-none border-0 text-white text-sm"
             >
               {transcribeMode === 'start' ? (<><Play className="w-4 h-4 mr-2" />{t('sessions.start_transcribing')}</>) : (<><Upload className="w-4 h-4 mr-2" />{t('sessions.upload_audio')}</>)}
             </Button>
-            <div className="w-px h-6 bg-white/20"></div>
+            <div className="w-px h-5 bg-white/20"></div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="primary" size="lg" className="px-3 rounded-l-none bg-transparent hover:bg-white/10 shadow-none border-0 text-white transition-colors">
+                <Button variant="primary" className="px-3 rounded-l-none bg-transparent hover:bg-white/10 shadow-none border-0 text-white transition-colors">
                   <ChevronDown className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -1494,10 +1491,10 @@ export const NewSession: React.FC = () => {
         )}
         {isTranscribing && (
           <div className="flex items-center gap-2">
-            <Button onClick={toggleTranscribing} variant="secondary" size="lg" className="font-semibold text-sm">
+            <Button onClick={toggleTranscribing} variant="secondary" className="font-semibold text-sm">
               {isPaused ? (<><Play className="w-4 h-4 mr-2" />{t('sessions.resume')}</>) : (<><Pause className="w-4 h-4 mr-2" />{t('sessions.pause')}</>)}
             </Button>
-            <Button onClick={stopTranscribing} variant="destructive" size="lg" className="font-semibold text-sm">
+            <Button onClick={stopTranscribing} variant="destructive" className="font-semibold text-sm">
               <Square className="w-4 h-4 mr-2" />{t('sessions.stop')}
             </Button>
           </div>

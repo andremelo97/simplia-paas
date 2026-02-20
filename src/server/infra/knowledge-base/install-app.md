@@ -13,6 +13,7 @@ The mobile version of TQ is optimized for quick data checking and audio recordin
 - **Sessions**: View and manage your consultation sessions list.
 - **New Session**: Create new transcription sessions — record audio live or upload a pre-recorded file.
 - **Patients**: View and manage patient records (view details, edit info).
+- **Support**: The support button (headphone icon in the header) and the AI support chat both work on mobile. You can contact human support via WhatsApp/email or chat with the AI assistant directly from your phone. The AI chat opens in full screen on mobile for a better experience.
 
 **What is NOT available on mobile**: Patient history, document creation (quotes, clinical notes, prevention documents), templates, landing pages, and configurations. For full access to all TQ features, use a desktop or laptop computer.
 

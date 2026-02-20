@@ -189,12 +189,12 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
         exit={{ scale: 0.8, opacity: 0 }}
         transition={{ type: 'spring', duration: 0.3 }}
         onClick={() => setMinimized(false)}
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-14 h-14 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+        className="fixed bottom-[4.5rem] right-3 md:bottom-6 md:right-6 z-50 w-10 h-10 md:w-14 md:h-14 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
         title={t('modals.support_agent.title')}
       >
-        <Headphones className="w-6 h-6" />
+        <Headphones className="w-4 h-4 md:w-6 md:h-6" />
         {messages.length > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 rounded-full text-[8px] md:text-[10px] font-bold flex items-center justify-center">
             {messages.filter(m => m.role === 'assistant').length}
           </span>
         )}
@@ -209,7 +209,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         transition={{ type: 'spring', duration: 0.35 }}
-        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[400px] h-[550px] max-h-[calc(100vh-8rem)] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden"
+        className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-50 w-full md:w-[400px] h-full md:h-[550px] md:max-h-[calc(100vh-8rem)] bg-white md:rounded-xl md:shadow-2xl md:border md:border-gray-200 flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-teal-50 to-white flex-shrink-0">

@@ -18,7 +18,7 @@ The official LivoCare website is **livocare.ai**. From there you can learn about
 
 ## Mobile Access
 
-You can install LivoCare as an app on your phone — no app store needed. Visit **livocare.ai/install-app** for step-by-step instructions for iOS and Android. The mobile app supports sessions, new sessions, and patient management. It is ideal for recording consultations and checking patient data on the go. For full access to all TQ features (documents, templates, quotes, landing pages), use a desktop or laptop computer.
+You can install LivoCare as an app on your phone — no app store needed. Visit **livocare.ai/install-app** for step-by-step instructions for iOS and Android. The mobile app supports sessions, new sessions, patient management, and support (both the support modal and the AI support chat work on mobile). It is ideal for recording consultations, checking patient data on the go, and getting help from the AI assistant. For full access to all TQ features (documents, templates, quotes, landing pages), use a desktop or laptop computer.
 
 You can also access TQ from a mobile browser through the Hub at hub.livocare.ai without installing. The interface is responsive and works on phones and tablets.
 
@@ -63,7 +63,7 @@ New users are not created inside TQ. They are provisioned automatically during t
 
 ## Frequently Asked Questions
 
-- **Can I use TQ on my phone?** Yes. You can install LivoCare as an app on your phone by visiting livocare.ai/install-app, or access it through the Hub in your mobile browser. The mobile version supports sessions, new sessions, and patients. Full features (documents, templates, landing pages) are available on desktop.
+- **Can I use TQ on my phone?** Yes. You can install LivoCare as an app on your phone by visiting livocare.ai/install-app, or access it through the Hub in your mobile browser. The mobile version supports sessions, new sessions, patients, and support (contact human support or chat with the AI assistant). Full features (documents, templates, landing pages) are available on desktop.
 - **How do I add a new user to TQ?** New users are added through the Stripe subscription portal. Contact your Admin to purchase an additional seat.
 - **What browser should I use?** Chrome or Edge are recommended for the best experience. Safari and Firefox also work but may have minor differences with audio recording.
 - **I clicked TQ in the Hub but nothing happened.** Make sure pop-ups are not blocked in your browser. TQ opens in the same tab, so check if the page is loading. Try refreshing.

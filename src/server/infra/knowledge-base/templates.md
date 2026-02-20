@@ -1,22 +1,20 @@
 # Templates
 
-Templates are reusable document structures that standardize your clinical documentation. They define the layout and content of your quotes, clinical notes, and prevention documents. When combined with AI, templates are filled automatically using the session transcription.
+Templates are reusable document structures that standardize your clinical documentation. Templates are **generic** — they are not tied to a specific document type. The same template can be used when creating any type of document (clinical note, quote, or prevention). The document type is chosen when you create the document from a session, not when you create the template.
 
-## Types of Templates
-
-1. **Clinical Note Templates**: Structures for medical documentation such as consultation notes, treatment plans, initial assessments, and follow-up records.
-2. **Quote Templates**: Layouts for treatment cost estimates with pre-defined item categories and descriptions.
-3. **Prevention Templates**: Structures for preventive care recommendations, wellness plans, and aftercare instructions.
+When combined with AI, templates are filled automatically using the session transcription.
 
 ## Creating a Template
 
 1. Navigate to **Templates** in the sidebar.
 2. Click **Create Template**.
-3. Choose the template type (clinical note, quote, or prevention).
-4. Give it a clear, descriptive title (e.g., "Dermatology Consultation Note" or "Botox Treatment Quote"). The title must be at least 3 characters.
-5. Add an optional description to help other users understand when to use it.
-6. Write the template content using the rich text editor. Use template variables, AI placeholders, and AI instructions as described below.
+3. Give it a clear, descriptive title (e.g., "Dermatology Consultation Note" or "Botox Treatment Quote"). The title must be at least 3 characters.
+4. Add an optional description to help other users understand when to use it.
+5. Write the template content using the rich text editor. Use template variables, AI placeholders, and AI instructions as described below.
+6. Toggle **Active** on or off (active by default).
 7. Save the template.
+
+Any template you create will be available for selection when creating any document type (clinical note, quote, or prevention) from a session.
 
 ## Template Creation Guide
 
@@ -197,7 +195,7 @@ When you create a document from a session and select a template:
 - **AI did not fill a placeholder correctly**: The most common cause is low-quality transcription. If the information was not mentioned during the consultation, the AI cannot extract it. Review the transcription for completeness and accuracy before generating documents. Also, make the placeholder text more specific (e.g., `[patient's blood pressure reading]` instead of `[vitals]`).
 - **Template is too complex and AI output is messy**: Simplify the template. Break long sections into smaller placeholders. Use AI instructions to control the format (e.g., `(answer in one sentence)` or `(use bullet points)`).
 - **System variable is not being replaced**: Check the syntax — variables must be wrapped in dollar signs with no spaces (e.g., `$patient.fullName$` not `$ patient.fullName $`). Also verify you are using a valid variable name from the list above.
-- **Template does not appear when creating a document**: Make sure the template is activated and matches the document type you are trying to create (clinical note template for clinical notes, quote template for quotes).
+- **Template does not appear when creating a document**: Make sure the template is activated. All active templates appear when creating any document type. If you deactivated it, go to Templates and toggle it back to active.
 - **Imported marketplace template needs changes**: After importing, open the template from your Templates list and edit it freely. Marketplace templates are copies — your changes do not affect the original.
 
 ## Tips
@@ -205,7 +203,7 @@ When you create a document from a session and select a template:
 - Start with Marketplace templates and customize them. This is faster than building from scratch.
 - Use AI instructions generously. They help the AI produce exactly what you need and are invisible to the patient.
 - Test your template by creating a document from a session with a good transcription. If the output is not what you expected, adjust the placeholders and instructions.
-- Keep templates focused. One template per document type works better than a single template that tries to do everything.
+- Keep templates focused. A template designed for one purpose (e.g., consultation notes) works better than a single template that tries to do everything.
 - Name your templates clearly so all staff members know which one to use for each type of consultation.
 
 ## Frequently Asked Questions

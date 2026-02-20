@@ -348,8 +348,9 @@
     "ai_help_tips": "Dicas e boas práticas",
     "ai_cannot_do": "Limitações",
     "ai_no_actions": "Não executa ações no sistema",
-    "ai_no_data": "Não acessa nem modifica seus dados",
+    "ai_no_data": "Sem acesso ao banco de dados ou API - seus dados estão protegidos",
     "ai_no_billing": "Não resolve questões de cobrança ou conta",
+    "ai_source_note": "Acessa somente documentação criada pelos desenvolvedores",
     "ai_start_chat": "Iniciar conversa"
   },
   "pwa": {

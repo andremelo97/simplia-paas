@@ -332,8 +332,9 @@
     "ai_help_tips": "Tips and best practices",
     "ai_cannot_do": "Limitations",
     "ai_no_actions": "Cannot execute actions in the system",
-    "ai_no_data": "Cannot access or modify your data",
+    "ai_no_data": "No access to database or API - your data is protected",
     "ai_no_billing": "Cannot handle billing or account changes",
+    "ai_source_note": "Only accesses documentation created by developers",
     "ai_start_chat": "Start conversation"
   },
   "pwa": {

@@ -28,7 +28,7 @@ BEGIN
         ON %I.support_chat_session(user_id_fk)
     ', tenant_schema.schema_name);
 
-    -- Create updated_at trigger (function already exists in tenant schemas)
+    -- Create updated_at trigger (function exists in public schema)
     EXECUTE format('
       DROP TRIGGER IF EXISTS update_support_chat_session_updated_at ON %I.support_chat_session
     ', tenant_schema.schema_name);
@@ -37,8 +37,8 @@ BEGIN
       CREATE TRIGGER update_support_chat_session_updated_at
         BEFORE UPDATE ON %I.support_chat_session
         FOR EACH ROW
-        EXECUTE FUNCTION %I.update_updated_at_column()
-    ', tenant_schema.schema_name, tenant_schema.schema_name);
+        EXECUTE FUNCTION public.update_updated_at_column()
+    ', tenant_schema.schema_name);
 
     RAISE NOTICE 'Created support_chat_session table in schema: %', tenant_schema.schema_name;
   END LOOP;

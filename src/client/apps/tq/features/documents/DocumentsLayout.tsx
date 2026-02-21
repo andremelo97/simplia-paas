@@ -1,17 +1,18 @@
 import React, { useState } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { FileText } from 'lucide-react'
-import { Card, Button } from '@client/common/ui'
+import { Card, Button, LinkToast } from '@client/common/ui'
 import { useAuthStore } from '../../shared/store'
 import { TemplateQuoteModal } from '../../components/new-session/TemplateQuoteModal'
 
 export const DocumentsLayout: React.FC = () => {
   const { t } = useTranslation('tq')
-  const navigate = useNavigate()
   const { user } = useAuthStore()
   const canCreate = user?.role !== 'operations'
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showLinkToast, setShowLinkToast] = useState(false)
+  const [toastData, setToastData] = useState<{itemId: string, itemNumber: string, type: 'quote' | 'clinical-note' | 'prevention'} | null>(null)
 
   const tabs = [
     { label: t('documents.tabs.quotes'), path: '/documents/quotes' },
@@ -22,20 +23,20 @@ export const DocumentsLayout: React.FC = () => {
 
   const handleQuoteCreated = (documentId: string, documentNumber: string) => {
     setShowCreateModal(false)
-    // Navigate to the newly created quote
-    navigate(`/documents/quote/${documentId}/edit`)
+    setToastData({ itemId: documentId, itemNumber: documentNumber, type: 'quote' })
+    setShowLinkToast(true)
   }
 
   const handleClinicalNoteCreated = (documentId: string, documentNumber: string) => {
     setShowCreateModal(false)
-    // Navigate to the newly created clinical note
-    navigate(`/documents/clinical-note/${documentId}/edit`)
+    setToastData({ itemId: documentId, itemNumber: documentNumber, type: 'clinical-note' })
+    setShowLinkToast(true)
   }
 
   const handlePreventionCreated = (documentId: string, documentNumber: string) => {
     setShowCreateModal(false)
-    // Navigate to the newly created prevention
-    navigate(`/documents/prevention/${documentId}/edit`)
+    setToastData({ itemId: documentId, itemNumber: documentNumber, type: 'prevention' })
+    setShowLinkToast(true)
   }
 
   return (
@@ -93,6 +94,17 @@ export const DocumentsLayout: React.FC = () => {
         onClinicalNoteCreated={handleClinicalNoteCreated}
         onPreventionCreated={handlePreventionCreated}
       />
+
+      {/* Document Created Toast */}
+      {toastData && (
+        <LinkToast
+          show={showLinkToast}
+          itemNumber={toastData.itemNumber}
+          itemId={toastData.itemId}
+          onClose={() => setShowLinkToast(false)}
+          type={toastData.type}
+        />
+      )}
     </div>
   )
 }

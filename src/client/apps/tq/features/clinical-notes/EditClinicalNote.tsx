@@ -270,21 +270,43 @@ export const EditClinicalNote: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('clinical_notes.edit')}</h1>
           <p className="text-gray-600 mt-1">
             {t('clinical_notes.note')} {note.number} • {note.patient_first_name || note.patient_last_name ? `${note.patient_first_name || ''} ${note.patient_last_name || ''}`.trim() : ''}
           </p>
         </div>
-        <Button
-          variant="primary"
-          onClick={handlePrint}
-          className="flex items-center gap-2"
-        >
-          <Printer className="w-4 h-4" />
-          {t('clinical_notes.pages.print_save_pdf')}
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="primary"
+            onClick={handlePrint}
+            className="flex items-center gap-2"
+          >
+            <Printer className="w-4 h-4" />
+            {t('clinical_notes.pages.print_save_pdf')}
+          </Button>
+          {canEdit && (
+            <>
+              <div className="h-6 w-px bg-gray-300 hidden sm:block" />
+              <Button
+                variant="default"
+                onClick={handleSave}
+                isLoading={isSaving}
+                disabled={isSaving}
+              >
+                {isSaving ? t('common.saving') : t('common.save_changes')}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={handleCancel}
+                disabled={isSaving}
+              >
+                {t('common.cancel')}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-8">
@@ -466,28 +488,6 @@ export const EditClinicalNote: React.FC = () => {
         </div>
       </div>
 
-      {/* Action Buttons - outside grid so they stay at bottom on tablet */}
-      {canEdit && (
-        <div className="flex items-center space-x-4 pt-6 border-t border-gray-200">
-          <Button
-            variant="default"
-            onClick={handleSave}
-            isLoading={isSaving}
-            disabled={isSaving}
-          >
-            {isSaving ? t('common.saving') : t('common.save_changes')}
-          </Button>
-
-          <Button
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isSaving}
-            style={{ height: '32px', minHeight: '32px' }}
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

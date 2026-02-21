@@ -108,14 +108,35 @@ export const CreateLandingPageTemplate: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">{t('landing_pages.pages.create_template')}</h1>
-        <p className="text-gray-600 mt-1">
-          {t('landing_pages.create_subtitle')}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">{t('landing_pages.pages.create_template')}</h1>
+          <p className="text-gray-600 mt-1">
+            {t('landing_pages.create_subtitle')}
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <Button
+            type="submit"
+            form="createLandingPageTemplateForm"
+            variant="default"
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? t('landing_pages.creating_template') : t('landing_pages.pages.create_template')}
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            {t('common.cancel')}
+          </Button>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form id="createLandingPageTemplateForm" onSubmit={handleSubmit}>
         <div className="space-y-8">
           {/* Template Information */}
           <Card>
@@ -171,26 +192,6 @@ export const CreateLandingPageTemplate: React.FC = () => {
           </Card>
         </div>
 
-        <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
-          <Button
-            type="submit"
-            variant="default"
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? t('landing_pages.creating_template') : t('landing_pages.pages.create_template')}
-          </Button>
-
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            style={{ height: '32px', minHeight: '32px' }}
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
       </form>
     </div>
   )

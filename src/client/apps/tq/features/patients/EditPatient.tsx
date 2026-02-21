@@ -253,26 +253,46 @@ export const EditPatient: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('patients.edit')}</h1>
           <p className="text-gray-600 mt-1">
             {t('patients.edit_subtitle')}
           </p>
         </div>
-        {device !== 'mobile' && (
+        <div className="flex flex-wrap items-center gap-3">
+          {device !== 'mobile' && (
+            <Button
+              variant="primary"
+              onClick={() => navigate(`/patients/${id}/history`)}
+              className="flex items-center gap-2"
+            >
+              <History className="w-4 h-4" />
+              {t('patients.view_history')}
+            </Button>
+          )}
+          <div className="h-6 w-px bg-gray-300 hidden sm:block" />
           <Button
-            variant="primary"
-            onClick={() => navigate(`/patients/${id}/history`)}
-            className="flex items-center gap-2"
+            type="submit"
+            form="editPatientForm"
+            variant="default"
+            isLoading={isSubmitting}
+            disabled={isSubmitting}
           >
-            <History className="w-4 h-4" />
-            {t('patients.view_history')}
+            {isSubmitting ? t('common.saving') : t('common.save_changes')}
           </Button>
-        )}
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleCancel}
+            disabled={isSubmitting}
+          >
+            {t('common.cancel')}
+          </Button>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form id="editPatientForm" onSubmit={handleSubmit}>
         <div className="space-y-8">
           {/* Patient Information */}
           <Card>
@@ -376,26 +396,6 @@ export const EditPatient: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
-          <Button
-            type="submit"
-            variant="default"
-            isLoading={isSubmitting}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? t('common.saving') : t('common.save_changes')}
-          </Button>
-
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={handleCancel}
-            disabled={isSubmitting}
-            style={{ height: '32px', minHeight: '32px' }}
-          >
-            {t('common.cancel')}
-          </Button>
-        </div>
       </form>
     </div>
   )

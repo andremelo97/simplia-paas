@@ -316,10 +316,33 @@ export const EditSession: React.FC = () => {
               </Button>
             </Tooltip>
           )}
+
+          {canEdit && (
+            <>
+              <div className="h-6 w-px bg-gray-300 hidden sm:block" />
+              <Button
+                type="submit"
+                form="editSessionForm"
+                variant="default"
+                isLoading={isSubmitting}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? t('sessions.saving_changes') : t('common.save_changes')}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
+                {t('common.cancel')}
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form id="editSessionForm" onSubmit={handleSubmit}>
         <div className="space-y-4 lg:space-y-8">
           {/* Session Details */}
           <Card>
@@ -413,28 +436,6 @@ export const EditSession: React.FC = () => {
           </Card>
         </div>
 
-        {canEdit && (
-          <div className="flex items-center space-x-4 pt-6 mt-6 border-t border-gray-200">
-            <Button
-              type="submit"
-              variant="default"
-              isLoading={isSubmitting}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? t('sessions.saving_changes') : t('common.save_changes')}
-            </Button>
-
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              style={{ height: '32px', minHeight: '32px' }}
-            >
-              {t('common.cancel')}
-            </Button>
-          </div>
-        )}
       </form>
 
       {/* Template Quote Modal */}

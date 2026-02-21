@@ -230,17 +230,35 @@ export const EmailTemplateConfiguration: React.FC = () => {
 
   return (
     <div className="p-8 space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <Mail className="h-6 w-6 text-[#B725B7]" />
-          <h1 className="text-2xl font-bold text-gray-900">
-            {t('configurations.email_template.title')}
-          </h1>
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-30 bg-gray-50 -mx-8 px-8 -mt-8 pt-8 pb-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <Mail className="h-6 w-6 text-[#B725B7]" />
+            <h1 className="text-2xl font-bold text-gray-900">
+              {t('configurations.email_template.title')}
+            </h1>
+          </div>
+          <p className="text-gray-600">
+            {t('configurations.email_template.description')}
+          </p>
         </div>
-        <p className="text-gray-600">
-          {t('configurations.email_template.description')}
-        </p>
+        <div className="flex gap-3">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            variant="primary"
+          >
+            {saving ? t('common:saving') : t('common:save_changes')}
+          </Button>
+          <Button
+            onClick={handleReset}
+            disabled={saving}
+            variant="outline"
+          >
+            {t('configurations.email_template.reset_to_default')}
+          </Button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -623,23 +641,6 @@ export const EmailTemplateConfiguration: React.FC = () => {
             </div>
           </Card>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <Button
-              onClick={handleSave}
-              disabled={saving}
-              variant="primary"
-            >
-              {saving ? t('common:saving') : t('common:save_changes')}
-            </Button>
-            <Button
-              onClick={handleReset}
-              disabled={saving}
-              variant="outline"
-            >
-              {t('configurations.email_template.reset_to_default')}
-            </Button>
-          </div>
         </div>
 
         {/* Right Column - Preview */}

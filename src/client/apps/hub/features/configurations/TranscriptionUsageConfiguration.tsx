@@ -301,18 +301,27 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
 
   return (
     <div className="p-8 space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <Clock className="h-6 w-6 text-[#B725B7]" />
-          <h1 className="text-2xl font-bold text-gray-900">{t('transcription_usage.title')}</h1>
-          <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#B725B7] text-white">
-            TQ
-          </span>
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-30 bg-gray-50 -mx-8 px-8 -mt-8 pt-8 pb-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <Clock className="h-6 w-6 text-[#B725B7]" />
+            <h1 className="text-2xl font-bold text-gray-900">{t('transcription_usage.title')}</h1>
+            <span className="px-2 py-0.5 rounded text-xs font-semibold bg-[#B725B7] text-white">
+              TQ
+            </span>
+          </div>
+          <p className="text-gray-600">
+            {t('transcription_usage.subtitle')}
+          </p>
         </div>
-        <p className="text-gray-600">
-          {t('transcription_usage.subtitle')}
-        </p>
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          disabled={saving || !hasChanges}
+        >
+          {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
+        </Button>
       </div>
 
       {/* Plan Badge */}
@@ -527,16 +536,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
             </div>
           )}
 
-          {/* Single Save Button */}
-          <div className="mt-6 flex justify-end">
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={saving || !hasChanges}
-            >
-              {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
-            </Button>
-          </div>
         </Card>
       )}
 
@@ -567,16 +566,6 @@ export const TranscriptionUsageConfiguration: React.FC = () => {
             </p>
           </div>
 
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button
-              variant="primary"
-              onClick={handleSave}
-              disabled={saving || !hasChanges}
-            >
-              {saving ? t('transcription_usage.saving') : t('transcription_usage.save_changes')}
-            </Button>
-          </div>
         </Card>
       )}
 

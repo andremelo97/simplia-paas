@@ -132,15 +132,21 @@ export const BrandingConfiguration: React.FC = () => {
 
   return (
     <div className="p-8 space-y-6">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <Palette className="h-6 w-6 text-[#B725B7]" />
-          <h1 className="text-2xl font-bold text-gray-900">{t('branding.title')}</h1>
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-30 bg-gray-50 -mx-8 px-8 -mt-8 pt-8 pb-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <Palette className="h-6 w-6 text-[#B725B7]" />
+            <h1 className="text-2xl font-bold text-gray-900">{t('branding.title')}</h1>
+          </div>
+          <p className="text-gray-600">
+            {t('branding.subtitle')}
+          </p>
         </div>
-        <p className="text-gray-600">
-          {t('branding.subtitle')}
-        </p>
+        <div className="flex gap-3">
+          <Button variant="primary" onClick={handleSave}>{t('branding.save_changes')}</Button>
+          <Button variant="secondary" onClick={handleReset}>{t('branding.reset_to_defaults')}</Button>
+        </div>
       </div>
 
       {/* Colors */}
@@ -355,12 +361,6 @@ export const BrandingConfiguration: React.FC = () => {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('media_library.title')}</h2>
         <MediaLibrary />
       </Card>
-
-      {/* Actions */}
-      <div className="flex gap-3">
-        <Button variant="primary" onClick={handleSave}>{t('branding.save_changes')}</Button>
-        <Button variant="secondary" onClick={handleReset}>{t('branding.reset_to_defaults')}</Button>
-      </div>
 
       {/* Upload Modals */}
       <ImageUploadModal

@@ -85,12 +85,41 @@ export const CommunicationConfiguration: React.FC = () => {
 
   return (
     <div className="p-8 space-y-6">
-      <div>
-        <div className="flex items-center gap-3 mb-2">
-          <Mail className="h-6 w-6 text-[#B725B7]" />
-          <h1 className="text-2xl font-bold text-gray-900">{t('communication.title')}</h1>
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-30 bg-gray-50 -mx-8 px-8 -mt-8 pt-8 pb-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <Mail className="h-6 w-6 text-[#B725B7]" />
+            <h1 className="text-2xl font-bold text-gray-900">{t('communication.title')}</h1>
+          </div>
+          <p className="text-gray-600">{t('communication.subtitle')}</p>
         </div>
-        <p className="text-gray-600">{t('communication.subtitle')}</p>
+        <div className="flex items-center gap-3">
+          <Button variant="primary" onClick={handleSave}>
+            {t('communication.save_changes')}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleTestConnection}
+            disabled={testing || !settings.smtpHost || !settings.smtpUsername || !settings.smtpPassword}
+            className="flex items-center gap-2"
+          >
+            <Plug className="h-4 w-4" />
+            {testing ? t('communication.testing') : t('communication.test_connection')}
+          </Button>
+          {testResult === 'success' && (
+            <span className="flex items-center gap-1 text-sm text-green-600">
+              <CheckCircle className="h-4 w-4" />
+              {t('communication.test_success')}
+            </span>
+          )}
+          {testResult === 'error' && (
+            <span className="flex items-center gap-1 text-sm text-red-600">
+              <XCircle className="h-4 w-4" />
+              {t('communication.test_failed')}
+            </span>
+          )}
+        </div>
       </div>
 
       <Card className="p-6">
@@ -215,32 +244,6 @@ export const CommunicationConfiguration: React.FC = () => {
         />
       </Card>
 
-      <div className="flex items-center gap-3">
-        <Button variant="primary" onClick={handleSave}>
-          {t('communication.save_changes')}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={handleTestConnection}
-          disabled={testing || !settings.smtpHost || !settings.smtpUsername || !settings.smtpPassword}
-          className="flex items-center gap-2"
-        >
-          <Plug className="h-4 w-4" />
-          {testing ? t('communication.testing') : t('communication.test_connection')}
-        </Button>
-        {testResult === 'success' && (
-          <span className="flex items-center gap-1 text-sm text-green-600">
-            <CheckCircle className="h-4 w-4" />
-            {t('communication.test_success')}
-          </span>
-        )}
-        {testResult === 'error' && (
-          <span className="flex items-center gap-1 text-sm text-red-600">
-            <XCircle className="h-4 w-4" />
-            {t('communication.test_failed')}
-          </span>
-        )}
-      </div>
     </div>
   )
 }

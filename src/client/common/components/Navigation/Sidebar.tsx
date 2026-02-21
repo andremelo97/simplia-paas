@@ -332,51 +332,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const ActionIcon = action.icon
             const isDanger = action.variant === 'danger'
             return (
-              <Tooltip key={action.label} content={action.label} disabled={isOpen} side="right">
-                <button
-                  onClick={action.onClick}
-                  style={{
-                    color: '#6B7280',
-                    width: '100%',
-                    textAlign: 'left',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                  className={cn(
-                    "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-colors duration-200",
-                    isDanger
-                      ? "hover:text-red-600 hover:bg-red-50/50"
-                      : "hover:text-[#B725B7] hover:bg-purple-50/50",
-                    !isOpen && "justify-center"
-                  )}
-                >
+              <button
+                key={action.label}
+                onClick={action.onClick}
+                style={{
+                  color: '#6B7280',
+                  width: '100%',
+                  textAlign: 'left',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+                className={cn(
+                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-colors duration-200",
+                  isDanger
+                    ? "hover:text-red-600 hover:bg-red-50/50"
+                    : "hover:text-[#B725B7] hover:bg-purple-50/50",
+                  !isOpen && "justify-center"
+                )}
+              >
+                <Tooltip content={action.label} disabled={isOpen} side="right">
                   <span className="flex items-center justify-center">
                     <ActionIcon
                       className="w-5 h-5"
                       style={{
                         color: 'inherit',
-                        width: '20px',
-                        height: '20px',
+                        width: '20px !important',
+                        height: '20px !important',
                         minWidth: '20px',
                         minHeight: '20px',
-                        flexShrink: 0,
+                        flexShrink: 0
                       }}
                     />
                   </span>
-                  {isOpen && (
-                    <motion.span
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.2 }}
-                      style={{ marginLeft: '10px' }}
-                      className="font-medium text-sm"
-                    >
-                      {action.label}
-                    </motion.span>
-                  )}
-                </button>
-              </Tooltip>
+                </Tooltip>
+
+                {isOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex-1"
+                    style={{ marginLeft: '10px' }}
+                  >
+                    <div className="font-medium text-sm">{action.label}</div>
+                  </motion.div>
+                )}
+              </button>
             )
           })}
         </div>

@@ -430,7 +430,7 @@ export const EditDocument: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="sm:sticky sm:top-0 sm:z-10 sm:bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             {t(`${config.i18nKey}.edit`, t('quotes.edit'))}

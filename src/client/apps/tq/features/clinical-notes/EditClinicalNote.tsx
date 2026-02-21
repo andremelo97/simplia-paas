@@ -270,7 +270,7 @@ export const EditClinicalNote: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="sm:sticky sm:top-0 sm:z-10 sm:bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('clinical_notes.edit')}</h1>
           <p className="text-gray-600 mt-1">

@@ -16,6 +16,7 @@ import { patientsService } from '../../services/patients'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { QuoteItemsManager } from './QuoteItemsManager'
 import { GenerateLandingPageModal } from '../../components/landing-pages/GenerateLandingPageModal'
+import { LandingPageLinksSection } from '../../components/landing-pages/LandingPageLinksSection'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { getQuoteStatusOptions } from '../../types/quoteStatus'
 import { useAuthStore } from '../../shared/store'
@@ -594,6 +595,18 @@ export const EditQuote: React.FC = () => {
               </Card>
             )}
 
+            {/* Shared Links List */}
+            {quote && (
+              <LandingPageLinksSection
+                documentId={quote.id}
+                documentType="quote"
+                documentNumber={quote.number}
+                patientName={`${patientFirstName} ${patientLastName}`.trim()}
+                patientEmail={patientEmail}
+                patientPhone={patientPhone}
+              />
+            )}
+
           </div>
         </div>
       </div>
@@ -632,6 +645,7 @@ export const EditQuote: React.FC = () => {
           patientName={`${patientFirstName} ${patientLastName}`.trim()}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
+          onSuccess={() => window.dispatchEvent(new Event('landing-page-created'))}
         />
       )}
       

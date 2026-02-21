@@ -58,7 +58,7 @@ export const QuotesTab: React.FC = () => {
   }
 
   const handleEditQuote = (quote: Quote) => {
-    navigate(`/quotes/${quote.id}/edit`)
+    navigate(`/documents/quote/${quote.id}/edit`)
   }
 
   const handleDeleteQuote = (quote: Quote) => {

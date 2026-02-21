@@ -174,7 +174,7 @@ export const landingPagesService = {
 
   async getLandingPagesByDocument(documentId: string, documentType: 'quote' | 'prevention' = 'quote'): Promise<LandingPage[]> {
     const response = await api.get(`/api/tq/v1/landing-pages/${documentId}?document_type=${documentType}`)
-    return response.data.data
+    return Array.isArray(response.data) ? response.data : (response.data?.data || [])
   },
 
   async revokeLandingPage(id: string): Promise<void> {

@@ -612,7 +612,7 @@ export const PatientHistory: React.FC = () => {
                         status={quote.status}
                         date={formatDateTime(quote.created_at)}
                         icon={getEventIcon('quote')}
-                        viewPath={`/quotes/${quote.id}/edit`}
+                        viewPath={`/documents/quote/${quote.id}/edit`}
                       />
                     ))
                 ) : (
@@ -836,7 +836,7 @@ export const PatientHistory: React.FC = () => {
                             case 'session':
                               return () => navigate(`/sessions/${event.id}/edit`)
                             case 'quote':
-                              return () => navigate(`/quotes/${event.id}/edit`)
+                              return () => navigate(`/documents/quote/${event.id}/edit`)
                             case 'clinical':
                               return () => navigate(`/documents/clinical-note/${event.id}/edit`)
                             case 'prevention':

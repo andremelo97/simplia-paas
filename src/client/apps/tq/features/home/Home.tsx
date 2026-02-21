@@ -106,7 +106,7 @@ export const Home: React.FC = () => {
         timestamp: formatDateTime(quote.created_at),
         icon: 'quote',
         date: new Date(quote.created_at),
-        path: `/quotes/${quote.id}/edit`
+        path: `/documents/quote/${quote.id}/edit`
       })
     })
 
@@ -335,7 +335,7 @@ export const Home: React.FC = () => {
               <QuoteCard
                 key={quote.id}
                 quote={quote}
-                onDoubleClick={() => navigate(`/quotes/${quote.id}/edit`)}
+                onDoubleClick={() => navigate(`/documents/quote/${quote.id}/edit`)}
               />
             ))}
           </div>

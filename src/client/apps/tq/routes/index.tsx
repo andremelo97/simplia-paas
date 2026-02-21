@@ -168,7 +168,7 @@ export const AppRoutes: React.FC = () => {
         <Route path="clinical-notes" element={<ClinicalNotes />} />
         <Route path="clinical-notes/:id/edit" element={<EditClinicalNote />} />
 
-        {/* Prevention (OLD routes - kept for backwards compatibility) */}
+        {/* Prevention (OLD routes - redirect to new documents system) */}
         <Route path="prevention" element={<Prevention />} />
         <Route path="prevention/:id/edit" element={<EditPrevention />} />
 
@@ -184,9 +184,6 @@ export const AppRoutes: React.FC = () => {
           } />
           <Route path="items/:id/edit" element={<EditItem />} />
         </Route>
-
-        {/* Edit Quote - Outside QuoteManagementLayout for full page layout */}
-        <Route path="quotes/:id/edit" element={<EditQuote />} />
 
         {/* Landing Pages with Tabs */}
         <Route path="landing-pages" element={<LandingPagesLayout />}>

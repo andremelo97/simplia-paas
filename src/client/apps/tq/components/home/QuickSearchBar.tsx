@@ -100,7 +100,7 @@ export const QuickSearchBar: React.FC<QuickSearchBarProps> = ({ patients, sessio
           type: 'quote',
           title: q.number,
           subtitle: `${q.patient_first_name} ${q.patient_last_name} - $${q.total?.toFixed(2)}`,
-          path: `/quotes/${q.id}/edit`
+          path: `/documents/quote/${q.id}/edit`
         })
       })
 

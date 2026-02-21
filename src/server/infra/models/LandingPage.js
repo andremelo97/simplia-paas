@@ -46,7 +46,9 @@ class LandingPage {
           id: data.session_patient_id,
           firstName: data.patient_first_name,
           lastName: data.patient_last_name,
-          email: data.patient_email
+          email: data.patient_email,
+          phone: data.patient_phone,
+          phoneCountryCode: data.patient_phone_country_code
         };
       }
     }
@@ -67,7 +69,9 @@ class LandingPage {
           id: data.session_patient_id,
           firstName: data.patient_first_name,
           lastName: data.patient_last_name,
-          email: data.patient_email
+          email: data.patient_email,
+          phone: data.patient_phone,
+          phoneCountryCode: data.patient_phone_country_code
         };
       }
     }
@@ -202,6 +206,8 @@ class LandingPage {
           p.first_name as patient_first_name,
           p.last_name as patient_last_name,
           p.email as patient_email,
+          p.phone as patient_phone,
+          p.phone_country_code as patient_phone_country_code,
           t.name as template_name,
           t.content as template_content
         FROM ${schema}.landing_page lp
@@ -233,6 +239,8 @@ class LandingPage {
           p.first_name as patient_first_name,
           p.last_name as patient_last_name,
           p.email as patient_email,
+          p.phone as patient_phone,
+          p.phone_country_code as patient_phone_country_code,
           t.name as template_name,
           t.content as template_content
         FROM ${schema}.landing_page lp

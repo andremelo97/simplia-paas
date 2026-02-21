@@ -1,11 +1,12 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Button, StatusBadge } from '@client/common/ui'
-import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key, Eye } from 'lucide-react'
-import { LandingPage } from '../../services/landingPages'
+import { Button, StatusBadge, Tooltip } from '@client/common/ui'
+import { ExternalLink, Copy, Trash2, CheckCircle2, FileText, Key, Eye, MessageCircle, Mail, Loader2 } from 'lucide-react'
+import { LandingPage, landingPagesService } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useAuthStore } from '../../shared/store'
+import { cleanPhoneForWhatsApp } from '../../utils/phone'
 
 interface LandingPageLinkRowProps {
   landingPage: LandingPage
@@ -23,6 +24,8 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
   const navigate = useNavigate()
   const [copied, setCopied] = React.useState(false)
   const [copiedPassword, setCopiedPassword] = React.useState(false)
+  const [sendingEmail, setSendingEmail] = React.useState(false)
+  const [emailSent, setEmailSent] = React.useState(false)
   const { formatShortDate } = useDateFormatter()
   const { t } = useTranslation('tq')
   const { user } = useAuthStore()
@@ -54,6 +57,40 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
       navigate(`/documents/prevention/${landingPage.prevention.id}/edit`)
     } else if (landingPage.quote?.id) {
       navigate(`/documents/quote/${landingPage.quote.id}/edit`)
+    }
+  }
+
+  const patient = landingPage.quote?.patient || landingPage.prevention?.patient
+  const patientPhone = patient?.phone
+  const patientEmail = patient?.email
+  const patientPhoneCountryCode = patient?.phoneCountryCode
+
+  const handleSendWhatsApp = () => {
+    if (!patientPhone) return
+
+    const messageKey = landingPage.documentType === 'quote'
+      ? 'modals.generate_public_quote.whatsapp_message_quote'
+      : 'modals.generate_public_quote.whatsapp_message_prevention'
+
+    const message = t(messageKey, {
+      link: url,
+      password: landingPage.password || ''
+    })
+
+    const phone = cleanPhoneForWhatsApp(patientPhone, patientPhoneCountryCode)
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank')
+  }
+
+  const handleSendEmail = async () => {
+    setSendingEmail(true)
+    try {
+      await landingPagesService.sendEmail(landingPage.id)
+      setEmailSent(true)
+      setTimeout(() => setEmailSent(false), 3000)
+    } catch {
+      // HTTP interceptor handles feedback
+    } finally {
+      setSendingEmail(false)
     }
   }
 
@@ -117,6 +154,51 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
 
       {/* Row 2: Actions */}
       <div className="flex items-center gap-1.5 flex-wrap">
+        <Tooltip
+          content={isDisabled ? t('landing_pages.links.card.generate_new_link') : t('modals.generate_public_quote.whatsapp_no_phone')}
+          disabled={!isDisabled && !!patientPhone}
+          side="bottom"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSendWhatsApp}
+            className="h-7 text-sm gap-1 text-green-700 hover:bg-green-50"
+            disabled={isDisabled || !patientPhone}
+          >
+            <MessageCircle size={14} />
+            {t('landing_pages.links.card.send_whatsapp')}
+          </Button>
+        </Tooltip>
+
+        <Tooltip
+          content={isDisabled ? t('landing_pages.links.card.generate_new_link') : t('modals.generate_public_quote.email_no_email')}
+          disabled={!isDisabled && !!patientEmail}
+          side="bottom"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSendEmail}
+            disabled={isDisabled || !patientEmail || sendingEmail || emailSent}
+            className="h-7 text-sm gap-1 text-purple-700 hover:bg-purple-50"
+          >
+            {sendingEmail ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : emailSent ? (
+              <CheckCircle2 size={14} />
+            ) : (
+              <Mail size={14} />
+            )}
+            {sendingEmail
+              ? t('landing_pages.links.card.sending_email')
+              : emailSent
+                ? t('landing_pages.links.card.email_sent')
+                : t('landing_pages.links.card.send_email')
+            }
+          </Button>
+        </Tooltip>
+
         <Button
           variant="outline"
           size="sm"

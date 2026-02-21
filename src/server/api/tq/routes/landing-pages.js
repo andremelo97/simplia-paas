@@ -142,6 +142,8 @@ router.get('/', async (req, res) => {
         p.first_name as patient_first_name,
         p.last_name as patient_last_name,
         p.email as patient_email,
+        p.phone as patient_phone,
+        p.phone_country_code as patient_phone_country_code,
         lpt.name as template_name
       FROM ${schema}.landing_page lp
       LEFT JOIN ${schema}.quote q ON lp.document_id = q.id AND lp.document_type = 'quote'

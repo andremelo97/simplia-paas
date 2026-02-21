@@ -68,6 +68,8 @@ export interface LandingPage {
       firstName: string
       lastName: string
       email?: string
+      phone?: string
+      phoneCountryCode?: string
     }
   }
   prevention?: {
@@ -81,6 +83,8 @@ export interface LandingPage {
       firstName: string
       lastName: string
       email?: string
+      phone?: string
+      phoneCountryCode?: string
     }
   }
   template?: {

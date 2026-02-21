@@ -1,9 +1,10 @@
 import React from 'react'
-import { Home, Settings, ShoppingBag } from 'lucide-react'
+import { Home, Settings, ShoppingBag, LogOut } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '../store/ui'
 import { useAuthStore } from '../store/auth'
-import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
+import { hubService } from '../services/hub'
+import { Sidebar as CommonSidebar, NavigationItem, SidebarAction } from '@client/common/components'
 
 interface HubSidebarProps {
   forceOpen?: boolean
@@ -36,6 +37,10 @@ export const Sidebar: React.FC<HubSidebarProps> = ({ forceOpen }) => {
     })
   }
 
+  const bottomActions: SidebarAction[] = [
+    { label: t('sidebar.logout'), icon: LogOut, onClick: () => hubService.logout(), variant: 'danger' },
+  ]
+
   return (
     <CommonSidebar
       navigation={navigation}
@@ -43,6 +48,7 @@ export const Sidebar: React.FC<HubSidebarProps> = ({ forceOpen }) => {
       onToggle={toggleSidebar}
       title="Hub"
       subtitle={t('sidebar.application_portal')}
+      bottomActions={bottomActions}
     />
   )
 }

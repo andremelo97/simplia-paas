@@ -1215,7 +1215,9 @@
     "items": "Items",
     "templates": "Templates",
     "landing_pages": "Landing Pages",
-    "configurations": "Configurations"
+    "configurations": "Configurations",
+    "back_to_hub": "Back to Hub",
+    "logout": "Logout"
   },
   "documents": {
     "title": "Documents",

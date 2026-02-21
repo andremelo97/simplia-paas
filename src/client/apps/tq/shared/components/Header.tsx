@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuthStore } from '../store/auth'
 import { useOnboardingStore } from '../store/onboarding'
 import { Header as CommonHeader } from '@client/common/components'
@@ -11,9 +11,8 @@ import { preventionService, Prevention } from '../../services/prevention'
 import { templatesService, Template } from '../../services/templates'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useTranslation } from 'react-i18next'
-import { HelpCircle, Headphones, LogOut } from 'lucide-react'
+import { HelpCircle, Headphones } from 'lucide-react'
 import { Tooltip, Button, SupportModal } from '@client/common/ui'
-import { useIsMobile } from '@shared/hooks/use-mobile'
 
 const getBreadcrumbs = (pathname: string, t: (key: string) => string) => {
   const home = { label: t('breadcrumbs.home'), href: '/' }
@@ -171,34 +170,6 @@ export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle, onOpenAIChat }) 
   const [templates, setTemplates] = useState<Template[]>([])
   const [landingPageTemplates, setLandingPageTemplates] = useState<LandingPageTemplate[]>([])
   const [isSupportOpen, setIsSupportOpen] = useState(false)
-  const isMobile = useIsMobile(768)
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const mobileMenuRef = useRef<HTMLDivElement>(null)
-
-  // Close mobile menu on outside click
-  useEffect(() => {
-    if (!showMobileMenu) return
-    const handleClick = (e: MouseEvent) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
-        setShowMobileMenu(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [showMobileMenu])
-
-  const handleMobileLogout = () => {
-    setShowMobileMenu(false)
-    // Clear TQ auth state
-    localStorage.removeItem('auth-storage')
-    // Redirect to Hub with logout action — Hub will handle full logout (backend + frontend)
-    const hostname = window.location.hostname
-    const hubOrigin = import.meta.env.VITE_HUB_ORIGIN
-      || (hostname.includes('tq-test')
-        ? 'https://hub-test.livocare.ai'
-        : 'https://hub.livocare.ai')
-    window.location.href = `${hubOrigin}/login?action=logout`
-  }
 
   // Load data for search
   useEffect(() => {
@@ -263,8 +234,7 @@ export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle, onOpenAIChat }) 
 
   return (
     <>
-      <div className="relative">
-        <CommonHeader
+      <CommonHeader
           user={user}
           tenant={null}
           getBreadcrumbs={(pathname) => getBreadcrumbs(pathname, t)}
@@ -285,26 +255,7 @@ export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle, onOpenAIChat }) 
           }
           rightActions={rightActions}
           onMenuToggle={onMenuToggle}
-          onUserClick={isMobile ? () => setShowMobileMenu(!showMobileMenu) : undefined}
-          userTooltip={isMobile ? 'Menu' : undefined}
         />
-
-        {/* Mobile logout dropdown */}
-        {showMobileMenu && isMobile && (
-          <div
-            ref={mobileMenuRef}
-            className="absolute right-3 top-14 z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]"
-          >
-            <button
-              onClick={handleMobileLogout}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              {t('mobile.logout', 'Logout')}
-            </button>
-          </div>
-        )}
-      </div>
 
       <SupportModal
         isOpen={isSupportOpen}

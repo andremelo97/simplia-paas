@@ -1,7 +1,7 @@
 import React from 'react'
-import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList, Shield, Settings, Mic, Package } from 'lucide-react'
+import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList, Shield, Settings, Mic, Package, LogOut, LayoutGrid } from 'lucide-react'
 import { useUIStore, useAuthStore } from '../store'
-import { Sidebar as CommonSidebar, NavigationItem } from '@client/common/components'
+import { Sidebar as CommonSidebar, NavigationItem, SidebarAction } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
 
 interface TQSidebarProps {
@@ -83,6 +83,24 @@ export const Sidebar: React.FC<TQSidebarProps> = ({ forceOpen }) => {
     })
   }
 
+  const getHubUrl = () => {
+    const hubOrigin = import.meta.env.VITE_HUB_ORIGIN
+      || (window.location.hostname.includes('tq-test')
+        ? 'https://hub-test.livocare.ai'
+        : 'https://hub.livocare.ai')
+    return hubOrigin
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth-storage')
+    window.location.href = `${getHubUrl()}/login?action=logout`
+  }
+
+  const bottomActions: SidebarAction[] = [
+    { label: t('sidebar.back_to_hub'), icon: LayoutGrid, onClick: () => window.open(getHubUrl(), '_blank') },
+    { label: t('sidebar.logout'), icon: LogOut, onClick: handleLogout, variant: 'danger' },
+  ]
+
   return (
     <CommonSidebar
       navigation={navigation}
@@ -90,6 +108,7 @@ export const Sidebar: React.FC<TQSidebarProps> = ({ forceOpen }) => {
       onToggle={toggleSidebar}
       title="TQ"
       subtitle="Transcription & Quote"
+      bottomActions={bottomActions}
     />
   )
 }

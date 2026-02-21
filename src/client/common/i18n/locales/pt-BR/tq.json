@@ -1182,7 +1182,9 @@
     "items": "Itens",
     "templates": "Templates",
     "landing_pages": "Landing Pages",
-    "configurations": "Configurações"
+    "configurations": "Configurações",
+    "back_to_hub": "Voltar ao Hub",
+    "logout": "Sair"
   },
   "documents": {
     "title": "Documentos",

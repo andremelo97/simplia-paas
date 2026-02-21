@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useAuthStore } from '../store/auth'
 import { useOnboardingStore } from '../store/onboarding'
-import { hubService } from '../services/hub'
 import { Header as CommonHeader } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
 import { UserSettingsModal } from './UserSettingsModal'
@@ -80,10 +79,6 @@ export const Header: React.FC<HubHeaderProps> = ({ onMenuToggle }) => {
     [t]
   )
 
-  const handleLogout = () => {
-    hubService.logout()
-  }
-
   const handleUserClick = () => {
     setIsSettingsOpen(true)
   }
@@ -149,7 +144,7 @@ export const Header: React.FC<HubHeaderProps> = ({ onMenuToggle }) => {
       <CommonHeader
         user={user}
         tenant={tenant}
-        onLogout={handleLogout}
+        showLogout={false}
         onUserClick={handleUserClick}
         userTooltip={t('header.user_settings_tooltip')}
         getBreadcrumbs={localizedBreadcrumbs}

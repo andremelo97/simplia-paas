@@ -17,6 +17,13 @@ export interface NavigationItem {
   children?: NavigationItem[]
 }
 
+export interface SidebarAction {
+  label: string
+  icon: LucideIcon
+  onClick: () => void
+  variant?: 'default' | 'danger'
+}
+
 export interface SidebarProps {
   navigation: NavigationItem[]
   isOpen: boolean
@@ -24,6 +31,7 @@ export interface SidebarProps {
   title?: string
   subtitle?: string
   className?: string
+  bottomActions?: SidebarAction[]
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -32,7 +40,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggle,
   title = "LivoCare",
   subtitle = "Platform",
-  className
+  className,
+  bottomActions
 }) => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -315,6 +324,63 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )
         })}
       </nav>
+
+      {/* Bottom Actions */}
+      {bottomActions && bottomActions.length > 0 && (
+        <div style={{ padding: '8px 16px 16px', borderTop: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {bottomActions.map((action) => {
+            const ActionIcon = action.icon
+            const isDanger = action.variant === 'danger'
+            return (
+              <Tooltip key={action.label} content={action.label} disabled={isOpen} side="right">
+                <button
+                  onClick={action.onClick}
+                  style={{
+                    color: '#6B7280',
+                    width: '100%',
+                    textAlign: 'left',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                  className={cn(
+                    "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-colors duration-200",
+                    isDanger
+                      ? "hover:text-red-600 hover:bg-red-50/50"
+                      : "hover:text-[#B725B7] hover:bg-purple-50/50",
+                    !isOpen && "justify-center"
+                  )}
+                >
+                  <span className="flex items-center justify-center">
+                    <ActionIcon
+                      className="w-5 h-5"
+                      style={{
+                        color: 'inherit',
+                        width: '20px',
+                        height: '20px',
+                        minWidth: '20px',
+                        minHeight: '20px',
+                        flexShrink: 0,
+                      }}
+                    />
+                  </span>
+                  {isOpen && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.2 }}
+                      style={{ marginLeft: '10px' }}
+                      className="font-medium text-sm"
+                    >
+                      {action.label}
+                    </motion.span>
+                  )}
+                </button>
+              </Tooltip>
+            )
+          })}
+        </div>
+      )}
     </motion.div>
   )
 }

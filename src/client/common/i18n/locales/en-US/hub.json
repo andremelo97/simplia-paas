@@ -66,7 +66,8 @@
     "home": "Home",
     "marketplace": "Marketplace",
     "configurations": "Configurations",
-    "application_portal": "Application Portal"
+    "application_portal": "Application Portal",
+    "logout": "Logout"
   },
   "branding": {
     "title": "Branding",

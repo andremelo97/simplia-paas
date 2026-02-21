@@ -4,7 +4,6 @@ import { useAuthStore } from '../store/auth'
 import { useOnboardingStore } from '../store/onboarding'
 import { Header as CommonHeader } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
-import { UserSettingsModal } from './UserSettingsModal'
 import { BugReportModal } from './BugReportModal'
 import { HelpCircle, Bug, Headphones } from 'lucide-react'
 import { Button, Tooltip, SupportModal } from '@client/common/ui'
@@ -70,7 +69,6 @@ export const Header: React.FC<HubHeaderProps> = ({ onMenuToggle }) => {
   const { user, tenantName, tenantSlug } = useAuthStore()
   const { openWizard } = useOnboardingStore()
   const { t } = useTranslation('hub')
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isBugReportOpen, setIsBugReportOpen] = useState(false)
   const [isSupportOpen, setIsSupportOpen] = useState(false)
 
@@ -78,14 +76,6 @@ export const Header: React.FC<HubHeaderProps> = ({ onMenuToggle }) => {
     (pathname: string) => buildBreadcrumbs(pathname, t),
     [t]
   )
-
-  const handleUserClick = () => {
-    setIsSettingsOpen(true)
-  }
-
-  const handleCloseSettings = () => {
-    setIsSettingsOpen(false)
-  }
 
   // Create tenant object for header display
   const tenant = tenantName ? {
@@ -145,19 +135,12 @@ export const Header: React.FC<HubHeaderProps> = ({ onMenuToggle }) => {
         user={user}
         tenant={tenant}
         showLogout={false}
-        onUserClick={handleUserClick}
-        userTooltip={t('header.user_settings_tooltip')}
         getBreadcrumbs={localizedBreadcrumbs}
         getDisplayRole={getDisplayRole}
         showSearch={false}
         showNotifications={false}
         rightActions={rightActions}
         onMenuToggle={onMenuToggle}
-      />
-
-      <UserSettingsModal
-        isOpen={isSettingsOpen}
-        onClose={handleCloseSettings}
       />
 
       <BugReportModal

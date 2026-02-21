@@ -67,6 +67,7 @@
     "marketplace": "Marketplace",
     "configurations": "Configurations",
     "application_portal": "Application Portal",
+    "change_password": "Change Password",
     "logout": "Logout"
   },
   "branding": {

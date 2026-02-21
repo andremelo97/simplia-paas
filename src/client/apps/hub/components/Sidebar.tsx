@@ -1,10 +1,11 @@
-import React from 'react'
-import { Home, Settings, ShoppingBag, LogOut } from 'lucide-react'
+import React, { useState } from 'react'
+import { Home, Settings, ShoppingBag, LogOut, KeyRound } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useUIStore } from '../store/ui'
 import { useAuthStore } from '../store/auth'
 import { hubService } from '../services/hub'
 import { Sidebar as CommonSidebar, NavigationItem, SidebarAction } from '@client/common/components'
+import { UserSettingsModal } from './UserSettingsModal'
 
 interface HubSidebarProps {
   forceOpen?: boolean
@@ -14,6 +15,7 @@ export const Sidebar: React.FC<HubSidebarProps> = ({ forceOpen }) => {
   const { t } = useTranslation('hub')
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { user } = useAuthStore()
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false)
 
   const navigation: NavigationItem[] = [
     {
@@ -38,17 +40,24 @@ export const Sidebar: React.FC<HubSidebarProps> = ({ forceOpen }) => {
   }
 
   const bottomActions: SidebarAction[] = [
+    { label: t('sidebar.change_password'), icon: KeyRound, onClick: () => setIsSettingsOpen(true) },
     { label: t('sidebar.logout'), icon: LogOut, onClick: () => hubService.logout(), variant: 'danger' },
   ]
 
   return (
-    <CommonSidebar
-      navigation={navigation}
-      isOpen={forceOpen || sidebarOpen}
-      onToggle={toggleSidebar}
-      title="Hub"
-      subtitle={t('sidebar.application_portal')}
-      bottomActions={bottomActions}
-    />
+    <>
+      <CommonSidebar
+        navigation={navigation}
+        isOpen={forceOpen || sidebarOpen}
+        onToggle={toggleSidebar}
+        title="Hub"
+        subtitle={t('sidebar.application_portal')}
+        bottomActions={bottomActions}
+      />
+      <UserSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+      />
+    </>
   )
 }

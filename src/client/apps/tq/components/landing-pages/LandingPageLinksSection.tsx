@@ -10,7 +10,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, Button, StatusBadge, Tooltip, Paginator } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, StatusBadge, Tooltip, Paginator, ConfirmDialog } from '@client/common/ui'
 import {
   Copy,
   CheckCircle2,
@@ -60,6 +60,9 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null)
   const [emailSentId, setEmailSentId] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [showRevokeDialog, setShowRevokeDialog] = useState(false)
+  const [revokeTarget, setRevokeTarget] = useState<LandingPage | null>(null)
+  const [isRevoking, setIsRevoking] = useState(false)
 
   const ITEMS_PER_PAGE = 3
 
@@ -138,12 +141,23 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
     }
   }
 
-  const handleRevoke = async (lp: LandingPage) => {
+  const handleRevokeClick = (lp: LandingPage) => {
+    setRevokeTarget(lp)
+    setShowRevokeDialog(true)
+  }
+
+  const handleRevokeConfirm = async () => {
+    if (!revokeTarget) return
+    setIsRevoking(true)
     try {
-      await landingPagesService.revokeLandingPage(lp.id)
+      await landingPagesService.revokeLandingPage(revokeTarget.id)
       await loadLinks()
     } catch {
       // HTTP interceptor handles feedback
+    } finally {
+      setIsRevoking(false)
+      setShowRevokeDialog(false)
+      setRevokeTarget(null)
     }
   }
 
@@ -231,55 +245,63 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                 <span className="text-xs text-gray-500">
                   <Eye size={12} className="inline mr-0.5" />{lp.viewsCount}
                 </span>
+                <span className="text-gray-400">|</span>
+                <span className="text-xs text-gray-500">
+                  {formatShortDate(lp.createdAt)}
+                </span>
                 {lp.expiresAt && (
                   <span className="text-xs text-gray-500">
-                    {formatShortDate(lp.expiresAt)}
+                    — {formatShortDate(lp.expiresAt)}
                   </span>
                 )}
               </div>
 
               {/* Row 2: Actions */}
               <div className="flex items-center gap-1.5 flex-wrap">
-                {patientPhone && (
-                  <Tooltip content={t('landing_pages.links.card.generate_new_link')} disabled={!isDisabled} side="bottom">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSendWhatsApp(lp)}
-                      className="h-7 text-xs gap-1 text-green-700 hover:bg-green-50"
-                      disabled={isDisabled}
-                    >
-                      <MessageCircle size={13} />
-                      {t('landing_pages.links.card.send_whatsapp')}
-                    </Button>
-                  </Tooltip>
-                )}
+                <Tooltip
+                  content={isDisabled ? t('landing_pages.links.card.generate_new_link') : t('modals.generate_public_quote.whatsapp_no_phone')}
+                  disabled={!isDisabled && !!patientPhone}
+                  side="bottom"
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSendWhatsApp(lp)}
+                    className="h-7 text-xs gap-1 text-green-700 hover:bg-green-50"
+                    disabled={isDisabled || !patientPhone}
+                  >
+                    <MessageCircle size={13} />
+                    {t('landing_pages.links.card.send_whatsapp')}
+                  </Button>
+                </Tooltip>
 
-                {patientEmail && (
-                  <Tooltip content={t('landing_pages.links.card.generate_new_link')} disabled={!isDisabled} side="bottom">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSendEmail(lp)}
-                      disabled={sendingEmailId === lp.id || emailSentId === lp.id || isDisabled}
-                      className="h-7 text-xs gap-1 text-purple-700 hover:bg-purple-50"
-                    >
-                      {sendingEmailId === lp.id ? (
-                        <Loader2 size={13} className="animate-spin" />
-                      ) : emailSentId === lp.id ? (
-                        <CheckCircle2 size={13} />
-                      ) : (
-                        <Mail size={13} />
-                      )}
-                      {sendingEmailId === lp.id
-                        ? t('landing_pages.links.card.sending_email')
-                        : emailSentId === lp.id
-                          ? t('landing_pages.links.card.email_sent')
-                          : t('landing_pages.links.card.send_email')
-                      }
-                    </Button>
-                  </Tooltip>
-                )}
+                <Tooltip
+                  content={isDisabled ? t('landing_pages.links.card.generate_new_link') : t('modals.generate_public_quote.email_no_email')}
+                  disabled={!isDisabled && !!patientEmail}
+                  side="bottom"
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSendEmail(lp)}
+                    disabled={isDisabled || !patientEmail || sendingEmailId === lp.id || emailSentId === lp.id}
+                    className="h-7 text-xs gap-1 text-purple-700 hover:bg-purple-50"
+                  >
+                    {sendingEmailId === lp.id ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : emailSentId === lp.id ? (
+                      <CheckCircle2 size={13} />
+                    ) : (
+                      <Mail size={13} />
+                    )}
+                    {sendingEmailId === lp.id
+                      ? t('landing_pages.links.card.sending_email')
+                      : emailSentId === lp.id
+                        ? t('landing_pages.links.card.email_sent')
+                        : t('landing_pages.links.card.send_email')
+                    }
+                  </Button>
+                </Tooltip>
 
                 <Tooltip content={t('landing_pages.links.card.generate_new_link')} disabled={!isDisabled} side="bottom">
                   <Button
@@ -298,7 +320,7 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleRevoke(lp)}
+                    onClick={() => handleRevokeClick(lp)}
                     className="h-7 text-xs gap-1 text-red-600 hover:bg-red-50 ml-auto"
                   >
                     <Trash2 size={13} />
@@ -317,6 +339,17 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
           onPageChange={setCurrentPage}
         />
       </CardContent>
+
+      <ConfirmDialog
+        isOpen={showRevokeDialog}
+        onClose={() => setShowRevokeDialog(false)}
+        onConfirm={handleRevokeConfirm}
+        title={t('landing_pages.pages.revoke_link_title')}
+        description={t('landing_pages.pages.revoke_link_description', { documentNumber })}
+        confirmText={t('landing_pages.pages.revoke_link')}
+        variant="delete"
+        isLoading={isRevoking}
+      />
     </Card>
   )
 }

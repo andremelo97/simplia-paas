@@ -18,9 +18,10 @@ import {
   Button,
   Label,
   Input,
-  DateInput
+  DateInput,
+  Tooltip
 } from '@client/common/ui'
-import { Copy, CheckCircle2, MessageCircle, Mail, ExternalLink, Loader2 } from 'lucide-react'
+import { Copy, CheckCircle2, MessageCircle, Mail, ExternalLink, Loader2, Info } from 'lucide-react'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
@@ -426,28 +427,25 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
             {/* Send buttons */}
             <div className="space-y-3">
               {/* WhatsApp */}
-              {patientPhone ? (
+              <Tooltip content={t('modals.generate_public_quote.whatsapp_no_phone')} disabled={!!patientPhone} side="bottom">
                 <Button
                   variant="secondary"
                   className="w-full justify-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
                   onClick={handleSendWhatsApp}
+                  disabled={!patientPhone}
                 >
                   <MessageCircle size={18} />
                   {t('modals.generate_public_quote.send_whatsapp')}
                 </Button>
-              ) : (
-                <p className="text-xs text-gray-400 text-center">
-                  {t('modals.generate_public_quote.whatsapp_no_phone')}
-                </p>
-              )}
+              </Tooltip>
 
               {/* Email */}
-              {patientEmail ? (
+              <Tooltip content={t('modals.generate_public_quote.email_no_email')} disabled={!!patientEmail} side="bottom">
                 <Button
                   variant="secondary"
                   className="w-full justify-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
                   onClick={handleSendEmail}
-                  disabled={isSendingEmail || emailStatus === 'sent'}
+                  disabled={!patientEmail || isSendingEmail || emailStatus === 'sent'}
                 >
                   {isSendingEmail ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -463,17 +461,21 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
                       : t('modals.generate_public_quote.send_email')
                   }
                 </Button>
-              ) : (
-                <p className="text-xs text-gray-400 text-center">
-                  {t('modals.generate_public_quote.email_no_email')}
-                </p>
-              )}
+              </Tooltip>
 
               {emailStatus === 'failed' && (
                 <p className="text-xs text-red-500 text-center">
                   {t('modals.generate_public_quote.email_failed')}
                 </p>
               )}
+            </div>
+
+            {/* Info: send later via shared links */}
+            <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <Info size={16} className="text-blue-600 mt-0.5 shrink-0" />
+              <p className="text-xs text-blue-700">
+                {t('modals.generate_public_quote.send_later_hint')}
+              </p>
             </div>
 
             {/* Actions */}

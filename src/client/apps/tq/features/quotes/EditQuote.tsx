@@ -169,9 +169,7 @@ export const EditQuote: React.FC = () => {
         newPatientErrors.lastName = t('common:field_required')
       }
 
-      if (!trimmedEmail) {
-        newPatientErrors.email = t('common:field_required')
-      } else if (!emailPattern.test(trimmedEmail)) {
+      if (trimmedEmail && !emailPattern.test(trimmedEmail)) {
         newPatientErrors.email = t('patients.validation.email_invalid')
       }
     }
@@ -337,7 +335,7 @@ export const EditQuote: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="sm:sticky sm:top-0 sm:z-30 sm:bg-white sm:pb-4 sm:border-b sm:border-gray-200 sm:-mx-4 lg:-mx-6 sm:px-4 lg:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="sm:sticky sm:top-0 sm:z-30 sm:bg-white sm:pb-4 sm:border-b sm:border-gray-200 sm:-mx-4 lg:-mx-6 sm:px-4 lg:px-6 sm:-mt-4 lg:-mt-6 sm:pt-4 lg:pt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('quotes.edit')}</h1>
           <p className="text-gray-600 mt-1">
@@ -501,15 +499,12 @@ export const EditQuote: React.FC = () => {
                             const value = e.target.value
                             setPatientEmail(value)
                             if (patientErrors.email) {
-                              if (value.trim() && emailPattern.test(value.trim())) {
-                                setPatientErrors(prev => ({ ...prev, email: '' }))
-                              } else if (!value.trim()) {
+                              if (!value.trim() || emailPattern.test(value.trim())) {
                                 setPatientErrors(prev => ({ ...prev, email: '' }))
                               }
                             }
                           }}
                           disabled={!canEdit || isSaving}
-                          required
                           error={patientErrors.email}
                         />
 

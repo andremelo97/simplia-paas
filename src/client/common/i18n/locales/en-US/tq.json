@@ -101,6 +101,7 @@
       "email_no_email": "Add the patient's email to send via email",
       "whatsapp_message_quote": "Your quote is ready.\n\nAccess: {{link}}\nPassword: {{password}}",
       "whatsapp_message_prevention": "Your prevention plan is ready.\n\nAccess: {{link}}\nPassword: {{password}}",
+      "send_later_hint": "You can still send this link to your patient at any time. On the edit page, scroll down and find the \"Shared Links\" section.",
       "open_link": "Open Link",
       "done": "Done"
     }

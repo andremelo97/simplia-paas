@@ -49,13 +49,13 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(({
       error={showErrorAsPlaceholder ? undefined : error}
       helperText={helperText}
     >
-      <div className="flex">
+      <div className="group/phone flex">
         <select
           value={countryCodeValue}
           onChange={(e) => onCountryCodeChange(e.target.value)}
           disabled={disabled}
           className={cn(
-            "h-8 rounded-l border border-r-0 border-gray-200 bg-gray-50 px-1.5 text-sm shadow-sm transition-all focus:outline-none focus:border-[#B725B7] disabled:cursor-not-allowed disabled:opacity-50",
+            "peer/select h-8 rounded-l border border-r-0 border-gray-200 bg-gray-50 px-1.5 text-sm shadow-sm transition-all focus:outline-none focus:border-[#B725B7] disabled:cursor-not-allowed disabled:opacity-50",
             hasError && "border-red-300"
           )}
           style={{ width: '88px' }}
@@ -76,8 +76,8 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(({
           required={required}
           placeholder={displayPlaceholder}
           className={cn(
-            "flex h-8 w-full rounded-r border border-gray-200 bg-white/70 px-1.5 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50",
-            hasError && "border-red-300 focus-visible:border-red-500 placeholder:text-red-400",
+            "flex h-8 w-full rounded-r border border-gray-200 bg-white/70 px-1.5 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 peer-focus/select:border-l-[#B725B7]",
+            hasError && "border-red-300 focus-visible:border-red-500 placeholder:text-red-400 peer-focus/select:border-l-red-500",
             !hasError && "focus:border-[#B725B7] focus-visible:border-[#B725B7] placeholder:text-gray-400"
           )}
         />

@@ -108,7 +108,7 @@ export const CreateLandingPageTemplate: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="sm:sticky sm:top-0 sm:z-30 sm:bg-white sm:pb-4 sm:shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="sm:sticky sm:top-0 sm:z-30 sm:bg-white sm:pb-4 sm:border-b sm:border-gray-200 sm:-mx-4 lg:-mx-6 sm:px-4 lg:px-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{t('landing_pages.pages.create_template')}</h1>
           <p className="text-gray-600 mt-1">

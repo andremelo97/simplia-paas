@@ -29,6 +29,8 @@ export const DesignLandingPageTemplate: React.FC = () => {
   const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleSaveRef = useRef<() => void>(() => {})
+  const initialLoadRef = useRef(true)
+  const isClosingRef = useRef(false)
 
   // Keep ref updated with latest handleSave
   useEffect(() => {
@@ -128,7 +130,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
   // Warn user before leaving with unsaved changes
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasUnsavedChanges) {
+      if (hasUnsavedChanges && !isClosingRef.current) {
         e.preventDefault()
         e.returnValue = ''
       }
@@ -180,6 +182,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
       const confirmLeave = window.confirm(t('landing_pages.unsaved_changes_confirm'))
       if (!confirmLeave) return
     }
+    isClosingRef.current = true
     window.close()
   }
 
@@ -190,6 +193,12 @@ export const DesignLandingPageTemplate: React.FC = () => {
 
   const handleDataChange = (updatedData: any) => {
     setData(updatedData)
+    // Skip first onChange from Puck (editor initialization) to avoid false positive
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false
+      setLastSavedData(JSON.stringify(updatedData))
+      return
+    }
     checkUnsavedChanges(updatedData)
     scheduleAutoSave()
   }

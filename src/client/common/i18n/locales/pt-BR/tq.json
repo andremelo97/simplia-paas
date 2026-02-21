@@ -149,7 +149,8 @@
     "quote": "Orçamento",
     "prevention": "Prevenção",
     "clinical_note": "Nota Clínica",
-    "no_permission": "Você não tem permissão para esta ação"
+    "no_permission": "Você não tem permissão para esta ação",
+    "close": "Fechar"
   },
   "filters": {
     "select_patient": "Selecionar paciente...",

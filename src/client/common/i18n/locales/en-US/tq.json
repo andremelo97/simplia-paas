@@ -149,7 +149,8 @@
     "quote": "Quote",
     "prevention": "Prevention",
     "clinical_note": "Clinical Note",
-    "no_permission": "You don't have permission for this action"
+    "no_permission": "You don't have permission for this action",
+    "close": "Close"
   },
   "filters": {
     "select_patient": "Select patient...",

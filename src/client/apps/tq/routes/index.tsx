@@ -115,6 +115,16 @@ export const AppRoutes: React.FC = () => {
         }
       />
 
+      {/* Design Landing Page Template - Full screen Puck editor, no layout */}
+      <Route
+        path="/landing-pages/templates/:id/design"
+        element={
+          <RouteGuard requireAuth requiredApp="tq">
+            <DesignLandingPageTemplate />
+          </RouteGuard>
+        }
+      />
+
       <Route
         path="/*"
         element={
@@ -202,8 +212,6 @@ export const AppRoutes: React.FC = () => {
         {/* Edit Landing Page Template - Outside layout for full page */}
         <Route path="landing-pages/templates/:id/edit" element={<EditLandingPageTemplate />} />
 
-        {/* Design Landing Page Template - Full screen Puck editor */}
-        <Route path="landing-pages/templates/:id/design" element={<DesignLandingPageTemplate />} />
 
         {/* Configurations - Admin only */}
         <Route path="configurations" element={

@@ -131,7 +131,7 @@ export const EditLandingPageTemplate: React.FC = () => {
 
   const handleDesignLayout = () => {
     if (id) {
-      navigate(`/landing-pages/templates/${id}/design`)
+      window.open(`/landing-pages/templates/${id}/design`, '_blank')
     }
   }
 

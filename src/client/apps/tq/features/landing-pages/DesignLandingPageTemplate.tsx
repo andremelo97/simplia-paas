@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Puck } from '@measured/puck'
 import '@measured/puck/puck.css'
 import { Button } from '@client/common/ui'
-import { Maximize2, Minimize2, Eye, Save, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { X, Eye, Save, Check, AlertCircle, Loader2 } from 'lucide-react'
 import { landingPagesService } from '../../services/landingPages'
 import { brandingService, BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
@@ -15,7 +15,6 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 export const DesignLandingPageTemplate: React.FC = () => {
   const { t } = useTranslation('tq')
   const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
   const { user } = useAuthStore()
   const canEdit = user?.role !== 'operations'
   const [template, setTemplate] = useState<any>(null)
@@ -23,7 +22,6 @@ export const DesignLandingPageTemplate: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [config, setConfig] = useState<any>(null)
-  const [isFullscreen, setIsFullscreen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
@@ -177,12 +175,12 @@ export const DesignLandingPageTemplate: React.FC = () => {
     }
   }
 
-  const handleCancel = () => {
+  const handleClose = () => {
     if (hasUnsavedChanges) {
       const confirmLeave = window.confirm(t('landing_pages.unsaved_changes_confirm'))
       if (!confirmLeave) return
     }
-    navigate('/landing-pages/templates')
+    window.close()
   }
 
   const handlePreview = () => {
@@ -279,29 +277,9 @@ export const DesignLandingPageTemplate: React.FC = () => {
   }
 
   return (
-    <div className={isFullscreen ? 'fixed inset-0 z-50 bg-white' : 'h-screen flex flex-col'}>
-      {/* Header */}
-      {!isFullscreen && (
-        <div className="bg-white border-b px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Design Template Layout</h1>
-            <p className="text-sm text-gray-600 mt-1">{template.name}</p>
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleCancel}
-              disabled={isSaving}
-            >
-              {t('common.cancel')}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Puck Editor */}
-      <div className={isFullscreen ? 'h-screen' : 'flex-1 overflow-hidden'}>
+    <div className="fixed inset-0 z-50 bg-white">
+      {/* Puck Editor - Always fullscreen */}
+      <div className="h-screen">
         <Puck
           config={config}
           data={data}
@@ -329,20 +307,11 @@ export const DesignLandingPageTemplate: React.FC = () => {
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  onClick={handleClose}
                   className="flex items-center gap-2"
                 >
-                  {isFullscreen ? (
-                    <>
-                      <Minimize2 size={16} />
-                      {t('landing_pages.exit_fullscreen')}
-                    </>
-                  ) : (
-                    <>
-                      <Maximize2 size={16} />
-                      {t('landing_pages.fullscreen')}
-                    </>
-                  )}
+                  <X size={16} />
+                  {t('common.close')}
                 </Button>
               </div>
             ),

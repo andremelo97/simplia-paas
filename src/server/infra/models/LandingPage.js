@@ -259,8 +259,8 @@ class LandingPage {
   static async findByDocumentId(documentId, schema, documentType = 'quote') {
     const query = `
       SELECT * FROM ${schema}.landing_page
-      WHERE document_id = $1 AND document_type = $2 AND active = true
-      ORDER BY created_at DESC
+      WHERE document_id = $1 AND document_type = $2
+      ORDER BY active DESC, created_at DESC
     `;
     const result = await database.query(query, [documentId, documentType]);
 

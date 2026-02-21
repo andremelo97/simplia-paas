@@ -8,9 +8,9 @@
  * Intended to be embedded inside EditQuote / EditPrevention form sections.
  */
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, Button, StatusBadge, Tooltip } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, StatusBadge, Tooltip, Paginator } from '@client/common/ui'
 import {
   Copy,
   CheckCircle2,
@@ -59,6 +59,14 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
   const [copiedPasswordId, setCopiedPasswordId] = useState<string | null>(null)
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null)
   const [emailSentId, setEmailSentId] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const ITEMS_PER_PAGE = 3
+
+  const paginatedLinks = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return links.slice(start, start + ITEMS_PER_PAGE)
+  }, [links, currentPage])
 
   const loadLinks = useCallback(async () => {
     try {
@@ -176,7 +184,7 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
       </CardHeader>
 
       <CardContent className="space-y-3 px-6 pb-6">
-        {links.map((lp) => {
+        {paginatedLinks.map((lp) => {
           const url = lp.publicUrl || `${window.location.origin}/lp/${lp.accessToken}`
           const status = getLinkStatus(lp)
           const isDisabled = status !== 'active'
@@ -301,6 +309,13 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
             </div>
           )
         })}
+
+        <Paginator
+          currentPage={currentPage}
+          totalItems={links.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+          onPageChange={setCurrentPage}
+        />
       </CardContent>
     </Card>
   )

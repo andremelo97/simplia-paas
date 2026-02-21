@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Mail, Plug, CheckCircle, XCircle } from 'lucide-react'
+import { Mail, Plug, CheckCircle } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Button, Input, Card, Checkbox, FormFieldWrapper, Alert, AlertDescription, TagInput } from '@client/common/ui'
 import { communicationService, CommunicationSettings } from '../../services/communicationService'
@@ -18,7 +18,7 @@ export const CommunicationConfiguration: React.FC = () => {
   })
   const [loading, setLoading] = useState(true)
   const [testing, setTesting] = useState(false)
-  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null)
+  const [testResult, setTestResult] = useState<'success' | null>(null)
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -67,7 +67,7 @@ export const CommunicationConfiguration: React.FC = () => {
       })
       setTestResult('success')
     } catch {
-      setTestResult('error')
+      // Error feedback handled by HTTP interceptor (SMTP_TEST_FAILED)
     } finally {
       setTesting(false)
     }
@@ -111,12 +111,6 @@ export const CommunicationConfiguration: React.FC = () => {
             <span className="flex items-center gap-1 text-sm text-green-600">
               <CheckCircle className="h-4 w-4" />
               {t('communication.test_success')}
-            </span>
-          )}
-          {testResult === 'error' && (
-            <span className="flex items-center gap-1 text-sm text-red-600">
-              <XCircle className="h-4 w-4" />
-              {t('communication.test_failed')}
             </span>
           )}
         </div>

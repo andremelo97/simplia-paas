@@ -463,6 +463,10 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   LANDING_PAGE_REVOKED: {
     title: "Link Revoked",
     message: "Landing page link has been revoked."
+  },
+  LANDING_PAGE_EMAIL_FAILED: {
+    title: "Email Failed",
+    message: "Failed to send the landing page email. Please try again."
   }
 }
 

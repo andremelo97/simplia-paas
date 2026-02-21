@@ -184,14 +184,8 @@ export const EditDocument: React.FC = () => {
       if (!patient.lastName.trim()) {
         newPatientErrors.lastName = t('common:field_required')
       }
-      // Email is only required for quotes and prevention, not clinical notes
-      if (config.type !== 'clinical-note') {
-        if (!patient.email.trim()) {
-          newPatientErrors.email = t('common:field_required')
-        } else if (!emailPattern.test(patient.email.trim())) {
-          newPatientErrors.email = t('patients.validation.email_invalid')
-        }
-      } else if (patient.email.trim() && !emailPattern.test(patient.email.trim())) {
+      // Email is optional — only validate format if provided
+      if (patient.email.trim() && !emailPattern.test(patient.email.trim())) {
         newPatientErrors.email = t('patients.validation.email_invalid')
       }
     }
@@ -507,7 +501,7 @@ export const EditDocument: React.FC = () => {
               patientErrors={patientErrors}
               disabled={!canEdit || isSaving}
               i18nKey={config.i18nKey}
-              emailRequired={config.type !== 'clinical-note'}
+              emailRequired={false}
             />
 
             {/* Type-specific form section */}

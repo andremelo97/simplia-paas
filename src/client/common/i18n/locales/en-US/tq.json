@@ -288,7 +288,7 @@
       "first_name": "e.g., John",
       "last_name": "e.g., Doe",
       "email": "e.g., john.doe@example.com",
-      "phone": "e.g., +55 11 99999-9999",
+      "phone": "e.g., 11 99999-9999",
       "notes": "Additional notes about the patient (optional)"
     },
     "helper": {

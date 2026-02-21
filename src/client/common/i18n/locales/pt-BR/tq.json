@@ -255,7 +255,7 @@
       "first_name": "ex: João",
       "last_name": "ex: Silva",
       "email": "ex: joao.silva@exemplo.com",
-      "phone": "ex: +55 11 99999-9999",
+      "phone": "ex: 11 99999-9999",
       "notes": "Observações adicionais sobre o paciente (opcional)"
     },
     "helper": {

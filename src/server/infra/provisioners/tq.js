@@ -100,6 +100,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         last_name TEXT,
         email TEXT,
         phone TEXT,
+        phone_country_code TEXT DEFAULT '55',
         notes TEXT
       )
     `);

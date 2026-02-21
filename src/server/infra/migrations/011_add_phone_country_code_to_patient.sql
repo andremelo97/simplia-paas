@@ -1,0 +1,1 @@
+ALTER TABLE patient ADD COLUMN IF NOT EXISTS phone_country_code TEXT DEFAULT '55';

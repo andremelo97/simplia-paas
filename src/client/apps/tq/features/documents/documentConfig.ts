@@ -85,6 +85,7 @@ export interface DocumentData {
   patient_last_name?: string
   patient_email?: string
   patient_phone?: string
+  patient_phone_country_code?: string
   // Session fields
   session_number?: string
   session_status?: string

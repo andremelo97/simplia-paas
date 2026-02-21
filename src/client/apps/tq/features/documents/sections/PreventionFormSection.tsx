@@ -19,6 +19,7 @@ interface PreventionFormSectionProps {
   patientName: string
   patientEmail: string
   patientPhone: string
+  patientPhoneCountryCode?: string
   canEdit: boolean
 }
 
@@ -31,6 +32,7 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
   patientName,
   patientEmail,
   patientPhone,
+  patientPhoneCountryCode,
   canEdit
 }) => {
   const { t } = useTranslation('tq')
@@ -52,6 +54,7 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
         patientName={patientName}
         patientEmail={patientEmail}
         patientPhone={patientPhone}
+        patientPhoneCountryCode={patientPhoneCountryCode}
         onShowGenerateModal={() => onFormStateChange({ showGenerateModal: true })}
       />
 
@@ -64,6 +67,7 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
+          patientPhoneCountryCode={patientPhoneCountryCode}
         />
       )}
 
@@ -78,6 +82,7 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
+          patientPhoneCountryCode={patientPhoneCountryCode}
           onSuccess={handleLandingPageCreated}
         />
       )}

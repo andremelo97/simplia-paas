@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, Button, Input, Textarea } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Textarea, PhoneInput } from '@client/common/ui'
 import { patientsService } from '../../services/patients'
 
 interface PatientFormData {
@@ -9,6 +9,7 @@ interface PatientFormData {
   last_name: string
   email: string
   phone: string
+  phone_country_code: string
   notes: string
 }
 
@@ -19,6 +20,7 @@ export const CreatePatient: React.FC = () => {
     last_name: '',
     email: '',
     phone: '',
+    phone_country_code: '55',
     notes: ''
   })
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
@@ -91,6 +93,7 @@ export const CreatePatient: React.FC = () => {
         last_name: formData.last_name.trim() || undefined,
         email: formData.email.trim() || undefined,
         phone: formData.phone.trim() || undefined,
+        phone_country_code: formData.phone.trim() ? formData.phone_country_code : undefined,
         notes: formData.notes.trim() || undefined
       }
 
@@ -186,11 +189,12 @@ export const CreatePatient: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
-                <Input
+                <PhoneInput
                   label={t('patients.phone')}
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange('phone')}
+                  phoneValue={formData.phone}
+                  countryCodeValue={formData.phone_country_code}
+                  onPhoneChange={handleInputChange('phone')}
+                  onCountryCodeChange={(code) => setFormData(prev => ({ ...prev, phone_country_code: code }))}
                   error={validationErrors.phone}
                   placeholder={t('patients.placeholders.phone')}
                   helperText={t('patients.helper.phone')}

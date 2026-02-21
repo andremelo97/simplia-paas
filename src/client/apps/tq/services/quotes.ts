@@ -26,6 +26,7 @@ export interface Quote {
   patient_last_name?: string
   patient_email?: string
   patient_phone?: string
+  patient_phone_country_code?: string
   // Quote items when includeItems=true
   items?: QuoteItem[]
 }
@@ -63,6 +64,8 @@ interface ApiQuote {
   patient_first_name?: string
   patient_last_name?: string
   patient_email?: string
+  patient_phone?: string
+  patient_phone_country_code?: string
   // Quote items when includeItems=true
   items?: QuoteItem[]
 }
@@ -162,6 +165,7 @@ export const quotesService = {
       patient_last_name: apiQuote.patient_last_name,
       patient_email: apiQuote.patient_email,
       patient_phone: apiQuote.patient_phone,
+      patient_phone_country_code: apiQuote.patient_phone_country_code,
       // Items if included
       items: apiQuote.items
     }))
@@ -206,6 +210,7 @@ export const quotesService = {
       patient_last_name: apiQuote.patient_last_name,
       patient_email: apiQuote.patient_email,
       patient_phone: apiQuote.patient_phone,
+      patient_phone_country_code: apiQuote.patient_phone_country_code,
       // Items if included
       items: apiQuote.items
     }

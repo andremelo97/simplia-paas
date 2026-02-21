@@ -7,6 +7,7 @@ import {
   CardContent,
   Button,
   Input,
+  PhoneInput,
   TemplateEditor,
   isEditorContentFilled
 } from '@client/common/ui'
@@ -34,6 +35,7 @@ export const EditPrevention: React.FC = () => {
   const [patientLastName, setPatientLastName] = useState('')
   const [patientEmail, setPatientEmail] = useState('')
   const [patientPhone, setPatientPhone] = useState('')
+  const [patientPhoneCountryCode, setPatientPhoneCountryCode] = useState('55')
   const [patientId, setPatientId] = useState<string | null>(null)
   const [contentError, setContentError] = useState('')
 
@@ -58,6 +60,7 @@ export const EditPrevention: React.FC = () => {
           setPatientLastName(preventionData.patient_last_name || '')
           setPatientEmail(preventionData.patient_email || '')
           setPatientPhone(preventionData.patient_phone || '')
+          setPatientPhoneCountryCode(preventionData.patient_phone_country_code || '55')
           setPatientId(preventionData.patient_id || null)
 
           setLoadError(null)
@@ -105,14 +108,16 @@ export const EditPrevention: React.FC = () => {
           patientFirstName !== (prevention.patient_first_name || '') ||
           patientLastName !== (prevention.patient_last_name || '') ||
           patientEmail !== (prevention.patient_email || '') ||
-          patientPhone !== (prevention.patient_phone || '')
+          patientPhone !== (prevention.patient_phone || '') ||
+          patientPhoneCountryCode !== (prevention.patient_phone_country_code || '55')
 
         if (patientChanged) {
           await patientsService.updatePatient(patientId, {
             first_name: patientFirstName,
             last_name: patientLastName,
             email: patientEmail || undefined,
-            phone: patientPhone || undefined
+            phone: patientPhone || undefined,
+            phone_country_code: patientPhone ? patientPhoneCountryCode : undefined
           })
         }
       }
@@ -139,6 +144,7 @@ export const EditPrevention: React.FC = () => {
       setPatientLastName(freshPrevention.patient_last_name || '')
       setPatientEmail(freshPrevention.patient_email || '')
       setPatientPhone(freshPrevention.patient_phone || '')
+      setPatientPhoneCountryCode(freshPrevention.patient_phone_country_code || '55')
 
       // Success feedback is handled automatically by HTTP interceptor
     } catch (error) {
@@ -355,18 +361,14 @@ export const EditPrevention: React.FC = () => {
                           />
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-medium text-gray-700 mb-0.5">
-                            {t('patients.phone')}
-                          </label>
-                          <input
-                            type="text"
-                            value={patientPhone}
-                            onChange={(e) => setPatientPhone(e.target.value)}
-                            disabled={!canEdit || isSaving}
-                            className="flex h-8 w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1 text-sm shadow-sm transition-all focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50 focus:border-[#B725B7] focus-visible:border-[#B725B7]"
-                          />
-                        </div>
+                        <PhoneInput
+                          label={t('patients.phone')}
+                          phoneValue={patientPhone}
+                          countryCodeValue={patientPhoneCountryCode}
+                          onPhoneChange={(e) => setPatientPhone(e.target.value)}
+                          onCountryCodeChange={setPatientPhoneCountryCode}
+                          disabled={!canEdit || isSaving}
+                        />
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500">{t('prevention.no_patient_data')}</p>

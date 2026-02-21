@@ -274,13 +274,14 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const { firstName, lastName, email, phone, notes } = req.body;
+    const { firstName, lastName, email, phone, phoneCountryCode, notes } = req.body;
 
     const patientData = {
       firstName,
       lastName,
       email,
       phone,
+      phoneCountryCode,
       notes
     };
 
@@ -386,13 +387,14 @@ router.put('/:id', async (req, res) => {
       });
     }
 
-    const { firstName, lastName, email, phone, notes } = req.body;
+    const { firstName, lastName, email, phone, phoneCountryCode, notes } = req.body;
 
     const updates = {};
     if (firstName !== undefined) updates.first_name = firstName;
     if (lastName !== undefined) updates.last_name = lastName;
     if (email !== undefined) updates.email = email;
     if (phone !== undefined) updates.phone = phone;
+    if (phoneCountryCode !== undefined) updates.phone_country_code = phoneCountryCode;
     if (notes !== undefined) updates.notes = notes;
 
     const patient = await Patient.update(id, updates, schema);

@@ -7,6 +7,7 @@ import {
   CardContent,
   Button,
   Input,
+  PhoneInput,
   Select,
   TemplateEditor,
   isEditorContentFilled
@@ -42,6 +43,7 @@ export const EditQuote: React.FC = () => {
   const [patientLastName, setPatientLastName] = useState('')
   const [patientEmail, setPatientEmail] = useState('')
   const [patientPhone, setPatientPhone] = useState('')
+  const [patientPhoneCountryCode, setPatientPhoneCountryCode] = useState('55')
   const [patientId, setPatientId] = useState<string | null>(null)
 
   // Public Quote Template state
@@ -100,6 +102,7 @@ export const EditQuote: React.FC = () => {
           setPatientLastName(quoteData.patient_last_name || '')
           setPatientEmail(quoteData.patient_email || '')
           setPatientPhone(quoteData.patient_phone || '')
+          setPatientPhoneCountryCode(quoteData.patient_phone_country_code || '55')
           setPatientId(quoteData.patient_id || null)
           setPatientErrors({ firstName: '', lastName: '', email: '' })
 
@@ -193,14 +196,16 @@ export const EditQuote: React.FC = () => {
           trimmedFirstName !== (quote.patient_first_name || '') ||
           trimmedLastName !== (quote.patient_last_name || '') ||
           trimmedEmail !== (quote.patient_email || '') ||
-          patientPhone !== (quote.patient_phone || '')
+          patientPhone !== (quote.patient_phone || '') ||
+          patientPhoneCountryCode !== (quote.patient_phone_country_code || '55')
 
         if (patientChanged) {
           await patientsService.updatePatient(patientId, {
             first_name: trimmedFirstName,
             last_name: trimmedLastName,
             email: trimmedEmail || undefined,
-            phone: patientPhone || undefined
+            phone: patientPhone || undefined,
+            phone_country_code: patientPhone ? patientPhoneCountryCode : undefined
           })
         }
       }
@@ -262,6 +267,7 @@ export const EditQuote: React.FC = () => {
       setPatientLastName(freshQuote.patient_last_name || '')
       setPatientEmail(freshQuote.patient_email || '')
       setPatientPhone(freshQuote.patient_phone || '')
+      setPatientPhoneCountryCode(freshQuote.patient_phone_country_code || '55')
 
       // Update items if not already updated by hasItemChanges
       if (!hasItemChanges && freshQuote.items) {
@@ -508,10 +514,12 @@ export const EditQuote: React.FC = () => {
                           error={patientErrors.email}
                         />
 
-                        <Input
+                        <PhoneInput
                           label={t('patients.phone')}
-                          value={patientPhone}
-                          onChange={(e) => setPatientPhone(e.target.value)}
+                          phoneValue={patientPhone}
+                          countryCodeValue={patientPhoneCountryCode}
+                          onPhoneChange={(e) => setPatientPhone(e.target.value)}
+                          onCountryCodeChange={setPatientPhoneCountryCode}
                           disabled={!canEdit || isSaving}
                         />
                       </div>
@@ -618,6 +626,7 @@ export const EditQuote: React.FC = () => {
                 patientName={`${patientFirstName} ${patientLastName}`.trim()}
                 patientEmail={patientEmail}
                 patientPhone={patientPhone}
+                patientPhoneCountryCode={patientPhoneCountryCode}
               />
             )}
 
@@ -636,6 +645,7 @@ export const EditQuote: React.FC = () => {
           patientName={`${patientFirstName} ${patientLastName}`.trim()}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
+          patientPhoneCountryCode={patientPhoneCountryCode}
           onSuccess={() => window.dispatchEvent(new Event('landing-page-created'))}
         />
       )}

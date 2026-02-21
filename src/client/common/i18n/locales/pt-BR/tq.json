@@ -222,6 +222,7 @@
     "last_name": "Sobrenome",
     "email": "E-mail",
     "phone": "Telefone",
+    "phone_country_code": "Código do país",
     "date_of_birth": "Data de Nascimento",
     "patient_information": "Informações do Paciente",
     "record_information": "Informações do Registro",

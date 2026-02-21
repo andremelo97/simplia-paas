@@ -43,7 +43,8 @@ class Prevention {
         firstName: data.patient_first_name,
         lastName: data.patient_last_name,
         email: data.patient_email,
-        phone: data.patient_phone
+        phone: data.patient_phone,
+        phoneCountryCode: data.patient_phone_country_code
       };
     }
   }
@@ -55,7 +56,7 @@ class Prevention {
     let query = `
       SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone,
+             p.email as patient_email, p.phone as patient_phone, p.phone_country_code as patient_phone_country_code,
              u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.prevention prv
       LEFT JOIN ${schema}.session s ON prv.session_id = s.id
@@ -82,7 +83,7 @@ class Prevention {
     let query = `
       SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone,
+             p.email as patient_email, p.phone as patient_phone, p.phone_country_code as patient_phone_country_code,
              u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.prevention prv
       LEFT JOIN ${schema}.session s ON prv.session_id = s.id
@@ -204,7 +205,7 @@ class Prevention {
     const selectQuery = `
       SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone,
+             p.email as patient_email, p.phone as patient_phone, p.phone_country_code as patient_phone_country_code,
              u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.prevention prv
       LEFT JOIN ${schema}.session s ON prv.session_id = s.id
@@ -263,7 +264,7 @@ class Prevention {
     const selectQuery = `
       SELECT prv.*, s.number as session_number, s.status as session_status, s.patient_id,
              p.first_name as patient_first_name, p.last_name as patient_last_name,
-             p.email as patient_email, p.phone as patient_phone,
+             p.email as patient_email, p.phone as patient_phone, p.phone_country_code as patient_phone_country_code,
              u.first_name as creator_first_name, u.last_name as creator_last_name
       FROM ${schema}.prevention prv
       LEFT JOIN ${schema}.session s ON prv.session_id = s.id
@@ -310,6 +311,7 @@ class Prevention {
       result.patient_last_name = this.patient.lastName;
       result.patient_email = this.patient.email;
       result.patient_phone = this.patient.phone;
+      result.patient_phone_country_code = this.patient.phoneCountryCode;
     }
 
     return result;

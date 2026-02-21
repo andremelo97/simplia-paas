@@ -21,6 +21,7 @@ interface QuoteFormSectionProps {
   patientName: string
   patientEmail: string
   patientPhone: string
+  patientPhoneCountryCode?: string
   canEdit: boolean
 }
 
@@ -33,6 +34,7 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
   patientName,
   patientEmail,
   patientPhone,
+  patientPhoneCountryCode,
   canEdit
 }) => {
   const { t } = useTranslation('tq')
@@ -61,6 +63,7 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
+          patientPhoneCountryCode={patientPhoneCountryCode}
           onShowGenerateModal={() => onFormStateChange({ showGenerateModal: true })}
         />
       )}
@@ -74,6 +77,7 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
+          patientPhoneCountryCode={patientPhoneCountryCode}
         />
       )}
 
@@ -88,6 +92,7 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
+          patientPhoneCountryCode={patientPhoneCountryCode}
           onSuccess={handleLandingPageCreated}
         />
       )}

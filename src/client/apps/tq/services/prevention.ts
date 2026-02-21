@@ -25,6 +25,7 @@ export interface Prevention {
   patient_last_name?: string
   patient_email?: string
   patient_phone?: string
+  patient_phone_country_code?: string
 }
 
 export interface PreventionListParams {

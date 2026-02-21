@@ -25,11 +25,7 @@ import { landingPagesService, LandingPage } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useAuthStore } from '../../shared/store'
 
-function cleanPhoneForWhatsApp(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  if (digits.startsWith('55') && digits.length >= 12) return digits
-  return `55${digits}`
-}
+import { cleanPhoneForWhatsApp } from '../../utils/phone'
 
 interface LandingPageLinksSectionProps {
   documentId: string
@@ -38,6 +34,7 @@ interface LandingPageLinksSectionProps {
   patientName?: string
   patientEmail?: string
   patientPhone?: string
+  patientPhoneCountryCode?: string
 }
 
 export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = ({
@@ -46,7 +43,8 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
   documentNumber,
   patientName,
   patientEmail,
-  patientPhone
+  patientPhone,
+  patientPhoneCountryCode
 }) => {
   const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
@@ -124,7 +122,7 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
       password: lp.password || ''
     })
 
-    const phone = cleanPhoneForWhatsApp(patientPhone)
+    const phone = cleanPhoneForWhatsApp(patientPhone, patientPhoneCountryCode)
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank')
   }
 

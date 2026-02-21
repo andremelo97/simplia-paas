@@ -16,6 +16,7 @@ class Patient {
     this.lastName = data.last_name;
     this.email = data.email;
     this.phone = data.phone;
+    this.phoneCountryCode = data.phone_country_code;
     this.notes = data.notes;
   }
 
@@ -82,11 +83,11 @@ class Patient {
    * Create a new patient within a tenant schema
    */
   static async create(patientData, schema) {
-    const { firstName, lastName, email, phone, notes } = patientData;
+    const { firstName, lastName, email, phone, phoneCountryCode, notes } = patientData;
 
     const query = `
-      INSERT INTO ${schema}.patient (first_name, last_name, email, phone, notes)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO ${schema}.patient (first_name, last_name, email, phone, phone_country_code, notes)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
 
@@ -95,6 +96,7 @@ class Patient {
       lastName,
       email,
       phone,
+      phoneCountryCode || '55',
       notes
     ]);
 
@@ -105,7 +107,7 @@ class Patient {
    * Update an existing patient within a tenant schema
    */
   static async update(id, updates, schema) {
-    const allowedUpdates = ['first_name', 'last_name', 'email', 'phone', 'notes'];
+    const allowedUpdates = ['first_name', 'last_name', 'email', 'phone', 'phone_country_code', 'notes'];
     const updateFields = [];
     const updateValues = [];
     let paramIndex = 1;
@@ -194,6 +196,7 @@ class Patient {
       lastName: this.lastName,
       email: this.email,
       phone: this.phone,
+      phoneCountryCode: this.phoneCountryCode,
       notes: this.notes
     };
   }

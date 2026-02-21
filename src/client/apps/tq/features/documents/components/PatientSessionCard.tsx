@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card, CardHeader, CardContent, Input } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Input, PhoneInput } from '@client/common/ui'
 
 export interface PatientData {
   id: string | null
@@ -8,6 +8,7 @@ export interface PatientData {
   lastName: string
   email: string
   phone: string
+  phoneCountryCode: string
 }
 
 export interface SessionData {
@@ -85,10 +86,12 @@ export const PatientSessionCard: React.FC<PatientSessionCardProps> = ({
                   error={patientErrors.email}
                 />
 
-                <Input
+                <PhoneInput
                   label={t('patients.phone')}
-                  value={patient.phone}
-                  onChange={(e) => onPatientChange('phone', e.target.value)}
+                  phoneValue={patient.phone}
+                  countryCodeValue={patient.phoneCountryCode}
+                  onPhoneChange={(e) => onPatientChange('phone', e.target.value)}
+                  onCountryCodeChange={(code) => onPatientChange('phoneCountryCode', code)}
                   disabled={disabled}
                 />
               </div>

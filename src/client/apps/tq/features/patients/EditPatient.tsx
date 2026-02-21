@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { History } from 'lucide-react'
-import { Card, CardHeader, CardContent, Button, Input, Textarea } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, Input, Textarea, PhoneInput } from '@client/common/ui'
 import { useDeviceType } from '@shared/hooks/use-device-type'
 import { patientsService, Patient } from '../../services/patients'
 import { formatDate } from '@client/common/utils/dateUtils'
@@ -12,6 +12,7 @@ interface PatientFormData {
   last_name: string
   email: string
   phone: string
+  phone_country_code: string
   notes: string
 }
 
@@ -22,6 +23,7 @@ export const EditPatient: React.FC = () => {
     last_name: '',
     email: '',
     phone: '',
+    phone_country_code: '55',
     notes: ''
   })
   const [patientData, setPatientData] = useState<Patient | null>(null)
@@ -54,6 +56,7 @@ export const EditPatient: React.FC = () => {
           last_name: patient.last_name || '',
           email: patient.email || '',
           phone: patient.phone || '',
+          phone_country_code: patient.phone_country_code || '55',
           notes: patient.notes || ''
         })
 
@@ -159,6 +162,7 @@ export const EditPatient: React.FC = () => {
         last_name: formData.last_name.trim() || undefined,
         email: formData.email.trim() || undefined,
         phone: formData.phone.trim() || undefined,
+        phone_country_code: formData.phone.trim() ? formData.phone_country_code : undefined,
         notes: formData.notes.trim() || undefined
       }
 
@@ -339,12 +343,12 @@ export const EditPatient: React.FC = () => {
                   disabled={isSubmitting}
                 />
 
-                <Input
+                <PhoneInput
                   label={t('patients.phone')}
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange('phone')}
-                  onBlur={handleBlur('phone')}
+                  phoneValue={formData.phone}
+                  countryCodeValue={formData.phone_country_code}
+                  onPhoneChange={handleInputChange('phone')}
+                  onCountryCodeChange={(code) => setFormData(prev => ({ ...prev, phone_country_code: code }))}
                   error={validationErrors.phone}
                   placeholder={t('patients.placeholders.phone')}
                   helperText={t('patients.helper.phone')}

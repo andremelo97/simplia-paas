@@ -12,6 +12,7 @@ interface LandingPageCardProps {
   patientName?: string
   patientEmail?: string
   patientPhone?: string
+  patientPhoneCountryCode?: string
   onShowGenerateModal?: () => void
 }
 

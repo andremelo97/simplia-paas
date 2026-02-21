@@ -255,6 +255,7 @@
     "last_name": "Last Name",
     "email": "Email",
     "phone": "Phone",
+    "phone_country_code": "Country code",
     "date_of_birth": "Date of Birth",
     "patient_information": "Patient Information",
     "record_information": "Record Information",

@@ -25,17 +25,7 @@ import { Copy, CheckCircle2, MessageCircle, Mail, ExternalLink, Loader2, Info } 
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
-/**
- * Strip formatting from a phone number and ensure it has a country code.
- * Defaults to Brazil (+55) when no international prefix is present.
- */
-function cleanPhoneForWhatsApp(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
-  // If it already starts with a country code (e.g. 55…), return as-is
-  if (digits.startsWith('55') && digits.length >= 12) return digits
-  // Otherwise prepend Brazil country code
-  return `55${digits}`
-}
+import { cleanPhoneForWhatsApp } from '../../utils/phone'
 
 interface GenerateLandingPageModalProps {
   open: boolean
@@ -46,6 +36,7 @@ interface GenerateLandingPageModalProps {
   patientName?: string
   patientEmail?: string
   patientPhone?: string
+  patientPhoneCountryCode?: string
   onSuccess?: (landingPage: any) => void
 }
 
@@ -58,6 +49,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
   patientName,
   patientEmail,
   patientPhone,
+  patientPhoneCountryCode,
   onSuccess
 }) => {
   const { t } = useTranslation('tq')
@@ -196,7 +188,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
       password: generatedPassword
     })
 
-    const phone = cleanPhoneForWhatsApp(patientPhone)
+    const phone = cleanPhoneForWhatsApp(patientPhone, patientPhoneCountryCode)
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
     window.open(url, '_blank')
   }

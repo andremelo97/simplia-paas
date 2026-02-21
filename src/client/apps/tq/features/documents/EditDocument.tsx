@@ -53,7 +53,8 @@ export const EditDocument: React.FC = () => {
     firstName: '',
     lastName: '',
     email: '',
-    phone: ''
+    phone: '',
+    phoneCountryCode: '55'
   })
   const [patientErrors, setPatientErrors] = useState<PatientErrors>({
     firstName: '',
@@ -101,7 +102,8 @@ export const EditDocument: React.FC = () => {
             firstName: data.patient_first_name || '',
             lastName: data.patient_last_name || '',
             email: data.patient_email || '',
-            phone: data.patient_phone || ''
+            phone: data.patient_phone || '',
+            phoneCountryCode: data.patient_phone_country_code || '55'
           })
           setPatientErrors({ firstName: '', lastName: '', email: '' })
 
@@ -214,14 +216,16 @@ export const EditDocument: React.FC = () => {
           patient.firstName !== (document.patient_first_name || '') ||
           patient.lastName !== (document.patient_last_name || '') ||
           patient.email !== (document.patient_email || '') ||
-          patient.phone !== (document.patient_phone || '')
+          patient.phone !== (document.patient_phone || '') ||
+          patient.phoneCountryCode !== (document.patient_phone_country_code || '55')
 
         if (patientChanged) {
           await patientsService.updatePatient(patient.id, {
             first_name: patient.firstName.trim(),
             last_name: patient.lastName.trim(),
             email: patient.email.trim() || undefined,
-            phone: patient.phone || undefined
+            phone: patient.phone || undefined,
+            phone_country_code: patient.phone ? patient.phoneCountryCode : undefined
           })
         }
       }
@@ -282,7 +286,8 @@ export const EditDocument: React.FC = () => {
         firstName: freshDocument.patient_first_name || '',
         lastName: freshDocument.patient_last_name || '',
         email: freshDocument.patient_email || '',
-        phone: freshDocument.patient_phone || ''
+        phone: freshDocument.patient_phone || '',
+        phoneCountryCode: freshDocument.patient_phone_country_code || '55'
       })
 
     } catch (error) {
@@ -328,6 +333,7 @@ export const EditDocument: React.FC = () => {
             patientName={patientName}
             patientEmail={patient.email}
             patientPhone={patient.phone}
+            patientPhoneCountryCode={patient.phoneCountryCode}
             canEdit={canEdit}
           />
         )
@@ -353,6 +359,7 @@ export const EditDocument: React.FC = () => {
             patientName={patientName}
             patientEmail={patient.email}
             patientPhone={patient.phone}
+            patientPhoneCountryCode={patient.phoneCountryCode}
             canEdit={canEdit}
           />
         )

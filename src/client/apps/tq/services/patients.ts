@@ -6,6 +6,7 @@ export interface Patient {
   last_name: string | null
   email?: string | null
   phone?: string | null
+  phone_country_code?: string | null
   notes?: string | null
   created_at: string
   updated_at: string
@@ -18,6 +19,7 @@ interface ApiPatient {
   lastName?: string | null
   email?: string | null
   phone?: string | null
+  phoneCountryCode?: string | null
   notes?: string | null
   createdAt: string
   updatedAt: string
@@ -37,6 +39,7 @@ export interface CreatePatientRequest {
   last_name?: string
   email?: string
   phone?: string
+  phone_country_code?: string
   notes?: string
 }
 
@@ -81,6 +84,7 @@ export const patientsService = {
       last_name: apiPatient.lastName || null,
       email: apiPatient.email || null,
       phone: apiPatient.phone || null,
+      phone_country_code: apiPatient.phoneCountryCode || null,
       notes: apiPatient.notes || null,
       created_at: apiPatient.createdAt,
       updated_at: apiPatient.updatedAt
@@ -110,6 +114,7 @@ export const patientsService = {
       lastName: data.last_name,
       email: data.email,
       phone: data.phone,
+      phoneCountryCode: data.phone_country_code,
       notes: data.notes
     }
 
@@ -129,6 +134,7 @@ export const patientsService = {
       last_name: apiPatient.lastName || apiPatient.last_name || '',
       email: apiPatient.email || null,
       phone: apiPatient.phone || null,
+      phone_country_code: apiPatient.phoneCountryCode || apiPatient.phone_country_code || null,
       notes: apiPatient.notes || null,
       created_at: apiPatient.createdAt || apiPatient.created_at,
       updated_at: apiPatient.updatedAt || apiPatient.updated_at
@@ -159,6 +165,7 @@ export const patientsService = {
       last_name: apiPatient.lastName || apiPatient.last_name || '',
       email: apiPatient.email || null,
       phone: apiPatient.phone || null,
+      phone_country_code: apiPatient.phoneCountryCode || apiPatient.phone_country_code || null,
       notes: apiPatient.notes || null,
       created_at: apiPatient.createdAt || apiPatient.created_at,
       updated_at: apiPatient.updatedAt || apiPatient.updated_at
@@ -174,6 +181,7 @@ export const patientsService = {
     if (data.last_name !== undefined) apiData.lastName = data.last_name
     if (data.email !== undefined) apiData.email = data.email
     if (data.phone !== undefined) apiData.phone = data.phone
+    if (data.phone_country_code !== undefined) apiData.phoneCountryCode = data.phone_country_code
     if (data.notes !== undefined) apiData.notes = data.notes
 
     const response = await api.put(`/api/tq/v1/patients/${id}`, apiData)
@@ -192,6 +200,7 @@ export const patientsService = {
       last_name: apiPatient.lastName || apiPatient.last_name || '',
       email: apiPatient.email || null,
       phone: apiPatient.phone || null,
+      phone_country_code: apiPatient.phoneCountryCode || apiPatient.phone_country_code || null,
       notes: apiPatient.notes || null,
       created_at: apiPatient.createdAt || apiPatient.created_at,
       updated_at: apiPatient.updatedAt || apiPatient.updated_at

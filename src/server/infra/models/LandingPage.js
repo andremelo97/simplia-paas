@@ -312,7 +312,11 @@ class LandingPage {
    */
   getDecryptedPassword() {
     if (!this.passwordEncrypted) return null;
-    return decryptSecret(this.passwordEncrypted);
+    try {
+      return decryptSecret(this.passwordEncrypted);
+    } catch {
+      return null;
+    }
   }
 
   /**

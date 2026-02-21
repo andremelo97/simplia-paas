@@ -13,12 +13,10 @@ import { preventionService, Prevention } from '../../services/prevention'
 import { landingPagesService, LandingPage, LandingPageTemplate } from '../../services/landingPages'
 import { templatesService, Template } from '../../services/templates'
 import { QuickActionCard } from '../../components/home/QuickActionCard'
-import { QuoteCard } from '../../components/home/QuoteCard'
 import { SessionCard } from '../../components/home/SessionCard'
-import { ReportCard } from '../../components/home/ReportCard'
-import { PreventionCard } from '../../components/home/PreventionCard'
 import { RecentPatientRow } from '../../components/home/RecentPatientRow'
 import { ActivityFeed } from '../../components/home/ActivityFeed'
+import { LatestDocumentsSection } from '../../components/home/LatestDocumentsSection'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
@@ -37,11 +35,9 @@ export const Home: React.FC = () => {
   const [publicQuotes, setLandingPages] = useState<LandingPage[]>([])
   const [publicQuoteTemplates, setLandingPageTemplates] = useState<LandingPageTemplate[]>([])
   const [templates, setTemplates] = useState<Template[]>([])
-  const [isLoadingQuotes, setIsLoadingQuotes] = useState(true)
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true)
   const [isLoadingPatients, setIsLoadingPatients] = useState(true)
   const [isLoadingSessions, setIsLoadingSessions] = useState(true)
-  const [isLoadingReports, setIsLoadingReports] = useState(true)
-  const [isLoadingPrevention, setIsLoadingPrevention] = useState(true)
 
   // Generate activity feed from recent data
   const activities = React.useMemo(() => {
@@ -268,11 +264,9 @@ export const Home: React.FC = () => {
       } catch (error) {
         // Failed to load home data
       } finally {
-        setIsLoadingQuotes(false)
+        setIsLoadingDocuments(false)
         setIsLoadingPatients(false)
         setIsLoadingSessions(false)
-        setIsLoadingReports(false)
-        setIsLoadingPrevention(false)
       }
     }
 
@@ -320,101 +314,13 @@ export const Home: React.FC = () => {
       {/* Divider */}
       <div className="border-t border-gray-200"></div>
 
-      {/* Latest Quotes */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('quotes.latest')}</h2>
-        {isLoadingQuotes ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-40 bg-gray-100 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : quotes.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {(isMobile ? quotes.slice(0, 3) : quotes).map((quote) => (
-              <QuoteCard
-                key={quote.id}
-                quote={quote}
-                onDoubleClick={() => navigate(`/documents/quote/${quote.id}/edit`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardHeader className="text-center py-8">
-              <CardTitle className="text-gray-500 text-base font-normal">
-                {t('quotes.no_quotes_home')}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-gray-200"></div>
-
-      {/* Latest Reports */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('clinical_notes.latest')}</h2>
-        {isLoadingReports ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-40 bg-gray-100 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : reports.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {(isMobile ? reports.slice(0, 3) : reports).map((report) => (
-              <ReportCard
-                key={report.id}
-                report={report}
-                onDoubleClick={() => navigate(`/documents/clinical-note/${report.id}/edit`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardHeader className="text-center py-8">
-              <CardTitle className="text-gray-500 text-base font-normal">
-                {t('clinical_notes.no_notes_home')}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        )}
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-gray-200"></div>
-
-      {/* Latest Prevention */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('prevention.latest')}</h2>
-        {isLoadingPrevention ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-40 bg-gray-100 rounded-lg animate-pulse" />
-            ))}
-          </div>
-        ) : prevention.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {(isMobile ? prevention.slice(0, 3) : prevention).map((prev) => (
-              <PreventionCard
-                key={prev.id}
-                prevention={prev}
-                onDoubleClick={() => navigate(`/documents/prevention/${prev.id}/edit`)}
-              />
-            ))}
-          </div>
-        ) : (
-          <Card>
-            <CardHeader className="text-center py-8">
-              <CardTitle className="text-gray-500 text-base font-normal">
-                {t('prevention.no_preventions_home')}
-              </CardTitle>
-            </CardHeader>
-          </Card>
-        )}
-      </div>
+      {/* Latest Documents (Quotes, Clinical Notes, Prevention) */}
+      <LatestDocumentsSection
+        quotes={quotes}
+        reports={reports}
+        prevention={prevention}
+        isLoading={isLoadingDocuments}
+      />
 
       {/* Divider */}
       <div className="border-t border-gray-200"></div>
@@ -494,7 +400,7 @@ export const Home: React.FC = () => {
           <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('home.recent_activity')}</h2>
           <ActivityFeed
             activities={activities}
-            isLoading={isLoadingQuotes || isLoadingPatients || isLoadingSessions || isLoadingReports}
+            isLoading={isLoadingDocuments || isLoadingPatients || isLoadingSessions}
             onActivityClick={(path) => navigate(path)}
           />
         </div>

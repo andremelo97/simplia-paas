@@ -175,6 +175,12 @@
     "no_sessions_yet": "Nenhuma sessão ainda",
     "no_patients_yet": "Nenhum paciente ainda",
     "no_activity_yet": "Nenhuma atividade ainda",
+    "latest_documents": "Últimos Documentos",
+    "no_documents_yet": "Nenhum documento ainda. Inicie uma nova sessão para criar seu primeiro documento.",
+    "filter_all": "Todos",
+    "filter_quote": "Cotações",
+    "filter_clinical_note": "Notas Clínicas",
+    "filter_prevention": "Prevenções",
     "search": {
       "no_contact": "Sem contato",
       "no_description": "Sem descrição",

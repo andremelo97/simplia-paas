@@ -208,6 +208,12 @@
     "no_sessions_yet": "No sessions yet",
     "no_patients_yet": "No patients yet",
     "no_activity_yet": "No activity yet",
+    "latest_documents": "Latest Documents",
+    "no_documents_yet": "No documents yet. Start a new session to create your first document.",
+    "filter_all": "All",
+    "filter_quote": "Quotes",
+    "filter_clinical_note": "Clinical Notes",
+    "filter_prevention": "Preventions",
     "search": {
       "no_contact": "No contact",
       "no_description": "No description",

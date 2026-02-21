@@ -548,6 +548,7 @@ async function provisionTQAppSchema(client, schema, timeZone = 'UTC', tenantSlug
         public_url TEXT,
         content JSONB,
         password_hash VARCHAR(255),
+        password_encrypted TEXT,
         views_count INTEGER DEFAULT 0,
         last_viewed_at TIMESTAMPTZ,
         active BOOLEAN DEFAULT true,

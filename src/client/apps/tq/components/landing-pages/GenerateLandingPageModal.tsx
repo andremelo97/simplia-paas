@@ -3,6 +3,9 @@
  *
  * Generic modal for generating landing pages for both quotes and prevention documents.
  * Uses the unified /api/tq/v1/landing-pages endpoint.
+ *
+ * After generation the modal stays open showing the link + password,
+ * with buttons to send via WhatsApp (wa.me) or Email (server endpoint).
  */
 
 import React, { useState, useEffect } from 'react'
@@ -17,9 +20,21 @@ import {
   Input,
   DateInput
 } from '@client/common/ui'
-import { Copy, CheckCircle2 } from 'lucide-react'
+import { Copy, CheckCircle2, MessageCircle, Mail, ExternalLink, Loader2 } from 'lucide-react'
 import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
+
+/**
+ * Strip formatting from a phone number and ensure it has a country code.
+ * Defaults to Brazil (+55) when no international prefix is present.
+ */
+function cleanPhoneForWhatsApp(phone: string): string {
+  const digits = phone.replace(/\D/g, '')
+  // If it already starts with a country code (e.g. 55…), return as-is
+  if (digits.startsWith('55') && digits.length >= 12) return digits
+  // Otherwise prepend Brazil country code
+  return `55${digits}`
+}
 
 interface GenerateLandingPageModalProps {
   open: boolean
@@ -31,7 +46,6 @@ interface GenerateLandingPageModalProps {
   patientEmail?: string
   patientPhone?: string
   onSuccess?: (landingPage: any) => void
-  onShowToast?: (data: { landingPageId: string, publicUrl: string, password: string }) => void
 }
 
 export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> = ({
@@ -43,8 +57,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
   patientName,
   patientEmail,
   patientPhone,
-  onSuccess,
-  onShowToast
+  onSuccess
 }) => {
   const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
@@ -54,13 +67,18 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
   const [isLoading, setIsLoading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedLandingPage, setGeneratedLandingPage] = useState<any>(null)
+  const [generatedPassword, setGeneratedPassword] = useState<string>('')
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sent' | 'failed'>('idle')
 
   // Load templates when modal opens
   useEffect(() => {
     if (open) {
       loadTemplates()
       setGeneratedLandingPage(null)
+      setGeneratedPassword('')
+      setEmailStatus('idle')
     }
   }, [open])
 
@@ -137,7 +155,6 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
         payload.expiresAt = expiresAt
       }
 
-      // Use the unified landing-pages endpoint
       const { api } = await import('@client/config/http')
       const response = await api.post('/api/tq/v1/landing-pages', payload)
 
@@ -145,20 +162,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
       const meta = response.meta || {}
 
       setGeneratedLandingPage(landingPage)
-
-      // Notify parent to show LinkToast with URL and password
-      if (meta.publicUrl && meta.password && landingPage.id) {
-        onShowToast?.({
-          landingPageId: landingPage.id,
-          publicUrl: meta.publicUrl,
-          password: meta.password
-        })
-
-        // Close modal after showing toast
-        setTimeout(() => {
-          onClose()
-        }, 500)
-      }
+      setGeneratedPassword(meta.password || landingPage.password || '')
 
       onSuccess?.(landingPage)
     } catch (error) {
@@ -179,10 +183,49 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
     }
   }
 
+  const handleSendWhatsApp = async () => {
+    if (!patientPhone) return
+
+    const { tenantName } = await import('../../shared/store/auth').then(m => m.useAuthStore.getState())
+
+    const messageKey = documentType === 'quote'
+      ? 'modals.generate_public_quote.whatsapp_message_quote'
+      : 'modals.generate_public_quote.whatsapp_message_prevention'
+
+    const message = t(messageKey, {
+      patientName: patientName || '',
+      number: documentNumber,
+      clinicName: tenantName || '',
+      link: publicLink,
+      password: generatedPassword
+    })
+
+    const phone = cleanPhoneForWhatsApp(patientPhone)
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+    window.open(url, '_blank')
+  }
+
+  const handleSendEmail = async () => {
+    if (!generatedLandingPage?.id || !patientEmail) return
+
+    setIsSendingEmail(true)
+    setEmailStatus('idle')
+    try {
+      await landingPagesService.sendEmail(generatedLandingPage.id)
+      setEmailStatus('sent')
+    } catch (error) {
+      setEmailStatus('failed')
+    } finally {
+      setIsSendingEmail(false)
+    }
+  }
+
   const handleClose = () => {
     setExpiresAt('')
     setSelectedTemplateId('')
     setGeneratedLandingPage(null)
+    setGeneratedPassword('')
+    setEmailStatus('idle')
     onClose()
   }
 
@@ -323,10 +366,10 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
             </div>
           </div>
         ) : (
-          <div className="space-y-6 py-4 px-6">
-            {/* Success State */}
+          <div className="space-y-5 py-4 px-6">
+            {/* Success Banner */}
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-              <CheckCircle2 className="text-green-600 mt-0.5" size={20} />
+              <CheckCircle2 className="text-green-600 mt-0.5 shrink-0" size={20} />
               <div className="flex-1">
                 <h4 className="font-semibold text-green-900">{t('modals.generate_public_quote.link_created')}</h4>
                 <p className="text-sm text-green-700 mt-1">
@@ -335,8 +378,8 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
               </div>
             </div>
 
-            {/* Public Link */}
-            <div className="space-y-2">
+            {/* Public Link — copyable */}
+            <div className="space-y-1.5">
               <Label>{t('modals.generate_public_quote.public_link')}</Label>
               <div className="flex gap-2">
                 <Input
@@ -346,61 +389,114 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
                 />
                 <Button
                   variant="secondary"
+                  size="icon"
                   onClick={() => handleCopy(publicLink, 'link')}
-                  className="flex items-center gap-2"
+                  title={t('modals.generate_public_quote.copy_link')}
                 >
                   {copiedField === 'link' ? (
                     <CheckCircle2 size={16} className="text-green-600" />
                   ) : (
                     <Copy size={16} />
                   )}
-                  {copiedField === 'link' ? t('modals.generate_public_quote.copied') : t('modals.generate_public_quote.copy_link')}
                 </Button>
               </div>
             </div>
 
-            {/* Password Info */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            {/* Password — copyable */}
+            {generatedPassword && (
+              <div className="space-y-1.5">
+                <Label>{t('modals.generate_public_quote.password_label')}</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={generatedPassword}
+                    readOnly
+                    className="flex-1 font-mono text-sm"
+                  />
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => handleCopy(generatedPassword, 'password')}
+                    title={t('modals.generate_public_quote.copy_link')}
+                  >
+                    {copiedField === 'password' ? (
+                      <CheckCircle2 size={16} className="text-green-600" />
+                    ) : (
+                      <Copy size={16} />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Password warning */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <p className="text-sm text-yellow-800">
                 {t('modals.generate_public_quote.password_warning')}
               </p>
             </div>
 
-            {/* Link Details */}
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <h4 className="font-semibold text-gray-900">{t('modals.generate_public_quote.link_details')}</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">{t('modals.generate_public_quote.template')}:</span>
-                  <span className="font-medium">
-                    {templates.find((t) => t.id === generatedLandingPage.templateId)?.name || '-'}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">{t('modals.generate_public_quote.expiration')}:</span>
-                  <span className="font-medium">
-                    {generatedLandingPage.expiresAt
-                      ? formatShortDate(generatedLandingPage.expiresAt)
-                      : t('common:never')}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">{t('common:status')}:</span>
-                  <span className="font-medium text-green-600">{t('common:active')}</span>
-                </div>
-              </div>
-            </div>
+            {/* Send buttons */}
+            <div className="space-y-3">
+              {/* WhatsApp */}
+              {patientPhone ? (
+                <Button
+                  variant="secondary"
+                  className="w-full justify-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
+                  onClick={handleSendWhatsApp}
+                >
+                  <MessageCircle size={18} />
+                  {t('modals.generate_public_quote.send_whatsapp')}
+                </Button>
+              ) : (
+                <p className="text-xs text-gray-400 text-center">
+                  {t('modals.generate_public_quote.whatsapp_no_phone')}
+                </p>
+              )}
 
-            {/* Future: Email Button */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm text-blue-700">
-                {t('modals.generate_public_quote.coming_soon')}
-              </p>
+              {/* Email */}
+              {patientEmail ? (
+                <Button
+                  variant="secondary"
+                  className="w-full justify-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"
+                  onClick={handleSendEmail}
+                  disabled={isSendingEmail || emailStatus === 'sent'}
+                >
+                  {isSendingEmail ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : emailStatus === 'sent' ? (
+                    <CheckCircle2 size={18} />
+                  ) : (
+                    <Mail size={18} />
+                  )}
+                  {isSendingEmail
+                    ? t('modals.generate_public_quote.sending_email')
+                    : emailStatus === 'sent'
+                      ? t('modals.generate_public_quote.email_sent')
+                      : t('modals.generate_public_quote.send_email')
+                  }
+                </Button>
+              ) : (
+                <p className="text-xs text-gray-400 text-center">
+                  {t('modals.generate_public_quote.email_no_email')}
+                </p>
+              )}
+
+              {emailStatus === 'failed' && (
+                <p className="text-xs text-red-500 text-center">
+                  {t('modals.generate_public_quote.email_failed')}
+                </p>
+              )}
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="secondary" onClick={() => window.open(publicLink, '_blank')}>
+            <div className="flex justify-between pt-4 border-t">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => window.open(publicLink, '_blank')}
+                className="gap-1.5"
+              >
+                <ExternalLink size={14} />
                 {t('modals.generate_public_quote.open_link')}
               </Button>
               <Button variant="default" onClick={handleClose}>

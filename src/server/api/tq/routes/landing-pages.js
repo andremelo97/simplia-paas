@@ -388,55 +388,6 @@ router.post('/', async (req, res) => {
       expiresAt
     });
 
-    // Send email and abort if it fails
-    if (patientData.email) {
-      const EmailService = require('../../../services/emailService');
-      const { Tenant } = require('../../../infra/models/Tenant');
-      let branding = null;
-      try {
-        const { TenantBranding } = require('../../../infra/models/TenantBranding');
-        branding = await TenantBranding.findByTenantId(tenantId);
-      } catch (brandingError) {
-        console.error('Failed to load tenant branding for landing page email:', brandingError);
-      }
-
-      const tenant = await Tenant.findById(tenantId);
-
-      try {
-        await EmailService.sendPublicQuoteEmail({
-          tenantId,
-          tenantSchema: schema,
-          tenantTimezone: tenant?.timezone,
-          recipientEmail: patientData.email,
-          quoteNumber: documentData.number,
-          patientName: `${patientData.first_name} ${patientData.last_name}`.trim(),
-          clinicName: branding?.companyName || 'Our Clinic',
-          publicLink: publicUrl,
-          password,
-          patientId: documentData.patient_id,
-          quoteId: documentType === 'quote' ? documentData.id : null,
-          publicQuoteId: landingPage.id,
-          documentType
-        });
-      } catch (emailError) {
-        console.error('Landing page email send failed. Rolling back generated link.', emailError);
-
-        // Rollback: delete the created landing page
-        try {
-          await LandingPage.deleteById(landingPage.id, schema);
-        } catch (rollbackError) {
-          console.error('Failed to rollback landing page after email failure:', rollbackError);
-        }
-
-        if (emailError.message && emailError.message.includes('Communication settings not configured')) {
-          emailError.code = 'SMTP_NOT_CONFIGURED';
-        } else {
-          emailError.code = emailError.code || 'LANDING_PAGE_EMAIL_FAILED';
-        }
-        throw emailError;
-      }
-    }
-
     // Return landing page data with URL and password in meta
     res.status(201).json({
       data: landingPage.toJSON(),
@@ -694,6 +645,113 @@ router.delete('/:id', async (req, res) => {
 });
 
 /**
+ * POST /landing-pages/:id/send-email
+ * Send (or resend) the landing page link via email to the patient
+ * Uses the stored encrypted password — does NOT regenerate
+ */
+router.post('/:id/send-email', async (req, res) => {
+  try {
+    const schema = req.tenant?.schema;
+    const { id } = req.params;
+
+    if (!schema) {
+      return res.status(400).json({ error: 'Bad Request', message: 'Missing tenant context' });
+    }
+
+    const landingPage = await LandingPage.findById(id, schema);
+
+    if (!landingPage.active) {
+      return res.status(400).json({ error: 'Bad Request', message: 'Landing page link is revoked' });
+    }
+
+    const password = landingPage.getDecryptedPassword();
+    if (!password) {
+      return res.status(400).json({ error: 'Bad Request', message: 'No password available for this link' });
+    }
+
+    // Get document and patient data
+    let documentDataQuery;
+    if (landingPage.documentType === 'prevention') {
+      documentDataQuery = `
+        SELECT prv.id as document_id, prv.number as document_number, s.patient_id,
+               p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+        FROM ${schema}.prevention prv
+        INNER JOIN ${schema}.session s ON prv.session_id = s.id
+        INNER JOIN ${schema}.patient p ON s.patient_id = p.id
+        WHERE prv.id = $1
+      `;
+    } else {
+      documentDataQuery = `
+        SELECT q.id as document_id, q.number as document_number, s.patient_id,
+               p.first_name as patient_first_name, p.last_name as patient_last_name, p.email as patient_email
+        FROM ${schema}.quote q
+        INNER JOIN ${schema}.session s ON q.session_id = s.id
+        INNER JOIN ${schema}.patient p ON s.patient_id = p.id
+        WHERE q.id = $1
+      `;
+    }
+
+    const docResult = await database.query(documentDataQuery, [landingPage.documentId]);
+
+    if (docResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Not Found', message: 'Document not found' });
+    }
+
+    const docInfo = docResult.rows[0];
+
+    if (!docInfo.patient_email) {
+      return res.status(400).json({ error: 'Bad Request', message: 'Patient has no email address' });
+    }
+
+    const EmailService = require('../../../services/emailService');
+    const { Tenant } = require('../../../infra/models/Tenant');
+
+    let branding = null;
+    try {
+      const { TenantBranding } = require('../../../infra/models/TenantBranding');
+      branding = await TenantBranding.findByTenantId(landingPage.tenantId);
+    } catch (brandingError) {
+      console.error('Failed to load tenant branding for send-email:', brandingError);
+    }
+
+    const tenant = await Tenant.findById(landingPage.tenantId);
+
+    await EmailService.sendPublicQuoteEmail({
+      tenantId: landingPage.tenantId,
+      tenantSchema: schema,
+      tenantTimezone: tenant?.timezone,
+      recipientEmail: docInfo.patient_email,
+      quoteNumber: docInfo.document_number,
+      patientName: `${docInfo.patient_first_name} ${docInfo.patient_last_name}`.trim(),
+      clinicName: branding?.companyName || 'Our Clinic',
+      publicLink: landingPage.publicUrl,
+      password,
+      patientId: docInfo.patient_id,
+      quoteId: landingPage.documentType === 'quote' ? docInfo.document_id : null,
+      publicQuoteId: landingPage.id,
+      documentType: landingPage.documentType
+    });
+
+    res.json({
+      data: null,
+      meta: { code: 'LANDING_PAGE_EMAIL_SENT', message: 'Email sent successfully' }
+    });
+  } catch (error) {
+    console.error('Send landing page email error:', error);
+
+    if (error instanceof LandingPageNotFoundError) {
+      return res.status(404).json({ error: 'Not Found', message: 'Landing page link not found' });
+    }
+
+    const isSMTP = error.message?.includes('Communication settings not configured');
+    res.status(500).json({
+      error: { code: isSMTP ? 'SMTP_NOT_CONFIGURED' : 'LANDING_PAGE_EMAIL_FAILED', message: error.message || 'Failed to send email' },
+      message: error.message || 'Failed to send email'
+    });
+  }
+});
+
+/**
  * @openapi
  * /tq/landing-pages/{id}/new-password:
  *   post:
@@ -738,20 +796,23 @@ router.post('/:id/new-password', async (req, res) => {
     // Find the landing page
     const landingPage = await LandingPage.findById(id, schema);
     const previousPasswordHash = landingPage.passwordHash;
+    const previousPasswordEncrypted = landingPage.passwordEncrypted;
 
     // Generate new password
     const newPassword = LandingPage.generatePassword();
     const passwordHash = await LandingPage.hashPassword(newPassword);
+    const { encryptSecret } = require('../../../infra/utils/secretEncryption');
+    const passwordEncrypted = encryptSecret(newPassword);
 
-    // Update the password hash in the database
+    // Update the password hash and encrypted password in the database
     const updateQuery = `
       UPDATE ${schema}.landing_page
-      SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
+      SET password_hash = $1, password_encrypted = $2, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
       RETURNING *
     `;
 
-    const result = await database.query(updateQuery, [passwordHash, id]);
+    const result = await database.query(updateQuery, [passwordHash, passwordEncrypted, id]);
 
     if (result.rows.length === 0) {
       throw new LandingPageNotFoundError(id);
@@ -831,10 +892,10 @@ router.post('/:id/new-password', async (req, res) => {
           await database.query(
             `
               UPDATE ${schema}.landing_page
-              SET password_hash = $1, updated_at = CURRENT_TIMESTAMP
-              WHERE id = $2
+              SET password_hash = $1, password_encrypted = $2, updated_at = CURRENT_TIMESTAMP
+              WHERE id = $3
             `,
-            [previousPasswordHash || null, id]
+            [previousPasswordHash || null, previousPasswordEncrypted || null, id]
           );
         } catch (rollbackError) {
           console.error('Failed to rollback password hash after email failure:', rollbackError);

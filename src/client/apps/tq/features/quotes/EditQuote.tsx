@@ -9,7 +9,6 @@ import {
   Input,
   Select,
   TemplateEditor,
-  LinkToast,
   isEditorContentFilled
 } from '@client/common/ui'
 import { quotesService, Quote, QuoteItemInput } from '../../services/quotes'
@@ -49,9 +48,6 @@ export const EditQuote: React.FC = () => {
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
   
-  // LinkToast state for Landing Page
-  const [showLinkToast, setShowLinkToast] = useState(false)
-  const [toastData, setToastData] = useState<{landingPageId: string, publicUrl: string, password: string} | null>(null)
   const [showGenerateModal, setShowGenerateModal] = useState(false)
   const [patientErrors, setPatientErrors] = useState({ firstName: '', lastName: '', email: '' })
   const [contentError, setContentError] = useState('')
@@ -636,30 +632,9 @@ export const EditQuote: React.FC = () => {
           patientName={`${patientFirstName} ${patientLastName}`.trim()}
           patientEmail={patientEmail}
           patientPhone={patientPhone}
-          onSuccess={() => {
-            setShowGenerateModal(false)
-          }}
-          onShowToast={(data) => {
-            setToastData(data)
-            setShowLinkToast(true)
-          }}
         />
       )}
       
-      {/* Link Toast for Landing Page */}
-      {toastData && quote && (
-        <LinkToast
-          show={showLinkToast}
-          itemNumber={quote.number}
-          itemId={toastData.landingPageId}
-          onClose={() => setShowLinkToast(false)}
-          type="landing-page"
-          publicUrl={toastData.publicUrl}
-          password={toastData.password}
-          duration={15000}
-          darkBackground={true}
-        />
-      )}
     </div>
   )
 }

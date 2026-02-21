@@ -449,6 +449,20 @@ export const FEEDBACK_CATALOG: FeedbackCatalog = {
   MARKETPLACE_LP_LIMIT_REACHED: {
     title: "Limit Reached",
     message: "You already have the maximum of 10 landing page templates. Delete one before importing another."
+  },
+
+  // Landing Pages
+  LANDING_PAGE_CREATED: {
+    title: "Link Created",
+    message: "Landing page link created successfully."
+  },
+  LANDING_PAGE_EMAIL_SENT: {
+    title: "Email Sent",
+    message: "Landing page link sent via email."
+  },
+  LANDING_PAGE_REVOKED: {
+    title: "Link Revoked",
+    message: "Landing page link has been revoked."
   }
 }
 

@@ -1,6 +1,7 @@
 const database = require('../db/database');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const { encryptSecret, decryptSecret } = require('../utils/secretEncryption');
 
 class LandingPageNotFoundError extends Error {
   constructor(message) {
@@ -22,6 +23,7 @@ class LandingPage {
     this.publicUrl = data.public_url;
     this.content = data.content; // Resolved Puck content
     this.passwordHash = data.password_hash;
+    this.passwordEncrypted = data.password_encrypted;
     this.viewsCount = data.views_count || 0;
     this.lastViewedAt = data.last_viewed_at;
     this.active = data.active !== false;
@@ -121,6 +123,7 @@ class LandingPage {
 
     const finalAccessToken = accessToken || this.generateAccessToken();
     const passwordHash = password ? await bcrypt.hash(password, 10) : null;
+    const passwordEncrypted = password ? encryptSecret(password) : null;
 
     const query = `
       INSERT INTO ${schema}.landing_page (
@@ -132,10 +135,11 @@ class LandingPage {
         public_url,
         content,
         password_hash,
+        password_encrypted,
         active,
         expires_at
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
     `;
 
@@ -148,6 +152,7 @@ class LandingPage {
       publicUrl,
       content ? JSON.stringify(content) : null,
       passwordHash,
+      passwordEncrypted,
       active,
       expiresAt
     ]);
@@ -303,6 +308,14 @@ class LandingPage {
   }
 
   /**
+   * Get the decrypted plaintext password (for display/resend)
+   */
+  getDecryptedPassword() {
+    if (!this.passwordEncrypted) return null;
+    return decryptSecret(this.passwordEncrypted);
+  }
+
+  /**
    * Increment view count and update last viewed timestamp
    */
   async incrementViews(schema) {
@@ -385,6 +398,7 @@ class LandingPage {
       active: this.active,
       expiresAt: this.expiresAt,
       hasPassword: !!this.passwordHash,
+      password: this.getDecryptedPassword(),
       isExpired: this.isExpired(),
       isAccessible: this.isAccessible()
     };

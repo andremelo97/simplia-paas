@@ -89,9 +89,18 @@
       "link_created": "Link Público da Cotação Criado!",
       "share_instruction": "Compartilhe este link com seu paciente para visualizar a cotação",
       "public_link": "Link Público",
-      "password_warning": "⚠️ Importante: A senha de acesso foi mostrada na notificação acima. Certifique-se de copiá-la - ela não será mostrada novamente!",
+      "password_warning": "Salve a senha — ela não será exibida após fechar esta janela.",
+      "password_label": "Senha de Acesso",
       "link_details": "Detalhes do Link",
-      "coming_soon": "💡 Em breve: Envie este link diretamente para o e-mail do seu paciente",
+      "send_whatsapp": "Enviar via WhatsApp",
+      "send_email": "Enviar por Email",
+      "sending_email": "Enviando...",
+      "email_sent": "Email enviado!",
+      "email_failed": "Falha ao enviar email",
+      "whatsapp_no_phone": "Adicione o telefone do paciente para enviar via WhatsApp",
+      "email_no_email": "Adicione o email do paciente para enviar por email",
+      "whatsapp_message_quote": "Olá {{patientName}}! Sua cotação {{number}} de {{clinicName}} está pronta.\n\nAcesse: {{link}}\nSenha: {{password}}",
+      "whatsapp_message_prevention": "Olá {{patientName}}! Seu plano de prevenção {{number}} de {{clinicName}} está pronto.\n\nAcesse: {{link}}\nSenha: {{password}}",
       "open_link": "Abrir Link",
       "done": "Concluído"
     }
@@ -886,7 +895,22 @@
         "open_document": "Abrir Documento",
         "preview": "Visualizar",
         "new_password": "Nova Senha",
-        "revoke": "Revogar"
+        "revoke": "Revogar",
+        "send_email": "Enviar Email",
+        "send_whatsapp": "Enviar WhatsApp",
+        "password": "Senha",
+        "no_password": "Sem senha",
+        "regenerate_password": "Regenerar Senha",
+        "password_regenerated": "Senha regenerada!",
+        "link_revoked": "Link revogado",
+        "sending_email": "Enviando...",
+        "email_sent": "Email enviado!",
+        "email_failed": "Falha ao enviar email"
+      },
+      "section": {
+        "title": "Links Compartilhados",
+        "no_links": "Nenhum link gerado ainda",
+        "generate_hint": "Gere um link para compartilhar este documento com seu paciente"
       }
     },
     "filters": {

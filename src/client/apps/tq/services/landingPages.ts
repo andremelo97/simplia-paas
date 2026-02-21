@@ -53,6 +53,7 @@ export interface LandingPage {
   active: boolean
   expiresAt?: string
   hasPassword: boolean
+  password?: string | null
   isExpired: boolean
   isAccessible: boolean
   quote?: {
@@ -186,5 +187,9 @@ export const landingPagesService = {
       publicUrl: response.data.publicUrl,
       password: response.meta.password
     }
+  },
+
+  async sendEmail(landingPageId: string): Promise<void> {
+    await api.post(`/api/tq/v1/landing-pages/${landingPageId}/send-email`)
   }
 }

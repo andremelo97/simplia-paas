@@ -89,9 +89,18 @@
       "link_created": "Public Quote Link Created!",
       "share_instruction": "Share this link with your patient to view the quote",
       "public_link": "Public Link",
-      "password_warning": "⚠️ Important: The access password was shown in the notification above. Make sure you copied it - it won't be shown again!",
+      "password_warning": "Save the password — it won't be shown again after closing this dialog.",
+      "password_label": "Access Password",
       "link_details": "Link Details",
-      "coming_soon": "💡 Coming soon: Send this link directly to your patient's email",
+      "send_whatsapp": "Send via WhatsApp",
+      "send_email": "Send via Email",
+      "sending_email": "Sending...",
+      "email_sent": "Email sent!",
+      "email_failed": "Failed to send email",
+      "whatsapp_no_phone": "Add the patient's phone number to send via WhatsApp",
+      "email_no_email": "Add the patient's email to send via email",
+      "whatsapp_message_quote": "Hello {{patientName}}! Your quote {{number}} from {{clinicName}} is ready.\n\nAccess: {{link}}\nPassword: {{password}}",
+      "whatsapp_message_prevention": "Hello {{patientName}}! Your prevention plan {{number}} from {{clinicName}} is ready.\n\nAccess: {{link}}\nPassword: {{password}}",
       "open_link": "Open Link",
       "done": "Done"
     }
@@ -919,7 +928,22 @@
         "open_document": "Open Document",
         "preview": "Preview",
         "new_password": "New Password",
-        "revoke": "Revoke"
+        "revoke": "Revoke",
+        "send_email": "Send Email",
+        "send_whatsapp": "Send WhatsApp",
+        "password": "Password",
+        "no_password": "No password",
+        "regenerate_password": "Regenerate Password",
+        "password_regenerated": "Password regenerated!",
+        "link_revoked": "Link revoked",
+        "sending_email": "Sending...",
+        "email_sent": "Email sent!",
+        "email_failed": "Failed to send email"
+      },
+      "section": {
+        "title": "Shared Links",
+        "no_links": "No links generated yet",
+        "generate_hint": "Generate a link to share this document with your patient"
       }
     },
     "filters": {

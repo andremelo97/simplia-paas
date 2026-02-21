@@ -68,16 +68,12 @@ export const EditDocument: React.FC = () => {
   const [quoteFormState, setQuoteFormState] = useState<QuoteFormState>({
     status: 'draft',
     items: [],
-    showGenerateModal: false,
-    showLinkToast: false,
-    toastData: null
+    showGenerateModal: false
   })
 
   // Prevention-specific state
   const [preventionFormState, setPreventionFormState] = useState<PreventionFormState>({
-    showGenerateModal: false,
-    showLinkToast: false,
-    toastData: null
+    showGenerateModal: false
   })
 
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

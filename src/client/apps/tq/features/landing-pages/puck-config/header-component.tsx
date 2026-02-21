@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
-import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
+import { textColorOptions, backgroundColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
+import { createColorField } from './ColorPickerField'
 
 const withFallback = (value: string | undefined, fallback: string) =>
   (typeof value === 'string' && value.trim().length > 0) ? value : fallback
@@ -78,16 +79,13 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           { label: 'Right', value: 'right' },
         ],
       },
-      backgroundColor: {
-        type: 'radio' as const,
-        label: 'Background Color',
-        options: [
+      backgroundColor: createColorField('Background Color', [
           { label: 'White', value: 'white' },
           { label: 'Primary', value: 'primary' },
           { label: 'Secondary', value: 'secondary' },
           { label: 'Tertiary', value: 'tertiary' },
-        ],
-      },
+          ...backgroundColorOptions.filter(o => !['none', 'primary', 'secondary', 'tertiary', '#ffffff'].includes(o.value)),
+        ], branding),
       height: {
         type: 'select' as const,
         label: 'Height',
@@ -125,11 +123,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           { label: 'Outline', value: 'outline' },
         ],
       },
-      buttonTextColor: {
-        type: 'select' as const,
-        label: 'Button Text Color',
-        options: textColorOptions,
-      },
+      buttonTextColor: createColorField('Button Text Color', textColorOptions, branding),
     },
     defaultProps: {
       showLogo: true,
@@ -204,21 +198,14 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
       const effectiveMobileButtonAlign = mobileButtonAlign || 'center'
       
       const getBackgroundColor = () => {
-        switch (backgroundColor) {
-          case 'primary':
-            return branding.primaryColor
-          case 'secondary':
-            return branding.secondaryColor
-          case 'tertiary':
-            return branding.tertiaryColor
-          case 'white':
-          default:
-            return '#ffffff'
-        }
+        return resolveColor(backgroundColor || 'white', branding)
       }
 
+      const bgResolved = getBackgroundColor()
+      const isLightBg = bgResolved === '#ffffff' || bgResolved === '#f9fafb' || bgResolved === '#f3f4f6' || bgResolved === '#e5e7eb'
+
       const getTextColor = () => {
-        return backgroundColor === 'white' ? '#111827' : '#ffffff'
+        return isLightBg ? '#111827' : '#ffffff'
       }
 
       const getButtonStyles = () => {
@@ -266,7 +253,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
               ...baseStyles,
               backgroundColor: 'transparent',
               color: textColor,
-              borderColor: backgroundColor === 'white' ? branding.primaryColor : '#ffffff',
+              borderColor: isLightBg ? branding.primaryColor : '#ffffff',
             }
           default:
             return baseStyles
@@ -283,7 +270,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
               right: 0,
               zIndex: 50,
               backgroundColor: getBackgroundColor(),
-              borderBottom: `1px solid ${backgroundColor === 'white' ? '#e5e7eb' : 'transparent'}`,
+              borderBottom: `1px solid ${isLightBg ? '#e5e7eb' : 'transparent'}`,
               height: `${parseInt(height)}px`,
               paddingLeft: '32px',
               paddingRight: '32px',
@@ -382,22 +369,15 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
   Footer: {
     fields: {
       // === APPEARANCE ===
-      backgroundColor: {
-        type: 'radio' as const,
-        label: 'Background Color',
-        options: [
+      backgroundColor: createColorField('Background Color', [
           { label: 'White', value: 'white' },
+          { label: 'Dark', value: 'dark' },
           { label: 'Primary', value: 'primary' },
           { label: 'Secondary', value: 'secondary' },
           { label: 'Tertiary', value: 'tertiary' },
-          { label: 'Dark', value: 'dark' },
-        ],
-      },
-      textColor: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
-      },
+          ...backgroundColorOptions.filter(o => !['none', 'primary', 'secondary', 'tertiary', '#ffffff', '#000000'].includes(o.value)),
+        ], branding),
+      textColor: createColorField('Text Color', textColorOptions, branding),
       verticalPadding: {
         type: 'select' as const,
         label: 'Vertical Padding',
@@ -607,20 +587,11 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
     },
     render: ({ backgroundColor, contactSource, showSocialLinks, socialLinks, showQuickLinks, quickLinks, showContact, showEmail, showPhone, showAddress, contactItems, copyrightText, verticalPadding, horizontalPadding, textColor, socialTitle, quickLinksTitle, contactTitle }: any) => {
       const getBackgroundColor = () => {
-        switch (backgroundColor) {
-          case 'primary':
-            return branding.primaryColor
-          case 'secondary':
-            return branding.secondaryColor
-          case 'tertiary':
-            return branding.tertiaryColor
-          case 'dark':
-            return '#000000'
-          case 'white':
-          default:
-            return '#ffffff'
-        }
+        return resolveColor(backgroundColor || 'dark', branding)
       }
+
+      const footerBgResolved = getBackgroundColor()
+      const isFooterLightBg = footerBgResolved === '#ffffff' || footerBgResolved === '#f9fafb' || footerBgResolved === '#f3f4f6' || footerBgResolved === '#e5e7eb'
 
       const getTextColor = () => {
         return resolveColor(textColor, branding)
@@ -719,7 +690,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
             style={{
               width: '100%',
               backgroundColor: getBackgroundColor(),
-              borderTop: `1px solid ${backgroundColor === 'white' ? '#e5e7eb' : 'transparent'}`,
+              borderTop: `1px solid ${isFooterLightBg ? '#e5e7eb' : 'transparent'}`,
               paddingLeft: `${horizontalPadding}px`,
               paddingRight: `${horizontalPadding}px`,
               paddingTop: `${verticalPadding}px`,
@@ -891,7 +862,7 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
                   color: getTextColor(),
                   opacity: 0.6,
                   paddingTop: '16px',
-                  borderTop: `1px solid ${backgroundColor === 'white' ? '#e5e7eb' : 'rgba(255,255,255,0.1)'}`,
+                  borderTop: `1px solid ${isFooterLightBg ? '#e5e7eb' : 'rgba(255,255,255,0.1)'}`,
                   textAlign: 'center',
                 }}
               >

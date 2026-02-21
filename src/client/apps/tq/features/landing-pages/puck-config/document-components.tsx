@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
+import { createColorField } from './ColorPickerField'
 
 const withFallback = (value: string | undefined, fallback: string) =>
   (typeof value === 'string' && value.trim().length > 0) ? value : fallback
@@ -111,11 +112,7 @@ export const createDocumentComponents = (branding: BrandingData) => ({
         label: 'Font',
         options: fontOptions,
       },
-      totalColor: {
-        type: 'select' as const,
-        label: 'Total Color',
-        options: textColorOptions
-      }
+      totalColor: createColorField('Total Color', textColorOptions, branding),
     },
     defaultProps: {
       label: 'Total',

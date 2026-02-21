@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrandingData } from '../../../services/branding'
 import { backgroundColorOptions, resolveColor } from './color-options'
+import { createColorField } from './ColorPickerField'
 
 export const createLayoutComponents = (branding: BrandingData) => ({
   Grid: {
@@ -69,11 +70,7 @@ export const createLayoutComponents = (branding: BrandingData) => ({
           { label: '152px', value: 152 },
         ],
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
       content: {
         type: 'slot' as const,
       },
@@ -230,11 +227,7 @@ export const createLayoutComponents = (branding: BrandingData) => ({
           { label: '152px', value: 152 },
         ],
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
       content: {
         type: 'slot' as const,
       },

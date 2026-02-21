@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import { textColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
+import { createColorField } from './ColorPickerField'
 
 export const createActionComponents = (branding: BrandingData) => ({
   Button: {
@@ -75,11 +76,7 @@ export const createActionComponents = (branding: BrandingData) => ({
           { label: 'Right', value: 'right' },
         ],
       },
-      textColor: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
-      },
+      textColor: createColorField('Text Color', textColorOptions, branding),
     },
     defaultProps: {
       text: 'Click here',

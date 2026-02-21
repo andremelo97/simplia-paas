@@ -4,6 +4,7 @@ import * as Icons from './icons'
 import * as LucideIcons from 'lucide-react'
 import { textColorOptions, backgroundColorOptions, iconColorOptions, resolveColor, fontOptions, loadGoogleFont, maxWidthOptions } from './color-options'
 import { MediaPickerField } from './MediaPickerField'
+import { createColorField } from './ColorPickerField'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -71,11 +72,7 @@ const dividerSpacingOptions = [
 export const createOtherComponents = (branding: BrandingData) => ({
   Divider: {
     fields: {
-      color: {
-        type: 'select' as const,
-        label: 'Color',
-        options: dividerColorOptions,
-      },
+      color: createColorField('Color', dividerColorOptions, branding),
       thickness: {
         type: 'select' as const,
         label: 'Thickness',
@@ -160,26 +157,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
       content: {
         type: 'slot' as const,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      borderColor: {
-        type: 'select' as const,
-        label: 'Border Color',
-        options: dividerColorOptions,
-      },
-      titleColor: {
-        type: 'select' as const,
-        label: 'Title Color',
-        options: textColorOptions,
-      },
-      descriptionColor: {
-        type: 'select' as const,
-        label: 'Description Color',
-        options: textColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      borderColor: createColorField('Border Color', dividerColorOptions, branding),
+      titleColor: createColorField('Title Color', textColorOptions, branding),
+      descriptionColor: createColorField('Description Color', textColorOptions, branding),
     },
     defaultProps: {
       showTitle: true,
@@ -357,26 +338,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      iconColor: {
-        type: 'select' as const,
-        label: 'Icon Background Color',
-        options: iconColorOptions,
-      },
-      titleColor: {
-        type: 'select' as const,
-        label: 'Title Color',
-        options: textColorOptions,
-      },
-      descriptionColor: {
-        type: 'select' as const,
-        label: 'Description Color',
-        options: textColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      iconColor: createColorField('Icon Background Color', iconColorOptions, branding),
+      titleColor: createColorField('Title Color', textColorOptions, branding),
+      descriptionColor: createColorField('Description Color', textColorOptions, branding),
     },
     defaultProps: {
       title: 'Title',
@@ -676,11 +641,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
               { label: 'Large', value: 'lg' },
             ],
           },
-          textColor: {
-            type: 'select' as const,
-            label: 'Text Color',
-            options: textColorOptions,
-          },
+          textColor: createColorField('Text Color', textColorOptions, branding),
         },
         defaultItemProps: {
           label: 'Learn more',
@@ -720,21 +681,13 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Title Size (px)',
         placeholder: '48',
       },
-      titleColor: {
-        type: 'select' as const,
-        label: 'Title Color',
-        options: textColorOptions,
-      },
+      titleColor: createColorField('Title Color', textColorOptions, branding),
       titleMaxWidth: {
         type: 'select' as const,
         label: 'Title Max Width',
         options: maxWidthOptions,
       },
-      titleBgColor: {
-        type: 'select' as const,
-        label: 'Title Background',
-        options: backgroundColorOptions,
-      },
+      titleBgColor: createColorField('Title Background', backgroundColorOptions, branding),
       titleBgOpacity: {
         type: 'number' as const,
         label: 'Title Bg Opacity (0-1)',
@@ -756,21 +709,13 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Description Size (px)',
         placeholder: '18',
       },
-      descriptionColor: {
-        type: 'select' as const,
-        label: 'Description Color',
-        options: textColorOptions,
-      },
+      descriptionColor: createColorField('Description Color', textColorOptions, branding),
       descriptionMaxWidth: {
         type: 'select' as const,
         label: 'Description Max Width',
         options: maxWidthOptions,
       },
-      descriptionBgColor: {
-        type: 'select' as const,
-        label: 'Description Background',
-        options: backgroundColorOptions,
-      },
+      descriptionBgColor: createColorField('Description Background', backgroundColorOptions, branding),
       descriptionBgOpacity: {
         type: 'number' as const,
         label: 'Description Bg Opacity (0-1)',
@@ -782,11 +727,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
       // ═══════════════════════════════════════════════════════════════
       // BACKGROUND
       // ═══════════════════════════════════════════════════════════════
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
       backgroundMode: {
         type: 'radio' as const,
         label: 'Background Media',
@@ -1632,21 +1573,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
           value: '1,000',
         },
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      valueColor: {
-        type: 'select' as const,
-        label: 'Value Color',
-        options: textColorOptions,
-      },
-      descriptionColor: {
-        type: 'select' as const,
-        label: 'Description Color',
-        options: textColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      valueColor: createColorField('Value Color', textColorOptions, branding),
+      descriptionColor: createColorField('Description Color', textColorOptions, branding),
     },
     defaultProps: {
       itemsPerRow: 3,
@@ -1790,21 +1719,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      titleColor: {
-        type: 'select' as const,
-        label: 'Title Color',
-        options: textColorOptions,
-      },
-      textColor: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      titleColor: createColorField('Title Color', textColorOptions, branding),
+      textColor: createColorField('Text Color', textColorOptions, branding),
     },
     defaultProps: {
       columns: [
@@ -2002,21 +1919,9 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      titleColor: {
-        type: 'select' as const,
-        label: 'Title Color',
-        options: textColorOptions,
-      },
-      textColor: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      titleColor: createColorField('Title Color', textColorOptions, branding),
+      textColor: createColorField('Text Color', textColorOptions, branding),
     },
     defaultProps: {
       rows: [
@@ -2213,42 +2118,18 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      cardBackgroundColor: {
-        type: 'select' as const,
-        label: 'Card Background',
-        options: backgroundColorOptions,
-      },
-      quoteColor: {
-        type: 'select' as const,
-        label: 'Quote Text Color',
-        options: textColorOptions,
-      },
-      authorColor: {
-        type: 'select' as const,
-        label: 'Author Name Color',
-        options: textColorOptions,
-      },
-      roleColor: {
-        type: 'select' as const,
-        label: 'Role Text Color',
-        options: textColorOptions,
-      },
-      starColor: {
-        type: 'select' as const,
-        label: 'Star Color',
-        options: [
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      cardBackgroundColor: createColorField('Card Background', backgroundColorOptions, branding),
+      quoteColor: createColorField('Quote Text Color', textColorOptions, branding),
+      authorColor: createColorField('Author Name Color', textColorOptions, branding),
+      roleColor: createColorField('Role Text Color', textColorOptions, branding),
+      starColor: createColorField('Star Color', [
           { label: 'Yellow', value: '#fbbf24' },
           { label: 'Primary', value: 'primary' },
           { label: 'Secondary', value: 'secondary' },
           { label: 'Orange', value: '#f97316' },
           { label: 'Gold', value: '#d4af37' },
-        ],
-      },
+        ], branding),
     },
     defaultProps: {
       title: 'What Our Clients Say',
@@ -2547,36 +2428,16 @@ export const createOtherComponents = (branding: BrandingData) => ({
           { label: 'Full (1152px)', value: '1152px' },
         ],
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      questionColor: {
-        type: 'select' as const,
-        label: 'Question Color',
-        options: textColorOptions,
-      },
-      answerColor: {
-        type: 'select' as const,
-        label: 'Answer Color',
-        options: textColorOptions,
-      },
-      iconColor: {
-        type: 'select' as const,
-        label: 'Icon Color',
-        options: textColorOptions,
-      },
-      dividerColor: {
-        type: 'select' as const,
-        label: 'Divider Color',
-        options: [
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      questionColor: createColorField('Question Color', textColorOptions, branding),
+      answerColor: createColorField('Answer Color', textColorOptions, branding),
+      iconColor: createColorField('Icon Color', textColorOptions, branding),
+      dividerColor: createColorField('Divider Color', [
           { label: 'Light Gray', value: '#e5e7eb' },
           { label: 'Gray', value: '#d1d5db' },
           { label: 'Primary', value: 'primary' },
           { label: 'None', value: 'transparent' },
-        ],
-      },
+        ], branding),
     },
     defaultProps: {
       title: 'Frequently Asked Questions',
@@ -2849,28 +2710,16 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      cardBackgroundColor: {
-        type: 'select' as const,
-        label: 'Card Background',
-        options: backgroundColorOptions,
-      },
-      highlightBorderColor: {
-        type: 'select' as const,
-        label: 'Highlight Border Color',
-        options: [
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      cardBackgroundColor: createColorField('Card Background', backgroundColorOptions, branding),
+      highlightBorderColor: createColorField('Highlight Border Color', [
           { label: 'Primary', value: 'primary' },
           { label: 'Secondary', value: 'secondary' },
           { label: 'Tertiary', value: 'tertiary' },
           { label: 'Blue', value: '#3b82f6' },
           { label: 'Green', value: '#10b981' },
           { label: 'Purple', value: '#8b5cf6' },
-        ],
-      },
+        ], branding),
     },
     defaultProps: {
       title: 'Choose Your Plan',
@@ -3236,26 +3085,10 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
-      cardBackgroundColor: {
-        type: 'select' as const,
-        label: 'Card Background',
-        options: backgroundColorOptions,
-      },
-      nameColor: {
-        type: 'select' as const,
-        label: 'Name Color',
-        options: textColorOptions,
-      },
-      roleColor: {
-        type: 'select' as const,
-        label: 'Role Color',
-        options: textColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
+      cardBackgroundColor: createColorField('Card Background', backgroundColorOptions, branding),
+      nameColor: createColorField('Name Color', textColorOptions, branding),
+      roleColor: createColorField('Role Color', textColorOptions, branding),
     },
     defaultProps: {
       title: 'Meet Our Team',
@@ -3637,21 +3470,13 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Icon Size (px)',
         placeholder: '32',
       },
-      iconColor: {
-        type: 'select' as const,
-        label: 'Icon Color',
-        options: iconColorOptions,
-      },
+      iconColor: createColorField('Icon Color', iconColorOptions, branding),
       labelSize: {
         type: 'text' as const,
         label: 'Label Size (px)',
         placeholder: '14',
       },
-      labelColor: {
-        type: 'select' as const,
-        label: 'Label Color',
-        options: textColorOptions,
-      },
+      labelColor: createColorField('Label Color', textColorOptions, branding),
       gap: {
         type: 'select' as const,
         label: 'Gap Between Icons',
@@ -3667,11 +3492,7 @@ export const createOtherComponents = (branding: BrandingData) => ({
         label: 'Vertical Padding',
         options: verticalPaddingOptions,
       },
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
     },
     defaultProps: {
       icons: [

@@ -107,5 +107,7 @@ export const resolveColor = (color: string, branding: any) => {
   if (color === 'secondary') return branding.secondaryColor
   if (color === 'tertiary') return branding.tertiaryColor
   if (color === 'none') return 'transparent'
+  if (color === 'white') return '#ffffff'
+  if (color === 'dark') return '#000000'
   return color
 }

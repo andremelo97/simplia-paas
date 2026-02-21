@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import { textColorOptions, resolveColor, fontOptions, loadGoogleFont, maxWidthOptions } from './color-options'
+import { createColorField } from './ColorPickerField'
 
 const verticalPaddingOptions = [
   { label: '0px', value: 0 },
@@ -52,11 +53,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
           { label: 'Right', value: 'right' },
         ],
       },
-      color: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
-      },
+      color: createColorField('Text Color', textColorOptions, branding),
       // Link options
       linkUrl: {
         type: 'text' as const,
@@ -224,11 +221,7 @@ export const createTypographyComponents = (branding: BrandingData) => ({
           { label: 'Right', value: 'right' },
         ],
       },
-      color: {
-        type: 'select' as const,
-        label: 'Text Color',
-        options: textColorOptions,
-      },
+      color: createColorField('Text Color', textColorOptions, branding),
       maxWidth: {
         type: 'select' as const,
         label: 'Max Width',

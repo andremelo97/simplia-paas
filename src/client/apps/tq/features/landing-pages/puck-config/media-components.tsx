@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { BrandingData } from '../../../services/branding'
 import { textColorOptions, backgroundColorOptions, resolveColor, fontOptions, loadGoogleFont } from './color-options'
 import { MediaPickerField } from './MediaPickerField'
+import { createColorField } from './ColorPickerField'
 
 const aspectRatioOptions = [
   { label: '16:9 (Widescreen)', value: '16/9' },
@@ -870,11 +871,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
         },
       },
       // Title styling
-      titleColor: {
-        type: 'select' as const,
-        label: 'Title Color',
-        options: textColorOptions,
-      },
+      titleColor: createColorField('Title Color', textColorOptions, branding),
       titleFontFamily: {
         type: 'select' as const,
         label: 'Title Font',
@@ -917,11 +914,7 @@ export const createMediaComponents = (branding: BrandingData) => ({
         ],
       },
       // Layout options
-      backgroundColor: {
-        type: 'select' as const,
-        label: 'Background Color',
-        options: backgroundColorOptions,
-      },
+      backgroundColor: createColorField('Background Color', backgroundColorOptions, branding),
       rowGap: {
         type: 'select' as const,
         label: 'Gap Between Rows',

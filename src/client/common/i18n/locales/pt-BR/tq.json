@@ -99,8 +99,8 @@
       "email_failed": "Falha ao enviar email",
       "whatsapp_no_phone": "Adicione o telefone do paciente para enviar via WhatsApp",
       "email_no_email": "Adicione o email do paciente para enviar por email",
-      "whatsapp_message_quote": "Olá {{patientName}}! Sua cotação {{number}} de {{clinicName}} está pronta.\n\nAcesse: {{link}}\nSenha: {{password}}",
-      "whatsapp_message_prevention": "Olá {{patientName}}! Seu plano de prevenção {{number}} de {{clinicName}} está pronto.\n\nAcesse: {{link}}\nSenha: {{password}}",
+      "whatsapp_message_quote": "Sua cotação está pronta.\n\nAcesse: {{link}}\nSenha: {{password}}",
+      "whatsapp_message_prevention": "Seu plano de prevenção está pronto.\n\nAcesse: {{link}}\nSenha: {{password}}",
       "open_link": "Abrir Link",
       "done": "Concluído"
     }
@@ -905,7 +905,8 @@
         "link_revoked": "Link revogado",
         "sending_email": "Enviando...",
         "email_sent": "Email enviado!",
-        "email_failed": "Falha ao enviar email"
+        "email_failed": "Falha ao enviar email",
+        "generate_new_link": "Gerar novo link"
       },
       "section": {
         "title": "Links Compartilhados",

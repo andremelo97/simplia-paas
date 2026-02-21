@@ -186,16 +186,11 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
   const handleSendWhatsApp = async () => {
     if (!patientPhone) return
 
-    const { tenantName } = await import('../../shared/store/auth').then(m => m.useAuthStore.getState())
-
     const messageKey = documentType === 'quote'
       ? 'modals.generate_public_quote.whatsapp_message_quote'
       : 'modals.generate_public_quote.whatsapp_message_prevention'
 
     const message = t(messageKey, {
-      patientName: patientName || '',
-      number: documentNumber,
-      clinicName: tenantName || '',
       link: publicLink,
       password: generatedPassword
     })
@@ -427,13 +422,6 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
                 </div>
               </div>
             )}
-
-            {/* Password warning */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-              <p className="text-sm text-yellow-800">
-                {t('modals.generate_public_quote.password_warning')}
-              </p>
-            </div>
 
             {/* Send buttons */}
             <div className="space-y-3">

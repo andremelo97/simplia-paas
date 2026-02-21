@@ -1,16 +1,16 @@
 /**
  * LandingPageLinksSection
  *
- * Compact inline list of generated landing page links for a specific document.
- * Shows URL (copyable), password (decrypted), status, views, and action buttons
- * (Send Email, Send WhatsApp, Revoke).
+ * Displays all generated landing page links for a specific document,
+ * including active, revoked, and expired links.
+ * Uses Card/CardHeader/CardContent to match the Landing Page card above.
  *
  * Intended to be embedded inside EditQuote / EditPrevention form sections.
  */
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Button, StatusBadge } from '@client/common/ui'
+import { Card, CardHeader, CardContent, Button, StatusBadge, Tooltip } from '@client/common/ui'
 import {
   Copy,
   CheckCircle2,
@@ -19,8 +19,7 @@ import {
   Trash2,
   ExternalLink,
   Eye,
-  Loader2,
-  Link as LinkIcon
+  Loader2
 } from 'lucide-react'
 import { landingPagesService, LandingPage } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -51,7 +50,7 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
 }) => {
   const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
-  const { user, tenantName } = useAuthStore()
+  const { user } = useAuthStore()
   const canEdit = user?.role !== 'operations'
 
   const [links, setLinks] = useState<LandingPage[]>([])
@@ -110,9 +109,6 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
 
     const link = lp.publicUrl || `${window.location.origin}/lp/${lp.accessToken}`
     const message = t(messageKey, {
-      patientName: patientName || '',
-      number: documentNumber,
-      clinicName: tenantName || '',
       link,
       password: lp.password || ''
     })
@@ -143,40 +139,52 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
     }
   }
 
-  // Filter to active links only
-  const activeLinks = links.filter(lp => lp.active)
+  const getLinkStatus = (lp: LandingPage): 'active' | 'revoked' | 'expired' => {
+    if (!lp.active) return 'revoked'
+    if (lp.expiresAt && new Date(lp.expiresAt) < new Date()) return 'expired'
+    return 'active'
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-gray-500 py-3">
-        <Loader2 size={14} className="animate-spin" />
-        {t('common.loading')}
-      </div>
+      <Card>
+        <CardHeader className="p-6 pb-4">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {t('landing_pages.links.section.title')}
+          </h2>
+        </CardHeader>
+        <CardContent className="px-6 pb-6">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Loader2 size={14} className="animate-spin" />
+            {t('common.loading')}
+          </div>
+        </CardContent>
+      </Card>
     )
   }
 
-  if (activeLinks.length === 0) {
-    return null // Don't show section if no links
+  if (links.length === 0) {
+    return null
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <LinkIcon size={16} className="text-gray-500" />
-        <h3 className="text-sm font-semibold text-gray-700">
+    <Card>
+      <CardHeader className="p-6 pb-4">
+        <h2 className="text-lg font-semibold text-gray-900">
           {t('landing_pages.links.section.title')}
-        </h3>
-      </div>
+        </h2>
+      </CardHeader>
 
-      <div className="space-y-2">
-        {activeLinks.map((lp) => {
+      <CardContent className="space-y-3 px-6 pb-6">
+        {links.map((lp) => {
           const url = lp.publicUrl || `${window.location.origin}/lp/${lp.accessToken}`
-          const isExpired = lp.expiresAt ? new Date(lp.expiresAt) < new Date() : false
+          const status = getLinkStatus(lp)
+          const isDisabled = status !== 'active'
 
           return (
             <div
               key={lp.id}
-              className="border border-gray-200 rounded-lg p-3 bg-gray-50/50 text-sm space-y-2"
+              className={`border border-gray-200 rounded-lg p-3 text-sm space-y-2 ${isDisabled ? 'bg-gray-50 opacity-75' : 'bg-gray-50/50'}`}
             >
               {/* Row 1: URL + Status + Views */}
               <div className="flex items-center gap-2 flex-wrap">
@@ -211,7 +219,7 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                 )}
 
                 <span className="text-gray-400">|</span>
-                <StatusBadge status={isExpired ? 'expired' : 'active'} />
+                <StatusBadge status={status} />
                 <span className="text-xs text-gray-500">
                   <Eye size={12} className="inline mr-0.5" />{lp.viewsCount}
                 </span>
@@ -225,54 +233,60 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
               {/* Row 2: Actions */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 {patientPhone && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendWhatsApp(lp)}
-                    className="h-7 text-xs gap-1 text-green-700 hover:bg-green-50"
-                    disabled={isExpired}
-                  >
-                    <MessageCircle size={13} />
-                    {t('landing_pages.links.card.send_whatsapp')}
-                  </Button>
+                  <Tooltip content={t('landing_pages.links.card.generate_new_link')} disabled={!isDisabled} side="bottom">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSendWhatsApp(lp)}
+                      className="h-7 text-xs gap-1 text-green-700 hover:bg-green-50"
+                      disabled={isDisabled}
+                    >
+                      <MessageCircle size={13} />
+                      {t('landing_pages.links.card.send_whatsapp')}
+                    </Button>
+                  </Tooltip>
                 )}
 
                 {patientEmail && (
+                  <Tooltip content={t('landing_pages.links.card.generate_new_link')} disabled={!isDisabled} side="bottom">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSendEmail(lp)}
+                      disabled={sendingEmailId === lp.id || emailSentId === lp.id || isDisabled}
+                      className="h-7 text-xs gap-1 text-purple-700 hover:bg-purple-50"
+                    >
+                      {sendingEmailId === lp.id ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : emailSentId === lp.id ? (
+                        <CheckCircle2 size={13} />
+                      ) : (
+                        <Mail size={13} />
+                      )}
+                      {sendingEmailId === lp.id
+                        ? t('landing_pages.links.card.sending_email')
+                        : emailSentId === lp.id
+                          ? t('landing_pages.links.card.email_sent')
+                          : t('landing_pages.links.card.send_email')
+                      }
+                    </Button>
+                  </Tooltip>
+                )}
+
+                <Tooltip content={t('landing_pages.links.card.generate_new_link')} disabled={!isDisabled} side="bottom">
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleSendEmail(lp)}
-                    disabled={sendingEmailId === lp.id || emailSentId === lp.id || isExpired}
-                    className="h-7 text-xs gap-1 text-purple-700 hover:bg-purple-50"
+                    onClick={() => window.open(url, '_blank')}
+                    className="h-7 text-xs gap-1"
+                    disabled={isDisabled}
                   >
-                    {sendingEmailId === lp.id ? (
-                      <Loader2 size={13} className="animate-spin" />
-                    ) : emailSentId === lp.id ? (
-                      <CheckCircle2 size={13} />
-                    ) : (
-                      <Mail size={13} />
-                    )}
-                    {sendingEmailId === lp.id
-                      ? t('landing_pages.links.card.sending_email')
-                      : emailSentId === lp.id
-                        ? t('landing_pages.links.card.email_sent')
-                        : t('landing_pages.links.card.send_email')
-                    }
+                    <ExternalLink size={13} />
+                    {t('landing_pages.links.card.open')}
                   </Button>
-                )}
+                </Tooltip>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(url, '_blank')}
-                  className="h-7 text-xs gap-1"
-                  disabled={isExpired}
-                >
-                  <ExternalLink size={13} />
-                  {t('landing_pages.links.card.open')}
-                </Button>
-
-                {canEdit && (
+                {canEdit && status === 'active' && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -287,7 +301,7 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
             </div>
           )
         })}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

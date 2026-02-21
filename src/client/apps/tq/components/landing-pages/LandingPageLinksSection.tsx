@@ -210,47 +210,47 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
             >
               {/* Row 1: URL + Status + Views */}
               <div className="flex items-center gap-2 flex-wrap">
-                <code className="text-xs bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[280px] flex-1">
+                <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[280px] flex-1">
                   {url}
                 </code>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopyLink(lp)}
-                  className="h-6 px-1.5 text-xs gap-1"
+                  className="h-7 px-1.5 text-sm gap-1"
                 >
-                  {copiedId === lp.id ? <CheckCircle2 size={12} className="text-green-600" /> : <Copy size={12} />}
+                  {copiedId === lp.id ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
                 </Button>
 
                 {lp.password && (
                   <>
                     <span className="text-gray-400">|</span>
-                    <span className="text-xs text-gray-500">{t('landing_pages.links.card.password')}:</span>
-                    <code className="text-xs bg-white border border-gray-200 rounded px-2 py-0.5 font-mono">
+                    <span className="text-sm text-gray-500">{t('landing_pages.links.card.password')}:</span>
+                    <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 font-mono">
                       {lp.password}
                     </code>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleCopyPassword(lp)}
-                      className="h-6 px-1.5 text-xs gap-1"
+                      className="h-7 px-1.5 text-sm gap-1"
                     >
-                      {copiedPasswordId === lp.id ? <CheckCircle2 size={12} className="text-green-600" /> : <Copy size={12} />}
+                      {copiedPasswordId === lp.id ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
                     </Button>
                   </>
                 )}
 
                 <span className="text-gray-400">|</span>
                 <StatusBadge status={status} />
-                <span className="text-xs text-gray-500">
-                  <Eye size={12} className="inline mr-0.5" />{lp.viewsCount}
+                <span className="text-sm text-gray-500">
+                  <Eye size={14} className="inline mr-0.5" />{lp.viewsCount}
                 </span>
                 <span className="text-gray-400">|</span>
-                <span className="text-xs text-gray-500">
+                <span className="text-sm text-gray-500">
                   {formatShortDate(lp.createdAt)}
                 </span>
                 {lp.expiresAt && (
-                  <span className="text-xs text-gray-500">
+                  <span className="text-sm text-gray-500">
                     — {formatShortDate(lp.expiresAt)}
                   </span>
                 )}
@@ -267,10 +267,10 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                     variant="outline"
                     size="sm"
                     onClick={() => handleSendWhatsApp(lp)}
-                    className="h-7 text-xs gap-1 text-green-700 hover:bg-green-50"
+                    className="h-7 text-sm gap-1 text-green-700 hover:bg-green-50"
                     disabled={isDisabled || !patientPhone}
                   >
-                    <MessageCircle size={13} />
+                    <MessageCircle size={14} />
                     {t('landing_pages.links.card.send_whatsapp')}
                   </Button>
                 </Tooltip>
@@ -285,14 +285,14 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                     size="sm"
                     onClick={() => handleSendEmail(lp)}
                     disabled={isDisabled || !patientEmail || sendingEmailId === lp.id || emailSentId === lp.id}
-                    className="h-7 text-xs gap-1 text-purple-700 hover:bg-purple-50"
+                    className="h-7 text-sm gap-1 text-purple-700 hover:bg-purple-50"
                   >
                     {sendingEmailId === lp.id ? (
-                      <Loader2 size={13} className="animate-spin" />
+                      <Loader2 size={14} className="animate-spin" />
                     ) : emailSentId === lp.id ? (
-                      <CheckCircle2 size={13} />
+                      <CheckCircle2 size={14} />
                     ) : (
-                      <Mail size={13} />
+                      <Mail size={14} />
                     )}
                     {sendingEmailId === lp.id
                       ? t('landing_pages.links.card.sending_email')
@@ -308,10 +308,10 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                     variant="outline"
                     size="sm"
                     onClick={() => window.open(url, '_blank')}
-                    className="h-7 text-xs gap-1"
+                    className="h-7 text-sm gap-1"
                     disabled={isDisabled}
                   >
-                    <ExternalLink size={13} />
+                    <ExternalLink size={14} />
                     {t('landing_pages.links.card.open')}
                   </Button>
                 </Tooltip>
@@ -321,9 +321,9 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                     variant="outline"
                     size="sm"
                     onClick={() => handleRevokeClick(lp)}
-                    className="h-7 text-xs gap-1 text-red-600 hover:bg-red-50 ml-auto"
+                    className="h-7 text-sm gap-1 text-red-600 hover:bg-red-50 ml-auto"
                   >
-                    <Trash2 size={13} />
+                    <Trash2 size={14} />
                     {t('landing_pages.links.card.revoke')}
                   </Button>
                 )}

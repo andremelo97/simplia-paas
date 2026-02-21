@@ -63,53 +63,53 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
     >
       {/* Row 1: Document info + URL + Status + Views + Date */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="font-semibold text-gray-900 text-xs">
+        <span className="font-semibold text-gray-900 text-sm">
           {documentType}: {documentNumber}
         </span>
 
         <span className="text-gray-400">|</span>
 
-        <code className="text-xs bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[220px] flex-1">
+        <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[220px] flex-1">
           {url}
         </code>
         <Button
           variant="outline"
           size="sm"
           onClick={handleCopy}
-          className="h-6 px-1.5 text-xs gap-1"
+          className="h-7 px-1.5 text-sm gap-1"
         >
-          {copied ? <CheckCircle2 size={12} className="text-green-600" /> : <Copy size={12} />}
+          {copied ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
         </Button>
 
         {landingPage.password && (
           <>
             <span className="text-gray-400">|</span>
-            <span className="text-xs text-gray-500">{t('landing_pages.links.card.password')}:</span>
-            <code className="text-xs bg-white border border-gray-200 rounded px-2 py-0.5 font-mono">
+            <span className="text-sm text-gray-500">{t('landing_pages.links.card.password')}:</span>
+            <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 font-mono">
               {landingPage.password}
             </code>
             <Button
               variant="outline"
               size="sm"
               onClick={handleCopyPassword}
-              className="h-6 px-1.5 text-xs gap-1"
+              className="h-7 px-1.5 text-sm gap-1"
             >
-              {copiedPassword ? <CheckCircle2 size={12} className="text-green-600" /> : <Copy size={12} />}
+              {copiedPassword ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
             </Button>
           </>
         )}
 
         <span className="text-gray-400">|</span>
         <StatusBadge status={status} />
-        <span className="text-xs text-gray-500">
-          <Eye size={12} className="inline mr-0.5" />{landingPage.viewsCount}
+        <span className="text-sm text-gray-500">
+          <Eye size={14} className="inline mr-0.5" />{landingPage.viewsCount}
         </span>
         <span className="text-gray-400">|</span>
-        <span className="text-xs text-gray-500">
+        <span className="text-sm text-gray-500">
           {formatShortDate(landingPage.createdAt)}
         </span>
         {landingPage.expiresAt && (
-          <span className="text-xs text-gray-500">
+          <span className="text-sm text-gray-500">
             — {formatShortDate(landingPage.expiresAt)}
           </span>
         )}
@@ -121,9 +121,9 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
           variant="outline"
           size="sm"
           onClick={() => window.open(`/landing-pages/links/${landingPage.id}/preview`, '_blank')}
-          className="h-7 text-xs gap-1"
+          className="h-7 text-sm gap-1"
         >
-          <Eye size={13} />
+          <Eye size={14} />
           {t('landing_pages.links.card.preview')}
         </Button>
 
@@ -131,10 +131,10 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
           variant="outline"
           size="sm"
           onClick={() => window.open(url, '_blank')}
-          className="h-7 text-xs gap-1"
+          className="h-7 text-sm gap-1"
           disabled={isDisabled}
         >
-          <ExternalLink size={13} />
+          <ExternalLink size={14} />
           {t('landing_pages.links.card.open')}
         </Button>
 
@@ -142,10 +142,10 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
           variant="outline"
           size="sm"
           onClick={handleOpenDocument}
-          className="h-7 text-xs gap-1"
+          className="h-7 text-sm gap-1"
           disabled={!landingPage.quote?.id && !landingPage.prevention?.id}
         >
-          <FileText size={13} />
+          <FileText size={14} />
           {t('landing_pages.links.card.open_document')}
         </Button>
 
@@ -156,9 +156,9 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
             onClick={onNewPassword}
             disabled={!landingPage.active}
             isLoading={isNewPasswordLoading}
-            className="h-7 text-xs gap-1"
+            className="h-7 text-sm gap-1"
           >
-            <Key size={13} />
+            <Key size={14} />
             {t('landing_pages.links.card.new_password')}
           </Button>
         )}
@@ -169,9 +169,9 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
             size="sm"
             onClick={onRevoke}
             disabled={!landingPage.active}
-            className="h-7 text-xs gap-1 text-red-600 hover:bg-red-50 ml-auto"
+            className="h-7 text-sm gap-1 text-red-600 hover:bg-red-50 ml-auto"
           >
-            <Trash2 size={13} />
+            <Trash2 size={14} />
             {t('landing_pages.links.card.revoke')}
           </Button>
         )}

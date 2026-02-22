@@ -19,40 +19,39 @@ export const DesignLandingPageTemplate: React.FC = () => {
   const canEdit = user?.role !== 'operations'
   const [template, setTemplate] = useState<any>(null)
   const [data, setData] = useState<any>({ content: [], root: {} })
-  const [isSaving, setIsSaving] = useState(false)
   const [branding, setBranding] = useState<BrandingData | null>(null)
   const [config, setConfig] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isHelpOpen, setIsHelpOpen] = useState(false)
-  const [lastSavedData, setLastSavedData] = useState<string>('')
+
+  // Refs to avoid stale closures in auto-save
+  const dataRef = useRef<any>({ content: [], root: {} })
+  const lastSavedDataRef = useRef<string>('')
+  const isSavingRef = useRef(false)
   const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const handleSaveRef = useRef<() => void>(() => {})
   const initialLoadRef = useRef(true)
   const isClosingRef = useRef(false)
 
-  // Keep ref updated with latest handleSave
-  useEffect(() => {
-    handleSaveRef.current = () => handleSave(false)
-  })
+  // Keep data ref in sync
+  useEffect(() => { dataRef.current = data }, [data])
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+S or Cmd+S to save
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault()
-        if (canEdit && !isSaving) {
-          handleSaveRef.current()
+        if (canEdit && !isSavingRef.current) {
+          performSave()
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [canEdit, isSaving])
+  }, [canEdit, id])
 
   useEffect(() => {
     loadBrandingAndTemplate()
@@ -90,35 +89,67 @@ export const DesignLandingPageTemplate: React.FC = () => {
         : { content: [], root: {} }
 
       setData(initialData)
-      setLastSavedData(JSON.stringify(initialData))
+      dataRef.current = initialData
+      lastSavedDataRef.current = JSON.stringify(initialData)
       setHasUnsavedChanges(false)
     } catch (error) {
       // Failed to load template
     }
   }
 
-  // Check for unsaved changes
-  const checkUnsavedChanges = useCallback((newData: any) => {
-    const newDataStr = JSON.stringify(newData)
-    const hasChanges = newDataStr !== lastSavedData
-    setHasUnsavedChanges(hasChanges)
-    return hasChanges
-  }, [lastSavedData])
-
-  // Auto-save after 30 seconds of inactivity
+  // Schedule auto-save: debounce 3s after last change
   const scheduleAutoSave = useCallback(() => {
-    if (!canEdit) return
-
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current)
-    }
-
+    if (!canEdit || !id) return
+    if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current)
     autoSaveTimeoutRef.current = setTimeout(() => {
-      if (hasUnsavedChanges && !isSaving) {
-        handleSave(true)
+      if (!isSavingRef.current) performSave()
+    }, 3000)
+  }, [canEdit, id])
+
+  // Core save function — uses refs to always read latest data
+  const performSave = async () => {
+    if (!id || isSavingRef.current) return
+
+    const currentData = dataRef.current
+    const currentDataStr = JSON.stringify(currentData)
+
+    // Nothing to save
+    if (currentDataStr === lastSavedDataRef.current) return
+
+    // Clear any existing status timeout
+    if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
+
+    isSavingRef.current = true
+    setSaveStatus('saving')
+
+    try {
+      const updatedTemplate = await landingPagesService.updateTemplate(id, {
+        content: currentData,
+      })
+      setTemplate(updatedTemplate)
+      lastSavedDataRef.current = currentDataStr
+      setHasUnsavedChanges(false)
+      setSaveStatus('saved')
+
+      saveStatusTimeoutRef.current = setTimeout(() => {
+        setSaveStatus('idle')
+      }, 3000)
+    } catch (error) {
+      setSaveStatus('error')
+
+      saveStatusTimeoutRef.current = setTimeout(() => {
+        setSaveStatus('idle')
+      }, 5000)
+    } finally {
+      isSavingRef.current = false
+
+      // If data changed while saving, schedule another save
+      if (JSON.stringify(dataRef.current) !== lastSavedDataRef.current) {
+        setHasUnsavedChanges(true)
+        scheduleAutoSave()
       }
-    }, 30000) // 30 seconds
-  }, [canEdit, hasUnsavedChanges, isSaving])
+    }
+  }
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -141,43 +172,6 @@ export const DesignLandingPageTemplate: React.FC = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload)
   }, [hasUnsavedChanges])
 
-  const handleSave = async (isAutoSave = false) => {
-    if (!id || isSaving) return
-
-    // Clear any existing status timeout
-    if (saveStatusTimeoutRef.current) {
-      clearTimeout(saveStatusTimeoutRef.current)
-    }
-
-    setIsSaving(true)
-    setSaveStatus('saving')
-
-    try {
-      const updatedTemplate = await landingPagesService.updateTemplate(id, {
-        content: data
-      })
-      // Update template state to reflect saved changes
-      setTemplate(updatedTemplate)
-      setLastSavedData(JSON.stringify(data))
-      setHasUnsavedChanges(false)
-      setSaveStatus('saved')
-
-      // Reset status after 3 seconds
-      saveStatusTimeoutRef.current = setTimeout(() => {
-        setSaveStatus('idle')
-      }, 3000)
-    } catch (error) {
-      setSaveStatus('error')
-
-      // Reset error status after 5 seconds
-      saveStatusTimeoutRef.current = setTimeout(() => {
-        setSaveStatus('idle')
-      }, 5000)
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   const handleClose = () => {
     if (hasUnsavedChanges) {
       const confirmLeave = window.confirm(t('landing_pages.unsaved_changes_confirm'))
@@ -194,14 +188,15 @@ export const DesignLandingPageTemplate: React.FC = () => {
 
   const handleDataChange = (updatedData: any) => {
     setData(updatedData)
-    // Skip first onChange from Puck (editor initialization) to avoid false positive
+    // Skip first onChange from Puck (editor initialization)
     if (initialLoadRef.current) {
       initialLoadRef.current = false
-      setLastSavedData(JSON.stringify(updatedData))
+      lastSavedDataRef.current = JSON.stringify(updatedData)
       return
     }
-    checkUnsavedChanges(updatedData)
-    scheduleAutoSave()
+    const hasChanges = JSON.stringify(updatedData) !== lastSavedDataRef.current
+    setHasUnsavedChanges(hasChanges)
+    if (hasChanges) scheduleAutoSave()
   }
 
   const hasContent = data?.content && Array.isArray(data.content) && data.content.length > 0
@@ -254,8 +249,8 @@ export const DesignLandingPageTemplate: React.FC = () => {
       <Button
         type="button"
         variant={getButtonVariant() as any}
-        onClick={() => handleSave(false)}
-        disabled={isSaving || saveStatus === 'saved'}
+        onClick={() => performSave()}
+        disabled={saveStatus === 'saving' || saveStatus === 'saved'}
         className={`flex items-center gap-2 transition-all ${
           saveStatus === 'saved' ? 'bg-green-50 border-green-200 text-green-700' : ''
         } ${
@@ -340,7 +335,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
                 {canEdit && renderSaveButton()}
                 <Button
                   type="button"
-                  variant="secondary"
+                  variant="tertiary"
                   onClick={handlePreview}
                   disabled={!hasContent}
                   className="flex items-center gap-2"

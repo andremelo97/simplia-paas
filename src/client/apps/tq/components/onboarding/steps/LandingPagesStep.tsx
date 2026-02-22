@@ -157,6 +157,7 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
             src={`https://www.youtube.com/embed/${i18n.language === 'pt-BR' ? 'QWiZqCMSwCQ' : 'I5RjKBIa9WI'}?rel=0`}
             title={t('onboarding.landing_pages.video_placeholder', 'See how it works')}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
         </div>

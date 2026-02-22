@@ -266,6 +266,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
                 src={`https://www.youtube.com/embed/${i18n.language === 'pt-BR' ? 'QWiZqCMSwCQ' : 'I5RjKBIa9WI'}?autoplay=1&rel=0`}
                 title={t('landing_pages.help_video_title', 'Landing Page Editor Tutorial')}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                referrerPolicy="strict-origin-when-cross-origin"
                 allowFullScreen
               />
             </div>

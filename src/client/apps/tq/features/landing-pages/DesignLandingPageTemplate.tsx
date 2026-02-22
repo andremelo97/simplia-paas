@@ -30,6 +30,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
   const dataRef = useRef<any>({ content: [], root: {} })
   const lastSavedDataRef = useRef<string>('')
   const isSavingRef = useRef(false)
+  const performSaveRef = useRef<() => Promise<void>>(() => Promise.resolve())
   const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const initialLoadRef = useRef(true)
@@ -38,20 +39,18 @@ export const DesignLandingPageTemplate: React.FC = () => {
   // Keep data ref in sync
   useEffect(() => { dataRef.current = data }, [data])
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts — uses ref so never stale
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault()
-        if (canEdit && !isSavingRef.current) {
-          performSave()
-        }
+        if (canEdit) performSaveRef.current()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [canEdit, id])
+  }, [canEdit])
 
   useEffect(() => {
     loadBrandingAndTemplate()
@@ -97,12 +96,12 @@ export const DesignLandingPageTemplate: React.FC = () => {
     }
   }
 
-  // Schedule auto-save: debounce 3s after last change
+  // Schedule auto-save: debounce 3s after last change — uses ref so never stale
   const scheduleAutoSave = useCallback(() => {
     if (!canEdit || !id) return
     if (autoSaveTimeoutRef.current) clearTimeout(autoSaveTimeoutRef.current)
     autoSaveTimeoutRef.current = setTimeout(() => {
-      if (!isSavingRef.current) performSave()
+      performSaveRef.current()
     }, 3000)
   }, [canEdit, id])
 
@@ -113,10 +112,14 @@ export const DesignLandingPageTemplate: React.FC = () => {
     const currentData = dataRef.current
     const currentDataStr = JSON.stringify(currentData)
 
-    // Nothing to save
-    if (currentDataStr === lastSavedDataRef.current) return
+    // Nothing to save — still flash "Saved!" so user gets feedback
+    if (currentDataStr === lastSavedDataRef.current) {
+      if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
+      setSaveStatus('saved')
+      saveStatusTimeoutRef.current = setTimeout(() => setSaveStatus('idle'), 2000)
+      return
+    }
 
-    // Clear any existing status timeout
     if (saveStatusTimeoutRef.current) clearTimeout(saveStatusTimeoutRef.current)
 
     isSavingRef.current = true
@@ -150,6 +153,9 @@ export const DesignLandingPageTemplate: React.FC = () => {
       }
     }
   }
+
+  // Keep performSave ref always up-to-date
+  useEffect(() => { performSaveRef.current = performSave })
 
   // Cleanup timeouts on unmount
   useEffect(() => {
@@ -249,7 +255,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
       <Button
         type="button"
         variant={getButtonVariant() as any}
-        onClick={() => performSave()}
+        onClick={() => performSaveRef.current()}
         disabled={saveStatus === 'saving' || saveStatus === 'saved'}
         className={`flex items-center gap-2 transition-all ${
           saveStatus === 'saved' ? 'bg-green-50 border-green-200 text-green-700' : ''

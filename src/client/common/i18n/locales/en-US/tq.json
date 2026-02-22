@@ -870,6 +870,8 @@
     "unsaved_changes": "Unsaved changes",
     "unsaved_changes_confirm": "You have unsaved changes. Are you sure you want to leave?",
     "template_not_found": "Template not found",
+    "help_video_tooltip": "How to use the editor",
+    "help_video_title": "Landing Page Editor Tutorial",
     "status": {
       "active": "Active",
       "revoked": "Revoked"

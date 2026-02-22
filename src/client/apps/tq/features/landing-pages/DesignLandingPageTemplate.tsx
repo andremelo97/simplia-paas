@@ -3,8 +3,8 @@ import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Puck } from '@measured/puck'
 import '@measured/puck/puck.css'
-import { Button } from '@client/common/ui'
-import { X, Eye, Save, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { Button, Tooltip } from '@client/common/ui'
+import { X, Eye, Save, Check, AlertCircle, Loader2, HelpCircle } from 'lucide-react'
 import { landingPagesService } from '../../services/landingPages'
 import { brandingService, BrandingData } from '../../services/branding'
 import { createConfig } from './puck-config'
@@ -25,6 +25,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [lastSavedData, setLastSavedData] = useState<string>('')
   const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -287,6 +288,29 @@ export const DesignLandingPageTemplate: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 bg-white">
+      {/* Help Video Modal */}
+      {isHelpOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60" onClick={() => setIsHelpOpen(false)}>
+          <div className="relative w-full max-w-3xl mx-4" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setIsHelpOpen(false)}
+              className="absolute -top-10 right-0 text-white/80 hover:text-white transition-colors"
+            >
+              <X size={24} />
+            </button>
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                className="absolute inset-0 w-full h-full rounded-lg"
+                src="https://www.youtube.com/embed/YOUTUBE_VIDEO_ID?autoplay=1&rel=0"
+                title={t('landing_pages.help_video_title', 'Landing Page Editor Tutorial')}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Puck Editor - Always fullscreen */}
       <div className="h-screen">
         <Puck
@@ -302,6 +326,17 @@ export const DesignLandingPageTemplate: React.FC = () => {
           overrides={{
             headerActions: () => (
               <div className="flex items-center gap-2">
+                <Tooltip content={t('landing_pages.help_video_tooltip', 'How to use the editor')} side="bottom">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsHelpOpen(true)}
+                    className="text-gray-500 hover:text-[#B725B7] transition-colors"
+                  >
+                    <HelpCircle size={18} />
+                  </Button>
+                </Tooltip>
                 {canEdit && renderSaveButton()}
                 <Button
                   type="button"

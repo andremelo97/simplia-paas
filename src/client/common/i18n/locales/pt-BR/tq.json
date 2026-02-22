@@ -837,6 +837,8 @@
     "unsaved_changes": "Alterações não salvas",
     "unsaved_changes_confirm": "Você tem alterações não salvas. Tem certeza que deseja sair?",
     "template_not_found": "Template não encontrado",
+    "help_video_tooltip": "Como usar o editor",
+    "help_video_title": "Tutorial do Editor de Landing Page",
     "status": {
       "active": "Ativo",
       "revoked": "Revogado"

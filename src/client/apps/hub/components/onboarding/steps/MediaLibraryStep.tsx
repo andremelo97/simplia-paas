@@ -19,7 +19,7 @@ export const MediaLibraryStep: React.FC = () => {
           </h2>
         </div>
 
-        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t(
             'onboarding.media.description',
             'Upload images and videos to use as backgrounds on your document landing pages. These are used in the landing page editor.'
@@ -35,7 +35,7 @@ export const MediaLibraryStep: React.FC = () => {
 
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-800 space-y-1">
               <p>{t('onboarding.media.limit_images', 'Images: PNG, JPEG, SVG (max 5MB)')}</p>
               <p>{t('onboarding.media.limit_videos', 'Videos: MP4 (max 20MB)')}</p>
@@ -47,7 +47,7 @@ export const MediaLibraryStep: React.FC = () => {
 
       {/* Right Column - Media Library */}
       <div className="flex flex-col">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">
           {t('onboarding.media.right_title', 'Upload your media')}
         </h3>
         <MediaLibrary />

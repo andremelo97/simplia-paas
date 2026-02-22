@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Building2, Mail, Phone, MapPin } from 'lucide-react'
+import { Building2, Mail, Phone, MapPin, Play } from 'lucide-react'
 import { Input, Textarea } from '@client/common/ui'
 import { BrandingData, SocialLinks } from '../../../services/brandingService'
 import { SOCIAL_NETWORKS } from '../icons'
@@ -29,7 +29,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
     <>
       {/* Left Column - Explanation */}
       <div className="flex flex-col">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-4 mb-5">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
             <Building2 className="w-7 h-7 text-white" />
           </div>
@@ -38,12 +38,13 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
           </h2>
         </div>
 
-        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t('onboarding.company_info.description', 'This information is displayed in email footers and on documents sent to your clients.')}
         </p>
 
-        <div className="border-2 border-dashed border-gray-300 rounded-lg aspect-video flex items-center justify-center bg-gray-50">
-          <p className="text-sm text-gray-400">
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
             {t('onboarding.company_info.video_placeholder', 'Tutorial video coming soon')}
           </p>
         </div>
@@ -51,7 +52,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
 
       {/* Right Column - Form */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">
           {t('onboarding.company_info.right_title', 'Fill in your details')}
         </h3>
 

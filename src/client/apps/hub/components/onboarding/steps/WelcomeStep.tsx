@@ -33,7 +33,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
           </div>
         </div>
 
-        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t(
             'onboarding.welcome.hub_description',
             'Hub is your central management portal. From here you can launch your licensed applications, customize your brand, monitor your subscription, and explore templates — all in one place.'
@@ -41,13 +41,13 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
         </p>
 
         {/* Hub Feature Cards */}
-        <div className="space-y-3 mb-6">
-          <div className="flex items-start gap-3 p-3.5 bg-purple-50 rounded-lg border border-purple-100">
-            <div className="w-9 h-9 rounded-lg bg-[#B725B7] flex items-center justify-center flex-shrink-0">
-              <LayoutGrid className="w-4.5 h-4.5 text-white" />
+        <div className="space-y-4 mb-6">
+          <div className="flex items-start gap-3 p-5 bg-purple-50 rounded-lg border border-purple-100">
+            <div className="w-11 h-11 rounded-full bg-[#B725B7] flex items-center justify-center flex-shrink-0">
+              <LayoutGrid className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 text-sm">
+              <h4 className="font-semibold text-gray-900 text-base">
                 {t('onboarding.welcome.feature_apps_title', 'App Launcher')}
               </h4>
               <p className="text-sm text-gray-600 mt-0.5">
@@ -59,12 +59,12 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-3.5 bg-pink-50 rounded-lg border border-pink-100">
-            <div className="w-9 h-9 rounded-lg bg-[#E91E63] flex items-center justify-center flex-shrink-0">
-              <Settings className="w-4.5 h-4.5 text-white" />
+          <div className="flex items-start gap-3 p-5 bg-pink-50 rounded-lg border border-pink-100">
+            <div className="w-11 h-11 rounded-full bg-[#E91E63] flex items-center justify-center flex-shrink-0">
+              <Settings className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 text-sm">
+              <h4 className="font-semibold text-gray-900 text-base">
                 {t('onboarding.welcome.feature_config_title', 'Configurations')}
               </h4>
               <p className="text-sm text-gray-600 mt-0.5">
@@ -76,12 +76,12 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
             </div>
           </div>
 
-          <div className="flex items-start gap-3 p-3.5 bg-teal-50 rounded-lg border border-teal-100">
-            <div className="w-9 h-9 rounded-lg bg-[#5ED6CE] flex items-center justify-center flex-shrink-0">
-              <ShoppingBag className="w-4.5 h-4.5 text-white" />
+          <div className="flex items-start gap-3 p-5 bg-teal-50 rounded-lg border border-teal-100">
+            <div className="w-11 h-11 rounded-full bg-[#5ED6CE] flex items-center justify-center flex-shrink-0">
+              <ShoppingBag className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h4 className="font-semibold text-gray-900 text-sm">
+              <h4 className="font-semibold text-gray-900 text-base">
                 {t('onboarding.welcome.feature_marketplace_title', 'Marketplace')}
               </h4>
               <p className="text-sm text-gray-600 mt-0.5">
@@ -98,7 +98,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
           <div className="flex items-start gap-3">
             <Rocket className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-green-800">
+              <p className="text-base font-semibold text-green-800">
                 {t(
                   'onboarding.welcome.ready_title',
                   'Your system is 100% functional.'
@@ -117,11 +117,11 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
 
       {/* Right Column - What we'll set up + video */}
       <div className="flex flex-col gap-5">
-        <div className="bg-gray-50 rounded-xl p-6">
-          <h3 className="font-bold text-lg text-gray-900 mb-4">
+        <div className="bg-gray-50 rounded-xl p-8">
+          <h3 className="font-bold text-xl text-gray-900 mb-4">
             {t('onboarding.welcome.setup_title', "What we'll set up:")}
           </h3>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-base text-gray-500 mb-4">
             {t(
               'onboarding.welcome.intro',
               'This wizard will guide you through setting up your brand identity. Configure your logo, colors, contact information, and media to personalize your experience.'

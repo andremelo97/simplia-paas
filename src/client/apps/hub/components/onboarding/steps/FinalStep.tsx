@@ -60,10 +60,10 @@ export const FinalStep: React.FC<FinalStepProps> = ({
               <div className="mt-2">
                 <button
                   onClick={() => onNavigate('/configurations/communication')}
-                  className="text-sm font-medium text-[#E91E63] hover:underline flex items-center gap-1"
+                  className="text-base font-medium text-[#E91E63] hover:underline flex items-center gap-2"
                 >
                   {t('onboarding.final.email_button', 'Configure Email')}
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -89,10 +89,10 @@ export const FinalStep: React.FC<FinalStepProps> = ({
               <div className="mt-2">
                 <button
                   onClick={() => onNavigate('/marketplace')}
-                  className="text-sm font-medium text-[#5ED6CE] hover:underline flex items-center gap-1"
+                  className="text-base font-medium text-[#5ED6CE] hover:underline flex items-center gap-2"
                 >
                   {t('onboarding.final.marketplace_button', 'Browse Marketplace')}
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -160,14 +160,14 @@ export const FinalStep: React.FC<FinalStepProps> = ({
 
       {/* Right Column - Branding Summary */}
       <div className="flex flex-col">
-        <div className="bg-gray-50 rounded-xl p-6 space-y-5">
-          <h3 className="font-bold text-lg text-gray-900">
+        <div className="bg-gray-50 rounded-xl p-8 space-y-5">
+          <h3 className="font-bold text-xl text-gray-900">
             {t('onboarding.final.summary_title', 'Your Branding Summary')}
           </h3>
 
           {/* Logo */}
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+            <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">
               {t('onboarding.final.summary_logo', 'Logo')}
             </p>
             {branding.logoUrl ? (
@@ -175,7 +175,7 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                 <img
                   src={branding.logoUrl}
                   alt="Logo"
-                  className="max-h-20 object-contain"
+                  className="max-h-24 object-contain"
                 />
               </div>
             ) : (
@@ -190,20 +190,20 @@ export const FinalStep: React.FC<FinalStepProps> = ({
 
           {/* Colors */}
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+            <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">
               {t('onboarding.final.summary_colors', 'Colors')}
             </p>
             <div className="flex items-center gap-3">
               <div
-                className="w-10 h-10 rounded-lg border border-gray-200 shadow-sm"
+                className="w-12 h-12 rounded-lg border border-gray-200 shadow-sm"
                 style={{ backgroundColor: branding.primaryColor || '#B725B7' }}
               />
               <div
-                className="w-10 h-10 rounded-lg border border-gray-200 shadow-sm"
+                className="w-12 h-12 rounded-lg border border-gray-200 shadow-sm"
                 style={{ backgroundColor: branding.secondaryColor || '#E91E63' }}
               />
               <div
-                className="w-10 h-10 rounded-lg border border-gray-200 shadow-sm"
+                className="w-12 h-12 rounded-lg border border-gray-200 shadow-sm"
                 style={{ backgroundColor: branding.tertiaryColor || '#5ED6CE' }}
               />
             </div>
@@ -211,7 +211,7 @@ export const FinalStep: React.FC<FinalStepProps> = ({
 
           {/* Company Info */}
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+            <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">
               {t('onboarding.final.summary_company', 'Company')}
             </p>
             {branding.companyName || branding.email || branding.phone || branding.address ? (
@@ -221,19 +221,19 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                 )}
                 {branding.email && (
                   <p className="flex items-center gap-1.5 text-sm text-gray-600">
-                    <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     {branding.email}
                   </p>
                 )}
                 {branding.phone && (
                   <p className="flex items-center gap-1.5 text-sm text-gray-600">
-                    <Phone className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
                     {branding.phone}
                   </p>
                 )}
                 {branding.address && (
                   <p className="flex items-start gap-1.5 text-sm text-gray-600">
-                    <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                     {branding.address}
                   </p>
                 )}
@@ -248,7 +248,7 @@ export const FinalStep: React.FC<FinalStepProps> = ({
           {/* Social Links */}
           {activeSocials.length > 0 && (
             <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+              <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">
                 {t('onboarding.final.summary_social', 'Social Media')}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -260,7 +260,7 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:border-[#B725B7] hover:text-[#B725B7] transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-lg text-base text-gray-600 hover:border-[#B725B7] hover:text-[#B725B7] transition-colors"
                       title={label}
                     >
                       <Icon className="w-4 h-4" />

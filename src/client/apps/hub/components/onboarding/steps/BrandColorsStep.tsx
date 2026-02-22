@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Palette, Lightbulb } from 'lucide-react'
+import { Palette, Lightbulb, Play } from 'lucide-react'
 import { BrandingData } from '../../../services/brandingService'
 
 interface BrandColorsStepProps {
@@ -15,7 +15,7 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
     <>
       {/* Left Column - Explanation */}
       <div className="flex flex-col">
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-4 mb-5">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
             <Palette className="w-7 h-7 text-white" />
           </div>
@@ -24,12 +24,13 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
           </h2>
         </div>
 
-        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t('onboarding.brand_colors.description', 'These colors are used in email templates, documents, and landing pages. Choose colors that match your brand identity.')}
         </p>
 
-        <div className="border-2 border-dashed border-gray-300 rounded-lg aspect-video flex items-center justify-center bg-gray-50 mb-6">
-          <p className="text-sm text-gray-400">
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-6">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
             {t('onboarding.brand_colors.video_placeholder', 'Tutorial video coming soon')}
           </p>
         </div>
@@ -46,7 +47,7 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
 
       {/* Right Column - Color Pickers */}
       <div className="flex flex-col">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">
           {t('onboarding.brand_colors.right_title', 'Pick your colors')}
         </h3>
 
@@ -125,15 +126,15 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
           </label>
           <div className="flex gap-3">
             <div
-              className="w-14 h-14 rounded-lg border border-gray-200"
+              className="w-16 h-16 rounded-lg border border-gray-200"
               style={{ backgroundColor: branding.primaryColor || '#B725B7' }}
             />
             <div
-              className="w-14 h-14 rounded-lg border border-gray-200"
+              className="w-16 h-16 rounded-lg border border-gray-200"
               style={{ backgroundColor: branding.secondaryColor || '#E91E63' }}
             />
             <div
-              className="w-14 h-14 rounded-lg border border-gray-200"
+              className="w-16 h-16 rounded-lg border border-gray-200"
               style={{ backgroundColor: branding.tertiaryColor || '#5ED6CE' }}
             />
           </div>

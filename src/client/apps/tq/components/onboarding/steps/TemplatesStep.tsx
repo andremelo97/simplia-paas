@@ -30,7 +30,7 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
           </h2>
         </div>
 
-        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t(
             'onboarding.templates.description',
             'Templates are pre-made document structures that AI fills in automatically using your transcription data. Create once, reuse with every patient.'
@@ -38,15 +38,15 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
         </p>
 
         {/* Template type mini-cards */}
-        <div className="space-y-3">
-          <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
-            <div className="flex items-start gap-3">
-              <Receipt className="w-5 h-5 text-pink-600 flex-shrink-0 mt-0.5" />
+        <div className="space-y-4">
+          <div className="bg-pink-50 border border-pink-200 rounded-lg p-5">
+            <div className="flex items-start gap-4">
+              <Receipt className="w-6 h-6 text-pink-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.templates.type_quote', 'Quotes')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500 mt-1">
                   {t(
                     'onboarding.templates.type_quote_desc',
                     'Treatment proposals with pricing tables. AI generates itemized quotes from your transcription.'
@@ -56,14 +56,14 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-            <div className="flex items-start gap-3">
-              <ClipboardList className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-5">
+            <div className="flex items-start gap-4">
+              <ClipboardList className="w-6 h-6 text-purple-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.templates.type_clinical_note', 'Clinical Notes')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500 mt-1">
                   {t(
                     'onboarding.templates.type_clinical_note_desc',
                     'Structured medical consultation documentation. AI extracts key findings and recommendations.'
@@ -73,14 +73,14 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-green-50 border border-green-200 rounded-lg p-5">
+            <div className="flex items-start gap-4">
+              <ShieldCheck className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.templates.type_prevention', 'Prevention Plans')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500 mt-1">
                   {t(
                     'onboarding.templates.type_prevention_desc',
                     'Preventive care plans with personalized recommendations based on the consultation.'
@@ -92,9 +92,9 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
         </div>
 
         {/* Marketplace callout */}
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 mt-4">
-          <div className="flex items-start gap-2">
-            <ShoppingBag className="w-4 h-4 text-[#B725B7] flex-shrink-0 mt-0.5" />
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-5">
+          <div className="flex items-start gap-3">
+            <ShoppingBag className="w-5 h-5 text-[#B725B7] flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-600">
               {t(
                 'onboarding.templates.marketplace_tip',

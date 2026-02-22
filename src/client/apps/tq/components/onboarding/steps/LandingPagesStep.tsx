@@ -22,16 +22,16 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
           </h2>
         </div>
 
-        <p className="text-base text-gray-600 mb-6 leading-relaxed">
+        <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t(
             'onboarding.landing_pages.description',
             'Create beautiful, branded pages to share documents with your patients. They can view quotes and prevention plans without needing to log in.'
           )}
         </p>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-3">
-          <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-            <Link2 className="w-4 h-4 text-gray-700" />
+        <div className="bg-white border border-gray-200 rounded-lg p-5 mb-4">
+          <h4 className="text-base font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <Link2 className="w-5 h-5 text-gray-700" />
             {t('onboarding.landing_pages.links_title', 'Links')}
           </h4>
           <p className="text-sm text-gray-600">
@@ -42,9 +42,9 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
           </p>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-            <Palette className="w-4 h-4 text-gray-700" />
+        <div className="bg-white border border-gray-200 rounded-lg p-5">
+          <h4 className="text-base font-medium text-gray-900 mb-2 flex items-center gap-2">
+            <Palette className="w-5 h-5 text-gray-700" />
             {t('onboarding.landing_pages.templates_title', 'Page Templates')}
           </h4>
           <p className="text-sm text-gray-600">
@@ -55,9 +55,9 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
           </p>
         </div>
 
-        <div className="bg-[#5ED6CE]/10 border border-[#5ED6CE]/30 rounded-lg p-3 mt-4">
-          <div className="flex items-start gap-2">
-            <Headphones className="w-4 h-4 text-[#5ED6CE] flex-shrink-0 mt-0.5" />
+        <div className="bg-[#5ED6CE]/10 border border-[#5ED6CE]/30 rounded-lg p-4 mt-5">
+          <div className="flex items-start gap-3">
+            <Headphones className="w-5 h-5 text-[#5ED6CE] flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-600">
               {t(
                 'onboarding.landing_pages.support_tip',
@@ -141,7 +141,7 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
             </span>
             <ArrowRight className="w-4 h-4 text-gray-400" />
             <span className="rounded-lg bg-pink-100 px-3 py-2 text-sm font-medium text-pink-800">
-              {t('onboarding.landing_pages.lifecycle_share', 'Share via Email')}
+              {t('onboarding.landing_pages.lifecycle_share', 'Share')}
             </span>
             <ArrowRight className="w-4 h-4 text-gray-400" />
             <span className="rounded-lg bg-green-100 px-3 py-2 text-sm font-medium text-green-800">

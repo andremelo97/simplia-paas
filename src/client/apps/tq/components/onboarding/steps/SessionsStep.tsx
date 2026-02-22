@@ -137,7 +137,7 @@ export const SessionsStep: React.FC<SessionsStepProps> = ({ onNavigate }) => {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#B725B7] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#5ED6CE] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
               2
             </div>
             <div>
@@ -154,7 +154,7 @@ export const SessionsStep: React.FC<SessionsStepProps> = ({ onNavigate }) => {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#B725B7] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[#E91E63] text-white text-sm font-bold flex items-center justify-center flex-shrink-0">
               3
             </div>
             <div>

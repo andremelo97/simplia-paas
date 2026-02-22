@@ -25,7 +25,7 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
         <p className="text-base text-gray-600 mb-6 leading-relaxed">
           {t(
             'onboarding.documents.description',
-            'When you combine a transcription with a template, TQ generates a document using AI. Each document type serves a different purpose in your practice.'
+            'When you combine a session with a template, TQ generates a document using AI. Each document type serves a different purpose in your practice.'
           )}
         </p>
 
@@ -34,7 +34,7 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
             <div className="flex items-center gap-1.5 px-3 py-2 bg-white rounded-lg border border-purple-200 text-sm">
               <Mic className="w-4 h-4 text-[#B725B7]" />
               <span className="font-medium text-gray-700">
-                {t('onboarding.documents.flow_transcription', 'Transcription')}
+                {t('onboarding.documents.flow_session', 'Session')}
               </span>
             </div>
             <span className="text-gray-400 font-bold text-lg">+</span>
@@ -55,7 +55,7 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
           <p className="text-sm text-gray-500 mt-2 text-center">
             {t(
               'onboarding.documents.flow_explanation',
-              'AI analyzes your transcription and fills in the template to create a professional document in seconds.'
+              'AI analyzes the session transcription and fills in the template to create a professional document in seconds.'
             )}
           </p>
         </div>
@@ -81,19 +81,19 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
 
       {/* Right Column - Document Types */}
       <div className="flex flex-col">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-5">
           {t('onboarding.documents.types_title', 'Document Types')}
         </h3>
 
-        <div className="space-y-3">
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Receipt className="w-5 h-5 text-[#E91E63] flex-shrink-0 mt-0.5" />
+        <div className="space-y-4">
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
+            <div className="flex items-start gap-4">
+              <Receipt className="w-6 h-6 text-[#E91E63] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.documents.type_quote', 'Quotes')}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   {t(
                     'onboarding.documents.type_quote_desc',
                     'Treatment proposals with pricing. Add line items, set quantities and prices.'
@@ -103,14 +103,14 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <ClipboardList className="w-5 h-5 text-[#B725B7] flex-shrink-0 mt-0.5" />
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
+            <div className="flex items-start gap-4">
+              <ClipboardList className="w-6 h-6 text-[#B725B7] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.documents.type_clinical_note', 'Clinical Notes')}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   {t(
                     'onboarding.documents.type_clinical_note_desc',
                     'Detailed consultation documentation for medical records. Supports rich text formatting, can be printed or exported as PDF.'
@@ -120,14 +120,14 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
+            <div className="flex items-start gap-4">
+              <ShieldCheck className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.documents.type_prevention', 'Prevention Plans')}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   {t(
                     'onboarding.documents.type_prevention_desc',
                     'Preventive care plans with personalized recommendations. Share with patients via landing pages for easy access.'
@@ -137,14 +137,14 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Package className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
+            <div className="flex items-start gap-4">
+              <Package className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.documents.type_items', 'Items Catalog')}
                 </p>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mt-1">
                   {t(
                     'onboarding.documents.type_items_desc',
                     'Reusable catalog of line items (treatments, procedures, products) with preset prices. Add items to any quote with one click.'

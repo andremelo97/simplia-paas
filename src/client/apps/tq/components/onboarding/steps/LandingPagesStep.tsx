@@ -1,13 +1,13 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Layout, Link2, Palette, CheckCircle2, ArrowRight, Play, Headphones } from 'lucide-react'
+import { Layout, Link2, Palette, CheckCircle2, ArrowRight, Headphones } from 'lucide-react'
 
 interface LandingPagesStepProps {
   onNavigate: (path: string) => void
 }
 
 export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }) => {
-  const { t } = useTranslation('tq')
+  const { t, i18n } = useTranslation('tq')
 
   return (
     <>
@@ -150,12 +150,15 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
           </div>
         </div>
 
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-6">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.landing_pages.video_placeholder', 'See how it works')}
-          </p>
+        {/* Tutorial video */}
+        <div className="aspect-video rounded-lg overflow-hidden bg-black mt-6">
+          <iframe
+            className="w-full h-full"
+            src={`https://www.youtube.com/embed/${i18n.language === 'pt-BR' ? 'q1hwfsd6OzY' : 'lCxoGorF-8w'}?rel=0`}
+            title={t('onboarding.landing_pages.video_placeholder', 'See how it works')}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
         </div>
 
         {/* Navigate button */}

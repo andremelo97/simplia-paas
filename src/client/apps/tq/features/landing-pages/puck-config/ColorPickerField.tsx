@@ -7,6 +7,7 @@ interface ColorOption {
 }
 
 interface ColorPickerFieldProps {
+  label?: string
   value: string
   onChange: (value: string) => void
   options: ColorOption[]
@@ -16,6 +17,7 @@ interface ColorPickerFieldProps {
 const CHECKERBOARD = 'repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%) 0 0 / 12px 12px'
 
 export const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
+  label,
   value,
   onChange,
   options,
@@ -61,7 +63,12 @@ export const ColorPickerField: React.FC<ColorPickerFieldProps> = ({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      {label && (
+        <span style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>
+          {label}
+        </span>
+      )}
       {/* Preset dropdown (original select with labels) */}
       <select
         value={isPreset ? value : '__custom__'}
@@ -161,6 +168,7 @@ export const createColorField = (
   label,
   render: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
     <ColorPickerField
+      label={label}
       value={value}
       onChange={onChange}
       options={options}

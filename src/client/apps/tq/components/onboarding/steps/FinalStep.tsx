@@ -9,7 +9,6 @@ import {
   Eye,
   CheckCircle2,
   Headphones,
-  Bot,
   Mic,
   FolderOpen,
   FileText,
@@ -56,6 +55,14 @@ export const FinalStep: React.FC<FinalStepProps> = ({ onNavigate }) => {
                   </span>
                 </div>
               </div>
+              <button
+                onClick={() => onNavigate('/configurations/email-template')}
+                className="flex items-center gap-1.5 mt-3 px-3 py-1.5 bg-gray-100 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors text-xs font-medium"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                {t('onboarding.finish.ref_config', 'Configurations')}
+                <ArrowRight className="w-3 h-3" />
+              </button>
             </div>
           </div>
         </div>
@@ -164,109 +171,109 @@ export const FinalStep: React.FC<FinalStepProps> = ({ onNavigate }) => {
 
       {/* Right Column - Quick Actions */}
       <div className="flex flex-col">
-        <div className="bg-gray-50 rounded-xl p-6">
-          <h3 className="font-bold text-lg text-gray-900 mb-2">
+        <div className="bg-gray-50 rounded-xl p-8">
+          <h3 className="font-bold text-xl text-gray-900 mb-2">
             {t('onboarding.finish.actions_title', 'Get Started')}
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-base text-gray-600 mb-6">
             {t('onboarding.finish.actions_desc', 'Jump to any section to start exploring:')}
           </p>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <button
               onClick={() => onNavigate('/new-session')}
-              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-purple-50 transition-colors text-left group"
+              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-purple-50 transition-colors text-left group"
             >
-              <Mic className="w-5 h-5 text-[#B725B7] flex-shrink-0" />
+              <Mic className="w-6 h-6 text-[#B725B7] flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.finish.ref_new_session', 'New Session')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   {t('onboarding.finish.ref_new_session_desc', 'Start transcribing')}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#B725B7] transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-[#B725B7] transition-colors flex-shrink-0" />
             </button>
 
             <button
               onClick={() => onNavigate('/patients')}
-              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#5ED6CE] hover:bg-teal-50 transition-colors text-left group"
+              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-[#5ED6CE] hover:bg-teal-50 transition-colors text-left group"
             >
-              <Users className="w-5 h-5 text-[#5ED6CE] flex-shrink-0" />
+              <Users className="w-6 h-6 text-[#5ED6CE] flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.finish.ref_patients', 'Patients')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   {t('onboarding.finish.ref_patients_desc', 'Manage patient records')}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#5ED6CE] transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-[#5ED6CE] transition-colors flex-shrink-0" />
             </button>
 
             <button
               onClick={() => onNavigate('/documents/quotes')}
-              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left group"
+              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left group"
             >
-              <FolderOpen className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <FolderOpen className="w-6 h-6 text-blue-600 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.finish.ref_documents', 'Documents')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   {t('onboarding.finish.ref_documents_desc', 'Quotes, notes, prevention, items')}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0" />
             </button>
 
             <button
               onClick={() => onNavigate('/templates')}
-              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#E91E63] hover:bg-pink-50 transition-colors text-left group"
+              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-[#E91E63] hover:bg-pink-50 transition-colors text-left group"
             >
-              <FileText className="w-5 h-5 text-[#E91E63] flex-shrink-0" />
+              <FileText className="w-6 h-6 text-[#E91E63] flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.finish.ref_templates', 'Templates')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   {t('onboarding.finish.ref_templates_desc', 'Manage document templates')}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#E91E63] transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-[#E91E63] transition-colors flex-shrink-0" />
             </button>
 
             <button
               onClick={() => onNavigate('/landing-pages/templates')}
-              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-purple-50 transition-colors text-left group"
+              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-purple-50 transition-colors text-left group"
             >
-              <Layout className="w-5 h-5 text-[#B725B7] flex-shrink-0" />
+              <Layout className="w-6 h-6 text-[#B725B7] flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.finish.ref_landing', 'Landing Pages')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   {t('onboarding.finish.ref_landing_desc', 'Public sharing pages')}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#B725B7] transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-[#B725B7] transition-colors flex-shrink-0" />
             </button>
 
             <button
               onClick={() => onNavigate('/configurations/email-template')}
-              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:bg-gray-100 transition-colors text-left group"
+              className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:bg-gray-100 transition-colors text-left group"
             >
-              <Settings className="w-5 h-5 text-gray-500 flex-shrink-0" />
+              <Settings className="w-6 h-6 text-gray-500 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('onboarding.finish.ref_config', 'Configurations')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500">
                   {t('onboarding.finish.ref_config_desc', 'Email template settings')}
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0" />
             </button>
           </div>
         </div>

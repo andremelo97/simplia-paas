@@ -59,6 +59,24 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
             )}
           </p>
         </div>
+
+        {/* Video placeholder */}
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-4">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
+            {t('onboarding.documents.video_placeholder', 'See how it works')}
+          </p>
+        </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/documents/quotes')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+        >
+          <FolderOpen className="w-4 h-4" />
+          {t('onboarding.documents.go_to', 'Go to Documents')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Right Column - Document Types */}
@@ -136,24 +154,6 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
             </div>
           </div>
         </div>
-
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-4">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.documents.video_placeholder', 'See how it works')}
-          </p>
-        </div>
-
-        {/* Navigate button */}
-        <button
-          onClick={() => onNavigate('/documents/quotes')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium mt-4"
-        >
-          <FolderOpen className="w-4 h-4" />
-          {t('onboarding.documents.go_to', 'Go to Documents')}
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
     </>
   )

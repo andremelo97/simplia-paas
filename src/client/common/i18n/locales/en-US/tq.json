@@ -1452,7 +1452,7 @@
       "tab_landing_pages_desc": "Shared document links",
       "tab_metrics": "Metrics",
       "tab_metrics_desc": "Summary counts and statistics",
-      "info_tip": "Everything in one place — click on any patient to see their complete history across all features.",
+      "info_tip": "Everything in one place — click the history icon on any patient row to see their complete timeline across all features.",
       "video_placeholder": "See how it works",
       "go_to": "Go to Patients"
     },

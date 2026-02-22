@@ -101,14 +101,6 @@ export const SessionsStep: React.FC<SessionsStepProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-4">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.sessions.video_placeholder', 'See how easy it is')}
-          </p>
-        </div>
-
         {/* Navigate button */}
         <button
           onClick={() => onNavigate('/new-session')}
@@ -194,6 +186,14 @@ export const SessionsStep: React.FC<SessionsStepProps> = ({ onNavigate }) => {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Video placeholder */}
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-4">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
+            {t('onboarding.sessions.video_placeholder', 'See how easy it is')}
+          </p>
         </div>
       </div>
     </>

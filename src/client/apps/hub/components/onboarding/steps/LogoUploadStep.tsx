@@ -162,15 +162,15 @@ export const LogoUploadStep: React.FC<LogoUploadStepProps> = ({
       {/* Left Column - Explanation */}
       <div className="flex flex-col">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <ImageIcon className="w-5 h-5 text-[#B725B7]" />
+          <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <ImageIcon className="w-6 h-6 text-[#B725B7]" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900">
             {t('onboarding.logo_step.title', 'Upload Your Logo')}
           </h2>
         </div>
 
-        <p className="text-gray-600 mb-6 leading-relaxed">
+        <p className="text-base text-gray-600 mb-6 leading-relaxed">
           {t(
             'onboarding.logo_step.description',
             'Your logo appears on public quotes, emails, and reports sent to clients. A clear, high-quality image ensures your brand looks professional.'
@@ -184,7 +184,7 @@ export const LogoUploadStep: React.FC<LogoUploadStepProps> = ({
           </p>
         </div>
 
-        <p className="text-xs text-gray-500">
+        <p className="text-sm text-gray-500">
           {t(
             'onboarding.logo_step.supported_formats',
             'Supported formats: PNG, JPEG, SVG. Max 5MB.'

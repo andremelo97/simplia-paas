@@ -16,15 +16,15 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
       {/* Left Column - Explanation */}
       <div className="flex flex-col">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <Palette className="w-5 h-5 text-[#B725B7]" />
+          <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <Palette className="w-6 h-6 text-[#B725B7]" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900">
             {t('onboarding.brand_colors.title', 'Brand Colors')}
           </h2>
         </div>
 
-        <p className="text-gray-600 mb-6">
+        <p className="text-base text-gray-600 mb-6 leading-relaxed">
           {t('onboarding.brand_colors.description', 'These colors are used in email templates, public quote pages, and landing pages. Choose colors that match your brand identity.')}
         </p>
 
@@ -34,7 +34,7 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
           </p>
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-auto">
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-auto">
           <div className="flex items-start gap-2">
             <Lightbulb className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-amber-800">
@@ -49,7 +49,7 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
         <div className="space-y-6">
           {/* Primary Color */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-base font-medium text-gray-700 mb-2">
               {t('onboarding.brand_colors.primary_color', 'Primary Color')}
             </label>
             <div className="flex gap-2">
@@ -71,7 +71,7 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
 
           {/* Secondary Color */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-base font-medium text-gray-700 mb-2">
               {t('onboarding.brand_colors.secondary_color', 'Secondary Color')}
             </label>
             <div className="flex gap-2">
@@ -93,7 +93,7 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
 
           {/* Tertiary Color */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-base font-medium text-gray-700 mb-2">
               {t('onboarding.brand_colors.tertiary_color', 'Tertiary Color')}
             </label>
             <div className="flex gap-2">
@@ -116,20 +116,20 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
 
         {/* Live Preview */}
         <div className="mt-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-base font-medium text-gray-700 mb-2">
             {t('onboarding.brand_colors.preview', 'Preview')}
           </label>
           <div className="flex gap-3">
             <div
-              className="w-12 h-12 rounded-lg border border-gray-200"
+              className="w-14 h-14 rounded-lg border border-gray-200"
               style={{ backgroundColor: branding.primaryColor || '#B725B7' }}
             />
             <div
-              className="w-12 h-12 rounded-lg border border-gray-200"
+              className="w-14 h-14 rounded-lg border border-gray-200"
               style={{ backgroundColor: branding.secondaryColor || '#E91E63' }}
             />
             <div
-              className="w-12 h-12 rounded-lg border border-gray-200"
+              className="w-14 h-14 rounded-lg border border-gray-200"
               style={{ backgroundColor: branding.tertiaryColor || '#5ED6CE' }}
             />
           </div>

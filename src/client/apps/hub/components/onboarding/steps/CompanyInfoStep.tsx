@@ -30,15 +30,15 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
       {/* Left Column - Explanation */}
       <div className="flex flex-col">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-5 h-5 text-[#B725B7]" />
+          <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-6 h-6 text-[#B725B7]" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-3xl font-bold text-gray-900">
             {t('onboarding.company_info.title', 'Company Information')}
           </h2>
         </div>
 
-        <p className="text-gray-600 mb-6">
+        <p className="text-base text-gray-600 mb-6 leading-relaxed">
           {t('onboarding.company_info.description', 'This information is displayed in email footers and on public quote pages sent to your clients.')}
         </p>
 
@@ -53,7 +53,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
       <div className="space-y-4">
         {/* Company Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-base font-medium text-gray-700 mb-1">
             {t('onboarding.company_info.company_name', 'Company Name')}
           </label>
           <Input
@@ -65,7 +65,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
 
         {/* Contact Email */}
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+          <label className="flex items-center gap-2 text-base font-medium text-gray-700 mb-1">
             <Mail className="h-4 w-4 text-gray-500" />
             {t('onboarding.company_info.email', 'Contact Email')}
           </label>
@@ -79,7 +79,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
 
         {/* Phone */}
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+          <label className="flex items-center gap-2 text-base font-medium text-gray-700 mb-1">
             <Phone className="h-4 w-4 text-gray-500" />
             {t('onboarding.company_info.phone', 'Phone')}
           </label>
@@ -92,7 +92,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
 
         {/* Address */}
         <div>
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
+          <label className="flex items-center gap-2 text-base font-medium text-gray-700 mb-1">
             <MapPin className="h-4 w-4 text-gray-500" />
             {t('onboarding.company_info.address', 'Address')}
           </label>
@@ -106,7 +106,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
 
         {/* Social Links */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-base font-medium text-gray-700 mb-1">
             {t('onboarding.company_info.social_links', 'Social Media')}
           </label>
           <p className="text-xs text-gray-500 mb-2">

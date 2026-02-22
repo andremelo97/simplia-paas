@@ -1,0 +1,206 @@
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+  Mail,
+  ShoppingBag,
+  CheckCircle2,
+  ArrowRight,
+  Image,
+} from 'lucide-react'
+import { BrandingData } from '../../../services/brandingService'
+
+interface FinalStepProps {
+  branding: BrandingData
+  onNavigate: (path: string) => void
+}
+
+export const FinalStep: React.FC<FinalStepProps> = ({
+  branding,
+  onNavigate,
+}) => {
+  const { t } = useTranslation('hub')
+
+  return (
+    <>
+      {/* Left Column - Next Steps */}
+      <div className="flex flex-col space-y-5">
+        {/* Email Configuration */}
+        <div className="border-l-4 border-[#E91E63] bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+              <Mail className="w-5 h-5 text-[#E91E63]" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">
+                {t('onboarding.final.email_title', 'Email Configuration')}
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {t(
+                  'onboarding.final.email_description',
+                  "You can configure your own SMTP server, or use LivoCare's free email service that is already configured and ready to use."
+                )}
+              </p>
+              <span className="inline-flex bg-pink-50 text-[#E91E63] text-xs font-mono px-2 py-1 rounded mt-2">
+                admin@livocare.ai
+              </span>
+              <div className="mt-2">
+                <button
+                  onClick={() => onNavigate('/configurations/communication')}
+                  className="text-sm text-[#E91E63] hover:underline flex items-center gap-1"
+                >
+                  {t('onboarding.final.email_button', 'Configure Email')}
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Template Marketplace */}
+        <div className="border-l-4 border-[#5ED6CE] bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#5ED6CE]/20 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag className="w-5 h-5 text-[#5ED6CE]" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">
+                {t('onboarding.final.marketplace_title', 'Template Marketplace')}
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {t(
+                  'onboarding.final.marketplace_description',
+                  'Browse curated templates by specialty and import them to your TQ with one click.'
+                )}
+              </p>
+              <div className="mt-2">
+                <button
+                  onClick={() => onNavigate('/marketplace')}
+                  className="text-sm text-[#5ED6CE] hover:underline flex items-center gap-1"
+                >
+                  {t('onboarding.final.marketplace_button', 'Browse Marketplace')}
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Ready */}
+        <div className="border-l-4 border-green-500 bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900">
+                {t('onboarding.final.ready_title', "You're All Set!")}
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {t(
+                  'onboarding.final.ready_description',
+                  'Your Hub is ready to use. Access these settings anytime from the Configurations menu in the sidebar.'
+                )}
+              </p>
+              <ul className="mt-3 space-y-2">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-600">
+                    {t(
+                      'onboarding.final.ready_sso',
+                      'Login to TQ is automatic — no extra credentials needed'
+                    )}
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-600">
+                    {t(
+                      'onboarding.final.ready_support',
+                      'Click the support icon in the top menu for help'
+                    )}
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Column - Branding Summary */}
+      <div className="flex flex-col">
+        <div className="bg-gray-50 rounded-xl p-6 space-y-5">
+          <h3 className="font-semibold text-gray-900">
+            {t('onboarding.final.summary_title', 'Your Branding Summary')}
+          </h3>
+
+          {/* Logo */}
+          <div>
+            <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+              {t('onboarding.final.summary_logo', 'Logo')}
+            </p>
+            {branding.logoUrl ? (
+              <div className="bg-white border border-gray-200 rounded-lg p-3 inline-block">
+                <img
+                  src={branding.logoUrl}
+                  alt="Logo"
+                  className="max-h-20 object-contain"
+                />
+              </div>
+            ) : (
+              <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-2 text-gray-400">
+                <Image className="w-5 h-5" />
+                <span className="text-sm">
+                  {t('onboarding.final.summary_no_logo', 'No logo uploaded')}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Colors */}
+          <div>
+            <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+              {t('onboarding.final.summary_colors', 'Colors')}
+            </p>
+            <div className="flex items-center gap-3">
+              <div
+                className="w-10 h-10 rounded-lg border border-gray-200 shadow-sm"
+                style={{ backgroundColor: branding.primaryColor || '#B725B7' }}
+              />
+              <div
+                className="w-10 h-10 rounded-lg border border-gray-200 shadow-sm"
+                style={{ backgroundColor: branding.secondaryColor || '#E91E63' }}
+              />
+              <div
+                className="w-10 h-10 rounded-lg border border-gray-200 shadow-sm"
+                style={{ backgroundColor: branding.tertiaryColor || '#5ED6CE' }}
+              />
+            </div>
+          </div>
+
+          {/* Company */}
+          <div>
+            <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+              {t('onboarding.final.summary_company', 'Company')}
+            </p>
+            {branding.companyName || branding.email || branding.phone ? (
+              <div>
+                {branding.companyName && (
+                  <p className="font-medium text-gray-900">{branding.companyName}</p>
+                )}
+                {(branding.email || branding.phone) && (
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {[branding.email, branding.phone].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400 italic">
+                {t('onboarding.final.summary_no_company', 'Not configured yet')}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}

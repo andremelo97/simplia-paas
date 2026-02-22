@@ -36,7 +36,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
         <p className="text-base text-gray-600 mb-6 leading-relaxed">
           {t(
             'onboarding.welcome.hub_description',
-            'Hub is your central management portal. From here you can launch your licensed applications, customize your brand, manage your team, and explore templates — all in one place.'
+            'Hub is your central management portal. From here you can launch your licensed applications, customize your brand, monitor your subscription, and explore templates — all in one place.'
           )}
         </p>
 
@@ -70,7 +70,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
               <p className="text-sm text-gray-600 mt-0.5">
                 {t(
                   'onboarding.welcome.feature_config_desc',
-                  'Customize your branding (logo, colors, contact info), configure email delivery, manage your media library, and control user access.'
+                  'Customize your branding (logo, colors, contact info), configure email delivery, manage your media library, and monitor your subscription and usage.'
                 )}
               </p>
             </div>
@@ -154,7 +154,7 @@ export const WelcomeStep: React.FC<WelcomeStepProps> = ({ tenantName }) => {
               <span className="text-base text-gray-700">
                 {t(
                   'onboarding.welcome.setup_media',
-                  'Upload background media for public pages'
+                  'Upload background media for landing pages'
                 )}
               </span>
             </li>

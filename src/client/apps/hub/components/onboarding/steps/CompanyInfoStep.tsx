@@ -30,8 +30,8 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
       {/* Left Column - Explanation */}
       <div className="flex flex-col">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-6 h-6 text-[#B725B7]" />
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
             {t('onboarding.company_info.title', 'Company Information')}
@@ -39,7 +39,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
         </div>
 
         <p className="text-base text-gray-600 mb-6 leading-relaxed">
-          {t('onboarding.company_info.description', 'This information is displayed in email footers and on public quote pages sent to your clients.')}
+          {t('onboarding.company_info.description', 'This information is displayed in email footers and on documents sent to your clients.')}
         </p>
 
         <div className="border-2 border-dashed border-gray-300 rounded-lg aspect-video flex items-center justify-center bg-gray-50">
@@ -51,6 +51,10 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
 
       {/* Right Column - Form */}
       <div className="space-y-4">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">
+          {t('onboarding.company_info.right_title', 'Fill in your details')}
+        </h3>
+
         {/* Company Name */}
         <div>
           <label className="block text-base font-medium text-gray-700 mb-1">

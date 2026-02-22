@@ -162,18 +162,18 @@ export const LogoUploadStep: React.FC<LogoUploadStepProps> = ({
       {/* Left Column - Explanation */}
       <div className="flex flex-col">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <ImageIcon className="w-6 h-6 text-[#B725B7]" />
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
+            <ImageIcon className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
-            {t('onboarding.logo_step.title', 'Upload Your Logo')}
+            {t('onboarding.logo_step.title', 'Your Logo')}
           </h2>
         </div>
 
         <p className="text-base text-gray-600 mb-6 leading-relaxed">
           {t(
             'onboarding.logo_step.description',
-            'Your logo appears on public quotes, emails, and reports sent to clients. A clear, high-quality image ensures your brand looks professional.'
+            'Your logo appears on documents, emails, and reports sent to clients. A clear, high-quality image ensures your brand looks professional.'
           )}
         </p>
 
@@ -194,6 +194,10 @@ export const LogoUploadStep: React.FC<LogoUploadStepProps> = ({
 
       {/* Right Column - Upload Area */}
       <div className="flex flex-col">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">
+          {t('onboarding.logo_step.right_title', 'Upload it here')}
+        </h3>
+
         {/* Hidden File Input */}
         <input
           ref={fileInputRef}

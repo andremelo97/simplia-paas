@@ -22,7 +22,7 @@ export const MediaLibraryStep: React.FC = () => {
         <p className="text-base text-gray-600 mb-6 leading-relaxed">
           {t(
             'onboarding.media.description',
-            'Upload images and videos to use as backgrounds on your public quote pages. These are used in the landing page editor.'
+            'Upload images and videos to use as backgrounds on your document landing pages. These are used in the landing page editor.'
           )}
         </p>
 
@@ -47,6 +47,9 @@ export const MediaLibraryStep: React.FC = () => {
 
       {/* Right Column - Media Library */}
       <div className="flex flex-col">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">
+          {t('onboarding.media.right_title', 'Upload your media')}
+        </h3>
         <MediaLibrary />
       </div>
     </>

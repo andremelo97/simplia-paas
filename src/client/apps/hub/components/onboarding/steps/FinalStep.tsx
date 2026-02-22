@@ -6,8 +6,14 @@ import {
   CheckCircle2,
   ArrowRight,
   Image,
+  Bot,
+  Headphones,
+  Phone,
+  MapPin,
+  Globe,
 } from 'lucide-react'
-import { BrandingData } from '../../../services/brandingService'
+import { BrandingData, SocialLinks } from '../../../services/brandingService'
+import { SOCIAL_NETWORKS } from '../icons'
 
 interface FinalStepProps {
   branding: BrandingData
@@ -19,6 +25,10 @@ export const FinalStep: React.FC<FinalStepProps> = ({
   onNavigate,
 }) => {
   const { t } = useTranslation('hub')
+
+  const activeSocials = SOCIAL_NETWORKS.filter(
+    ({ key }) => branding.socialLinks?.[key as keyof SocialLinks]
+  )
 
   return (
     <>
@@ -40,7 +50,10 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                   "You can configure your own SMTP server, or use LivoCare's free email service that is already configured and ready to use."
                 )}
               </p>
-              <span className="inline-flex bg-pink-50 text-[#E91E63] text-xs font-mono px-2 py-1 rounded mt-2">
+              <p className="text-sm text-gray-500 mt-2">
+                {t('onboarding.final.email_patient_from', 'Your patient will receive e-mails from:')}
+              </p>
+              <span className="inline-flex bg-pink-50 text-[#E91E63] text-xs font-mono px-2 py-1 rounded mt-1">
                 admin@livocare.ai
               </span>
               <div className="mt-2">
@@ -112,11 +125,20 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                   </span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <Headphones className="w-4 h-4 text-green-500 flex-shrink-0" />
                   <span className="text-sm text-gray-600">
                     {t(
                       'onboarding.final.ready_support',
-                      'Click the support icon in the top menu for help'
+                      'Click the support icon in the top menu for human help'
+                    )}
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-[#5ED6CE] flex-shrink-0" />
+                  <span className="text-sm text-gray-600">
+                    {t(
+                      'onboarding.final.ready_ai',
+                      'AI 24/7 support is available inside TQ — test it out!'
                     )}
                   </span>
                 </li>
@@ -177,19 +199,32 @@ export const FinalStep: React.FC<FinalStepProps> = ({
             </div>
           </div>
 
-          {/* Company */}
+          {/* Company Info */}
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
               {t('onboarding.final.summary_company', 'Company')}
             </p>
-            {branding.companyName || branding.email || branding.phone ? (
-              <div>
+            {branding.companyName || branding.email || branding.phone || branding.address ? (
+              <div className="space-y-1.5">
                 {branding.companyName && (
                   <p className="font-medium text-gray-900">{branding.companyName}</p>
                 )}
-                {(branding.email || branding.phone) && (
-                  <p className="text-sm text-gray-500 mt-0.5">
-                    {[branding.email, branding.phone].filter(Boolean).join(' · ')}
+                {branding.email && (
+                  <p className="flex items-center gap-1.5 text-sm text-gray-600">
+                    <Mail className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    {branding.email}
+                  </p>
+                )}
+                {branding.phone && (
+                  <p className="flex items-center gap-1.5 text-sm text-gray-600">
+                    <Phone className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                    {branding.phone}
+                  </p>
+                )}
+                {branding.address && (
+                  <p className="flex items-start gap-1.5 text-sm text-gray-600">
+                    <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                    {branding.address}
                   </p>
                 )}
               </div>
@@ -199,6 +234,33 @@ export const FinalStep: React.FC<FinalStepProps> = ({
               </p>
             )}
           </div>
+
+          {/* Social Links */}
+          {activeSocials.length > 0 && (
+            <div>
+              <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+                {t('onboarding.final.summary_social', 'Social Media')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {activeSocials.map(({ key, icon: Icon, label }) => {
+                  const url = branding.socialLinks?.[key as keyof SocialLinks]
+                  return (
+                    <a
+                      key={key}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:border-[#B725B7] hover:text-[#B725B7] transition-colors"
+                      title={label}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{label}</span>
+                    </a>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

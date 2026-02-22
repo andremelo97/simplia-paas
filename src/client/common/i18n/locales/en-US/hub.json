@@ -437,11 +437,11 @@
     },
     "welcome": {
       "title": "Welcome to Hub!",
-      "hub_description": "Hub is your central management portal. From here you can launch your licensed applications, customize your brand, manage your team, and explore templates — all in one place.",
+      "hub_description": "Hub is your central management portal. From here you can launch your licensed applications, customize your brand, monitor your subscription, and explore templates — all in one place.",
       "feature_apps_title": "App Launcher",
       "feature_apps_desc": "Access all your licensed applications from the home screen. Single sign-on means no extra logins — just click and go.",
       "feature_config_title": "Configurations",
-      "feature_config_desc": "Customize your branding (logo, colors, contact info), configure email delivery, manage your media library, and control user access.",
+      "feature_config_desc": "Customize your branding (logo, colors, contact info), configure email delivery, manage your media library, and monitor your subscription and usage.",
       "feature_marketplace_title": "Marketplace",
       "feature_marketplace_desc": "Browse curated templates by specialty and import them to your TQ with one click. Ready-to-use documents and landing pages.",
       "ready_title": "Your system is 100% functional.",
@@ -451,12 +451,13 @@
       "setup_logo": "Upload your company logo",
       "setup_colors": "Set your brand colors",
       "setup_contact": "Add company contact information",
-      "setup_media": "Upload background media for public pages",
+      "setup_media": "Upload background media for landing pages",
       "video_placeholder": "Tutorial video coming soon"
     },
     "logo_step": {
-      "title": "Upload Your Logo",
-      "description": "Your logo appears on public quotes, emails, and reports sent to clients. A clear, high-quality image ensures your brand looks professional.",
+      "right_title": "Upload it here",
+      "title": "Your Logo",
+      "description": "Your logo appears on documents, emails, and reports sent to clients. A clear, high-quality image ensures your brand looks professional.",
       "video_placeholder": "Tutorial video coming soon",
       "supported_formats": "Supported formats: PNG, JPEG, SVG. Max 5MB.",
       "drag_drop": "Drag and drop an image file, or click to browse",
@@ -476,8 +477,9 @@
       "preview_alt": "Preview"
     },
     "brand_colors": {
+      "right_title": "Pick your colors",
       "title": "Brand Colors",
-      "description": "These colors are used in email templates, public quote pages, and landing pages. Choose colors that match your brand identity.",
+      "description": "These colors are used in email templates, documents, and landing pages. Choose colors that match your brand identity.",
       "video_placeholder": "Tutorial video coming soon",
       "tip": "Default colors are LivoCare's brand colors. You can reset them anytime from Settings.",
       "primary_color": "Primary Color",
@@ -486,8 +488,9 @@
       "preview": "Preview"
     },
     "company_info": {
+      "right_title": "Fill in your details",
       "title": "Company Information",
-      "description": "This information is displayed in email footers and on public quote pages sent to your clients.",
+      "description": "This information is displayed in email footers and on documents sent to your clients.",
       "video_placeholder": "Tutorial video coming soon",
       "company_name": "Company Name",
       "company_name_placeholder": "Your company name",
@@ -500,8 +503,9 @@
       "social_links_helper": "Click an icon to add a link"
     },
     "media": {
+      "right_title": "Upload your media",
       "title": "Media Library",
-      "description": "Upload images and videos to use as backgrounds on your public quote pages. These are used in the landing page editor.",
+      "description": "Upload images and videos to use as backgrounds on your document landing pages. These are used in the landing page editor.",
       "video_placeholder": "Tutorial video coming soon",
       "limit_images": "Images: PNG, JPEG, SVG (max 5MB)",
       "limit_videos": "Videos: MP4 (max 20MB)",
@@ -517,13 +521,16 @@
       "ready_title": "You're All Set!",
       "ready_description": "Your Hub is ready to use. Access these settings anytime from the Configurations menu in the sidebar.",
       "ready_sso": "Login to TQ is automatic — no extra credentials needed",
-      "ready_support": "Click the support icon in the top menu for help",
+      "email_patient_from": "Your patient will receive e-mails from:",
+      "ready_support": "Click the support icon in the top menu for human help",
+      "ready_ai": "AI 24/7 support is available inside TQ — test it out!",
       "summary_title": "Your Branding Summary",
       "summary_logo": "Logo",
       "summary_no_logo": "No logo uploaded",
       "summary_colors": "Colors",
       "summary_company": "Company",
-      "summary_no_company": "Not configured yet"
+      "summary_no_company": "Not configured yet",
+      "summary_social": "Social Media"
     },
     "resume": {
       "title": "Continue Setup?",

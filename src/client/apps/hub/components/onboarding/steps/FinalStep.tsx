@@ -8,6 +8,7 @@ import {
   Image,
   Bot,
   Headphones,
+  KeyRound,
   Phone,
   MapPin,
   Globe,
@@ -130,6 +131,15 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                     {t(
                       'onboarding.final.ready_support',
                       'Click the support icon in the top menu for human help'
+                    )}
+                  </span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-600">
+                    {t(
+                      'onboarding.final.ready_password',
+                      'Change your temporary password — click the key icon in the sidebar'
                     )}
                   </span>
                 </li>

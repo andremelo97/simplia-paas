@@ -523,6 +523,7 @@
       "ready_sso": "Login to TQ is automatic — no extra credentials needed",
       "email_patient_from": "Your patient will receive e-mails from:",
       "ready_support": "Click the support icon in the top menu for human help",
+      "ready_password": "Change your temporary password — click the key icon in the sidebar",
       "ready_ai": "AI 24/7 support is available inside TQ — test it out!",
       "summary_title": "Your Branding Summary",
       "summary_logo": "Logo",

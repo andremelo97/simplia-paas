@@ -26,7 +26,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [isHelpOpen, setIsHelpOpen] = useState(false)
-  const [lastSavedData, setLastSavedData] = useState<string>('')
+  const lastSavedDataRef = useRef<string>('')
   const saveStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const handleSaveRef = useRef<() => void>(() => {})
   const initialLoadRef = useRef(true)
@@ -88,7 +88,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
         : { content: [], root: {} }
 
       setData(initialData)
-      setLastSavedData(JSON.stringify(initialData))
+      lastSavedDataRef.current = JSON.stringify(initialData)
       setHasUnsavedChanges(false)
     } catch (error) {
       // Failed to load template
@@ -111,7 +111,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
         content: data,
       })
       setTemplate(updatedTemplate)
-      setLastSavedData(JSON.stringify(data))
+      lastSavedDataRef.current = JSON.stringify(data)
       setHasUnsavedChanges(false)
       setSaveStatus('saved')
 
@@ -170,11 +170,11 @@ export const DesignLandingPageTemplate: React.FC = () => {
     // Skip first onChange from Puck (editor initialization) to avoid false positive
     if (initialLoadRef.current) {
       initialLoadRef.current = false
-      setLastSavedData(JSON.stringify(updatedData))
+      lastSavedDataRef.current = JSON.stringify(updatedData)
       return
     }
     const newDataStr = JSON.stringify(updatedData)
-    setHasUnsavedChanges(newDataStr !== lastSavedData)
+    setHasUnsavedChanges(newDataStr !== lastSavedDataRef.current)
   }
 
   const hasContent = data?.content && Array.isArray(data.content) && data.content.length > 0

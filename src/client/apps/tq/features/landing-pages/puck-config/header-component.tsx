@@ -19,7 +19,19 @@ const ensureProtocol = (url: string): string => {
 export const createHeaderFooterComponents = (branding: BrandingData) => ({
   Header: {
     fields: {
-      // === BUTTON ACTION SETTINGS (TOP) ===
+      // === BUTTON ===
+      showButton: {
+        type: 'radio' as const,
+        label: 'Show Button',
+        options: [
+          { label: 'Yes', value: true },
+          { label: 'No', value: false },
+        ],
+      },
+      buttonLabel: {
+        type: 'text' as const,
+        label: 'Button Label',
+      },
       buttonAction: {
         type: 'select' as const,
         label: 'Button Action',
@@ -52,6 +64,22 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           { label: 'Full Screen', value: '100vh' },
         ],
       },
+      buttonVariant: {
+        type: 'radio' as const,
+        label: 'Button Style',
+        options: [
+          { label: 'Primary', value: 'primary' },
+          { label: 'Secondary', value: 'secondary' },
+          { label: 'Tertiary', value: 'tertiary' },
+          { label: 'Outline', value: 'outline' },
+        ],
+      },
+      buttonFontFamily: {
+        type: 'select' as const,
+        label: 'Button Font',
+        options: fontOptions,
+      },
+      buttonTextColor: createColorField('Button Text Color', textColorOptions, branding),
       // === HEADER SETTINGS ===
       showLogo: {
         type: 'radio' as const,
@@ -95,35 +123,6 @@ export const createHeaderFooterComponents = (branding: BrandingData) => ({
           { label: 'Large (96px)', value: '96' },
         ],
       },
-      // === BUTTON APPEARANCE ===
-      showButton: {
-        type: 'radio' as const,
-        label: 'Show Button',
-        options: [
-          { label: 'Yes', value: true },
-          { label: 'No', value: false },
-        ],
-      },
-      buttonLabel: {
-        type: 'text' as const,
-        label: 'Button Label',
-      },
-      buttonFontFamily: {
-        type: 'select' as const,
-        label: 'Button Font',
-        options: fontOptions,
-      },
-      buttonVariant: {
-        type: 'radio' as const,
-        label: 'Button Style',
-        options: [
-          { label: 'Primary', value: 'primary' },
-          { label: 'Secondary', value: 'secondary' },
-          { label: 'Tertiary', value: 'tertiary' },
-          { label: 'Outline', value: 'outline' },
-        ],
-      },
-      buttonTextColor: createColorField('Button Text Color', textColorOptions, branding),
     },
     defaultProps: {
       showLogo: true,

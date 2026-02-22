@@ -153,6 +153,7 @@ export const createDocumentComponents = (branding: BrandingData) => ({
     fields: {
       showPrice: {
         type: 'radio' as const,
+        label: 'Show Price Column',
         options: [
           { label: 'Yes', value: true },
           { label: 'No', value: false }
@@ -160,6 +161,7 @@ export const createDocumentComponents = (branding: BrandingData) => ({
       },
       showDiscount: {
         type: 'radio' as const,
+        label: 'Show Discount Column',
         options: [
           { label: 'Yes', value: true },
           { label: 'No', value: false }

@@ -112,6 +112,13 @@ export const createMediaComponents = (branding: BrandingData) => ({
         ],
       },
     },
+    resolveFields: (data: any, { fields }: any) => {
+      const resolvedFields = { ...fields }
+      if (!data.props.linkUrl) {
+        delete resolvedFields.openInNewTab
+      }
+      return resolvedFields
+    },
     defaultProps: {
       url: '',
       alt: 'Image',

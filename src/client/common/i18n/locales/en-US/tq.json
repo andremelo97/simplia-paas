@@ -1545,7 +1545,7 @@
       "connect_session_patient": "Every session is linked to a patient, building their interaction history over time.",
       "connect_template_document": "AI combines the template structure with transcription data to generate professional documents.",
       "connect_document_landing": "Create a public landing page from any quote or prevention plan to share with patients.",
-      "connect_landing_email": "Send the landing page link to your patient via the built-in email system or WhatsApp with customizable templates."
+      "connect_landing_email": "Send the landing page link to your patient via email with customizable templates or WhatsApp with a fixed message."
     },
     "finish": {
       "email_title": "Email Template",

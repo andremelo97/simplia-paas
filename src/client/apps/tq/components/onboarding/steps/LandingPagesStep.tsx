@@ -154,7 +154,7 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
         <div className="aspect-video rounded-lg overflow-hidden bg-black mt-6">
           <iframe
             className="w-full h-full"
-            src={`https://www.youtube.com/embed/${i18n.language === 'pt-BR' ? 'q1hwfsd6OzY' : 'lCxoGorF-8w'}?rel=0`}
+            src={`https://www.youtube.com/embed/${i18n.language === 'pt-BR' ? 'QWiZqCMSwCQ' : 'I5RjKBIa9WI'}?rel=0`}
             title={t('onboarding.landing_pages.video_placeholder', 'See how it works')}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

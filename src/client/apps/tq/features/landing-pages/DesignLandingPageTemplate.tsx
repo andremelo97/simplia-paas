@@ -263,7 +263,7 @@ export const DesignLandingPageTemplate: React.FC = () => {
             <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 className="absolute inset-0 w-full h-full rounded-lg"
-                src={`https://www.youtube.com/embed/${i18n.language === 'pt-BR' ? 'q1hwfsd6OzY' : 'lCxoGorF-8w'}?autoplay=1&rel=0`}
+                src={`https://www.youtube.com/embed/${i18n.language === 'pt-BR' ? 'QWiZqCMSwCQ' : 'I5RjKBIa9WI'}?autoplay=1&rel=0`}
                 title={t('landing_pages.help_video_title', 'Landing Page Editor Tutorial')}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

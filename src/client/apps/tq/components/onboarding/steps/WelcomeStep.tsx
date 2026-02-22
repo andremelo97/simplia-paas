@@ -36,6 +36,10 @@ export const WelcomeStep: React.FC = () => {
           )}
         </p>
 
+        <div className="flex justify-center my-6">
+          <img src="/app-icon.png" alt="TQ" className="w-24 h-24 rounded-full shadow-lg" />
+        </div>
+
         <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-auto">
           <div className="flex items-start gap-3">
             <Rocket className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />

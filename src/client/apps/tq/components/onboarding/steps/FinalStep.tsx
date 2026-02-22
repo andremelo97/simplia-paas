@@ -9,16 +9,20 @@ import {
   Eye,
   CheckCircle2,
   Headphones,
-  KeyRound,
   Bot,
   Mic,
   FolderOpen,
   FileText,
   Layout,
   Settings,
+  ArrowRight,
 } from 'lucide-react'
 
-export const FinalStep: React.FC = () => {
+interface FinalStepProps {
+  onNavigate: (path: string) => void
+}
+
+export const FinalStep: React.FC<FinalStepProps> = ({ onNavigate }) => {
   const { t } = useTranslation('tq')
 
   return (
@@ -148,25 +152,7 @@ export const FinalStep: React.FC = () => {
                   <span className="text-sm text-gray-600">
                     {t(
                       'onboarding.finish.tip_support',
-                      'Click the support icon in the top menu for human help'
-                    )}
-                  </span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <KeyRound className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                  <span className="text-sm text-gray-600">
-                    {t(
-                      'onboarding.finish.tip_password',
-                      'Change your temporary password — click the key icon in the sidebar'
-                    )}
-                  </span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Bot className="w-4 h-4 text-[#5ED6CE] flex-shrink-0" />
-                  <span className="text-sm text-gray-600">
-                    {t(
-                      'onboarding.finish.tip_ai',
-                      'AI 24/7 support is available inside TQ — test it out!'
+                      'Click the support icon for human help and AI 24/7 support — test it out!'
                     )}
                   </span>
                 </li>
@@ -176,23 +162,23 @@ export const FinalStep: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Column - Quick Reference */}
+      {/* Right Column - Quick Actions */}
       <div className="flex flex-col">
         <div className="bg-gray-50 rounded-xl p-6">
-          <h3 className="font-bold text-lg text-gray-900 mb-4">
-            {t('onboarding.finish.reference_title', 'Quick Reference')}
+          <h3 className="font-bold text-lg text-gray-900 mb-2">
+            {t('onboarding.finish.actions_title', 'Get Started')}
           </h3>
           <p className="text-sm text-gray-600 mb-4">
-            {t(
-              'onboarding.finish.reference_desc',
-              'Where to find everything in the sidebar:'
-            )}
+            {t('onboarding.finish.actions_desc', 'Jump to any section to start exploring:')}
           </p>
 
-          <div className="space-y-3">
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3">
+          <div className="space-y-2">
+            <button
+              onClick={() => onNavigate('/new-session')}
+              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-purple-50 transition-colors text-left group"
+            >
               <Mic className="w-5 h-5 text-[#B725B7] flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {t('onboarding.finish.ref_new_session', 'New Session')}
                 </p>
@@ -200,23 +186,15 @@ export const FinalStep: React.FC = () => {
                   {t('onboarding.finish.ref_new_session_desc', 'Start transcribing')}
                 </p>
               </div>
-            </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#B725B7] transition-colors flex-shrink-0" />
+            </button>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3">
-              <Mic className="w-5 h-5 text-[#B725B7] flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  {t('onboarding.finish.ref_sessions', 'Sessions')}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {t('onboarding.finish.ref_sessions_desc', 'View past recordings')}
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('/patients')}
+              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#5ED6CE] hover:bg-teal-50 transition-colors text-left group"
+            >
               <Users className="w-5 h-5 text-[#5ED6CE] flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {t('onboarding.finish.ref_patients', 'Patients')}
                 </p>
@@ -224,11 +202,15 @@ export const FinalStep: React.FC = () => {
                   {t('onboarding.finish.ref_patients_desc', 'Manage patient records')}
                 </p>
               </div>
-            </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#5ED6CE] transition-colors flex-shrink-0" />
+            </button>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('/documents/quotes')}
+              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-left group"
+            >
               <FolderOpen className="w-5 h-5 text-blue-600 flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {t('onboarding.finish.ref_documents', 'Documents')}
                 </p>
@@ -236,11 +218,15 @@ export const FinalStep: React.FC = () => {
                   {t('onboarding.finish.ref_documents_desc', 'Quotes, notes, prevention, items')}
                 </p>
               </div>
-            </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-blue-500 transition-colors flex-shrink-0" />
+            </button>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('/templates')}
+              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#E91E63] hover:bg-pink-50 transition-colors text-left group"
+            >
               <FileText className="w-5 h-5 text-[#E91E63] flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {t('onboarding.finish.ref_templates', 'Templates')}
                 </p>
@@ -248,11 +234,15 @@ export const FinalStep: React.FC = () => {
                   {t('onboarding.finish.ref_templates_desc', 'Manage document templates')}
                 </p>
               </div>
-            </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#E91E63] transition-colors flex-shrink-0" />
+            </button>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('/landing-pages/templates')}
+              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-purple-50 transition-colors text-left group"
+            >
               <Layout className="w-5 h-5 text-[#B725B7] flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {t('onboarding.finish.ref_landing', 'Landing Pages')}
                 </p>
@@ -260,11 +250,15 @@ export const FinalStep: React.FC = () => {
                   {t('onboarding.finish.ref_landing_desc', 'Public sharing pages')}
                 </p>
               </div>
-            </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-[#B725B7] transition-colors flex-shrink-0" />
+            </button>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3">
+            <button
+              onClick={() => onNavigate('/configurations/email-template')}
+              className="w-full flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:bg-gray-100 transition-colors text-left group"
+            >
               <Settings className="w-5 h-5 text-gray-500 flex-shrink-0" />
-              <div>
+              <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">
                   {t('onboarding.finish.ref_config', 'Configurations')}
                 </p>
@@ -272,7 +266,8 @@ export const FinalStep: React.FC = () => {
                   {t('onboarding.finish.ref_config_desc', 'Email template settings')}
                 </p>
               </div>
-            </div>
+              <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0" />
+            </button>
           </div>
         </div>
       </div>

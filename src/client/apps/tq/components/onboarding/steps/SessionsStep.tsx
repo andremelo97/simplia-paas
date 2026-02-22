@@ -1,13 +1,17 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Mic, Upload, Info, Zap } from 'lucide-react'
+import { Mic, Upload, Info, Zap, Play, Monitor, Tablet, Smartphone, ArrowRight } from 'lucide-react'
 
-export const SessionsStep: React.FC = () => {
+interface SessionsStepProps {
+  onNavigate: (path: string) => void
+}
+
+export const SessionsStep: React.FC<SessionsStepProps> = ({ onNavigate }) => {
   const { t } = useTranslation('tq')
 
   return (
     <>
-      {/* Left Column - Sessions overview */}
+      {/* Left Column */}
       <div className="flex flex-col">
         <div className="flex items-center gap-4 mb-5">
           <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
@@ -41,9 +45,24 @@ export const SessionsStep: React.FC = () => {
                 <p className="text-sm text-gray-600">
                   {t(
                     'onboarding.sessions.way_record_desc',
-                    'Use your microphone to record in real-time during the consultation.'
+                    'Use your microphone from any device to record in real-time during the consultation.'
                   )}
                 </p>
+                {/* Device icons */}
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <Monitor className="w-4 h-4" />
+                    <span>{t('onboarding.sessions.device_desktop', 'Desktop')}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <Tablet className="w-4 h-4" />
+                    <span>{t('onboarding.sessions.device_tablet', 'Tablet / iPad')}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <Smartphone className="w-4 h-4" />
+                    <span>{t('onboarding.sessions.device_phone', 'Phone')}</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -65,15 +84,12 @@ export const SessionsStep: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-auto">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
           <div className="flex items-start gap-3">
             <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-semibold text-blue-800">
-                {t(
-                  'onboarding.sessions.quota_title',
-                  'Transcription Quota'
-                )}
+                {t('onboarding.sessions.quota_title', 'Transcription Quota')}
               </p>
               <p className="text-sm text-blue-700 mt-0.5">
                 {t(
@@ -84,6 +100,24 @@ export const SessionsStep: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Video placeholder */}
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-4">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
+            {t('onboarding.sessions.video_placeholder', 'See how easy it is')}
+          </p>
+        </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/new-session')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#B725B7] text-[#B725B7] rounded-lg hover:bg-purple-50 transition-colors text-sm font-medium"
+        >
+          <Mic className="w-4 h-4" />
+          {t('onboarding.sessions.try_now', 'Try Transcription Now')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Right Column - How it works */}
@@ -99,10 +133,7 @@ export const SessionsStep: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900">
-                {t(
-                  'onboarding.sessions.step1_title',
-                  'Start Recording'
-                )}
+                {t('onboarding.sessions.step1_title', 'Start Recording')}
               </p>
               <p className="text-sm text-gray-600">
                 {t(
@@ -119,10 +150,7 @@ export const SessionsStep: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900">
-                {t(
-                  'onboarding.sessions.step2_title',
-                  'Automatic Transcription'
-                )}
+                {t('onboarding.sessions.step2_title', 'Automatic Transcription')}
               </p>
               <p className="text-sm text-gray-600">
                 {t(
@@ -139,10 +167,7 @@ export const SessionsStep: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900">
-                {t(
-                  'onboarding.sessions.step3_title',
-                  'Create Session'
-                )}
+                {t('onboarding.sessions.step3_title', 'Create Session')}
               </p>
               <p className="text-sm text-gray-600">
                 {t(

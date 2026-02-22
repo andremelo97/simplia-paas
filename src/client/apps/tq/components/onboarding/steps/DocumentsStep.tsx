@@ -1,8 +1,12 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { FolderOpen, Mic, FileText, Receipt, ClipboardList, ShieldCheck, Package } from 'lucide-react'
+import { FolderOpen, Mic, FileText, Receipt, ClipboardList, ShieldCheck, Package, Play, ArrowRight } from 'lucide-react'
 
-export const DocumentsStep: React.FC = () => {
+interface DocumentsStepProps {
+  onNavigate: (path: string) => void
+}
+
+export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
   const { t } = useTranslation('tq')
 
   return (
@@ -74,23 +78,9 @@ export const DocumentsStep: React.FC = () => {
                 <p className="text-sm text-gray-600">
                   {t(
                     'onboarding.documents.type_quote_desc',
-                    'Treatment proposals with pricing. Add line items, set quantities and prices. Track status through the workflow:'
+                    'Treatment proposals with pricing. Add line items, set quantities and prices.'
                   )}
                 </p>
-                <div className="flex gap-1.5 mt-2">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
-                    {t('onboarding.documents.status_draft', 'Draft')}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                    {t('onboarding.documents.status_sent', 'Sent')}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                    {t('onboarding.documents.status_approved', 'Approved')}
-                  </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
-                    {t('onboarding.documents.status_paid', 'Paid')}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
@@ -146,6 +136,24 @@ export const DocumentsStep: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Video placeholder */}
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-4">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
+            {t('onboarding.documents.video_placeholder', 'See how it works')}
+          </p>
+        </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/documents/quotes')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium mt-4"
+        >
+          <FolderOpen className="w-4 h-4" />
+          {t('onboarding.documents.go_to', 'Go to Documents')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
     </>
   )

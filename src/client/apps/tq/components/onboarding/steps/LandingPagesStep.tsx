@@ -1,8 +1,12 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Layout, Link2, Palette, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Layout, Link2, Palette, CheckCircle2, ArrowRight, Play, Headphones } from 'lucide-react'
 
-export const LandingPagesStep: React.FC = () => {
+interface LandingPagesStepProps {
+  onNavigate: (path: string) => void
+}
+
+export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }) => {
   const { t } = useTranslation('tq')
 
   return (
@@ -51,13 +55,16 @@ export const LandingPagesStep: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-4">
-          <p className="text-sm text-amber-800">
-            {t(
-              'onboarding.landing_pages.advanced_tip',
-              'This is an advanced feature. Default templates are provided — customize them when you\'re ready.'
-            )}
-          </p>
+        <div className="bg-[#5ED6CE]/10 border border-[#5ED6CE]/30 rounded-lg p-3 mt-4">
+          <div className="flex items-start gap-2">
+            <Headphones className="w-4 h-4 text-[#5ED6CE] flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-600">
+              {t(
+                'onboarding.landing_pages.support_tip',
+                'Need help? Our support team can help you create or customize your landing page templates.'
+              )}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -100,7 +107,7 @@ export const LandingPagesStep: React.FC = () => {
             <p className="text-sm text-gray-700">
               {t(
                 'onboarding.landing_pages.feature_email',
-                'Shareable links sent via email'
+                'Shareable links sent via email and WhatsApp'
               )}
             </p>
           </div>
@@ -142,6 +149,24 @@ export const LandingPagesStep: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {/* Video placeholder */}
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-6">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
+            {t('onboarding.landing_pages.video_placeholder', 'See how it works')}
+          </p>
+        </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/landing-pages/templates')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#B725B7] text-[#B725B7] rounded-lg hover:bg-purple-50 transition-colors text-sm font-medium mt-4"
+        >
+          <Layout className="w-4 h-4" />
+          {t('onboarding.landing_pages.go_to', 'Go to Landing Pages')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
     </>
   )

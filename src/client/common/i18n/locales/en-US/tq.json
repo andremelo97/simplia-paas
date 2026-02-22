@@ -1409,7 +1409,10 @@
       "description": "Record your consultations directly in the browser or upload pre-recorded audio files. TQ automatically converts speech to text using advanced AI, so you can focus on your patient.",
       "ways_title": "Two ways to start:",
       "way_record_title": "Record live",
-      "way_record_desc": "Use your microphone to record in real-time during the consultation.",
+      "way_record_desc": "Use your microphone from any device to record in real-time during the consultation.",
+      "device_desktop": "Desktop",
+      "device_tablet": "Tablet / iPad",
+      "device_phone": "Phone",
       "way_upload_title": "Upload audio",
       "way_upload_desc": "Upload an existing MP3, WAV, or M4A file for transcription.",
       "quota_title": "Transcription Quota",
@@ -1422,7 +1425,9 @@
       "step3_title": "Create Session",
       "step3_desc": "Link the transcription to a patient to create a session. From here, you can generate documents using templates.",
       "autosave_title": "Auto-save",
-      "autosave_desc": "Your recording draft is automatically saved to your browser. If you accidentally close the tab, you can resume where you left off."
+      "autosave_desc": "Your recording draft is automatically saved to your browser. If you accidentally close the tab, you can resume where you left off.",
+      "video_placeholder": "See how easy it is",
+      "try_now": "Try Transcription Now"
     },
     "patients": {
       "title": "Patients",
@@ -1447,7 +1452,9 @@
       "tab_landing_pages_desc": "Shared document links",
       "tab_metrics": "Metrics",
       "tab_metrics_desc": "Summary counts and statistics",
-      "info_tip": "Everything in one place — click on any patient to see their complete history across all features."
+      "info_tip": "Everything in one place — click on any patient to see their complete history across all features.",
+      "video_placeholder": "See how it works",
+      "go_to": "Go to Patients"
     },
     "templates": {
       "title": "Templates",
@@ -1467,7 +1474,9 @@
       "syntax_variable_example": "Example: $patient_name$, $date$",
       "syntax_instruction": "Guidance for AI (removed from output)",
       "syntax_instruction_example": "Example: (summarize in 3 bullet points)",
-      "syntax_guide_hint": "A complete syntax guide with more examples is available on the template create/edit page."
+      "syntax_guide_hint": "A complete syntax guide with more examples is available on the template create/edit page.",
+      "video_placeholder": "See how easy it is",
+      "go_to": "Go to Templates"
     },
     "documents": {
       "title": "Documents",
@@ -1478,17 +1487,15 @@
       "flow_explanation": "AI analyzes your transcription and fills in the template to create a professional document in seconds.",
       "types_title": "Document Types",
       "type_quote": "Quotes",
-      "type_quote_desc": "Treatment proposals with pricing. Add line items, set quantities and prices. Track status through the workflow:",
-      "status_draft": "Draft",
-      "status_sent": "Sent",
-      "status_approved": "Approved",
-      "status_paid": "Paid",
+      "type_quote_desc": "Treatment proposals with pricing. Add line items, set quantities and prices.",
       "type_clinical_note": "Clinical Notes",
       "type_clinical_note_desc": "Detailed consultation documentation for medical records. Supports rich text formatting, can be printed or exported as PDF.",
       "type_prevention": "Prevention Plans",
       "type_prevention_desc": "Preventive care plans with personalized recommendations. Share with patients via landing pages for easy access.",
       "type_items": "Items Catalog",
-      "type_items_desc": "Reusable catalog of line items (treatments, procedures, products) with preset prices. Add items to any quote with one click."
+      "type_items_desc": "Reusable catalog of line items (treatments, procedures, products) with preset prices. Add items to any quote with one click.",
+      "video_placeholder": "See how it works",
+      "go_to": "Go to Documents"
     },
     "landing_pages": {
       "title": "Landing Pages",
@@ -1497,18 +1504,20 @@
       "links_desc": "Generate unique public URLs for each document. Manage active links, set password protection, and configure expiration dates.",
       "templates_title": "Page Templates",
       "templates_desc": "Design the visual layout of your landing pages using a drag-and-drop builder. Add headers, footers, tables, buttons, and more.",
-      "advanced_tip": "This is an advanced feature. Default templates are provided — customize them when you're ready.",
+      "support_tip": "Need help? Our support team can help you create or customize your landing page templates.",
       "features_title": "Features",
       "feature_builder": "Drag-and-drop visual page builder (Puck)",
       "feature_branding": "Custom branding (logo, colors from Hub)",
       "feature_password": "Password protection for sensitive documents",
-      "feature_email": "Shareable links sent via email",
+      "feature_email": "Shareable links sent via email and WhatsApp",
       "feature_responsive": "Mobile-responsive design",
       "feature_print": "Print and PDF export for patients",
       "lifecycle_title": "How it works:",
       "lifecycle_create": "Create Link",
       "lifecycle_share": "Share via Email",
-      "lifecycle_view": "Patient Views"
+      "lifecycle_view": "Patient Views",
+      "video_placeholder": "See how it works",
+      "go_to": "Go to Landing Pages"
     },
     "workflow": {
       "title": "Complete Workflow",
@@ -1550,15 +1559,11 @@
       "ready_title": "You're All Set!",
       "ready_desc": "You now know all the core features of TQ. Access this tour anytime from the help icon in the top menu.",
       "tip_sso": "Login is automatic from Hub — no extra credentials needed",
-      "tip_support": "Click the support icon in the top menu for human help",
-      "tip_password": "Change your temporary password — click the key icon in the sidebar",
-      "tip_ai": "AI 24/7 support is available inside TQ — test it out!",
-      "reference_title": "Quick Reference",
-      "reference_desc": "Where to find everything in the sidebar:",
+      "tip_support": "Click the support icon for human help and AI 24/7 support — test it out!",
+      "actions_title": "Get Started",
+      "actions_desc": "Jump to any section to start exploring:",
       "ref_new_session": "New Session",
       "ref_new_session_desc": "Start transcribing",
-      "ref_sessions": "Sessions",
-      "ref_sessions_desc": "View past recordings",
       "ref_patients": "Patients",
       "ref_patients_desc": "Manage patient records",
       "ref_documents": "Documents",

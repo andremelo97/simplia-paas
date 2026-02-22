@@ -6,9 +6,15 @@ import {
   ClipboardList,
   ShieldCheck,
   ShoppingBag,
+  Play,
+  ArrowRight,
 } from 'lucide-react'
 
-export const TemplatesStep: React.FC = () => {
+interface TemplatesStepProps {
+  onNavigate: (path: string) => void
+}
+
+export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
   const { t } = useTranslation('tq')
 
   return (
@@ -97,6 +103,24 @@ export const TemplatesStep: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {/* Video placeholder */}
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-4">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
+            {t('onboarding.templates.video_placeholder', 'See how easy it is')}
+          </p>
+        </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/templates')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#E91E63] text-[#E91E63] rounded-lg hover:bg-pink-50 transition-colors text-sm font-medium mt-4"
+        >
+          <FileText className="w-4 h-4" />
+          {t('onboarding.templates.go_to', 'Go to Templates')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Right Column - Template Syntax */}

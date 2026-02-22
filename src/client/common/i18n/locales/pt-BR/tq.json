@@ -1409,7 +1409,10 @@
       "description": "Grave suas consultas diretamente no navegador ou envie arquivos de áudio pré-gravados. O TQ converte automaticamente a fala em texto usando IA avançada, para que você possa focar no seu paciente.",
       "ways_title": "Duas formas de começar:",
       "way_record_title": "Gravar ao vivo",
-      "way_record_desc": "Use seu microfone para gravar em tempo real durante a consulta.",
+      "way_record_desc": "Use seu microfone de qualquer dispositivo para gravar em tempo real durante a consulta.",
+      "device_desktop": "Desktop",
+      "device_tablet": "Tablet / iPad",
+      "device_phone": "Celular",
       "way_upload_title": "Enviar áudio",
       "way_upload_desc": "Envie um arquivo MP3, WAV ou M4A existente para transcrição.",
       "quota_title": "Quota de Transcrição",
@@ -1422,7 +1425,9 @@
       "step3_title": "Criar Sessão",
       "step3_desc": "Vincule a transcrição a um paciente para criar uma sessão. A partir daqui, você pode gerar documentos usando templates.",
       "autosave_title": "Salvamento automático",
-      "autosave_desc": "O rascunho da sua gravação é salvo automaticamente no navegador. Se fechar a aba acidentalmente, pode retomar de onde parou."
+      "autosave_desc": "O rascunho da sua gravação é salvo automaticamente no navegador. Se fechar a aba acidentalmente, pode retomar de onde parou.",
+      "video_placeholder": "Veja como é fácil",
+      "try_now": "Experimentar Transcrição"
     },
     "patients": {
       "title": "Pacientes",
@@ -1447,7 +1452,9 @@
       "tab_landing_pages_desc": "Links de documentos compartilhados",
       "tab_metrics": "Métricas",
       "tab_metrics_desc": "Contagens e estatísticas resumidas",
-      "info_tip": "Tudo em um só lugar — clique em qualquer paciente para ver o histórico completo em todas as funcionalidades."
+      "info_tip": "Tudo em um só lugar — clique em qualquer paciente para ver o histórico completo em todas as funcionalidades.",
+      "video_placeholder": "Veja como funciona",
+      "go_to": "Ir para Pacientes"
     },
     "templates": {
       "title": "Templates",
@@ -1467,7 +1474,9 @@
       "syntax_variable_example": "Exemplo: $nome_paciente$, $data$",
       "syntax_instruction": "Orientação para IA (removida do resultado)",
       "syntax_instruction_example": "Exemplo: (resuma em 3 tópicos)",
-      "syntax_guide_hint": "Um guia completo de sintaxe com mais exemplos está disponível na página de criação/edição de templates."
+      "syntax_guide_hint": "Um guia completo de sintaxe com mais exemplos está disponível na página de criação/edição de templates.",
+      "video_placeholder": "Veja como é fácil",
+      "go_to": "Ir para Templates"
     },
     "documents": {
       "title": "Documentos",
@@ -1478,17 +1487,15 @@
       "flow_explanation": "A IA analisa sua transcrição e preenche o template para criar um documento profissional em segundos.",
       "types_title": "Tipos de Documentos",
       "type_quote": "Orçamentos",
-      "type_quote_desc": "Propostas de tratamento com preços. Adicione itens, defina quantidades e preços. Acompanhe o status pelo fluxo:",
-      "status_draft": "Rascunho",
-      "status_sent": "Enviado",
-      "status_approved": "Aprovado",
-      "status_paid": "Pago",
+      "type_quote_desc": "Propostas de tratamento com preços. Adicione itens, defina quantidades e preços.",
       "type_clinical_note": "Notas Clínicas",
       "type_clinical_note_desc": "Documentação detalhada de consultas para prontuários médicos. Suporta formatação de texto rico, pode ser impresso ou exportado como PDF.",
       "type_prevention": "Planos de Prevenção",
       "type_prevention_desc": "Planos de cuidados preventivos com recomendações personalizadas. Compartilhe com pacientes via landing pages para fácil acesso.",
       "type_items": "Catálogo de Itens",
-      "type_items_desc": "Catálogo reutilizável de itens (tratamentos, procedimentos, produtos) com preços predefinidos. Adicione itens a qualquer orçamento com um clique."
+      "type_items_desc": "Catálogo reutilizável de itens (tratamentos, procedimentos, produtos) com preços predefinidos. Adicione itens a qualquer orçamento com um clique.",
+      "video_placeholder": "Veja como funciona",
+      "go_to": "Ir para Documentos"
     },
     "landing_pages": {
       "title": "Landing Pages",
@@ -1497,18 +1504,20 @@
       "links_desc": "Gere URLs públicas únicas para cada documento. Gerencie links ativos, defina proteção por senha e configure datas de expiração.",
       "templates_title": "Templates de Página",
       "templates_desc": "Projete o layout visual das suas landing pages usando um construtor drag-and-drop. Adicione cabeçalhos, rodapés, tabelas, botões e mais.",
-      "advanced_tip": "Esta é uma funcionalidade avançada. Templates padrão são fornecidos — personalize quando estiver pronto.",
+      "support_tip": "Precisa de ajuda? Nossa equipe de suporte pode ajudar a criar ou personalizar seus templates de landing page.",
       "features_title": "Funcionalidades",
       "feature_builder": "Construtor visual drag-and-drop (Puck)",
       "feature_branding": "Marca personalizada (logo, cores do Hub)",
       "feature_password": "Proteção por senha para documentos sensíveis",
-      "feature_email": "Links compartilháveis enviados por e-mail",
+      "feature_email": "Links compartilháveis enviados por e-mail e WhatsApp",
       "feature_responsive": "Design responsivo para mobile",
       "feature_print": "Impressão e exportação PDF para pacientes",
       "lifecycle_title": "Como funciona:",
       "lifecycle_create": "Criar Link",
       "lifecycle_share": "Compartilhar por E-mail",
-      "lifecycle_view": "Paciente Visualiza"
+      "lifecycle_view": "Paciente Visualiza",
+      "video_placeholder": "Veja como funciona",
+      "go_to": "Ir para Landing Pages"
     },
     "workflow": {
       "title": "Fluxo Completo",
@@ -1550,15 +1559,11 @@
       "ready_title": "Tudo Pronto!",
       "ready_desc": "Agora você conhece todas as funcionalidades principais do TQ. Acesse este tour a qualquer momento pelo ícone de ajuda no menu superior.",
       "tip_sso": "O login é automático a partir do Hub — sem credenciais extras",
-      "tip_support": "Clique no ícone de suporte no menu superior para ajuda humana",
-      "tip_password": "Troque sua senha temporária — clique no ícone de chave na barra lateral",
-      "tip_ai": "Suporte IA 24/7 está disponível dentro do TQ — teste!",
-      "reference_title": "Referência Rápida",
-      "reference_desc": "Onde encontrar tudo na barra lateral:",
+      "tip_support": "Clique no ícone de suporte para ajuda humana e suporte IA 24/7 — teste!",
+      "actions_title": "Comece Agora",
+      "actions_desc": "Vá para qualquer seção para começar a explorar:",
       "ref_new_session": "Nova Sessão",
       "ref_new_session_desc": "Começar a transcrever",
-      "ref_sessions": "Sessões",
-      "ref_sessions_desc": "Ver gravações anteriores",
       "ref_patients": "Pacientes",
       "ref_patients_desc": "Gerenciar registros de pacientes",
       "ref_documents": "Documentos",

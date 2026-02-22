@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { Stepper } from '@client/common/ui'
 import { Button } from '@client/common/ui'
 import { onboardingService } from '@client/common/services/onboardingService'
@@ -28,11 +29,17 @@ const STEP_DEFINITIONS = [
 
 export const TQOnboardingWizard: React.FC = () => {
   const { t } = useTranslation('tq')
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const {
     isWizardOpen, wasSkipped, currentStep,
-    openWizard, closeWizard, skipWizard, setCurrentStep
+    openWizard, closeWizard, closeWizardForNavigation, skipWizard, setCurrentStep
   } = useOnboardingStore()
+
+  const handleNavigateAway = (path: string) => {
+    closeWizardForNavigation()
+    navigate(path)
+  }
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -105,19 +112,19 @@ export const TQOnboardingWizard: React.FC = () => {
       case 0:
         return <WelcomeStep />
       case 1:
-        return <SessionsStep />
+        return <SessionsStep onNavigate={handleNavigateAway} />
       case 2:
-        return <PatientsStep />
+        return <PatientsStep onNavigate={handleNavigateAway} />
       case 3:
-        return <TemplatesStep />
+        return <TemplatesStep onNavigate={handleNavigateAway} />
       case 4:
-        return <DocumentsStep />
+        return <DocumentsStep onNavigate={handleNavigateAway} />
       case 5:
-        return <LandingPagesStep />
+        return <LandingPagesStep onNavigate={handleNavigateAway} />
       case 6:
         return <WorkflowStep />
       case 7:
-        return <FinalStep />
+        return <FinalStep onNavigate={handleNavigateAway} />
       default:
         return null
     }

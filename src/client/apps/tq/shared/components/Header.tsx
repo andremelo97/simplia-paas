@@ -205,7 +205,7 @@ export const Header: React.FC<TQHeaderProps> = ({ onMenuToggle, onOpenAIChat }) 
   const rightActions = (
     <div className="flex items-center gap-1">
       {/* Support Button */}
-      <Tooltip content={t('header.support_tooltip', 'Suporte')} side="bottom">
+      <Tooltip content={t('header.support_tooltip', 'Support & Assistance')} side="bottom">
         <Button
           variant="ghost"
           size="icon"

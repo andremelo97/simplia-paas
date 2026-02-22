@@ -356,7 +356,7 @@
     "logout": "Logout",
     "logout_confirm_title": "Sign out",
     "logout_confirm_description": "Are you sure you want to sign out?",
-    "support_tooltip": "Support"
+    "support_tooltip": "Support & Assistance"
   },
   "bug_report": {
     "title": "Report Bug",

@@ -1582,6 +1582,7 @@
     }
   },
   "header": {
+    "support_tooltip": "Suporte & Assistência",
     "help_tooltip": "Assistente de Configuração"
   },
   "mobile": {

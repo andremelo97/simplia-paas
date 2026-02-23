@@ -6,14 +6,6 @@ import {
   FileText,
   Clock,
   Search,
-  Mic,
-  Receipt,
-  ClipboardList,
-  ShieldCheck,
-  Layout,
-  BarChart3,
-  Info,
-  Play,
   ArrowRight,
   History,
 } from 'lucide-react'
@@ -73,7 +65,7 @@ export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
         </div>
 
         {/* Quick Search callout */}
-        <div className="bg-[#5ED6CE]/10 border border-[#5ED6CE]/30 rounded-lg p-4">
+        <div className="bg-[#5ED6CE]/10 border border-[#5ED6CE]/30 rounded-lg p-4 mb-4">
           <div className="flex items-start gap-3">
             <Search className="w-5 h-5 text-[#5ED6CE] flex-shrink-0 mt-0.5" />
             <div>
@@ -90,18 +82,20 @@ export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-4">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.patients.video_placeholder', 'See how it works')}
-          </p>
-        </div>
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/patients')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#5ED6CE] text-[#5ED6CE] rounded-lg hover:bg-teal-50 transition-colors text-sm font-medium"
+        >
+          <Users className="w-4 h-4" />
+          {t('onboarding.patients.go_to', 'Go to Patients')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
-      {/* Right Column - Patient Timeline */}
+      {/* Right Column - Patient Timeline with image */}
       <div className="flex flex-col">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <h3 className="text-lg font-bold text-gray-900 mb-2">
           {t('onboarding.patients.timeline_title', 'Patient Timeline')}
         </h3>
         <p className="text-sm text-gray-600 mb-4">
@@ -111,91 +105,40 @@ export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
           )}
         </p>
 
-        {/* Tab cards grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
-            <Mic className="w-5 h-5 text-gray-900 mb-1" />
-            <p className="text-sm font-medium text-gray-900">
-              {t('onboarding.patients.tab_sessions', 'Sessions')}
-            </p>
-            <p className="text-xs text-gray-500">
-              {t('onboarding.patients.tab_sessions_desc', 'Audio recordings and transcriptions')}
-            </p>
+        {/* History icon hint */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
+            <History className="w-4 h-4 text-white" />
           </div>
+          <p className="text-sm text-gray-700 font-medium">
+            {t(
+              'onboarding.patients.history_icon_hint',
+              'Click this icon on any patient row to open their timeline'
+            )}
+          </p>
+        </div>
 
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
-            <Receipt className="w-5 h-5 text-gray-900 mb-1" />
-            <p className="text-sm font-medium text-gray-900">
-              {t('onboarding.patients.tab_quotes', 'Quotes')}
-            </p>
-            <p className="text-xs text-gray-500">
-              {t('onboarding.patients.tab_quotes_desc', 'Treatment proposals with pricing')}
-            </p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
-            <ClipboardList className="w-5 h-5 text-gray-900 mb-1" />
-            <p className="text-sm font-medium text-gray-900">
-              {t('onboarding.patients.tab_clinical_notes', 'Clinical Notes')}
-            </p>
-            <p className="text-xs text-gray-500">
-              {t('onboarding.patients.tab_clinical_notes_desc', 'Consultation documentation')}
-            </p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
-            <ShieldCheck className="w-5 h-5 text-gray-900 mb-1" />
-            <p className="text-sm font-medium text-gray-900">
-              {t('onboarding.patients.tab_prevention', 'Prevention')}
-            </p>
-            <p className="text-xs text-gray-500">
-              {t('onboarding.patients.tab_prevention_desc', 'Preventive care plans')}
-            </p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
-            <Layout className="w-5 h-5 text-gray-900 mb-1" />
-            <p className="text-sm font-medium text-gray-900">
-              {t('onboarding.patients.tab_landing_pages', 'Landing Pages')}
-            </p>
-            <p className="text-xs text-gray-500">
-              {t('onboarding.patients.tab_landing_pages_desc', 'Shared document links')}
-            </p>
-          </div>
-
-          <div className="bg-white border border-gray-200 rounded-lg p-3">
-            <BarChart3 className="w-5 h-5 text-gray-900 mb-1" />
-            <p className="text-sm font-medium text-gray-900">
-              {t('onboarding.patients.tab_metrics', 'Metrics')}
-            </p>
-            <p className="text-xs text-gray-500">
-              {t('onboarding.patients.tab_metrics_desc', 'Summary counts and statistics')}
-            </p>
-          </div>
+        {/* Patient history image */}
+        <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50 mb-4">
+          <img
+            src="/imgs/patient-history.png"
+            alt={t('onboarding.patients.timeline_title', 'Patient Timeline')}
+            className="w-full h-auto"
+          />
         </div>
 
         {/* Info tip */}
-        <div className="bg-gray-50 rounded-lg p-3 mt-4">
+        <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-start gap-2">
             <History className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-600">
               {t(
-                'onboarding.patients.info_tip',
-                'Everything in one place — click the history icon on any patient row to see their complete timeline across all features.'
+                'onboarding.patients.info_tip_extended',
+                'The timeline is also available inside each patient\'s edit page. Click the history icon on any patient row in the list, or open the patient and access it from there.'
               )}
             </p>
           </div>
         </div>
-
-        {/* Navigate button */}
-        <button
-          onClick={() => onNavigate('/patients')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#5ED6CE] text-[#5ED6CE] rounded-lg hover:bg-teal-50 transition-colors text-sm font-medium mt-4"
-        >
-          <Users className="w-4 h-4" />
-          {t('onboarding.patients.go_to', 'Go to Patients')}
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
     </>
   )

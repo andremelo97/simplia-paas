@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { FolderOpen, Mic, FileText, Receipt, ClipboardList, ShieldCheck, Package, Play, ArrowRight } from 'lucide-react'
+import { FolderOpen, Mic, FileText, Receipt, ClipboardList, ShieldCheck, Package, ArrowRight } from 'lucide-react'
 
 interface DocumentsStepProps {
   onNavigate: (path: string) => void
@@ -60,12 +60,19 @@ export const DocumentsStep: React.FC<DocumentsStepProps> = ({ onNavigate }) => {
           </p>
         </div>
 
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-4">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.documents.video_placeholder', 'See how it works')}
-          </p>
+        {/* Tutorial video */}
+        <h4 className="text-sm font-medium text-gray-900 mb-2">
+          {t('onboarding.documents.video_title', 'How Documents Work')}
+        </h4>
+        <div className="aspect-video rounded-lg overflow-hidden bg-black mb-4">
+          <iframe
+            className="w-full h-full"
+            src="https://www.youtube.com/embed/-6mJ8aJ50CM?rel=0"
+            title={t('onboarding.documents.video_title', 'How Documents Work')}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
         </div>
 
         {/* Navigate button */}

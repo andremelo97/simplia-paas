@@ -1458,7 +1458,8 @@
       "tab_metrics": "Métricas",
       "tab_metrics_desc": "Contagens e estatísticas resumidas",
       "info_tip": "Tudo em um só lugar — clique no ícone de histórico em qualquer paciente para ver a linha do tempo completa em todas as funcionalidades.",
-      "video_placeholder": "Veja como funciona",
+      "history_icon_hint": "Clique neste ícone em qualquer linha de paciente para abrir a linha do tempo",
+      "info_tip_extended": "A linha do tempo também está disponível dentro da página de edição de cada paciente. Clique no ícone de histórico em qualquer paciente na lista, ou abra o paciente e acesse por lá.",
       "go_to": "Ir para Pacientes"
     },
     "templates": {
@@ -1500,7 +1501,7 @@
       "type_prevention_desc": "Planos de cuidados preventivos com recomendações personalizadas. Compartilhe com pacientes via landing pages para fácil acesso.",
       "type_items": "Catálogo de Itens",
       "type_items_desc": "Catálogo reutilizável de itens (tratamentos, procedimentos, produtos) com preços predefinidos. Adicione itens a qualquer orçamento com um clique.",
-      "video_placeholder": "Veja como funciona",
+      "video_title": "Como os Documentos Funcionam",
       "go_to": "Ir para Documentos"
     },
     "landing_pages": {

@@ -1458,7 +1458,8 @@
       "tab_metrics": "Metrics",
       "tab_metrics_desc": "Summary counts and statistics",
       "info_tip": "Everything in one place — click the history icon on any patient row to see their complete timeline across all features.",
-      "video_placeholder": "See how it works",
+      "history_icon_hint": "Click this icon on any patient row to open their timeline",
+      "info_tip_extended": "The timeline is also available inside each patient's edit page. Click the history icon on any patient row in the list, or open the patient and access it from there.",
       "go_to": "Go to Patients"
     },
     "templates": {
@@ -1500,7 +1501,7 @@
       "type_prevention_desc": "Preventive care plans with personalized recommendations. Share with patients via landing pages for easy access.",
       "type_items": "Items Catalog",
       "type_items_desc": "Reusable catalog of line items (treatments, procedures, products) with preset prices. Add items to any quote with one click.",
-      "video_placeholder": "See how it works",
+      "video_title": "How Documents Work",
       "go_to": "Go to Documents"
     },
     "landing_pages": {

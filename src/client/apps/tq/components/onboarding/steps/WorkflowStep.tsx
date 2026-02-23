@@ -129,10 +129,10 @@ export const WorkflowStep: React.FC = () => {
             </div>
             <div>
               <p className="font-medium text-gray-900 text-base">
-                {t('onboarding.workflow.step5', 'Share via landing page or email')}
+                {t('onboarding.workflow.step5', 'Share via email or WhatsApp')}
               </p>
               <p className="text-sm text-gray-500">
-                {t('onboarding.workflow.step5_desc', 'Create a public link or send the document directly')}
+                {t('onboarding.workflow.step5_desc', 'Send the document directly to the patient via email or WhatsApp')}
               </p>
             </div>
           </div>

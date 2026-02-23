@@ -66,6 +66,16 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
             </p>
           </div>
         </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/landing-pages/templates')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#B725B7] text-[#B725B7] rounded-lg hover:bg-purple-50 transition-colors text-sm font-medium mt-4"
+        >
+          <Layout className="w-4 h-4" />
+          {t('onboarding.landing_pages.go_to', 'Go to Landing Pages')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Right Column - Features */}
@@ -164,16 +174,6 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
             allowFullScreen
           />
         </div>
-
-        {/* Navigate button */}
-        <button
-          onClick={() => onNavigate('/landing-pages/templates')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#B725B7] text-[#B725B7] rounded-lg hover:bg-purple-50 transition-colors text-sm font-medium mt-4"
-        >
-          <Layout className="w-4 h-4" />
-          {t('onboarding.landing_pages.go_to', 'Go to Landing Pages')}
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
     </>
   )

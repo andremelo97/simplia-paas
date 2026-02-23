@@ -97,16 +97,6 @@ export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
             {t('onboarding.patients.video_placeholder', 'See how it works')}
           </p>
         </div>
-
-        {/* Navigate button */}
-        <button
-          onClick={() => onNavigate('/patients')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#5ED6CE] text-[#5ED6CE] rounded-lg hover:bg-teal-50 transition-colors text-sm font-medium mt-4"
-        >
-          <Users className="w-4 h-4" />
-          {t('onboarding.patients.go_to', 'Go to Patients')}
-          <ArrowRight className="w-4 h-4" />
-        </button>
       </div>
 
       {/* Right Column - Patient Timeline */}
@@ -196,6 +186,16 @@ export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
             </p>
           </div>
         </div>
+
+        {/* Navigate button */}
+        <button
+          onClick={() => onNavigate('/patients')}
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white border border-[#5ED6CE] text-[#5ED6CE] rounded-lg hover:bg-teal-50 transition-colors text-sm font-medium mt-4"
+        >
+          <Users className="w-4 h-4" />
+          {t('onboarding.patients.go_to', 'Go to Patients')}
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
     </>
   )

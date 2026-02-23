@@ -195,11 +195,12 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                 <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
               </div>
             ) : branding.logoUrl ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-3 inline-block max-w-full">
+              <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-center">
                 <img
                   src={branding.logoUrl}
                   alt="Logo"
-                  className="max-h-24 max-w-full object-contain"
+                  className="max-h-24 w-auto object-contain"
+                  style={{ minWidth: '80px' }}
                 />
               </div>
             ) : (

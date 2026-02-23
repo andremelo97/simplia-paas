@@ -1223,7 +1223,8 @@
     "landing_pages": "Landing Pages",
     "configurations": "Configurations",
     "back_to_hub": "Back to Hub",
-    "logout": "Logout"
+    "logout": "Logout",
+    "generate_document": "Generate Document"
   },
   "documents": {
     "title": "Documents",
@@ -1595,5 +1596,87 @@
     "desktop_only_title": "Desktop Feature",
     "desktop_only_description": "This feature is available on tablet or computer",
     "logout": "Logout"
+  },
+  "doc_gen_wizard": {
+    "steps": {
+      "audio_patient": "Audio & Patient",
+      "template_doctype": "Template & Type",
+      "review_edit": "Review & Edit",
+      "completion": "Complete"
+    },
+    "cancel": "Cancel",
+    "next": "Next",
+    "back": "Back",
+    "create_another": "Create Another Document",
+    "close_wizard": "Close Wizard",
+    "minimize_blocked": "Wait for transcription to finish",
+    "resume": {
+      "title": "Resume Document Wizard?",
+      "description": "You have a document in progress.",
+      "button": "Resume",
+      "dismiss": "Dismiss"
+    },
+    "step1": {
+      "title": "Record or Upload Audio",
+      "description": "Record a consultation or upload an audio file. The audio will be transcribed automatically.",
+      "record_tab": "Record",
+      "upload_tab": "Upload",
+      "transcription_preview": "Transcription",
+      "words": "words",
+      "patient_title": "Select Patient",
+      "patient_description": "Search for an existing patient or create a new one.",
+      "ready": "Audio transcribed and patient selected. Click the button below to continue.",
+      "create_session": "Create Session & Continue"
+    },
+    "step2": {
+      "title": "Select Template & Document Type",
+      "description": "Choose a template and document type. AI will fill the template with the transcription data.",
+      "session": "Session",
+      "ai_banner_title": "AI-Powered Document Generation",
+      "ai_banner_description": "AI will analyze the transcription and intelligently fill the template with relevant information.",
+      "template_label": "Template",
+      "loading_templates": "Loading templates...",
+      "no_templates": "No active templates found. Create a template first.",
+      "select_template": "Select a template...",
+      "doctype_label": "Document Type",
+      "creating": "Creating document...",
+      "create_button": "Create Document with AI",
+      "templates_error": "Failed to load templates",
+      "create_error": "Failed to create document. Please try again."
+    },
+    "step3": {
+      "save_continue": "Save & Continue",
+      "description": "Review and edit the AI-generated content. You can make more detailed edits later on the full document page.",
+      "save_error": "Failed to save document."
+    },
+    "step4": {
+      "title": "Document Created!",
+      "description": "Your document has been created and saved. You can create another document from the same session or close the wizard.",
+      "session_label": "Session",
+      "documents_label": "Documents Created"
+    },
+    "audio": {
+      "mic_error": "Failed to access microphone. Please check permissions.",
+      "empty_recording": "No audio data captured. Please try again.",
+      "process_error": "Failed to process audio.",
+      "min_duration": "Minimum 1 minute recording required",
+      "start_recording": "Start Recording",
+      "resume": "Resume",
+      "pause": "Pause",
+      "stop": "Stop & Transcribe",
+      "recording": "Recording...",
+      "upload_title": "Upload Audio File",
+      "upload_instruction": "Drag & drop an audio file or click to browse"
+    },
+    "transcription": {
+      "uploading": "Uploading audio...",
+      "processing": "Transcribing audio...",
+      "completed": "Transcription complete",
+      "error": "Transcription failed",
+      "estimated_time": "This usually takes 1-3 minutes depending on audio length."
+    },
+    "patient": {
+      "title": "Patient"
+    }
   }
 }

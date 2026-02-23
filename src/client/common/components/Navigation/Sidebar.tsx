@@ -15,6 +15,7 @@ export interface NavigationItem {
   href: string
   icon: LucideIcon
   children?: NavigationItem[]
+  onClick?: () => void
 }
 
 export interface SidebarAction {
@@ -272,6 +273,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }
 
           // Regular item without children
+          // If item has onClick, render as button instead of NavLink
+          if (item.onClick) {
+            return (
+              <button
+                key={item.name}
+                onClick={item.onClick}
+                className={cn(
+                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-colors duration-200 w-full text-left",
+                  "hover:text-[#B725B7] hover:bg-purple-50/50 hover:border hover:border-purple-200/30",
+                  !isOpen && "justify-center"
+                )}
+                style={{ color: '#000000' }}
+              >
+                <Tooltip content={item.name} disabled={isOpen} side="right">
+                  <span className="flex items-center justify-center">
+                    <Icon
+                      className="w-5 h-5"
+                      style={{
+                        color: 'inherit',
+                        width: '20px !important',
+                        height: '20px !important',
+                        minWidth: '20px',
+                        minHeight: '20px',
+                        flexShrink: 0
+                      }}
+                    />
+                  </span>
+                </Tooltip>
+
+                {isOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                    className="flex-1"
+                    style={{ marginLeft: '10px' }}
+                  >
+                    <div className="font-medium text-sm">{item.name}</div>
+                  </motion.div>
+                )}
+              </button>
+            )
+          }
+
           return (
             <NavLink
               key={item.name}

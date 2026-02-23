@@ -2,14 +2,16 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
-import { Sparkles, X } from 'lucide-react'
+import { Sparkles, X, FileText } from 'lucide-react'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { useUIStore } from '../store/ui'
 import { useAuthStore } from '../store/auth'
 import { useOnboardingStore } from '../store/onboarding'
+import { useDocGenWizardStore } from '../store/docGenWizard'
 import { FeedbackHost } from '@client/common/feedback'
 import { TQOnboardingWizard } from '../../components/onboarding/TQOnboardingWizard'
+import { DocGenWizard } from '../../components/doc-gen-wizard/DocGenWizard'
 import { MobileRouteGuard } from './MobileRouteGuard'
 import { MobileBottomNav } from './MobileBottomNav'
 import { InstallAppBanner } from '@client/common/components'
@@ -21,6 +23,11 @@ export const Layout: React.FC = () => {
   const { sidebarOpen } = useUIStore()
   const { user } = useAuthStore()
   const { showResumeHint, openWizard, hideResumeHint } = useOnboardingStore()
+  const {
+    showResumeHint: showDocGenResumeHint,
+    openWizard: openDocGenWizard,
+    hideResumeHint: hideDocGenResumeHint,
+  } = useDocGenWizardStore()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false)
@@ -141,6 +148,48 @@ export const Layout: React.FC = () => {
         </div>
       )}
 
+      {/* Floating Resume Doc Gen Wizard Button (not on mobile, when onboarding hint is not showing) */}
+      {showDocGenResumeHint && !showResumeHint && !isMobile && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5ED6CE] to-[#B725B7] flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-medium text-gray-900 text-sm">
+                  {t('doc_gen_wizard.resume.title', 'Resume Document Wizard?')}
+                </h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {t('doc_gen_wizard.resume.description', 'You have a document in progress.')}
+                </p>
+                <div className="flex items-center gap-2 mt-3">
+                  <button
+                    onClick={openDocGenWizard}
+                    className="px-3 py-1.5 text-xs font-medium text-white rounded-md hover:opacity-90 transition-colors"
+                    style={{ backgroundColor: 'var(--brand-tertiary)' }}
+                  >
+                    {t('doc_gen_wizard.resume.button', 'Resume')}
+                  </button>
+                  <button
+                    onClick={hideDocGenResumeHint}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    {t('doc_gen_wizard.resume.dismiss', 'Dismiss')}
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={hideDocGenResumeHint}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Support Chat Widget (floating, persists across routes) */}
       <SupportChatWidget open={isChatWidgetOpen} onClose={() => setIsChatWidgetOpen(false)} />
 
@@ -149,6 +198,9 @@ export const Layout: React.FC = () => {
 
       {/* Onboarding Wizard (admin-only, not on mobile) */}
       {!isMobile && <TQOnboardingWizard />}
+
+      {/* Document Generation Wizard (not on mobile) */}
+      {!isMobile && <DocGenWizard />}
 
       {/* PWA Install Banner (mobile only) */}
       <InstallAppBanner />

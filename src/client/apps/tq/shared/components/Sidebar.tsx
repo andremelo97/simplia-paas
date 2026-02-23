@@ -1,6 +1,6 @@
 import React from 'react'
-import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList, Shield, Settings, Mic, Package, LogOut, LayoutGrid } from 'lucide-react'
-import { useUIStore, useAuthStore } from '../store'
+import { Home, Plus, FileText, Users, Receipt, FileType, Share2, ClipboardList, Shield, Settings, Mic, Package, LogOut, LayoutGrid, Wand2 } from 'lucide-react'
+import { useUIStore, useAuthStore, useDocGenWizardStore } from '../store'
 import { Sidebar as CommonSidebar, NavigationItem, SidebarAction } from '@client/common/components'
 import { useTranslation } from 'react-i18next'
 
@@ -12,6 +12,7 @@ export const Sidebar: React.FC<TQSidebarProps> = ({ forceOpen }) => {
   const { t } = useTranslation('tq')
   const { sidebarOpen, toggleSidebar } = useUIStore()
   const { user } = useAuthStore()
+  const { openWizard: openDocGenWizard } = useDocGenWizardStore()
 
   const navigation: NavigationItem[] = [
     {
@@ -24,6 +25,13 @@ export const Sidebar: React.FC<TQSidebarProps> = ({ forceOpen }) => {
       name: t('sidebar.new_session'),
       href: '/new-session',
       icon: Plus
+    }] : []),
+    // Generate Document wizard - only for manager and admin
+    ...(user?.role !== 'operations' ? [{
+      name: t('sidebar.generate_document', 'Generate Document'),
+      href: '#',
+      icon: Wand2,
+      onClick: openDocGenWizard,
     }] : []),
     {
       name: t('sidebar.sessions'),

@@ -1190,7 +1190,8 @@
     "landing_pages": "Landing Pages",
     "configurations": "Configurações",
     "back_to_hub": "Voltar ao Hub",
-    "logout": "Sair"
+    "logout": "Sair",
+    "generate_document": "Gerar Documento"
   },
   "documents": {
     "title": "Documentos",
@@ -1595,5 +1596,87 @@
     "desktop_only_title": "Funcionalidade Desktop",
     "desktop_only_description": "Esta funcionalidade está disponível no tablet ou computador",
     "logout": "Sair"
+  },
+  "doc_gen_wizard": {
+    "steps": {
+      "audio_patient": "Áudio & Paciente",
+      "template_doctype": "Template & Tipo",
+      "review_edit": "Revisar & Editar",
+      "completion": "Concluído"
+    },
+    "cancel": "Cancelar",
+    "next": "Próximo",
+    "back": "Voltar",
+    "create_another": "Criar Outro Documento",
+    "close_wizard": "Fechar Wizard",
+    "minimize_blocked": "Aguarde a transcrição finalizar",
+    "resume": {
+      "title": "Retomar Wizard de Documento?",
+      "description": "Você tem um documento em andamento.",
+      "button": "Retomar",
+      "dismiss": "Dispensar"
+    },
+    "step1": {
+      "title": "Gravar ou Enviar Áudio",
+      "description": "Grave uma consulta ou envie um arquivo de áudio. O áudio será transcrito automaticamente.",
+      "record_tab": "Gravar",
+      "upload_tab": "Enviar",
+      "transcription_preview": "Transcrição",
+      "words": "palavras",
+      "patient_title": "Selecionar Paciente",
+      "patient_description": "Busque um paciente existente ou crie um novo.",
+      "ready": "Áudio transcrito e paciente selecionado. Clique no botão abaixo para continuar.",
+      "create_session": "Criar Sessão e Continuar"
+    },
+    "step2": {
+      "title": "Selecionar Template & Tipo de Documento",
+      "description": "Escolha um template e o tipo de documento. A IA preencherá o template com os dados da transcrição.",
+      "session": "Sessão",
+      "ai_banner_title": "Geração de Documento com IA",
+      "ai_banner_description": "A IA analisará a transcrição e preencherá o template de forma inteligente com informações relevantes.",
+      "template_label": "Template",
+      "loading_templates": "Carregando templates...",
+      "no_templates": "Nenhum template ativo encontrado. Crie um template primeiro.",
+      "select_template": "Selecione um template...",
+      "doctype_label": "Tipo de Documento",
+      "creating": "Criando documento...",
+      "create_button": "Criar Documento com IA",
+      "templates_error": "Falha ao carregar templates",
+      "create_error": "Falha ao criar documento. Tente novamente."
+    },
+    "step3": {
+      "save_continue": "Salvar e Continuar",
+      "description": "Revise e edite o conteúdo gerado pela IA. Você pode fazer edições mais detalhadas na página completa do documento.",
+      "save_error": "Falha ao salvar documento."
+    },
+    "step4": {
+      "title": "Documento Criado!",
+      "description": "Seu documento foi criado e salvo. Você pode criar outro documento da mesma sessão ou fechar o wizard.",
+      "session_label": "Sessão",
+      "documents_label": "Documentos Criados"
+    },
+    "audio": {
+      "mic_error": "Falha ao acessar o microfone. Verifique as permissões.",
+      "empty_recording": "Nenhum dado de áudio capturado. Tente novamente.",
+      "process_error": "Falha ao processar áudio.",
+      "min_duration": "Gravação mínima de 1 minuto necessária",
+      "start_recording": "Iniciar Gravação",
+      "resume": "Retomar",
+      "pause": "Pausar",
+      "stop": "Parar e Transcrever",
+      "recording": "Gravando...",
+      "upload_title": "Enviar Arquivo de Áudio",
+      "upload_instruction": "Arraste e solte um arquivo de áudio ou clique para selecionar"
+    },
+    "transcription": {
+      "uploading": "Enviando áudio...",
+      "processing": "Transcrevendo áudio...",
+      "completed": "Transcrição concluída",
+      "error": "Falha na transcrição",
+      "estimated_time": "Isso geralmente leva de 1 a 3 minutos dependendo do tamanho do áudio."
+    },
+    "patient": {
+      "title": "Paciente"
+    }
   }
 }

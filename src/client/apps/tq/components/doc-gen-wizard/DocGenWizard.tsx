@@ -5,12 +5,14 @@ import { Stepper, Button } from '@client/common/ui'
 import { useDocGenWizardStore } from '../../shared/store/docGenWizard'
 import { sessionsService } from '../../services/sessions'
 import { ChevronLeft, X, Loader2, FilePlus, ChevronRight } from 'lucide-react'
+import { SessionSelectStep } from './steps/SessionSelectStep'
 import { AudioPatientStep } from './steps/AudioPatientStep'
 import { TemplateDocTypeStep } from './steps/TemplateDocTypeStep'
 import { ReviewEditStep } from './steps/ReviewEditStep'
 import { CompletionStep } from './steps/CompletionStep'
 
 const STEP_DEFINITIONS = [
+  { id: 'select_session' },
   { id: 'audio_patient' },
   { id: 'template_doctype' },
   { id: 'review_edit' },
@@ -23,6 +25,7 @@ export const DocGenWizard: React.FC = () => {
   const {
     isOpen,
     currentStep,
+    isNewSession,
     transcriptionStatus,
     transcriptionId,
     patientId,
@@ -54,6 +57,8 @@ export const DocGenWizard: React.FC = () => {
 
   const handleStepClick = (step: number) => {
     if (step < currentStep) {
+      // If not a new session, skip step 1 (audio/patient)
+      if (!isNewSession && step === 1) return
       setStep(step)
     }
   }
@@ -71,7 +76,7 @@ export const DocGenWizard: React.FC = () => {
 
     // If session already exists (e.g., after resume), just advance
     if (hasSession) {
-      setStep(1)
+      setStep(2)
       return
     }
 
@@ -82,7 +87,7 @@ export const DocGenWizard: React.FC = () => {
         transcription_id: transcriptionId!,
       })
       setSession(session.id, session.number)
-      setStep(1)
+      setStep(2)
     } catch (error) {
       console.error('Failed to create session:', error)
     } finally {
@@ -98,12 +103,14 @@ export const DocGenWizard: React.FC = () => {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <AudioPatientStep />
+        return <SessionSelectStep />
       case 1:
-        return <TemplateDocTypeStep />
+        return <AudioPatientStep />
       case 2:
-        return <ReviewEditStep />
+        return <TemplateDocTypeStep />
       case 3:
+        return <ReviewEditStep />
+      case 4:
         return <CompletionStep />
       default:
         return null
@@ -113,15 +120,31 @@ export const DocGenWizard: React.FC = () => {
   const renderFooter = () => {
     switch (currentStep) {
       case 0:
+        // Step 0: Select Session — no footer needed (actions are inline)
         return (
           <div className="flex items-center justify-between w-full">
             <Button variant="outline" onClick={handleMinimize} disabled={!canMinimize}>
               {t('doc_gen_wizard.cancel', 'Cancel')}
             </Button>
+            <div />
+          </div>
+        )
+      case 1:
+        // Step 1: Audio & Patient — Back + Create Session & Continue
+        return (
+          <div className="flex items-center justify-between w-full">
+            <Button
+              variant="outline"
+              onClick={() => setStep(0)}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {t('doc_gen_wizard.back', 'Back')}
+            </Button>
             {hasSession ? (
               <Button
                 variant="primary"
-                onClick={() => setStep(1)}
+                onClick={() => setStep(2)}
                 className="flex items-center gap-1"
               >
                 {t('doc_gen_wizard.next', 'Next')}
@@ -141,12 +164,13 @@ export const DocGenWizard: React.FC = () => {
             )}
           </div>
         )
-      case 1:
+      case 2:
+        // Step 2: Template & Doc Type — Back + (create doc is inline)
         return (
           <div className="flex items-center justify-between w-full">
             <Button
               variant="outline"
-              onClick={() => setStep(0)}
+              onClick={() => setStep(isNewSession ? 1 : 0)}
               className="flex items-center gap-1"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -155,13 +179,15 @@ export const DocGenWizard: React.FC = () => {
             <div />
           </div>
         )
-      case 2:
+      case 3:
+        // Step 3: Review & Edit — no extra footer
         return (
           <div className="flex items-center justify-end w-full">
             <div />
           </div>
         )
-      case 3:
+      case 4:
+        // Step 4: Completion — Create Another + Close
         return (
           <div className="flex items-center justify-between w-full">
             <Button

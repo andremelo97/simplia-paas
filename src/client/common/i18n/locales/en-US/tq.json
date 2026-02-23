@@ -1600,6 +1600,7 @@
   },
   "doc_gen_wizard": {
     "steps": {
+      "select_session": "Session",
       "audio_patient": "Audio & Patient",
       "template_doctype": "Template & Type",
       "review_edit": "Review & Edit",
@@ -1616,6 +1617,25 @@
       "description": "You have a document in progress.",
       "button": "Resume",
       "dismiss": "Dismiss"
+    },
+    "step0": {
+      "intro_badge": "Document Wizard",
+      "intro_title": "Generate documents in minutes",
+      "intro_description": "This wizard guides you step by step — from audio to a finished document. It's a faster alternative to the manual flow: record, transcribe, pick a template, and let AI do the rest.",
+      "feature_audio": "Record or upload audio",
+      "feature_audio_desc": "Transcription is automatic — just speak or upload a file.",
+      "feature_ai": "AI fills your template",
+      "feature_ai_desc": "Choose a template and the AI generates the document content from the transcription.",
+      "feature_docs": "Quotes, notes & prevention",
+      "feature_docs_desc": "Create multiple document types from a single session.",
+      "choose_title": "How do you want to start?",
+      "choose_description": "Start from scratch or pick an existing session with a transcription already done.",
+      "create_new": "Create New Session",
+      "create_new_desc": "Record audio, select a patient, and generate documents from scratch.",
+      "existing_title": "Or select an existing session",
+      "search_placeholder": "Search by session number or patient name...",
+      "no_results": "No sessions found",
+      "no_sessions": "No sessions yet. Create your first one!"
     },
     "step1": {
       "title": "Record or Upload Audio",

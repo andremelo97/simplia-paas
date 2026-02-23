@@ -1600,6 +1600,7 @@
   },
   "doc_gen_wizard": {
     "steps": {
+      "select_session": "Sessão",
       "audio_patient": "Áudio & Paciente",
       "template_doctype": "Template & Tipo",
       "review_edit": "Revisar & Editar",
@@ -1616,6 +1617,25 @@
       "description": "Você tem um documento em andamento.",
       "button": "Retomar",
       "dismiss": "Dispensar"
+    },
+    "step0": {
+      "intro_badge": "Wizard de Documentos",
+      "intro_title": "Gere documentos em minutos",
+      "intro_description": "Este wizard te guia passo a passo — do áudio ao documento pronto. É uma alternativa mais rápida ao fluxo manual: grave, transcreva, escolha um template, e deixe a IA fazer o resto.",
+      "feature_audio": "Grave ou envie áudio",
+      "feature_audio_desc": "A transcrição é automática — é só falar ou enviar um arquivo.",
+      "feature_ai": "IA preenche seu template",
+      "feature_ai_desc": "Escolha um template e a IA gera o conteúdo do documento a partir da transcrição.",
+      "feature_docs": "Orçamentos, notas e prevenção",
+      "feature_docs_desc": "Crie vários tipos de documento a partir de uma única sessão.",
+      "choose_title": "Como você quer começar?",
+      "choose_description": "Comece do zero ou selecione uma sessão existente com a transcrição já feita.",
+      "create_new": "Criar Nova Sessão",
+      "create_new_desc": "Grave áudio, selecione um paciente e gere documentos do zero.",
+      "existing_title": "Ou selecione uma sessão existente",
+      "search_placeholder": "Buscar por número da sessão ou nome do paciente...",
+      "no_results": "Nenhuma sessão encontrada",
+      "no_sessions": "Nenhuma sessão ainda. Crie a primeira!"
     },
     "step1": {
       "title": "Gravar ou Enviar Áudio",

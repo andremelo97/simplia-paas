@@ -20,18 +20,19 @@ export const Sidebar: React.FC<TQSidebarProps> = ({ forceOpen }) => {
       href: '/',
       icon: Home
     },
-    // New Session - only for manager and admin (hide from operations)
-    ...(user?.role !== 'operations' ? [{
-      name: t('sidebar.new_session'),
-      href: '/new-session',
-      icon: Plus
-    }] : []),
-    // Generate Document wizard - only for manager and admin
+    // Generate Document wizard - only for manager and admin (highlighted)
     ...(user?.role !== 'operations' ? [{
       name: t('sidebar.generate_document', 'Generate Document'),
       href: '#',
       icon: Wand2,
       onClick: openDocGenWizard,
+      highlight: true,
+    }] : []),
+    // New Session - only for manager and admin (hide from operations)
+    ...(user?.role !== 'operations' ? [{
+      name: t('sidebar.new_session'),
+      href: '/new-session',
+      icon: Plus
     }] : []),
     {
       name: t('sidebar.sessions'),

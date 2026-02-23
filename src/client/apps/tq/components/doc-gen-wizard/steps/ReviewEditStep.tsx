@@ -45,7 +45,7 @@ export const ReviewEditStep: React.FC = () => {
 
     try {
       await config.update(documentId, { content: documentContent })
-      setStep(3)
+      setStep(4)
     } catch (err) {
       setError(
         err instanceof Error

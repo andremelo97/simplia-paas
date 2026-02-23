@@ -30,9 +30,9 @@ export const AudioPatientStep: React.FC = () => {
     : 0
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0 h-full">
       {/* Left Column: Patient */}
-      <div className="space-y-4">
+      <div className="space-y-4 pr-6 border-r border-gray-200">
         <div>
           <h2 className="text-lg font-bold text-gray-900">
             {t('doc_gen_wizard.step1.patient_title', 'Select Patient')}
@@ -46,7 +46,7 @@ export const AudioPatientStep: React.FC = () => {
       </div>
 
       {/* Right Column: Audio & Transcription */}
-      <div className="flex flex-col min-h-0">
+      <div className="flex flex-col min-h-0 pl-6">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h2 className="text-lg font-bold text-gray-900">

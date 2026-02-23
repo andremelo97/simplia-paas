@@ -109,8 +109,8 @@ export const TemplateDocTypeStep: React.FC = () => {
       setDocument(docId, docNumber, filledContent)
       addCreatedDocument({ id: docId, number: docNumber, type: documentType })
 
-      // Advance to step 3
-      setStep(2)
+      // Advance to review step
+      setStep(3)
     } catch (err) {
       setError(
         err instanceof Error

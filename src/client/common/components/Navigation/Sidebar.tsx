@@ -16,6 +16,7 @@ export interface NavigationItem {
   icon: LucideIcon
   children?: NavigationItem[]
   onClick?: () => void
+  highlight?: boolean
 }
 
 export interface SidebarAction {
@@ -275,23 +276,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
           // Regular item without children
           // If item has onClick, render as button instead of NavLink
           if (item.onClick) {
+            const isHighlight = item.highlight === true
             return (
               <button
                 key={item.name}
                 onClick={item.onClick}
                 className={cn(
-                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-colors duration-200 w-full text-left",
-                  "hover:text-[#B725B7] hover:bg-purple-50/50 hover:border hover:border-purple-200/30",
+                  "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-200 w-full text-left",
+                  isHighlight
+                    ? "text-white hover:opacity-90 shadow-md"
+                    : "hover:text-[#B725B7] hover:bg-purple-50/50 hover:border hover:border-purple-200/30",
                   !isOpen && "justify-center"
                 )}
-                style={{ color: '#000000' }}
+                style={isHighlight
+                  ? { background: 'linear-gradient(135deg, #B725B7, #E91E63)', color: '#ffffff' }
+                  : { color: '#000000' }
+                }
               >
                 <Tooltip content={item.name} disabled={isOpen} side="right">
                   <span className="flex items-center justify-center">
                     <Icon
                       className="w-5 h-5"
                       style={{
-                        color: 'inherit',
+                        color: isHighlight ? '#ffffff' : 'inherit',
                         width: '20px !important',
                         height: '20px !important',
                         minWidth: '20px',

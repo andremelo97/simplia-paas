@@ -10,11 +10,21 @@ export interface CreatedDocument {
   type: WizardDocumentType
 }
 
+export interface ExistingSessionData {
+  id: string
+  number: string
+  patientId: string
+  patientName: string
+  transcriptionId?: string | null
+  transcriptionText?: string | null
+}
+
 interface DocGenWizardStore {
   // UI State
   isOpen: boolean
   showResumeHint: boolean
   currentStep: number
+  isNewSession: boolean
 
   // Step 1: Audio & Patient
   transcriptionId: string | null
@@ -45,15 +55,19 @@ interface DocGenWizardStore {
   hideResumeHint: () => void
   setStep: (step: number) => void
 
+  // Step 0 actions
+  selectExistingSession: (session: ExistingSessionData) => void
+  startNewSession: () => void
+
   // Data setters
   setTranscription: (id: string, text: string) => void
   setTranscriptionStatus: (status: TranscriptionStatus) => void
+  setTranscriptionText: (text: string) => void
   setPatient: (id: string, name: string) => void
   setSession: (id: string, number: string) => void
   setTemplate: (id: string, name: string) => void
   setDocumentType: (type: WizardDocumentType) => void
   setDocument: (id: string, number: string, content: string) => void
-  setTranscriptionText: (text: string) => void
   setDocumentContent: (content: string) => void
   addCreatedDocument: (doc: CreatedDocument) => void
   loopToStep2: () => void
@@ -65,6 +79,7 @@ const initialState = {
   isOpen: false,
   showResumeHint: false,
   currentStep: 0,
+  isNewSession: false,
   transcriptionId: null as string | null,
   transcriptionStatus: 'idle' as TranscriptionStatus,
   transcriptionText: null as string | null,
@@ -92,12 +107,32 @@ export const useDocGenWizardStore = create<DocGenWizardStore>()(
       hideResumeHint: () => set({ showResumeHint: false }),
       setStep: (step: number) => set({ currentStep: step }),
 
+      // Step 0: Select existing session → skip to step 2 (template)
+      selectExistingSession: (session) => set({
+        isNewSession: false,
+        sessionId: session.id,
+        sessionNumber: session.number,
+        patientId: session.patientId,
+        patientName: session.patientName,
+        transcriptionId: session.transcriptionId || null,
+        transcriptionText: session.transcriptionText || null,
+        transcriptionStatus: session.transcriptionId ? 'completed' as TranscriptionStatus : 'idle' as TranscriptionStatus,
+        currentStep: 2,
+      }),
+
+      // Step 0: Create new session → go to step 1 (audio/patient)
+      startNewSession: () => set({
+        isNewSession: true,
+        currentStep: 1,
+      }),
+
       setTranscription: (id, text) => set({
         transcriptionId: id,
         transcriptionText: text,
         transcriptionStatus: 'completed',
       }),
       setTranscriptionStatus: (status) => set({ transcriptionStatus: status }),
+      setTranscriptionText: (text) => set({ transcriptionText: text }),
       setPatient: (id, name) => set({ patientId: id, patientName: name }),
       setSession: (id, number) => set({ sessionId: id, sessionNumber: number }),
       setTemplate: (id, name) => set({ selectedTemplateId: id, selectedTemplateName: name }),
@@ -107,13 +142,13 @@ export const useDocGenWizardStore = create<DocGenWizardStore>()(
         documentNumber: number,
         documentContent: content,
       }),
-      setTranscriptionText: (text) => set({ transcriptionText: text }),
       setDocumentContent: (content) => set({ documentContent: content }),
       addCreatedDocument: (doc) => set((state) => ({
         createdDocuments: [...state.createdDocuments, doc],
       })),
+      // Loop back to template step (index 2)
       loopToStep2: () => set({
-        currentStep: 1,
+        currentStep: 2,
         selectedTemplateId: null,
         selectedTemplateName: null,
         documentType: null,
@@ -121,8 +156,10 @@ export const useDocGenWizardStore = create<DocGenWizardStore>()(
         documentNumber: null,
         documentContent: null,
       }),
+      // Reset audio/patient step data (back to step 0)
       resetStep1: () => set({
         currentStep: 0,
+        isNewSession: false,
         transcriptionId: null,
         transcriptionStatus: 'idle' as TranscriptionStatus,
         transcriptionText: null,
@@ -144,6 +181,7 @@ export const useDocGenWizardStore = create<DocGenWizardStore>()(
       name: 'tq-doc-gen-wizard',
       partialize: (state) => ({
         currentStep: state.currentStep,
+        isNewSession: state.isNewSession,
         transcriptionId: state.transcriptionId,
         transcriptionText: state.transcriptionText,
         transcriptionStatus: state.transcriptionStatus === 'completed' ? 'completed' as const : 'idle' as const,

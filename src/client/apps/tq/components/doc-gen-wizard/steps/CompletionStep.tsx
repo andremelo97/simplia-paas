@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus } from 'lucide-react'
+import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus, Info } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { useDocGenWizardStore, WizardDocumentType, CreatedDocument } from '../../../shared/store/docGenWizard'
 
@@ -70,6 +70,21 @@ export const CompletionStep: React.FC = () => {
         {patientName && (
           <p className="text-sm text-gray-600">{patientName}</p>
         )}
+      </div>
+
+      {/* Next steps hint */}
+      <div className="bg-purple-50/60 border border-purple-100 rounded-lg p-4 text-left">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-[#B725B7] flex-shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-gray-900">
+              {t('doc_gen_wizard.step4.next_steps_title', 'What\'s next?')}
+            </p>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {t('doc_gen_wizard.step4.next_steps_description', 'On the edit page you can refine the content in detail, print or export as PDF, and share with your patient via email or WhatsApp. Click on any document below to go to its edit page.')}
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Created documents list */}

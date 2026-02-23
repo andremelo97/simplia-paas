@@ -1674,7 +1674,9 @@
       "title": "Documento Criado!",
       "description": "Seu documento foi criado e salvo. Você pode criar outro documento da mesma sessão ou fechar o wizard.",
       "session_label": "Sessão",
-      "documents_label": "Documentos Criados"
+      "documents_label": "Documentos Criados",
+      "next_steps_title": "Próximos passos",
+      "next_steps_description": "Na página de edição você pode refinar o conteúdo em detalhes, imprimir ou exportar como PDF, e compartilhar com seu paciente por e-mail ou WhatsApp. Clique em qualquer documento abaixo para ir à página de edição."
     },
     "audio": {
       "mic_error": "Falha ao acessar o microfone. Verifique as permissões.",

@@ -1674,7 +1674,9 @@
       "title": "Document Created!",
       "description": "Your document has been created and saved. You can create another document from the same session or close the wizard.",
       "session_label": "Session",
-      "documents_label": "Documents Created"
+      "documents_label": "Documents Created",
+      "next_steps_title": "What's next?",
+      "next_steps_description": "On the edit page you can refine the content in detail, print or export as PDF, and share with your patient via email or WhatsApp. Click on any document below to go to its edit page."
     },
     "audio": {
       "mic_error": "Failed to access microphone. Please check permissions.",

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Card, CardHeader, CardTitle } from '@client/common/ui'
-import { Mic, UserPlus, List } from 'lucide-react'
+import { Mic, UserPlus, Wand2 } from 'lucide-react'
 import { useAuthStore } from '../../shared/store'
+import { useDocGenWizardStore } from '../../shared/store/docGenWizard'
 import { consumeSso } from '../../lib/consumeSso'
 import { quotesService, Quote } from '../../services/quotes'
 import { patientsService, Patient } from '../../services/patients'
@@ -26,6 +27,8 @@ export const Home: React.FC = () => {
   const navigate = useNavigate()
   const { formatDateTime } = useDateFormatter()
   const isMobile = useIsMobile(768)
+  const { openWizard } = useDocGenWizardStore()
+  const isAdminOrManager = user?.role === 'admin' || user?.role === 'manager'
 
   const [quotes, setQuotes] = useState<Quote[]>([])
   const [patients, setPatients] = useState<Patient[]>([])
@@ -290,23 +293,25 @@ export const Home: React.FC = () => {
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('home.quick_actions')}</h2>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+          {!isMobile && isAdminOrManager && (
+            <QuickActionCard
+              icon={Wand2}
+              title={t('home.generate_document', 'Generate Document')}
+              onClick={openWizard}
+              colorClass="purple"
+            />
+          )}
           <QuickActionCard
             icon={Mic}
             title={t('home.start_new_session')}
             onClick={() => navigate('/new-session')}
-            colorClass="purple"
+            colorClass={!isMobile && isAdminOrManager ? 'pink' : 'purple'}
           />
           <QuickActionCard
             icon={UserPlus}
             title={t('home.add_patient')}
             onClick={() => navigate('/patients/create')}
-            colorClass="pink"
-          />
-          <QuickActionCard
-            icon={List}
-            title={t('home.view_sessions')}
-            onClick={() => navigate('/sessions')}
-            colorClass="blue"
+            colorClass={!isMobile && isAdminOrManager ? 'blue' : 'pink'}
           />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Users,
@@ -14,6 +14,8 @@ import {
   BarChart3,
   ArrowRight,
   History,
+  X,
+  Maximize2,
 } from 'lucide-react'
 
 interface PatientsStepProps {
@@ -22,6 +24,7 @@ interface PatientsStepProps {
 
 export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
   const { t } = useTranslation('tq')
+  const [showFullImage, setShowFullImage] = useState(false)
 
   return (
     <>
@@ -187,13 +190,21 @@ export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
           </p>
         </div>
 
-        {/* Patient history image */}
-        <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50 mb-4">
+        {/* Patient history image (clickable to expand) */}
+        <div
+          className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50 mb-4 cursor-pointer relative group"
+          onClick={() => setShowFullImage(true)}
+        >
           <img
             src="/patient-history.png"
             alt={t('onboarding.patients.timeline_title', 'Patient Timeline')}
             className="w-full h-auto"
           />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 rounded-full p-2 shadow">
+              <Maximize2 className="w-4 h-4 text-gray-700" />
+            </div>
+          </div>
         </div>
 
         {/* Info tip */}
@@ -209,6 +220,27 @@ export const PatientsStep: React.FC<PatientsStepProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen image overlay */}
+      {showFullImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-6"
+          onClick={() => setShowFullImage(false)}
+        >
+          <button
+            onClick={() => setShowFullImage(false)}
+            className="absolute top-4 right-4 bg-white/90 rounded-full p-2 shadow hover:bg-white transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-700" />
+          </button>
+          <img
+            src="/patient-history.png"
+            alt={t('onboarding.patients.timeline_title', 'Patient Timeline')}
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </>
   )
 }

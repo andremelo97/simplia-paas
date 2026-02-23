@@ -56,7 +56,7 @@ export const SessionSelectStep: React.FC = () => {
   return (
     <div className="h-full grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0">
       {/* Left Column: Wizard Introduction */}
-      <div className="flex flex-col justify-center pr-10 border-r border-gray-200">
+      <div className="flex flex-col pr-10 border-r border-gray-200">
         <div className="space-y-8">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white mb-5" style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}>

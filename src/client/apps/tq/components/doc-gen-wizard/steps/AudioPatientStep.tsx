@@ -39,17 +39,19 @@ export const AudioPatientStep: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0 h-full">
       {/* Left Column: Patient */}
-      <div className="space-y-4 pr-6 border-r border-gray-200 self-start">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">
-            {t('doc_gen_wizard.step1.patient_title', 'Select Patient')}
-          </h2>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {t('doc_gen_wizard.step1.patient_description', 'Search for an existing patient or create a new one.')}
-          </p>
-        </div>
+      <div className="pr-6 border-r border-gray-200">
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">
+              {t('doc_gen_wizard.step1.patient_title', 'Select Patient')}
+            </h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {t('doc_gen_wizard.step1.patient_description', 'Search for an existing patient or create a new one.')}
+            </p>
+          </div>
 
-        <WizardPatientSelector />
+          <WizardPatientSelector />
+        </div>
       </div>
 
       {/* Right Column: Audio & Transcription */}

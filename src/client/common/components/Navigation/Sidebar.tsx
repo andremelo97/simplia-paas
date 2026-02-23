@@ -291,8 +291,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <Tooltip content={item.name} disabled={isOpen} side="right">
                   {isHighlight ? (
-                    <span className="flex items-center justify-center w-6 h-6 rounded-full" style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}>
-                      <Icon className="w-4 h-4 text-white" style={{ flexShrink: 0 }} />
+                    <span className="flex items-center justify-center w-7 h-7 rounded-full" style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}>
+                      <Icon className="w-3.5 h-3.5 text-white" style={{ flexShrink: 0 }} />
                     </span>
                   ) : (
                     <span className="flex items-center justify-center">

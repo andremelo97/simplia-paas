@@ -108,7 +108,7 @@ class TenantBranding {
         primary_color = COALESCE(EXCLUDED.primary_color, tenant_branding.primary_color),
         secondary_color = COALESCE(EXCLUDED.secondary_color, tenant_branding.secondary_color),
         tertiary_color = COALESCE(EXCLUDED.tertiary_color, tenant_branding.tertiary_color),
-        logo_url = EXCLUDED.logo_url,
+        logo_url = COALESCE(EXCLUDED.logo_url, tenant_branding.logo_url),
         company_name = EXCLUDED.company_name,
         email = EXCLUDED.email,
         phone = EXCLUDED.phone,

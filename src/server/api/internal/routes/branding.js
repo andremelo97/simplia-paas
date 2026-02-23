@@ -240,11 +240,15 @@ router.put('/', requireAdmin, async (req, res) => {
       });
     }
 
+    // Ignore logoUrl if it's a full URL (signed URL) — logo is managed via upload endpoint.
+    // Only accept storage paths (e.g. "branding/logo.png") to prevent overwriting paths with signed URLs.
+    const safeLogoUrl = logoUrl && TenantBranding.isStoragePath(logoUrl) ? logoUrl : undefined;
+
     const branding = await TenantBranding.upsert(tenantId, {
       primaryColor,
       secondaryColor,
       tertiaryColor,
-      logoUrl,
+      logoUrl: safeLogoUrl,
       companyName,
       // Contact information
       email,

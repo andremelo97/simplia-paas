@@ -93,7 +93,10 @@ export const HubOnboardingWizard: React.FC = () => {
   const saveBranding = async () => {
     setSaving(true)
     try {
-      await brandingService.updateBranding(branding)
+      // Exclude logoUrl — logo is managed via the upload endpoint,
+      // sending the signed URL here would overwrite the storage path in DB
+      const { logoUrl, ...brandingWithoutLogo } = branding
+      await brandingService.updateBranding(brandingWithoutLogo)
     } catch (error) {
       console.error('Failed to save branding:', error)
       // Fail-open: continue anyway
@@ -120,6 +123,17 @@ export const HubOnboardingWizard: React.FC = () => {
     if (currentStepDef.requiresSave) await saveBranding()
 
     const newStep = currentStep + 1
+
+    // Reload branding before final step to get fresh signed URLs
+    if (newStep === STEP_DEFINITIONS.length - 1) {
+      try {
+        const data = await brandingService.getBranding()
+        if (data) setBranding(data)
+      } catch {
+        // Keep current state
+      }
+    }
+
     setCurrentStep(newStep)
   }
 

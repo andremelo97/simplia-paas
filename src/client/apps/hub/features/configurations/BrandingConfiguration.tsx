@@ -63,7 +63,10 @@ export const BrandingConfiguration: React.FC = () => {
     if (!branding) return
 
     try {
-      await brandingService.updateBranding(branding)
+      // Exclude logoUrl — logo is managed via the upload endpoint,
+      // sending the signed URL here would overwrite the storage path in DB
+      const { logoUrl, ...brandingWithoutLogo } = branding
+      await brandingService.updateBranding(brandingWithoutLogo)
     } catch (error) {
       // Error updating branding
     }

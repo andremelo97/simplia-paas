@@ -1616,6 +1616,7 @@
     "back": "Back",
     "create_another": "Create Another Document",
     "close_wizard": "Close Wizard",
+    "restart": "Start Over",
     "minimize": "Minimize",
     "minimize_blocked": "Wait for transcription to finish",
     "resume": {

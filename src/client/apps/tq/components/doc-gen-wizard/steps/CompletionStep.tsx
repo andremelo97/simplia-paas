@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus, Info, Minimize2 } from 'lucide-react'
+import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus, Info, Minimize2, RotateCcw } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { useDocGenWizardStore, WizardDocumentType, CreatedDocument } from '../../../shared/store/docGenWizard'
 
@@ -27,6 +27,7 @@ export const CompletionStep: React.FC = () => {
     loopToStep2,
     closeWizard,
     minimizeWizard,
+    openWizard,
   } = useDocGenWizardStore()
 
   const handleOpenDocument = (doc: CreatedDocument) => {
@@ -149,6 +150,14 @@ export const CompletionStep: React.FC = () => {
         >
           <FilePlus className="w-4 h-4" />
           {t('doc_gen_wizard.create_another', 'Create Another Document')}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => { closeWizard(); openWizard() }}
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <RotateCcw className="w-4 h-4" />
+          {t('doc_gen_wizard.restart', 'Start Over')}
         </Button>
         <Button
           variant="outline"

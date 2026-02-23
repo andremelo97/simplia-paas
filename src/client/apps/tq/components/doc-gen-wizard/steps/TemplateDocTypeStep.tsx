@@ -125,7 +125,7 @@ export const TemplateDocTypeStep: React.FC = () => {
   const canCreate = !!selectedTemplateId && !!documentType && !isCreating
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6 pb-4">
       <div>
         <h2 className="text-xl font-bold text-gray-900">
           {t('doc_gen_wizard.step2.title', 'Select Template & Document Type')}

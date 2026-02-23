@@ -152,7 +152,7 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
 
         {/* Tutorial video */}
         <h4 className="text-sm font-medium text-gray-900 mt-6 mb-2">
-          {t('onboarding.landing_pages.puck_tutorial', 'Landing Pages Editor Tutorial')}
+          {t('onboarding.landing_pages.puck_tutorial', 'Visual Page Builder Tutorial')}
         </h4>
         <div className="aspect-video rounded-lg overflow-hidden bg-black">
           <iframe

@@ -505,7 +505,7 @@
     "media": {
       "right_title": "Upload your media",
       "title": "Media Library",
-      "description": "Upload images and videos to use as backgrounds on your landing pages. These are used in the landing page editor.",
+      "description": "Upload images and videos to use in your landing pages.",
       "video_placeholder": "Tutorial video coming soon",
       "limit_images": "Images: PNG, JPEG, SVG (max 5MB)",
       "limit_videos": "Videos: MP4 (max 20MB)",

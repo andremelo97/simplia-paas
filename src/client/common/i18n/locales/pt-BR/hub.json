@@ -505,7 +505,7 @@
     "media": {
       "right_title": "Envie sua mídia",
       "title": "Biblioteca de Mídia",
-      "description": "Faça upload de imagens e vídeos para usar como fundos nas suas landing pages. Estes são usados no editor de landing pages.",
+      "description": "Faça upload de imagens e vídeos para usar nas suas landing pages.",
       "video_placeholder": "Vídeo tutorial em breve",
       "limit_images": "Imagens: PNG, JPEG, SVG (máx 5MB)",
       "limit_videos": "Vídeos: MP4 (máx 20MB)",

@@ -232,6 +232,7 @@ export const SessionSelectStep: React.FC = () => {
             totalItems={filtered.length}
             itemsPerPage={ITEMS_PER_PAGE}
             onPageChange={setCurrentPage}
+            className="pb-4"
           />
         </div>
       </div>

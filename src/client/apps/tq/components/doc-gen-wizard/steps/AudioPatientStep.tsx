@@ -37,7 +37,7 @@ export const AudioPatientStep: React.FC = () => {
     : 0
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0 h-full">
+    <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0 h-full items-start">
       {/* Left Column: Patient */}
       <div className="space-y-4 pr-6 border-r border-gray-200">
         <div>

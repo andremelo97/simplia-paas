@@ -91,7 +91,7 @@ export const LandingPageCard: React.FC<LandingPageCardProps> = ({
         />
 
         {selectedTemplateId && (
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center flex-wrap gap-3">
             <Button
               type="button"
               variant="secondary"

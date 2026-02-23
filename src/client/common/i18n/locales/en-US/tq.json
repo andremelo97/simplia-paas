@@ -1579,6 +1579,7 @@
       "tip_support": "Click the support icon for human help and AI 24/7 support — test it out!",
       "actions_title": "Get Started",
       "actions_desc": "Jump to any section to start exploring:",
+      "ref_wizard_desc": "AI-powered document creation wizard",
       "ref_new_session": "New Session",
       "ref_new_session_desc": "Start transcribing",
       "ref_patients": "Patients",

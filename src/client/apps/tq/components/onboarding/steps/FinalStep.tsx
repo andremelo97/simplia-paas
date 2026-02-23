@@ -15,13 +15,16 @@ import {
   Layout,
   Settings,
   ArrowRight,
+  Wand2,
 } from 'lucide-react'
+import { useDocGenWizardStore } from '../../../shared/store/docGenWizard'
 
 interface FinalStepProps {
   onNavigate: (path: string) => void
 }
 
 export const FinalStep: React.FC<FinalStepProps> = ({ onNavigate }) => {
+  const { openWizard } = useDocGenWizardStore()
   const { t } = useTranslation('tq')
 
   return (
@@ -180,6 +183,23 @@ export const FinalStep: React.FC<FinalStepProps> = ({ onNavigate }) => {
           </p>
 
           <div className="space-y-3">
+            <button
+              onClick={() => openWizard()}
+              className="w-full flex items-center gap-4 p-4 rounded-lg text-left group transition-colors"
+              style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}
+            >
+              <Wand2 className="w-6 h-6 text-white flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-base font-medium text-white">
+                  {t('home.generate_document', 'Generate Document')}
+                </p>
+                <p className="text-sm text-white/70">
+                  {t('onboarding.finish.ref_wizard_desc', 'AI-powered document creation wizard')}
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-white/60 group-hover:text-white transition-colors flex-shrink-0" />
+            </button>
+
             <button
               onClick={() => onNavigate('/new-session')}
               className="w-full flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-purple-50 transition-colors text-left group"

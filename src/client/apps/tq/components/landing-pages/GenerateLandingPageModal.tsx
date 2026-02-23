@@ -215,7 +215,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>{t('modals.generate_landing_page.title', 'Generate Landing Page')}</DialogTitle>
           <p className="text-sm text-gray-600 mt-1">

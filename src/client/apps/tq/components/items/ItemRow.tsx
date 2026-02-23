@@ -53,7 +53,7 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         </div>
 
         {/* Description - hidden on tablet */}
-        <div className="min-w-0 flex-1 hidden lg:block">
+        <div className="min-w-0 flex-1 hidden lg:block overflow-hidden">
           <span className={`text-sm block truncate ${item.active ? 'text-gray-600' : 'text-gray-400'}`}>
             {item.description || t('quote_items.no_description')}
           </span>

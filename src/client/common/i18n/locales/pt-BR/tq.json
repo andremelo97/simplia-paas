@@ -1514,7 +1514,7 @@
       "features_title": "Funcionalidades",
       "feature_builder": "Construtor visual drag-and-drop (Puck)",
       "feature_branding": "Marca personalizada (logo, cores do Hub)",
-      "feature_password": "Proteção por senha para documentos sensíveis",
+      "feature_password": "Proteção por senha para documentos sensíveis (via página de documentos)",
       "feature_email": "Links compartilháveis enviados por e-mail e WhatsApp (via página de documentos)",
       "feature_responsive": "Design responsivo para mobile",
       "feature_print": "Impressão e exportação PDF para pacientes",

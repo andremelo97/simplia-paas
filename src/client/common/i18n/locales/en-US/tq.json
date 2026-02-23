@@ -1514,7 +1514,7 @@
       "features_title": "Features",
       "feature_builder": "Drag-and-drop visual page builder (Puck)",
       "feature_branding": "Custom branding (logo, colors from Hub)",
-      "feature_password": "Password protection for sensitive documents",
+      "feature_password": "Password protection for sensitive documents (via documents page)",
       "feature_email": "Shareable links sent via email and WhatsApp (via documents page)",
       "feature_responsive": "Mobile-responsive design",
       "feature_print": "Print and PDF export for patients",

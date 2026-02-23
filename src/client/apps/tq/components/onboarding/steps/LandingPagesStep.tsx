@@ -107,6 +107,15 @@ export const LandingPagesStep: React.FC<LandingPagesStepProps> = ({ onNavigate }
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-gray-700">
               {t(
+                'onboarding.landing_pages.feature_password',
+                'Password protection for sensitive documents (via documents page)'
+              )}
+            </p>
+          </div>
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-gray-700">
+              {t(
                 'onboarding.landing_pages.feature_email',
                 'Shareable links sent via email and WhatsApp (via documents page)'
               )}

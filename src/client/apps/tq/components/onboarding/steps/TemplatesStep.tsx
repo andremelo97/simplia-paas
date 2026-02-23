@@ -40,6 +40,14 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
           )}
         </p>
 
+        {/* Video placeholder */}
+        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-4">
+          <Play className="w-10 h-10 mb-2" />
+          <p className="text-sm font-medium">
+            {t('onboarding.templates.video_placeholder', 'See how easy it is')}
+          </p>
+        </div>
+
         {/* Marketplace callout */}
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
           <div className="flex items-start gap-3">
@@ -162,13 +170,6 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-4">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.templates.video_placeholder', 'See how easy it is')}
-          </p>
-        </div>
       </div>
     </>
   )

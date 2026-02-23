@@ -68,7 +68,7 @@ Prevention documents go through three stages:
 
 ## Troubleshooting
 
-- **Cannot share a prevention document**: Ensure the patient has a valid email address on their profile. Also confirm that your clinic's SMTP (email) settings are configured in the Hub.
+- **Cannot share a prevention document**: Ensure the patient has a valid email address on their profile. Also confirm that your clinic's SMTP (email) settings are configured in Hub > Configurations > Communication.
 - **Patient says they did not receive the email**: Check that the patient's email address is correct. Ask them to check their spam or junk folder. You can also generate a new password, which re-sends the email.
 - **Patient forgot the password**: Go to the shared document and click the option to generate a new password. A new email with the updated password will be sent automatically.
 - **Document shows as Sent but patient says they viewed it**: The status updates when the patient opens the landing page. If they viewed it on a different device or the page did not fully load, the status may not have updated. Ask them to open the link again.

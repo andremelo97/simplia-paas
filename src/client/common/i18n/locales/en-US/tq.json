@@ -1481,7 +1481,7 @@
       "syntax_instruction": "Guidance for AI (removed from output)",
       "syntax_instruction_example": "Example: (summarize in 3 bullet points)",
       "syntax_guide_hint": "A complete syntax guide with more examples is available on the template create/edit page.",
-      "video_placeholder": "See how easy it is",
+      "video_title": "How to Create a Template",
       "go_to": "Go to Templates"
     },
     "documents": {

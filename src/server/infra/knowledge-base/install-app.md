@@ -8,14 +8,24 @@ The official LivoCare website is **livocare.ai**. From there you can learn about
 
 ## What Is Available on Mobile
 
-The mobile version of TQ is optimized for quick data checking and audio recording. The following features are available:
+On mobile, each app shows a simplified bottom navigation bar instead of the full sidebar.
 
-- **Sessions**: View and manage your consultation sessions list.
+### Hub Mobile (2 buttons)
+
+- **Open TQ**: Launches the TQ app (if you have access).
+- **Logout**: Signs you out.
+
+Only the **Home** page is accessible on Hub mobile. Marketplace and Configurations require a desktop or laptop.
+
+### TQ Mobile (3 buttons)
+
 - **New Session**: Create new transcription sessions — record audio live or upload a pre-recorded file.
-- **Patients**: View and manage patient records (view details, edit info).
-- **Support**: The support button (headphone icon in the header) and the AI support chat both work on mobile. You can contact human support via WhatsApp/email or chat with the AI assistant directly from your phone. The AI chat opens in full screen on mobile for a better experience.
+- **Sessions**: View and manage your consultation sessions list.
+- **Patients**: View and manage patient records (view details, create, edit).
 
-**What is NOT available on mobile**: Patient history, document creation (quotes, clinical notes, prevention documents), templates, landing pages, and configurations. For full access to all TQ features, use a desktop or laptop computer.
+**Support** (headphone icon in the header) and the **AI support chat** both work on mobile. You can contact human support via WhatsApp/email or chat with the AI assistant directly from your phone.
+
+**What is NOT available on TQ mobile**: Document creation (quotes, clinical notes, prevention documents), templates, landing pages, and configurations. For full access to all TQ features, use a desktop or laptop computer.
 
 The mobile app is best suited for:
 - Recording consultations on the go

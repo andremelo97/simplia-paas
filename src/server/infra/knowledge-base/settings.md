@@ -52,14 +52,14 @@ In addition to the text content, you can customize the visual appearance of the 
 
 ### Footer Settings
 
-The email footer automatically pulls contact information from your clinic's branding settings (configured in Hub > Branding). You can toggle which information to display:
+The email footer automatically pulls contact information from your clinic's branding settings (configured in Hub > Configurations > Branding). You can toggle which information to display:
 
 - **Email**: Show your clinic's email address.
 - **Phone**: Show your clinic's phone number.
 - **Address**: Show your clinic's physical address.
 - **Social Links**: Show links to your clinic's social media profiles.
 
-If a field is not configured in Hub > Branding, it will not appear in the footer even if toggled on.
+If a field is not configured in Hub > Configurations > Branding, it will not appear in the footer even if toggled on.
 
 ### Tips for Email Templates
 
@@ -68,7 +68,7 @@ If a field is not configured in Hub > Branding, it will not appear in the footer
 - Make the CTA button text action-oriented (e.g., "View Your Quote" rather than "Click Here").
 - Always keep `$PUBLIC_LINK$` and `$PASSWORD_BLOCK$` in the template — removing them means patients cannot access their documents.
 - Use the live preview to check your changes before saving.
-- Footer contact info comes from Hub > Branding. Update it there if the info is missing or wrong.
+- Footer contact info comes from Hub > Configurations > Branding. Update it there if the info is missing or wrong.
 
 ## Communication Settings (SMTP)
 
@@ -80,7 +80,7 @@ When you share a quote or prevention document, TQ sends an email to the patient 
 
 ### How to Configure SMTP
 
-1. Go to **Hub > Communication** (this is in the Hub portal, not TQ).
+1. Go to **Hub > Configurations > Communication** (this is in the Hub portal, not TQ).
 2. Enter your SMTP server details:
    - **SMTP Server** (host): The address of your email server (e.g., smtp.gmail.com, smtp.office365.com).
    - **Port**: The port number for the SMTP server (common values: 587 for TLS, 465 for SSL).
@@ -99,14 +99,14 @@ TQ uses AI-powered transcription to convert your session recordings into text. T
 ### How the Quota Works
 
 - **Default quota**: 60 minutes of transcription per month.
-- **Tracking**: Your current usage is displayed in **Hub > Transcription Usage**.
+- **Tracking**: Your current usage is displayed in **Hub > Configurations > Transcription**.
 - **Warning at 80%**: When you reach 80% of your monthly quota (48 minutes by default), TQ shows a warning alert. This gives you time to manage your remaining minutes.
 - **Disabled at 100%**: When you reach 100% of your quota, new transcriptions are temporarily disabled until the next billing cycle.
 - **Monthly reset**: Your quota resets automatically every month based on your billing cycle start date.
 
 ### Managing Your Subscription
 
-1. Go to **Hub > Transcription Usage**.
+1. Go to **Hub > Configurations > Transcription**.
 2. Click **Manage Subscription** to open the Stripe billing portal.
 3. From the Stripe portal, you can:
    - Upgrade your plan for more transcription minutes.
@@ -149,13 +149,13 @@ The items catalog is your list of products and services that you include in pati
 
 ## Branding
 
-Your clinic's visual identity is configured in the Hub and appears on documents, emails, and landing pages.
+Your clinic's visual identity is configured in the Hub and appears on emails and landing pages.
 
 ### How to Configure Branding
 
-1. Go to **Hub > Branding**.
+1. Go to **Hub > Configurations > Branding**.
 2. Configure the following:
-   - **Logo**: Upload your clinic logo. It appears on printed documents, emails, and landing pages.
+   - **Logo**: Upload your clinic logo. It appears on emails and landing pages.
    - **Colors**: Set 3 colors (primary, secondary, accent) to match your brand.
    - **Company Info**: Enter your clinic name, phone number, email, and address.
    - **Social Links**: Add links to your social media profiles.
@@ -163,10 +163,10 @@ Your clinic's visual identity is configured in the Hub and appears on documents,
 
 ## Troubleshooting
 
-- **Emails are not being sent**: Check your SMTP configuration in Hub > Communication. If using your own SMTP, verify the server, port, username, and password are correct. Try the default LivoCare SMTP to confirm the issue is with your custom settings.
-- **Transcription stopped working**: You have likely reached your monthly quota. Check Hub > Transcription Usage. If at 100%, wait for the monthly reset or upgrade your plan.
+- **Emails are not being sent**: Check your SMTP configuration in Hub > Configurations > Communication. If using your own SMTP, verify the server, port, username, and password are correct. Try the default LivoCare SMTP to confirm the issue is with your custom settings.
+- **Transcription stopped working**: You have likely reached your monthly quota. Check Hub > Configurations > Transcription. If at 100%, wait for the monthly reset or upgrade your plan.
 - **Items not showing in quotes**: Make sure the item is active in the Items catalog. Deactivated items do not appear when creating new quotes.
-- **Branding not appearing on documents**: Ensure your logo and company info are saved in Hub > Branding. Changes may take a moment to propagate.
+- **Branding not appearing on emails or landing pages**: Ensure your logo and company info are saved in Hub > Configurations > Branding. Changes may take a moment to propagate.
 - **Cannot access Configurations menu**: Only Admin users can see and access Configurations. Ask your clinic administrator to make changes or to grant you Admin access.
 
 ## Frequently Asked Questions

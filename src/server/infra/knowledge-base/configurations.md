@@ -9,7 +9,7 @@ Configuration settings in LivoCare are split between two places: the **TQ app** 
 ## How to Access Configurations
 
 - **TQ Configurations**: Open TQ and look for **Configurations** in the left sidebar menu.
-- **Hub Configurations**: Log in to the Hub portal at hub.livocare.ai and navigate to the desired settings section.
+- **Hub Configurations**: Log in to the Hub portal at hub.livocare.ai and click **Configurations** in the left sidebar menu. Then select the desired section (Branding, Communication, or Transcription).
 
 ## TQ Configurations
 
@@ -47,7 +47,7 @@ Variables are automatically replaced with real data when the email is sent. Wrap
 
 #### Footer Settings
 
-The footer pulls contact info from Hub > Branding. Toggle which fields to show: email, phone, address, and social links. Fields not configured in Branding will not appear.
+The footer pulls contact info from Hub > Configurations > Branding. Toggle which fields to show: email, phone, address, and social links. Fields not configured in Branding will not appear.
 
 ### Tips for Email Templates
 
@@ -55,7 +55,7 @@ The footer pulls contact info from Hub > Branding. Toggle which fields to show: 
 - Keep the body text concise. Patients mainly want to click the button and view their document.
 - The CTA button text should be action-oriented: "View Your Quote" is better than "Click Here".
 - Never remove `$PUBLIC_LINK$` or `$PASSWORD_BLOCK$` from the template — they are essential for patient access.
-- Footer contact info is managed in Hub > Branding. Update it there if information is missing.
+- Footer contact info is managed in Hub > Configurations > Branding. Update it there if information is missing.
 
 ## Hub Configurations
 
@@ -63,13 +63,13 @@ The Hub is the central management portal for your LivoCare account. Hub configur
 
 ### Branding
 
-Your clinic's visual identity is managed in the Hub and appears across all documents, emails, and landing pages.
+Your clinic's visual identity is managed in the Hub and appears on emails and landing pages.
 
-1. Navigate to **Hub > Branding**.
+1. Navigate to **Hub > Configurations > Branding**.
 2. Configure the following:
-   - **Logo** - Upload your clinic logo. This appears on printed documents, email headers, and landing pages shared with patients.
-   - **Colors** - Set 3 brand colors (primary, secondary, accent) that are used throughout the interface and on shared documents.
-   - **Company Information** - Enter your clinic name, phone number, email address, and physical address. This information appears on official documents.
+   - **Logo** - Upload your clinic logo. This appears on email headers and landing pages shared with patients.
+   - **Colors** - Set 3 brand colors (primary, secondary, accent) that are used in email templates and landing pages.
+   - **Company Information** - Enter your clinic name, phone number, email address, and physical address. This information appears in email footers and landing page footers.
    - **Social Links** - Add links to your clinic's social media profiles (Instagram, Facebook, etc.). These can appear on shared landing pages.
    - **Background Video** - Upload or configure a background video for your clinic's landing pages and public-facing content.
 3. Save your changes. Branding updates propagate to all LivoCare applications.
@@ -78,7 +78,7 @@ Your clinic's visual identity is managed in the Hub and appears across all docum
 
 SMTP (Simple Mail Transfer Protocol) is what allows TQ to send emails on your behalf. Think of it as the "outgoing mail" settings for your clinic.
 
-1. Navigate to **Hub > Communication**.
+1. Navigate to **Hub > Configurations > Communication**.
 2. LivoCare provides a **default SMTP server** so you can start sending emails immediately without any setup. Emails sent this way come from a LivoCare address.
 3. To send emails from your own clinic domain (e.g., info@yourclinic.com):
    - Enter your SMTP server address (e.g., smtp.gmail.com).
@@ -91,7 +91,7 @@ SMTP (Simple Mail Transfer Protocol) is what allows TQ to send emails on your be
 
 Monitor and manage your AI transcription quota from the Hub.
 
-1. Navigate to **Hub > Transcription Usage**.
+1. Navigate to **Hub > Configurations > Transcription**.
 2. View your current usage: how many minutes you have used this month vs. your monthly quota.
 3. The default quota is **60 minutes per month**.
 4. Alerts:
@@ -128,20 +128,20 @@ The Marketplace lets you browse and import pre-built templates and landing page 
 | Setting | Where | Path |
 |---------|-------|------|
 | Email templates | TQ | Configurations > Email Template |
-| Branding (logo, colors) | Hub | Branding |
-| SMTP (email sending) | Hub | Communication |
-| Transcription quota | Hub | Transcription Usage |
-| Subscription billing | Hub | Transcription Usage > Manage Subscription |
+| Branding (logo, colors) | Hub | Configurations > Branding |
+| SMTP (email sending) | Hub | Configurations > Communication |
+| Transcription quota | Hub | Configurations > Transcription |
+| Subscription billing | Hub | Configurations > Transcription > Manage Subscription |
 | Templates marketplace | Hub | Marketplace |
 | Items catalog | TQ | Documents > Items |
 
 ## Troubleshooting
 
 - **Cannot see Configurations in TQ sidebar**: You do not have Admin access. Ask your clinic administrator to grant you the Admin role.
-- **Branding changes not showing up**: Save your changes in Hub > Branding and wait a moment. If still not reflecting, try refreshing TQ or clearing your browser cache.
+- **Branding changes not showing up**: Save your changes in Hub > Configurations > Branding and wait a moment. If still not reflecting, try refreshing TQ or clearing your browser cache.
 - **SMTP test email failing**: Double-check the server address, port, username, and password. Common issues include incorrect port numbers or needing an app-specific password (especially with Gmail or Office 365).
 - **Marketplace is empty**: The marketplace content depends on your region and subscription. Check your internet connection and try refreshing the page.
-- **Transcription disabled unexpectedly**: You have reached 100% of your monthly quota. Go to Hub > Transcription Usage to confirm. Upgrade your plan or wait for the monthly reset.
+- **Transcription disabled unexpectedly**: You have reached 100% of your monthly quota. Go to Hub > Configurations > Transcription to confirm. Upgrade your plan or wait for the monthly reset.
 - **Imported template not appearing in TQ**: After importing from the Marketplace, go to the relevant templates section in TQ (clinical notes or prevention). The imported template should appear in the list. Try refreshing TQ if needed.
 
 ## Frequently Asked Questions

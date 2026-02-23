@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import {
   FileText,
   ShoppingBag,
-  Play,
   ArrowRight,
   ChevronDown,
   ChevronRight,
@@ -40,12 +39,19 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
           )}
         </p>
 
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-4">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.templates.video_placeholder', 'See how easy it is')}
-          </p>
+        {/* Tutorial video */}
+        <h4 className="text-sm font-medium text-gray-900 mb-2">
+          {t('onboarding.templates.video_title', 'How to Create a Template')}
+        </h4>
+        <div className="aspect-video rounded-lg overflow-hidden bg-black mb-4">
+          <iframe
+            className="w-full h-full"
+            src="https://www.youtube.com/embed/qWAIMbTDT1A?rel=0"
+            title={t('onboarding.templates.video_title', 'How to Create a Template')}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
         </div>
 
         {/* Marketplace callout */}

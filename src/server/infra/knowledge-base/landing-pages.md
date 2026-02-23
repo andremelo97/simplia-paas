@@ -85,7 +85,7 @@ Once a document has been shared, you have full control over access:
 - **Shared link is not working**: Check if the access has been revoked. Go to the quote or prevention document and look at the sharing status. If revoked, the link will not work. You can re-share the document to generate a new link.
 - **Patient forgot their password**: Go to the shared document and click "Generate new password." This creates a fresh password and automatically re-sends the email.
 - **Patient says the page looks broken**: Ensure your landing page template is properly configured. Open the template in the Puck editor, check that all components are placed correctly, and save again.
-- **Email was not sent to the patient**: Verify the patient has a valid email address in their profile. Also check that your SMTP settings are configured in the Hub under Communication.
+- **Email was not sent to the patient**: Verify the patient has a valid email address in their profile. Also check that your SMTP settings are configured in Hub > Configurations > Communication.
 - **Landing page shows old information**: Landing pages display the data as it was at the time of sharing. If you updated a quote after sharing, you may need to re-share it with the updated content.
 - **Cannot find templates**: Landing page templates are under **Landing Pages > Templates** in the TQ sidebar. Only Admin users can create and edit templates.
 

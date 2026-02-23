@@ -76,7 +76,7 @@ These are pre-built section components for building full landing pages quickly.
 
 ## Color System
 
-All components use your clinic's branding colors from Hub > Branding:
+All components use your clinic's branding colors from Hub > Configurations > Branding:
 
 - **Primary**: Your main brand color.
 - **Secondary**: Your secondary brand color.
@@ -97,12 +97,12 @@ Typography components and buttons support custom Google Fonts. Available fonts i
 - **DocumentItems** and **DocumentTotal** are essential for quote landing pages — they show the actual quote data.
 - **DocumentContent** is essential for prevention document landing pages — it renders the document body.
 - Test your page on mobile by resizing the browser window. All components are responsive.
-- Use the Marketplace to import pre-designed templates instead of building from scratch.
+- Use the Marketplace (accessible from the Hub sidebar) to import pre-designed templates instead of building from scratch.
 
 ## Troubleshooting
 
 - **Component not showing content**: Make sure the template is linked to a quote or prevention document. Document-specific components (DocumentItems, DocumentTotal, DocumentContent, DocumentNumber) only display data when a real document is connected.
-- **Colors look different from branding**: Verify your branding colors in Hub > Branding. The editor uses those values directly.
+- **Colors look different from branding**: Verify your branding colors in Hub > Configurations > Branding. The editor uses those values directly.
 - **Video not playing**: Check that the URL is a valid YouTube, Vimeo, or direct video link. The editor converts standard YouTube/Vimeo URLs to embeddable format automatically.
 - **Image not loading**: Ensure the image URL is publicly accessible. Private or local file paths will not work.
 - **Page looks different on mobile**: This is normal. The editor components are responsive and automatically adapt layouts for smaller screens (e.g., Grid columns stack, tables become cards).

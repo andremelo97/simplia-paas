@@ -54,7 +54,7 @@ Getting a clean, accurate transcription starts with good audio quality. Follow t
 - A **warning** appears when you reach **80%** of your monthly quota, reminding you to manage your usage.
 - At **100%** usage, new transcriptions are **disabled** until the quota resets at the start of your next billing cycle.
 - Both live recordings and uploaded audio files count toward the quota based on their duration.
-- To increase your quota, upgrade your plan via the Stripe Portal. Access it from Hub > Transcription Usage > Manage Subscription.
+- To increase your quota, upgrade your plan via the Stripe Portal. Access it from Hub > Configurations > Transcription > Manage Subscription.
 
 ## Audio Privacy
 

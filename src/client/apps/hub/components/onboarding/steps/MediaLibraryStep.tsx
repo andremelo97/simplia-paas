@@ -22,7 +22,7 @@ export const MediaLibraryStep: React.FC = () => {
         <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t(
             'onboarding.media.description',
-            'Upload images and videos to use as backgrounds on your document landing pages. These are used in the landing page editor.'
+            'Upload images and videos to use as backgrounds on your landing pages. These are used in the landing page editor.'
           )}
         </p>
 

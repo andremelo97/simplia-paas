@@ -173,7 +173,7 @@ export const LogoUploadStep: React.FC<LogoUploadStepProps> = ({
         <p className="text-lg text-gray-600 mb-8 leading-relaxed">
           {t(
             'onboarding.logo_step.description',
-            'Your logo appears on documents, emails, and reports sent to clients. A clear, high-quality image ensures your brand looks professional.'
+            'Your logo appears on emails and landing pages sent to your clients. A clear, high-quality image ensures your brand looks professional.'
           )}
         </p>
 

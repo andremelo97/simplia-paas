@@ -39,7 +39,7 @@ export const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ branding, setB
         </div>
 
         <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-          {t('onboarding.company_info.description', 'This information is displayed in email footers and on documents sent to your clients.')}
+          {t('onboarding.company_info.description', 'This information is displayed in email footers and landing page footers.')}
         </p>
 
         <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white">

@@ -25,7 +25,7 @@ export const BrandColorsStep: React.FC<BrandColorsStepProps> = ({ branding, setB
         </div>
 
         <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-          {t('onboarding.brand_colors.description', 'These colors are used in email templates, documents, and landing pages. Choose colors that match your brand identity.')}
+          {t('onboarding.brand_colors.description', 'These colors are used in email templates and landing pages. Choose colors that match your brand identity.')}
         </p>
 
         <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mb-6">

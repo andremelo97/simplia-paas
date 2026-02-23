@@ -457,7 +457,7 @@
     "logo_step": {
       "right_title": "Envie aqui",
       "title": "Seu Logo",
-      "description": "Seu logo aparece em documentos, emails e relatórios enviados aos clientes. Uma imagem clara e de alta qualidade garante que sua marca tenha uma aparência profissional.",
+      "description": "Seu logo aparece em emails e landing pages enviados aos seus clientes. Uma imagem clara e de alta qualidade garante que sua marca tenha uma aparência profissional.",
       "video_placeholder": "Vídeo tutorial em breve",
       "supported_formats": "Formatos suportados: PNG, JPEG, SVG. Máx 5MB.",
       "drag_drop": "Arraste e solte um arquivo de imagem, ou clique para procurar",
@@ -479,7 +479,7 @@
     "brand_colors": {
       "right_title": "Escolha suas cores",
       "title": "Cores da Marca",
-      "description": "Estas cores são usadas em templates de email, documentos e landing pages. Escolha cores que combinem com a identidade da sua marca.",
+      "description": "Estas cores são usadas em templates de email e landing pages. Escolha cores que combinem com a identidade da sua marca.",
       "video_placeholder": "Vídeo tutorial em breve",
       "tip": "As cores padrão são as cores da marca LivoCare. Você pode redefini-las a qualquer momento nas Configurações.",
       "primary_color": "Cor Primária",
@@ -490,7 +490,7 @@
     "company_info": {
       "right_title": "Preencha seus dados",
       "title": "Informações da Empresa",
-      "description": "Estas informações são exibidas nos rodapés de email e nos documentos enviados aos seus clientes.",
+      "description": "Estas informações são exibidas nos rodapés de emails e landing pages.",
       "video_placeholder": "Vídeo tutorial em breve",
       "company_name": "Nome da Empresa",
       "company_name_placeholder": "Nome da sua empresa",
@@ -505,7 +505,7 @@
     "media": {
       "right_title": "Envie sua mídia",
       "title": "Biblioteca de Mídia",
-      "description": "Faça upload de imagens e vídeos para usar como fundos nas landing pages dos seus documentos. Estes são usados no editor de landing pages.",
+      "description": "Faça upload de imagens e vídeos para usar como fundos nas suas landing pages. Estes são usados no editor de landing pages.",
       "video_placeholder": "Vídeo tutorial em breve",
       "limit_images": "Imagens: PNG, JPEG, SVG (máx 5MB)",
       "limit_videos": "Vídeos: MP4 (máx 20MB)",

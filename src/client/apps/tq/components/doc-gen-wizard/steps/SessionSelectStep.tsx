@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Search, Mic, Loader2, Wand2, FileText, Zap, ArrowRight } from 'lucide-react'
-import { Input, Badge, Button } from '@client/common/ui'
+import { Input, Badge, Button, Paginator } from '@client/common/ui'
 import { sessionsService, Session } from '../../../services/sessions'
 import { useDocGenWizardStore, ExistingSessionData } from '../../../shared/store/docGenWizard'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -16,6 +16,8 @@ export const SessionSelectStep: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 10
 
   useEffect(() => {
     const load = async () => {
@@ -39,6 +41,16 @@ export const SessionSelectStep: React.FC = () => {
       return s.number.toLowerCase().includes(q) || patientName.includes(q)
     })
   }, [sessions, searchQuery])
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery])
+
+  const paginatedSessions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return filtered.slice(start, start + ITEMS_PER_PAGE)
+  }, [filtered, currentPage])
 
   const handleSelectSession = (session: Session) => {
     const patientName = `${session.patient_first_name || ''} ${session.patient_last_name || ''}`.trim()
@@ -184,7 +196,7 @@ export const SessionSelectStep: React.FC = () => {
               </div>
             ) : (
               <div>
-                {filtered.map((session) => {
+                {paginatedSessions.map((session) => {
                   const patientName = `${session.patient_first_name || ''} ${session.patient_last_name || ''}`.trim() || '—'
                   return (
                     <button
@@ -214,6 +226,13 @@ export const SessionSelectStep: React.FC = () => {
               </div>
             )}
           </div>
+
+          <Paginator
+            currentPage={currentPage}
+            totalItems={filtered.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>

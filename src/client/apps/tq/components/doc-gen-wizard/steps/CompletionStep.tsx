@@ -45,7 +45,7 @@ export const CompletionStep: React.FC = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 text-center">
+    <div className="max-w-2xl mx-auto space-y-6 text-center pb-8">
       {/* Success Icon */}
       <div className="flex justify-center pt-4">
         <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">

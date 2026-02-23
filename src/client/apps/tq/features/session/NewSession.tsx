@@ -1151,18 +1151,14 @@ export const NewSession: React.FC = () => {
         </div>
 
         {/* Controls - inline with title on desktop only */}
-        <div className="hidden lg:flex flex-nowrap items-center space-x-4">
+        <div className="hidden lg:flex flex-col gap-1">
+        <div className="flex flex-nowrap items-center space-x-4">
           {/* Timer */}
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-600">Time:</span>
             <span className="font-mono text-lg font-semibold">
               {timer.formatTime(timer.time)}
             </span>
-            {isTranscribing && timer.time < 60 && (
-              <span className="text-xs text-amber-600">
-                {t('sessions.recording.min_duration', 'Minimum 1 minute recording required')}
-              </span>
-            )}
           </div>
 
           {/* VU Meter */}
@@ -1247,6 +1243,12 @@ export const NewSession: React.FC = () => {
               </Button>
             </div>
           )}
+        </div>
+        {isTranscribing && timer.time < 60 && (
+          <span className="text-xs text-amber-600">
+            {t('sessions.recording.min_duration', 'Minimum 1 minute recording required')}
+          </span>
+        )}
         </div>
       </div>
 
@@ -1448,11 +1450,6 @@ export const NewSession: React.FC = () => {
           <div className="flex items-center space-x-2">
             <span className="text-xs md:text-sm text-gray-600">Time:</span>
             <span className="font-mono text-base md:text-lg font-semibold">{timer.formatTime(timer.time)}</span>
-            {isTranscribing && timer.time < 60 && (
-              <span className="text-xs text-amber-600">
-                {t('sessions.recording.min_duration', 'Min. 1 min')}
-              </span>
-            )}
           </div>
           <div className="flex items-center space-x-2">
             <Mic className="w-4 h-4 text-gray-600" />
@@ -1461,6 +1458,11 @@ export const NewSession: React.FC = () => {
             </div>
           </div>
         </div>
+        {isTranscribing && timer.time < 60 && (
+          <span className="text-xs text-amber-600">
+            {t('sessions.recording.min_duration', 'Minimum 1 minute recording required')}
+          </span>
+        )}
         <Select
           value={selectedDevice}
           onChange={(e) => setSelectedDevice(e.target.value)}

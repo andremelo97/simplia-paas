@@ -56,59 +56,59 @@ export const SessionSelectStep: React.FC = () => {
   return (
     <div className="h-full grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-0">
       {/* Left Column: Wizard Introduction */}
-      <div className="flex flex-col justify-center pr-8 border-r border-gray-200">
-        <div className="space-y-6">
+      <div className="flex flex-col justify-center pr-10 border-r border-gray-200">
+        <div className="space-y-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white mb-4" style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white mb-5" style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}>
               <Wand2 className="w-3.5 h-3.5" />
               {t('doc_gen_wizard.step0.intro_badge', 'Document Wizard')}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+            <h1 className="text-3xl font-bold text-gray-900 leading-tight">
               {t('doc_gen_wizard.step0.intro_title', 'Generate documents in minutes')}
             </h1>
-            <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+            <p className="text-base text-gray-500 mt-3 leading-relaxed">
               {t('doc_gen_wizard.step0.intro_description', 'This wizard guides you step by step — from audio to a finished document. It\'s a faster alternative to the manual flow: record, transcribe, pick a template, and let AI do the rest.')}
             </p>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                <Mic className="w-4 h-4 text-[#B725B7]" />
+          <div className="space-y-5">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                <Mic className="w-5 h-5 text-[#B725B7]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('doc_gen_wizard.step0.feature_audio', 'Record or upload audio')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500 mt-0.5">
                   {t('doc_gen_wizard.step0.feature_audio_desc', 'Transcription is automatic — just speak or upload a file.')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                <Zap className="w-4 h-4 text-[#B725B7]" />
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-[#B725B7]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('doc_gen_wizard.step0.feature_ai', 'AI fills your template')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500 mt-0.5">
                   {t('doc_gen_wizard.step0.feature_ai_desc', 'Choose a template and the AI generates the document content from the transcription.')}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                <FileText className="w-4 h-4 text-[#B725B7]" />
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-[#B725B7]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-base font-medium text-gray-900">
                   {t('doc_gen_wizard.step0.feature_docs', 'Quotes, notes & prevention')}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-sm text-gray-500 mt-0.5">
                   {t('doc_gen_wizard.step0.feature_docs_desc', 'Create multiple document types from a single session.')}
                 </p>
               </div>

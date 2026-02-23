@@ -101,10 +101,6 @@ export const ClinicalNoteHeaderAction: React.FC<{
       printWindow.focus()
       printWindow.print()
     }
-    setTimeout(() => {
-      printWindow.focus()
-      printWindow.print()
-    }, 300)
   }
 
   return (

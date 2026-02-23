@@ -22,7 +22,7 @@ import {
   Tooltip
 } from '@client/common/ui'
 import { Copy, CheckCircle2, MessageCircle, Mail, ExternalLink, Loader2, Info } from 'lucide-react'
-import { landingPagesService, LandingPageTemplate } from '../../services/landingPages'
+import { landingPagesService } from '../../services/landingPages'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 
 import { cleanPhoneForWhatsApp } from '../../utils/phone'
@@ -33,6 +33,8 @@ interface GenerateLandingPageModalProps {
   documentId: string
   documentType: 'quote' | 'prevention'
   documentNumber: string
+  templateId: string
+  templateName: string
   patientName?: string
   patientEmail?: string
   patientPhone?: string
@@ -46,6 +48,8 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
   documentId,
   documentType,
   documentNumber,
+  templateId,
+  templateName,
   patientName,
   patientEmail,
   patientPhone,
@@ -54,10 +58,8 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
 }) => {
   const { t } = useTranslation('tq')
   const { formatShortDate } = useDateFormatter()
-  const [templates, setTemplates] = useState<LandingPageTemplate[]>([])
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
   const [expiresAt, setExpiresAt] = useState<string>('')
-  const [isLoading, setIsLoading] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generatedLandingPage, setGeneratedLandingPage] = useState<any>(null)
   const [generatedPassword, setGeneratedPassword] = useState<string>('')
@@ -65,33 +67,15 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
   const [isSendingEmail, setIsSendingEmail] = useState(false)
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sent' | 'failed'>('idle')
 
-  // Load templates when modal opens
+  // Set template and reset state when modal opens
   useEffect(() => {
     if (open) {
-      loadTemplates()
+      setSelectedTemplateId(templateId)
       setGeneratedLandingPage(null)
       setGeneratedPassword('')
       setEmailStatus('idle')
     }
-  }, [open])
-
-  const loadTemplates = async () => {
-    setIsLoading(true)
-    try {
-      const response = await landingPagesService.listTemplates({ active: true })
-      setTemplates(response.data || [])
-
-      // Auto-select default template
-      const defaultTemplate = response.data?.find((t: LandingPageTemplate) => t.isDefault)
-      if (defaultTemplate) {
-        setSelectedTemplateId(defaultTemplate.id)
-      }
-    } catch (error) {
-      // Failed to load templates
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  }, [open, templateId])
 
   const handleQuickDate = (days: number) => {
     const futureDate = new Date()
@@ -246,7 +230,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
               <Label htmlFor="template">{t('modals.generate_public_quote.select_template')}</Label>
               <Input
                 id="template"
-                value={templates.find((t) => t.id === selectedTemplateId)?.name || t('common:loading')}
+                value={templateName}
                 readOnly
                 disabled
                 className="bg-gray-50"

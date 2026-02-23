@@ -13,7 +13,7 @@ interface LandingPageCardProps {
   patientEmail?: string
   patientPhone?: string
   patientPhoneCountryCode?: string
-  onShowGenerateModal?: () => void
+  onShowGenerateModal?: (templateId: string, templateName: string) => void
 }
 
 export const LandingPageCard: React.FC<LandingPageCardProps> = ({
@@ -40,10 +40,12 @@ export const LandingPageCard: React.FC<LandingPageCardProps> = ({
         const response = await landingPagesService.listTemplates({ active: true })
         setTemplates(response.data)
 
-        // Set default template if exists
+        // Set default template if exists, or first available
         const defaultTemplate = response.data.find((t: LandingPageTemplate) => t.isDefault)
         if (defaultTemplate) {
           setSelectedTemplateId(defaultTemplate.id)
+        } else if (response.data.length > 0) {
+          setSelectedTemplateId(response.data[0].id)
         }
       } catch (error) {
         // Failed to load templates
@@ -103,7 +105,10 @@ export const LandingPageCard: React.FC<LandingPageCardProps> = ({
               <Button
                 type="button"
                 variant="primary"
-                onClick={onShowGenerateModal}
+                onClick={() => {
+                  const selectedTemplate = templates.find(t => t.id === selectedTemplateId)
+                  if (selectedTemplate) onShowGenerateModal(selectedTemplate.id, selectedTemplate.name)
+                }}
               >
                 {t('landing_pages.generate', 'Generate Landing Page')}
               </Button>

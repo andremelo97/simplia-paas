@@ -218,10 +218,6 @@ export const EditClinicalNote: React.FC = () => {
       printWindow.focus()
       printWindow.print()
     }
-    setTimeout(() => {
-      printWindow.focus()
-      printWindow.print()
-    }, 300)
   }
 
   const formatDate = (dateString?: string) => {

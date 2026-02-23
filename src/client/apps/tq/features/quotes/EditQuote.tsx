@@ -65,10 +65,12 @@ export const EditQuote: React.FC = () => {
         const response = await landingPagesService.listTemplates({ active: true })
         setTemplates(response.data)
 
-        // Set default template if exists
+        // Set default template if exists, or first available
         const defaultTemplate = response.data.find(t => t.isDefault)
         if (defaultTemplate) {
           setSelectedTemplateId(defaultTemplate.id)
+        } else if (response.data.length > 0) {
+          setSelectedTemplateId(response.data[0].id)
         }
       } catch (error) {
         // Failed to load templates
@@ -642,6 +644,8 @@ export const EditQuote: React.FC = () => {
           documentId={quote.id}
           documentType="quote"
           documentNumber={quote.number}
+          templateId={selectedTemplateId}
+          templateName={templates.find(t => t.id === selectedTemplateId)?.name || ''}
           patientName={`${patientFirstName} ${patientLastName}`.trim()}
           patientEmail={patientEmail}
           patientPhone={patientPhone}

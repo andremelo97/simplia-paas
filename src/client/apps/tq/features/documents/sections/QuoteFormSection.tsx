@@ -10,6 +10,8 @@ export interface QuoteFormState {
   status: string
   items: any[]
   showGenerateModal: boolean
+  selectedTemplateId: string
+  selectedTemplateName: string
 }
 
 interface QuoteFormSectionProps {
@@ -64,7 +66,7 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
           patientEmail={patientEmail}
           patientPhone={patientPhone}
           patientPhoneCountryCode={patientPhoneCountryCode}
-          onShowGenerateModal={() => onFormStateChange({ showGenerateModal: true })}
+          onShowGenerateModal={(templateId, templateName) => onFormStateChange({ showGenerateModal: true, selectedTemplateId: templateId, selectedTemplateName: templateName })}
         />
       )}
 
@@ -89,6 +91,8 @@ export const QuoteFormSection: React.FC<QuoteFormSectionProps> = ({
           documentId={document.id}
           documentType="quote"
           documentNumber={document.number}
+          templateId={formState.selectedTemplateId}
+          templateName={formState.selectedTemplateName}
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}

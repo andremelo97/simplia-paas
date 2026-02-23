@@ -8,6 +8,8 @@ import { DocumentConfig, DocumentData } from '../documentConfig'
 
 export interface PreventionFormState {
   showGenerateModal: boolean
+  selectedTemplateId: string
+  selectedTemplateName: string
 }
 
 interface PreventionFormSectionProps {
@@ -55,7 +57,7 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
         patientEmail={patientEmail}
         patientPhone={patientPhone}
         patientPhoneCountryCode={patientPhoneCountryCode}
-        onShowGenerateModal={() => onFormStateChange({ showGenerateModal: true })}
+        onShowGenerateModal={(templateId, templateName) => onFormStateChange({ showGenerateModal: true, selectedTemplateId: templateId, selectedTemplateName: templateName })}
       />
 
       {/* Shared Links List */}
@@ -79,6 +81,8 @@ export const PreventionFormSection: React.FC<PreventionFormSectionProps> = ({
           documentId={documentId}
           documentType="prevention"
           documentNumber={document.number}
+          templateId={formState.selectedTemplateId}
+          templateName={formState.selectedTemplateName}
           patientName={patientName}
           patientEmail={patientEmail}
           patientPhone={patientPhone}

@@ -1431,7 +1431,7 @@
       "step3_desc": "Vincule a transcrição a um paciente para criar uma sessão. A partir daqui, você pode gerar documentos usando templates.",
       "autosave_title": "Salvamento automático",
       "autosave_desc": "O rascunho da sua gravação é salvo automaticamente no navegador. Se fechar a aba acidentalmente, pode retomar de onde parou.",
-      "video_placeholder": "Veja como é fácil",
+      "video_title": "Como Criar uma Sessão",
       "try_now": "Experimentar Transcrição"
     },
     "patients": {

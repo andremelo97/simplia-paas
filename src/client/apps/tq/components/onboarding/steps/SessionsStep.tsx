@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { Mic, Upload, Info, Zap, Play, Monitor, Tablet, Smartphone, ArrowRight } from 'lucide-react'
+import { Mic, Upload, Info, Zap, Monitor, Tablet, Smartphone, ArrowRight } from 'lucide-react'
 
 interface SessionsStepProps {
   onNavigate: (path: string) => void
@@ -188,12 +188,19 @@ export const SessionsStep: React.FC<SessionsStepProps> = ({ onNavigate }) => {
           </div>
         </div>
 
-        {/* Video placeholder */}
-        <div className="aspect-video border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 bg-white mt-4">
-          <Play className="w-10 h-10 mb-2" />
-          <p className="text-sm font-medium">
-            {t('onboarding.sessions.video_placeholder', 'See how easy it is')}
-          </p>
+        {/* Tutorial video */}
+        <h4 className="text-sm font-medium text-gray-900 mt-4 mb-2">
+          {t('onboarding.sessions.video_title', 'How to Create a Session')}
+        </h4>
+        <div className="aspect-video rounded-lg overflow-hidden bg-black">
+          <iframe
+            className="w-full h-full"
+            src="https://www.youtube.com/embed/gDdVm4meNI4?rel=0"
+            title={t('onboarding.sessions.video_title', 'How to Create a Session')}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
         </div>
       </div>
     </>

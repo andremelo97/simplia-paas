@@ -1431,7 +1431,7 @@
       "step3_desc": "Link the transcription to a patient to create a session. From here, you can generate documents using templates.",
       "autosave_title": "Auto-save",
       "autosave_desc": "Your recording draft is automatically saved to your browser. If you accidentally close the tab, you can resume where you left off.",
-      "video_placeholder": "See how easy it is",
+      "video_title": "How to Create a Session",
       "try_now": "Try Transcription Now"
     },
     "patients": {

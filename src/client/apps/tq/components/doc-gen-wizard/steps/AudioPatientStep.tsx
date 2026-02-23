@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Mic, Upload, Maximize2, Minimize2, RotateCcw } from 'lucide-react'
-import { Textarea } from '@client/common/ui'
 import { useDocGenWizardStore } from '../../../shared/store/docGenWizard'
 import { WizardAudioRecorder } from '../components/WizardAudioRecorder'
 import { WizardAudioUpload } from '../components/WizardAudioUpload'
@@ -21,6 +20,14 @@ export const AudioPatientStep: React.FC = () => {
 
   const [audioMode, setAudioMode] = useState<AudioMode>('record')
   const [isTranscriptionFullscreen, setIsTranscriptionFullscreen] = useState(false)
+
+  // Reset local state when store goes back to idle (wizard was reset)
+  React.useEffect(() => {
+    if (transcriptionStatus === 'idle') {
+      setAudioMode('record')
+      setIsTranscriptionFullscreen(false)
+    }
+  }, [transcriptionStatus])
 
   const isTranscriptionComplete = transcriptionStatus === 'completed'
   const hasAnyProgress = transcriptionStatus !== 'idle' || !!patientId
@@ -109,7 +116,7 @@ export const AudioPatientStep: React.FC = () => {
         {/* Transcription editor — fills remaining space */}
         {isTranscriptionComplete && transcriptionText !== null && (
           <div className="mt-4 flex-1 flex flex-col min-h-0">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 flex-shrink-0">
               <h3 className="text-sm font-medium text-gray-700">
                 {t('doc_gen_wizard.step1.transcription_preview', 'Transcription')}
                 {wordCount > 0 && (
@@ -126,12 +133,13 @@ export const AudioPatientStep: React.FC = () => {
                 <Maximize2 className="w-3.5 h-3.5" />
               </button>
             </div>
-            <Textarea
-              value={transcriptionText}
-              onChange={(e) => setTranscriptionText(e.target.value)}
-              className="flex-1 resize-none font-mono text-sm leading-relaxed"
-              style={{ minHeight: 0 }}
-            />
+            <div className="flex-1 relative min-h-0">
+              <textarea
+                value={transcriptionText}
+                onChange={(e) => setTranscriptionText(e.target.value)}
+                className="absolute inset-0 w-full h-full resize-none font-mono text-sm leading-relaxed rounded-md border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-[#B725B7] focus:border-transparent"
+              />
+            </div>
           </div>
         )}
       </div>

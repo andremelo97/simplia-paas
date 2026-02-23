@@ -1,13 +1,13 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   FileText,
-  Receipt,
-  ClipboardList,
-  ShieldCheck,
   ShoppingBag,
   Play,
   ArrowRight,
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
 } from 'lucide-react'
 
 interface TemplatesStepProps {
@@ -16,6 +16,9 @@ interface TemplatesStepProps {
 
 export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
   const { t } = useTranslation('tq')
+  const [showVariables, setShowVariables] = useState(false)
+
+  const hubMarketplaceUrl = window.location.origin.replace('tq', 'hub') + '/marketplace'
 
   return (
     <>
@@ -37,70 +40,27 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
           )}
         </p>
 
-        {/* Template type mini-cards */}
-        <div className="space-y-4">
-          <div className="bg-pink-50 border border-pink-200 rounded-lg p-5">
-            <div className="flex items-start gap-4">
-              <Receipt className="w-6 h-6 text-pink-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-base font-medium text-gray-900">
-                  {t('onboarding.templates.type_quote', 'Quotes')}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {t(
-                    'onboarding.templates.type_quote_desc',
-                    'Treatment proposals with pricing tables. AI generates itemized quotes from your transcription.'
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-purple-50 border border-purple-200 rounded-lg p-5">
-            <div className="flex items-start gap-4">
-              <ClipboardList className="w-6 h-6 text-purple-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-base font-medium text-gray-900">
-                  {t('onboarding.templates.type_clinical_note', 'Clinical Notes')}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {t(
-                    'onboarding.templates.type_clinical_note_desc',
-                    'Structured medical consultation documentation. AI extracts key findings and recommendations.'
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-green-50 border border-green-200 rounded-lg p-5">
-            <div className="flex items-start gap-4">
-              <ShieldCheck className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-base font-medium text-gray-900">
-                  {t('onboarding.templates.type_prevention', 'Prevention Plans')}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {t(
-                    'onboarding.templates.type_prevention_desc',
-                    'Preventive care plans with personalized recommendations based on the consultation.'
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Marketplace callout */}
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-5">
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
           <div className="flex items-start gap-3">
             <ShoppingBag className="w-5 h-5 text-[#B725B7] flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-gray-600">
-              {t(
-                'onboarding.templates.marketplace_tip',
-                'Browse the Template Marketplace in Hub to import curated templates by specialty.'
-              )}
-            </p>
+            <div>
+              <p className="text-sm text-gray-600">
+                {t(
+                  'onboarding.templates.marketplace_tip',
+                  'Browse the Template Marketplace in Hub to import curated templates by specialty.'
+                )}
+              </p>
+              <a
+                href={hubMarketplaceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-[#B725B7] hover:underline mt-2"
+              >
+                {t('onboarding.templates.marketplace_link', 'Open Marketplace')}
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
         </div>
 
@@ -115,73 +75,89 @@ export const TemplatesStep: React.FC<TemplatesStepProps> = ({ onNavigate }) => {
         </button>
       </div>
 
-      {/* Right Column - Template Syntax */}
+      {/* Right Column - Template Creation Guide */}
       <div className="flex flex-col">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">
-          {t('onboarding.templates.syntax_title', 'Template Syntax')}
+        <h3 className="text-lg font-bold text-gray-900 mb-1">
+          {t('templates.guide.title', 'Template Creation Guide')}
         </h3>
         <p className="text-sm text-gray-600 mb-4">
-          {t(
-            'onboarding.templates.syntax_desc',
-            'Templates use a simple syntax that tells AI how to fill in the content:'
-          )}
+          {t('templates.guide.subtitle', 'How to create dynamic templates for clinical documentation')}
         </p>
 
-        <div className="bg-gray-50 rounded-xl p-6">
-          <div className="space-y-4">
-            {/* Placeholder syntax */}
-            <div className="flex items-start gap-3">
-              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm flex-shrink-0 mt-0.5">
-                [placeholder]
-              </span>
-              <div>
-                <p className="text-sm text-gray-600">
-                  {t('onboarding.templates.syntax_placeholder', 'AI fills this from the transcription')}
-                </p>
-                <p className="text-xs text-gray-400 italic">
-                  {t('onboarding.templates.syntax_placeholder_example', 'Example: [patient complaint]')}
-                </p>
-              </div>
+        <div className="bg-gray-50 rounded-xl p-6 space-y-5">
+          {/* Placeholders */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('templates.guide.placeholders_title', 'Placeholders:')}
+            </h4>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+              <code className="text-sm text-blue-800 font-mono">[placeholder]</code>
             </div>
+            <p className="text-xs text-gray-600">
+              {t('templates.guide.placeholders_description')}
+            </p>
+          </div>
 
-            {/* Variable syntax */}
-            <div className="flex items-start gap-3">
-              <span className="bg-green-100 text-green-800 px-2 py-1 rounded font-mono text-sm flex-shrink-0 mt-0.5">
-                $variable$
-              </span>
-              <div>
-                <p className="text-sm text-gray-600">
-                  {t('onboarding.templates.syntax_variable', 'System data inserted automatically')}
-                </p>
-                <p className="text-xs text-gray-400 italic">
-                  {t('onboarding.templates.syntax_variable_example', 'Example: $patient_name$, $date$')}
-                </p>
-              </div>
+          {/* Instructions */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('templates.guide.instructions_title', 'Instructions:')}
+            </h4>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-2">
+              <code className="text-sm text-amber-800 font-mono">(instruction)</code>
             </div>
+            <p className="text-xs text-gray-600">
+              {t('templates.guide.instructions_description')}
+            </p>
+          </div>
 
-            {/* Instruction syntax */}
-            <div className="flex items-start gap-3">
-              <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded font-mono text-sm flex-shrink-0 mt-0.5">
-                (instruction)
-              </span>
-              <div>
-                <p className="text-sm text-gray-600">
-                  {t('onboarding.templates.syntax_instruction', 'Guidance for AI (removed from output)')}
-                </p>
-                <p className="text-xs text-gray-400 italic">
-                  {t('onboarding.templates.syntax_instruction_example', 'Example: (summarize in 3 bullet points)')}
-                </p>
-              </div>
+          {/* System Variables */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('templates.guide.variables_title', 'System Variables:')}
+            </h4>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-2">
+              <code className="text-sm text-green-800 font-mono">$variable$</code>
             </div>
+            <p className="text-xs text-gray-600 mb-3">
+              {t('templates.guide.variables_description')}
+            </p>
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 pt-3">
-              <p className="text-xs text-gray-500 italic">
-                {t(
-                  'onboarding.templates.syntax_guide_hint',
-                  'A complete syntax guide with more examples is available on the template create/edit page.'
-                )}
-              </p>
+            <button
+              type="button"
+              onClick={() => setShowVariables(!showVariables)}
+              className="flex items-center gap-2 text-sm text-purple-600 hover:text-purple-700"
+            >
+              {showVariables ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              {t('templates.guide.click_to_see_variables', 'Click here to see the available variables')}
+            </button>
+
+            {showVariables && (
+              <div className="mt-3 p-3 bg-white border border-gray-200 rounded-lg">
+                <div className="space-y-2 text-xs">
+                  <div><code className="font-mono text-green-700">$patient.first_name$</code> - Patient's first name</div>
+                  <div><code className="font-mono text-green-700">$patient.last_name$</code> - Patient's last name</div>
+                  <div><code className="font-mono text-green-700">$patient.fullName$</code> - Patient's full name (first + last)</div>
+                  <div><code className="font-mono text-green-700">$date.now$</code> - Current date</div>
+                  <div><code className="font-mono text-green-700">$session.created_at$</code> - Session creation date</div>
+                  <div><code className="font-mono text-green-700">$me.first_name$</code> - Your first name</div>
+                  <div><code className="font-mono text-green-700">$me.last_name$</code> - Your last name</div>
+                  <div><code className="font-mono text-green-700">$me.fullName$</code> - Your full name (first + last)</div>
+                  <div><code className="font-mono text-green-700">$me.clinic$</code> - Your clinic name</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Example */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">
+              {t('templates.guide.example_title', 'Example:')}
+            </h4>
+            <div className="bg-white border border-gray-200 rounded-lg p-3">
+              <code className="text-xs text-gray-800 whitespace-pre-wrap font-mono leading-relaxed">
+                {t('templates.guide.example_content')}
+              </code>
             </div>
           </div>
         </div>

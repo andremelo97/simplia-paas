@@ -1471,6 +1471,7 @@
       "type_prevention": "Prevention Plans",
       "type_prevention_desc": "Preventive care plans with personalized recommendations based on the consultation.",
       "marketplace_tip": "Browse the Template Marketplace in Hub to import curated templates by specialty.",
+      "marketplace_link": "Open Marketplace",
       "syntax_title": "Template Syntax",
       "syntax_desc": "Templates use a simple syntax that tells AI how to fill in the content:",
       "syntax_placeholder": "AI fills this from the transcription",

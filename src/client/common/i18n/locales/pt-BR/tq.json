@@ -1471,6 +1471,7 @@
       "type_prevention": "Planos de Prevenção",
       "type_prevention_desc": "Planos de cuidados preventivos com recomendações personalizadas baseadas na consulta.",
       "marketplace_tip": "Navegue o Marketplace de Templates no Hub para importar templates curados por especialidade.",
+      "marketplace_link": "Abrir Marketplace",
       "syntax_title": "Sintaxe de Template",
       "syntax_desc": "Templates usam uma sintaxe simples que diz à IA como preencher o conteúdo:",
       "syntax_placeholder": "IA preenche a partir da transcrição",

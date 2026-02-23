@@ -1676,7 +1676,10 @@
       "session_label": "Sessão",
       "documents_label": "Documentos Criados",
       "next_steps_title": "Próximos passos",
-      "next_steps_description": "Na página de edição você pode refinar o conteúdo em detalhes, imprimir ou exportar como PDF, e compartilhar com seu paciente por e-mail ou WhatsApp. Clique em qualquer documento abaixo para ir à página de edição."
+      "hint_quote": "Orçamento: editar conteúdo, gerenciar itens e preços, gerar link público e compartilhar com seu paciente via e-mail ou WhatsApp.",
+      "hint_clinical_note": "Nota Clínica: editar conteúdo e imprimir ou exportar como PDF.",
+      "hint_prevention": "Prevenção: editar conteúdo, gerar link público e compartilhar com seu paciente via e-mail ou WhatsApp.",
+      "hint_click_to_edit": "Clique em qualquer documento abaixo para ir à página de edição."
     },
     "audio": {
       "mic_error": "Falha ao acessar o microfone. Verifique as permissões.",

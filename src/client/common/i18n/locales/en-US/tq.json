@@ -1676,7 +1676,10 @@
       "session_label": "Session",
       "documents_label": "Documents Created",
       "next_steps_title": "What's next?",
-      "next_steps_description": "On the edit page you can refine the content in detail, print or export as PDF, and share with your patient via email or WhatsApp. Click on any document below to go to its edit page."
+      "hint_quote": "Quote: edit content, manage items and prices, generate a public link, and share with your patient via email or WhatsApp.",
+      "hint_clinical_note": "Clinical Note: edit content and print or export as PDF.",
+      "hint_prevention": "Prevention: edit content, generate a public link, and share with your patient via email or WhatsApp.",
+      "hint_click_to_edit": "Click on any document below to go to its edit page."
     },
     "audio": {
       "mic_error": "Failed to access microphone. Please check permissions.",

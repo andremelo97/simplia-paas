@@ -6,9 +6,13 @@ Think of it as a shortcut: instead of going to New Session, creating the session
 
 ## Where to Find It
 
-- In the sidebar, click the **Generate Document** button (the one with the wand icon, shown in purple). It is located above the "New Session" button.
+There are two ways to open the wizard:
+
+1. **Sidebar**: Click the **Generate Document** button (the one with the gradient purple-pink wand icon). It is the first item in the sidebar, above "New Session".
+2. **Home page quick action**: On the home page, click the **Generate Document** card. It has the same gradient wand icon.
+
 - The wizard opens as a full-screen overlay on top of your current page.
-- Note: This button is only visible to users with **Admin** or **Manager** roles. Operations users do not have access to it.
+- Note: Both the sidebar button and the quick action are only visible to users with **Admin** or **Manager** roles. Operations users do not have access to them. The quick action is also hidden on mobile devices.
 
 ## How It Works: The 5 Steps
 

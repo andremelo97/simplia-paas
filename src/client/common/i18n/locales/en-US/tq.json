@@ -1559,7 +1559,7 @@
       "connect_document_landing": "Create a public landing page from any quote or prevention plan to share with patients.",
       "connect_landing_email": "Send the landing page link to your patient via email with customizable templates or WhatsApp with a fixed message.",
       "wizard_tip_title": "Want a faster way?",
-      "wizard_tip_description": "The Document Wizard combines all these steps into a single guided flow. Look for the \"Generate Document\" button in the sidebar — it's the fastest way to go from audio to document."
+      "wizard_tip_description": "The Document Wizard combines all these steps into a single guided flow. You can open it from the \"Generate Document\" button in the sidebar or from the quick action on the home page."
     },
     "finish": {
       "email_title": "Email Template",

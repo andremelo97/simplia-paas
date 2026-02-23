@@ -142,15 +142,15 @@ export const WorkflowStep: React.FC = () => {
         {/* Wizard shortcut tip */}
         <div className="mt-6 bg-purple-50 border border-purple-100 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#B725B7] flex items-center justify-center flex-shrink-0">
-              <Wand2 className="w-4.5 h-4.5 text-white" />
+            <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}>
+              <Wand2 className="w-6 h-6 text-white" />
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900">
                 {t('onboarding.workflow.wizard_tip_title', 'Want a faster way?')}
               </p>
               <p className="text-sm text-gray-600 mt-1 leading-relaxed">
-                {t('onboarding.workflow.wizard_tip_description', 'The Document Wizard combines all these steps into a single guided flow. Look for the "Generate Document" button in the sidebar — it\'s the fastest way to go from audio to document.')}
+                {t('onboarding.workflow.wizard_tip_description', 'The Document Wizard combines all these steps into a single guided flow. You can open it from the "Generate Document" button in the sidebar or from the quick action on the home page.')}
               </p>
             </div>
           </div>

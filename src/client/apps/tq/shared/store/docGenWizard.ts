@@ -104,7 +104,7 @@ export const useDocGenWizardStore = create<DocGenWizardStore>()(
       openWizard: () => set({ isOpen: true, showResumeHint: false }),
       closeWizard: () => set({ ...initialState }),
       minimizeWizard: () => set({ isOpen: false, showResumeHint: true }),
-      hideResumeHint: () => set({ showResumeHint: false }),
+      hideResumeHint: () => set({ ...initialState }),
       setStep: (step: number) => set({ currentStep: step }),
 
       // Step 0: Select existing session → skip to step 2 (template)

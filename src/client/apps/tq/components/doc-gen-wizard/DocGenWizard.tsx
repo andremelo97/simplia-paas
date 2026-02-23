@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { Stepper, Button } from '@client/common/ui'
 import { useDocGenWizardStore } from '../../shared/store/docGenWizard'
 import { sessionsService } from '../../services/sessions'
-import { ChevronLeft, X, Loader2, FilePlus, ChevronRight } from 'lucide-react'
+import { ChevronLeft, X, Loader2, FilePlus, ChevronRight, Minimize2 } from 'lucide-react'
 import { SessionSelectStep } from './steps/SessionSelectStep'
 import { AudioPatientStep } from './steps/AudioPatientStep'
 import { TemplateDocTypeStep } from './steps/TemplateDocTypeStep'
@@ -187,7 +187,7 @@ export const DocGenWizard: React.FC = () => {
           </div>
         )
       case 4:
-        // Step 4: Completion — Create Another + Close
+        // Step 4: Completion — Create Another + Minimize + Close
         return (
           <div className="flex items-center justify-between w-full">
             <Button
@@ -198,12 +198,23 @@ export const DocGenWizard: React.FC = () => {
               <FilePlus className="w-4 h-4" />
               {t('doc_gen_wizard.create_another', 'Create Another Document')}
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleCloseFromCompletion}
-            >
-              {t('doc_gen_wizard.close_wizard', 'Close Wizard')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={minimizeWizard}
+                className="flex items-center gap-2"
+              >
+                <Minimize2 className="w-4 h-4" />
+                {t('doc_gen_wizard.minimize', 'Minimize')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleCloseFromCompletion}
+                className="text-red-600 hover:text-red-700 hover:border-red-300"
+              >
+                {t('doc_gen_wizard.close_wizard', 'Close Wizard')}
+              </Button>
+            </div>
           </div>
         )
       default:

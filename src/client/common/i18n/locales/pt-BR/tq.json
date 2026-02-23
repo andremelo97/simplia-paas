@@ -1555,7 +1555,9 @@
       "connect_session_patient": "Cada sessão é vinculada a um paciente, construindo o histórico de interações ao longo do tempo.",
       "connect_template_document": "A IA combina a estrutura do template com os dados da transcrição para gerar documentos profissionais.",
       "connect_document_landing": "Crie uma landing page pública a partir de qualquer orçamento ou plano de prevenção para compartilhar com pacientes.",
-      "connect_landing_email": "Envie o link da landing page para seu paciente por e-mail com templates personalizáveis ou WhatsApp com mensagem fixa."
+      "connect_landing_email": "Envie o link da landing page para seu paciente por e-mail com templates personalizáveis ou WhatsApp com mensagem fixa.",
+      "wizard_tip_title": "Quer um jeito mais rápido?",
+      "wizard_tip_description": "O Wizard de Documentos combina todos esses passos em um único fluxo guiado. Procure o botão \"Gerar Documento\" na barra lateral — é o caminho mais rápido do áudio ao documento."
     },
     "finish": {
       "email_title": "Template de E-mail",
@@ -1611,6 +1613,7 @@
     "back": "Voltar",
     "create_another": "Criar Outro Documento",
     "close_wizard": "Fechar Wizard",
+    "minimize": "Minimizar",
     "minimize_blocked": "Aguarde a transcrição finalizar",
     "resume": {
       "title": "Retomar Wizard de Documento?",

@@ -65,8 +65,10 @@ Your document has been created and saved. This screen shows:
 
 From here you can:
 
+- **Open a document**: Click on any document in the list. The wizard minimizes and you are redirected to the document edit page. You can return to the wizard via the "Resume" card.
 - **Create Another Document**: Loop back to Step 3 to create a different document type from the same session (e.g., create a quote first, then a clinical note).
-- **Close Wizard**: Click on any document in the list or click "Close Wizard" to go to the document edit page.
+- **Minimize**: Minimize the wizard to continue browsing. The "Resume" card lets you come back later.
+- **Close Wizard**: Fully close and reset the wizard. Use this only when you are done.
 
 ## Wizard vs. Manual Flow
 
@@ -80,10 +82,16 @@ From here you can:
 
 Both methods produce the exact same documents. The wizard is simply a faster way to go from audio to document. Use whichever feels more comfortable.
 
-## Minimizing and Resuming
+## Minimizing, Resuming, and Closing
 
-- You can **minimize** the wizard at any time by clicking the X button in the top-right corner. The wizard state is saved.
-- A small "Resume" hint appears so you can return to where you left off.
+There are three ways to leave the wizard:
+
+1. **Minimize** (X button in the top-right corner, or "Minimize" button on the completion screen): The wizard closes but your progress is saved. A small "Resume / Dismiss" card appears in the bottom-right corner. Click "Resume" to return to where you left off.
+2. **Open a document** (click a document in the completion screen list): The wizard minimizes automatically and navigates to the document edit page. The "Resume / Dismiss" card appears so you can go back to the wizard later — for example, to view other documents or create another one from the same session.
+3. **Close Wizard** (button on the completion screen): This fully closes and resets the wizard. All progress is cleared. Use this only when you are completely done.
+
+Additional details:
+- Clicking **"Dismiss"** on the resume card permanently closes and resets the wizard (same as "Close Wizard").
 - Minimizing is **blocked** while audio is being recorded, uploaded, or transcribed — you must wait for those processes to finish first.
 - The wizard state persists in your browser. If you accidentally close the tab, you can reopen the wizard and it will resume from the last step.
 
@@ -115,6 +123,6 @@ The wizard supports all three document types available in TQ:
 - **Is the wizard different from New Session?** The wizard is a guided alternative that combines multiple steps into one flow. It creates the same sessions and documents as the manual flow. You can use either method — they produce identical results.
 - **Can I use the wizard on mobile?** The wizard is a desktop feature. On mobile devices, you will see a message indicating it is available on tablet or computer.
 - **Can I create documents for an existing session without re-recording?** Yes. In Step 1, select an existing session from the list. The wizard will use that session's transcription and patient data, skipping the audio recording step entirely.
-- **What happens if I close the wizard in the middle?** Your progress is saved. When you click Generate Document again, you can resume from where you left off.
+- **What happens if I minimize the wizard or open a document from the completion screen?** Your progress is saved. A "Resume / Dismiss" card appears in the bottom-right corner. Click "Resume" to go back. Clicking "Dismiss" or "Close Wizard" will permanently reset the wizard.
 - **Can I create more than one document type from the same session?** Yes. After completing a document, click "Create Another Document" to go back to the template selection step. You can create as many documents as you need from the same session.
 - **Do I need to create templates before using the wizard?** Yes. The wizard uses the same templates from the Templates section. You need at least one active template to generate a document.

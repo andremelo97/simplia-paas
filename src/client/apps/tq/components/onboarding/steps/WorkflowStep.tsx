@@ -11,6 +11,7 @@ import {
   Mail,
   ArrowDown,
   MessageCircle,
+  Wand2,
 } from 'lucide-react'
 
 export const WorkflowStep: React.FC = () => {
@@ -133,6 +134,23 @@ export const WorkflowStep: React.FC = () => {
               </p>
               <p className="text-sm text-gray-500">
                 {t('onboarding.workflow.step5_desc', 'Send the document directly to the patient via email or WhatsApp')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Wizard shortcut tip */}
+        <div className="mt-6 bg-purple-50 border border-purple-100 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-[#B725B7] flex items-center justify-center flex-shrink-0">
+              <Wand2 className="w-4.5 h-4.5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-900">
+                {t('onboarding.workflow.wizard_tip_title', 'Want a faster way?')}
+              </p>
+              <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                {t('onboarding.workflow.wizard_tip_description', 'The Document Wizard combines all these steps into a single guided flow. Look for the "Generate Document" button in the sidebar — it\'s the fastest way to go from audio to document.')}
               </p>
             </div>
           </div>

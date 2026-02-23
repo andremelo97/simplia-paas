@@ -1555,7 +1555,9 @@
       "connect_session_patient": "Every session is linked to a patient, building their interaction history over time.",
       "connect_template_document": "AI combines the template structure with transcription data to generate professional documents.",
       "connect_document_landing": "Create a public landing page from any quote or prevention plan to share with patients.",
-      "connect_landing_email": "Send the landing page link to your patient via email with customizable templates or WhatsApp with a fixed message."
+      "connect_landing_email": "Send the landing page link to your patient via email with customizable templates or WhatsApp with a fixed message.",
+      "wizard_tip_title": "Want a faster way?",
+      "wizard_tip_description": "The Document Wizard combines all these steps into a single guided flow. Look for the \"Generate Document\" button in the sidebar — it's the fastest way to go from audio to document."
     },
     "finish": {
       "email_title": "Email Template",
@@ -1611,6 +1613,7 @@
     "back": "Back",
     "create_another": "Create Another Document",
     "close_wizard": "Close Wizard",
+    "minimize": "Minimize",
     "minimize_blocked": "Wait for transcription to finish",
     "resume": {
       "title": "Resume Document Wizard?",

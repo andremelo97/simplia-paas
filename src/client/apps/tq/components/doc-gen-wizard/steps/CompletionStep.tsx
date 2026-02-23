@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus, Info } from 'lucide-react'
+import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus, Info, Minimize2 } from 'lucide-react'
 import { Button } from '@client/common/ui'
 import { useDocGenWizardStore, WizardDocumentType, CreatedDocument } from '../../../shared/store/docGenWizard'
 
@@ -26,10 +26,11 @@ export const CompletionStep: React.FC = () => {
     createdDocuments,
     loopToStep2,
     closeWizard,
+    minimizeWizard,
   } = useDocGenWizardStore()
 
   const handleOpenDocument = (doc: CreatedDocument) => {
-    closeWizard()
+    minimizeWizard()
     navigate(`/documents/${doc.type}/${doc.id}/edit`)
   }
 
@@ -151,8 +152,16 @@ export const CompletionStep: React.FC = () => {
         </Button>
         <Button
           variant="outline"
+          onClick={minimizeWizard}
+          className="w-full flex items-center justify-center gap-2"
+        >
+          <Minimize2 className="w-4 h-4" />
+          {t('doc_gen_wizard.minimize', 'Minimize')}
+        </Button>
+        <Button
+          variant="outline"
           onClick={handleCloseWizard}
-          className="w-full"
+          className="w-full text-red-600 hover:text-red-700 hover:border-red-300"
         >
           {t('doc_gen_wizard.close_wizard', 'Close Wizard')}
         </Button>

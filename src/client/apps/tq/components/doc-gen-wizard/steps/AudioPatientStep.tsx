@@ -129,7 +129,8 @@ export const AudioPatientStep: React.FC = () => {
             <Textarea
               value={transcriptionText}
               onChange={(e) => setTranscriptionText(e.target.value)}
-              className="flex-1 min-h-64 resize-y font-mono text-sm leading-relaxed"
+              className="flex-1 resize-none font-mono text-sm leading-relaxed"
+              style={{ minHeight: 0 }}
             />
           </div>
         )}

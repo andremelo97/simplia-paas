@@ -1158,6 +1158,11 @@ export const NewSession: React.FC = () => {
             <span className="font-mono text-lg font-semibold">
               {timer.formatTime(timer.time)}
             </span>
+            {isTranscribing && timer.time < 60 && (
+              <span className="text-xs text-amber-600">
+                {t('sessions.recording.min_duration', 'Minimum 1 minute recording required')}
+              </span>
+            )}
           </div>
 
           {/* VU Meter */}
@@ -1237,8 +1242,8 @@ export const NewSession: React.FC = () => {
               <Button onClick={toggleTranscribing} variant="secondary" size="lg" className="font-semibold">
                 {isPaused ? (<><Play className="w-4 h-4 mr-2" />{t('sessions.resume')}</>) : (<><Pause className="w-4 h-4 mr-2" />{t('sessions.pause')}</>)}
               </Button>
-              <Button onClick={stopTranscribing} variant="destructive" size="lg" className="font-semibold">
-                <Square className="w-4 h-4 mr-2" />{t('sessions.stop')}
+              <Button onClick={stopTranscribing} variant="destructive" size="lg" className="font-semibold" disabled={timer.time < 60}>
+                <Square className="w-4 h-4 mr-2" />{t('sessions.stop_transcribe', 'Stop & Transcribe')}
               </Button>
             </div>
           )}
@@ -1443,6 +1448,11 @@ export const NewSession: React.FC = () => {
           <div className="flex items-center space-x-2">
             <span className="text-xs md:text-sm text-gray-600">Time:</span>
             <span className="font-mono text-base md:text-lg font-semibold">{timer.formatTime(timer.time)}</span>
+            {isTranscribing && timer.time < 60 && (
+              <span className="text-xs text-amber-600">
+                {t('sessions.recording.min_duration', 'Min. 1 min')}
+              </span>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <Mic className="w-4 h-4 text-gray-600" />
@@ -1494,8 +1504,8 @@ export const NewSession: React.FC = () => {
             <Button onClick={toggleTranscribing} variant="secondary" className="font-semibold text-sm">
               {isPaused ? (<><Play className="w-4 h-4 mr-2" />{t('sessions.resume')}</>) : (<><Pause className="w-4 h-4 mr-2" />{t('sessions.pause')}</>)}
             </Button>
-            <Button onClick={stopTranscribing} variant="destructive" className="font-semibold text-sm">
-              <Square className="w-4 h-4 mr-2" />{t('sessions.stop')}
+            <Button onClick={stopTranscribing} variant="destructive" className="font-semibold text-sm" disabled={timer.time < 60}>
+              <Square className="w-4 h-4 mr-2" />{t('sessions.stop_transcribe', 'Stop & Transcribe')}
             </Button>
           </div>
         )}

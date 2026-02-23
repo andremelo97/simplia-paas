@@ -412,6 +412,7 @@
     "resume": "Resume",
     "pause": "Pause",
     "stop": "Stop",
+    "stop_transcribe": "Stop & Transcribe",
     "session_transcription": "Session Transcription",
     "word_count": "words",
     "patient_required": "Please select or create a patient before saving the session",
@@ -466,6 +467,7 @@
     "delete_session_title": "Delete Session",
     "delete_session_description": "Are you sure you want to delete session \"{{number}}\"? This action cannot be undone. Note: Sessions with documents (quotes, clinical notes or preventions) cannot be deleted.",
     "recording": {
+      "min_duration": "Minimum 1 minute recording required",
       "too_short": "Recording is too short. Minimum duration is 1 minute. Your recording: {{duration}}",
       "preparing": "Preparing audio file...",
       "uploading": "Uploading audio file...",

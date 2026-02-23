@@ -379,6 +379,7 @@
     "resume": "Continuar",
     "pause": "Pausar",
     "stop": "Parar",
+    "stop_transcribe": "Parar e Transcrever",
     "session_transcription": "Transcrição da Sessão",
     "word_count": "palavras",
     "patient_required": "Selecione ou crie um paciente antes de salvar a sessão",
@@ -433,6 +434,7 @@
     "delete_session_title": "Deletar Sessão",
     "delete_session_description": "Tem certeza que deseja deletar a sessão \"{{number}}\"? Esta ação não pode ser desfeita. Nota: Sessões com documentos (orçamentos, notas clínicas ou prevenções) não podem ser deletadas.",
     "recording": {
+      "min_duration": "Gravação mínima de 1 minuto",
       "too_short": "Gravação muito curta. Duração mínima é 1 minuto. Sua gravação: {{duration}}",
       "preparing": "Preparando arquivo de áudio...",
       "uploading": "Enviando arquivo de áudio...",

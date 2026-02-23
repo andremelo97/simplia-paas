@@ -283,25 +283,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={item.onClick}
                 className={cn(
                   "group relative flex items-center rounded-xl p-3 text-sm font-medium transition-all duration-200 w-full text-left",
-                  "hover:text-[#B725B7] hover:bg-purple-50/50 hover:border hover:border-purple-200/30",
+                  "hover:bg-purple-50/50 hover:border hover:border-purple-200/30",
+                  !isHighlight && "hover:text-[#B725B7]",
                   !isOpen && "justify-center"
                 )}
-                style={{ color: isHighlight ? '#B725B7' : '#000000' }}
+                style={{ color: isHighlight ? undefined : '#000000' }}
               >
                 <Tooltip content={item.name} disabled={isOpen} side="right">
-                  <span className="flex items-center justify-center">
-                    <Icon
-                      className="w-5 h-5"
-                      style={{
-                        color: isHighlight ? '#B725B7' : 'inherit',
-                        width: '20px !important',
-                        height: '20px !important',
-                        minWidth: '20px',
-                        minHeight: '20px',
-                        flexShrink: 0
-                      }}
-                    />
-                  </span>
+                  {isHighlight ? (
+                    <span className="flex items-center justify-center w-6 h-6 rounded-md" style={{ background: 'linear-gradient(135deg, #B725B7, #E91E63)' }}>
+                      <Icon className="w-4 h-4 text-white" style={{ flexShrink: 0 }} />
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center">
+                      <Icon
+                        className="w-5 h-5"
+                        style={{
+                          color: 'inherit',
+                          width: '20px',
+                          height: '20px',
+                          minWidth: '20px',
+                          minHeight: '20px',
+                          flexShrink: 0
+                        }}
+                      />
+                    </span>
+                  )}
                 </Tooltip>
 
                 {isOpen && (
@@ -312,7 +319,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     className="flex-1"
                     style={{ marginLeft: '10px' }}
                   >
-                    <div className="font-medium text-sm">{item.name}</div>
+                    {isHighlight ? (
+                      <div
+                        className="font-medium text-sm"
+                        style={{
+                          background: 'linear-gradient(135deg, #B725B7, #E91E63)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      >
+                        {item.name}
+                      </div>
+                    ) : (
+                      <div className="font-medium text-sm">{item.name}</div>
+                    )}
                   </motion.div>
                 )}
               </button>

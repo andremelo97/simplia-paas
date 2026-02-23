@@ -7,7 +7,7 @@ interface QuickActionCardProps {
   title: string
   description?: string
   onClick: () => void
-  colorClass: 'purple' | 'pink' | 'blue'
+  colorClass: 'purple' | 'pink' | 'blue' | 'gradient'
 }
 
 export const QuickActionCard: React.FC<QuickActionCardProps> = ({
@@ -22,7 +22,8 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
   const colorClasses = {
     purple: 'bg-purple-100 text-[#B725B7]',
     pink: 'bg-pink-100 text-[#E91E63]',
-    blue: 'bg-purple-100 text-[#B725B7]'
+    blue: 'bg-purple-100 text-[#B725B7]',
+    gradient: '',
   }
 
   const handleClick = () => {
@@ -30,6 +31,8 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
     setTimeout(() => setIsClicking(false), 200)
     onClick()
   }
+
+  const isGradient = colorClass === 'gradient'
 
   return (
     <Card
@@ -39,10 +42,13 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
       onClick={handleClick}
     >
       <CardContent className="p-6 flex flex-col items-center text-center h-32 justify-center">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-transform ${
-          isClicking ? 'scale-110' : ''
-        } ${colorClasses[colorClass]}`}>
-          <Icon className="w-6 h-6" />
+        <div
+          className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-transform ${
+            isClicking ? 'scale-110' : ''
+          } ${isGradient ? '' : colorClasses[colorClass]}`}
+          style={isGradient ? { background: 'linear-gradient(135deg, #B725B7, #E91E63)' } : undefined}
+        >
+          <Icon className={`w-6 h-6 ${isGradient ? 'text-white' : ''}`} />
         </div>
         <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
         {description && (

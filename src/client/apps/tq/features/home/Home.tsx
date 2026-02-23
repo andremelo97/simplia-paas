@@ -298,7 +298,7 @@ export const Home: React.FC = () => {
               icon={Wand2}
               title={t('home.generate_document', 'Generate Document')}
               onClick={openWizard}
-              colorClass="purple"
+              colorClass="gradient"
             />
           )}
           <QuickActionCard

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Mail,
@@ -12,8 +12,9 @@ import {
   Phone,
   MapPin,
   Globe,
+  Loader2,
 } from 'lucide-react'
-import { BrandingData, SocialLinks } from '../../../services/brandingService'
+import { BrandingData, SocialLinks, brandingService } from '../../../services/brandingService'
 import { SOCIAL_NETWORKS } from '../icons'
 
 interface FinalStepProps {
@@ -22,10 +23,29 @@ interface FinalStepProps {
 }
 
 export const FinalStep: React.FC<FinalStepProps> = ({
-  branding,
+  branding: initialBranding,
   onNavigate,
 }) => {
   const { t } = useTranslation('hub')
+  const [branding, setBranding] = useState<BrandingData>(initialBranding)
+  const [loadingBranding, setLoadingBranding] = useState(true)
+
+  // Fetch fresh branding data when this step mounts
+  useEffect(() => {
+    let cancelled = false
+    const fetchBranding = async () => {
+      try {
+        const data = await brandingService.getBranding()
+        if (!cancelled && data) setBranding(data)
+      } catch {
+        // Keep the prop data as fallback
+      } finally {
+        if (!cancelled) setLoadingBranding(false)
+      }
+    }
+    fetchBranding()
+    return () => { cancelled = true }
+  }, [])
 
   const activeSocials = SOCIAL_NETWORKS.filter(
     ({ key }) => branding.socialLinks?.[key as keyof SocialLinks]
@@ -170,12 +190,16 @@ export const FinalStep: React.FC<FinalStepProps> = ({
             <p className="text-sm uppercase tracking-wider text-gray-500 mb-2">
               {t('onboarding.final.summary_logo', 'Logo')}
             </p>
-            {branding.logoUrl ? (
-              <div className="bg-white border border-gray-200 rounded-lg p-3 inline-block">
+            {loadingBranding ? (
+              <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+              </div>
+            ) : branding.logoUrl ? (
+              <div className="bg-white border border-gray-200 rounded-lg p-3 inline-block max-w-full">
                 <img
                   src={branding.logoUrl}
                   alt="Logo"
-                  className="max-h-24 object-contain"
+                  className="max-h-24 max-w-full object-contain"
                 />
               </div>
             ) : (

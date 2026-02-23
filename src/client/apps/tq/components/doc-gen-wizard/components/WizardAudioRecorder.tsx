@@ -194,9 +194,9 @@ export const WizardAudioRecorder: React.FC = () => {
     <div className="space-y-4">
       {/* Recording Controls */}
       {!isProcessing && !isCompleted && (
-        <div className="flex flex-col items-center gap-4 p-6 bg-gray-50 rounded-xl border border-gray-200">
+        <div className="flex flex-col items-center gap-5 p-8 bg-gray-50 rounded-xl border border-gray-200">
           {/* Timer */}
-          <div className="text-3xl font-mono font-bold text-gray-900">
+          <div className="text-4xl font-mono font-bold text-gray-900">
             {timer.formatTime(timer.time)}
           </div>
 

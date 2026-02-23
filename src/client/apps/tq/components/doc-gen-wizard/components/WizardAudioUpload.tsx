@@ -12,7 +12,7 @@ const MAX_SIZE_MB = 100
 export const WizardAudioUpload: React.FC = () => {
   const { t } = useTranslation('tq')
   const { transcriptionStatus, setTranscription, setTranscriptionStatus } = useDocGenWizardStore()
-  const { state, actions } = useTranscription()
+  const { state, transcriptionId: hookTranscriptionId, actions } = useTranscription()
 
   const [isDragOver, setIsDragOver] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -57,16 +57,12 @@ export const WizardAudioUpload: React.FC = () => {
       setTranscriptionStatus('uploading')
     } else if (state.status === 'processing') {
       setTranscriptionStatus('processing')
-    } else if (state.status === 'completed' && state.transcript) {
-      setTranscription(
-        // transcriptionId comes from the hook's state
-        state.transcript ? String(state.transcript) : '',
-        state.transcript
-      )
+    } else if (state.status === 'completed' && state.transcript && hookTranscriptionId) {
+      setTranscription(hookTranscriptionId, state.transcript)
     } else if (state.error) {
       setTranscriptionStatus('error')
     }
-  }, [state.status, state.transcript, state.error, setTranscription, setTranscriptionStatus])
+  }, [state.status, state.transcript, state.error, hookTranscriptionId, setTranscription, setTranscriptionStatus])
 
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -111,7 +107,7 @@ export const WizardAudioUpload: React.FC = () => {
       {isIdle && (
         <>
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+            className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors cursor-pointer ${
               isDragOver
                 ? 'bg-gray-50'
                 : validationError
@@ -127,7 +123,7 @@ export const WizardAudioUpload: React.FC = () => {
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
           >
-            <FileAudio className="mx-auto h-10 w-10 text-gray-400 mb-3" />
+            <FileAudio className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-base font-medium text-gray-900 mb-1">
               {isDragOver
                 ? t('modals.audio_upload.drop_here', 'Drop audio file here')

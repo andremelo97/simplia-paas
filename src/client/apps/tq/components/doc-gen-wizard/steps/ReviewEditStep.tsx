@@ -58,7 +58,7 @@ export const ReviewEditStep: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4">
+    <div className="space-y-4 h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -102,11 +102,13 @@ export const ReviewEditStep: React.FC = () => {
       )}
 
       {/* Content Editor */}
-      <DocumentContentCard
-        content={documentContent || ''}
-        onChange={setDocumentContent}
-        config={config}
-      />
+      <div className="flex-1 min-h-0">
+        <DocumentContentCard
+          content={documentContent || ''}
+          onChange={setDocumentContent}
+          config={config}
+        />
+      </div>
     </div>
   )
 }

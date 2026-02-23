@@ -44,19 +44,19 @@ export const CompletionStep: React.FC = () => {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6 text-center">
+    <div className="max-w-2xl mx-auto space-y-6 text-center">
       {/* Success Icon */}
-      <div className="flex justify-center">
-        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-          <CheckCircle2 className="w-8 h-8 text-green-600" />
+      <div className="flex justify-center pt-4">
+        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+          <CheckCircle2 className="w-10 h-10 text-green-600" />
         </div>
       </div>
 
       <div>
-        <h2 className="text-xl font-bold text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-900">
           {t('doc_gen_wizard.step4.title', 'Document Created!')}
         </h2>
-        <p className="text-sm text-gray-600 mt-1">
+        <p className="text-base text-gray-600 mt-2">
           {t('doc_gen_wizard.step4.description', 'Your document has been created and saved. You can create another document from the same session or close the wizard.')}
         </p>
       </div>
@@ -85,7 +85,7 @@ export const CompletionStep: React.FC = () => {
             <button
               key={doc.id}
               onClick={() => handleOpenDocument(doc)}
-              className="w-full flex items-center justify-between gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-[#B725B7]/5 transition-colors text-left group"
+              className="w-full flex items-center justify-between gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-[#B725B7]/5 transition-colors text-left group"
             >
               <div className="flex items-center gap-3">
                 <Icon className="w-5 h-5 text-gray-400 group-hover:text-[#B725B7]" />

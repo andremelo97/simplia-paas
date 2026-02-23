@@ -155,7 +155,7 @@ export const DocGenWizard: React.FC = () => {
     <div className="fixed inset-0 z-50 bg-white flex flex-col">
       {/* Stepper + Minimize */}
       <div className="flex-shrink-0 border-b border-gray-200 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-4">
+        <div className="px-6 py-3 flex items-center gap-4">
           <div className="flex-1 min-w-0">
             <Stepper
               steps={stepperSteps}
@@ -181,14 +181,14 @@ export const DocGenWizard: React.FC = () => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto px-8 py-6">
+        <div className="px-8 py-6 h-full">
           {renderStepContent()}
         </div>
       </div>
 
       {/* Footer */}
       <div className="flex-shrink-0 border-t border-gray-200 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-8 py-3">
+        <div className="px-8 py-3">
           {renderFooter()}
         </div>
       </div>

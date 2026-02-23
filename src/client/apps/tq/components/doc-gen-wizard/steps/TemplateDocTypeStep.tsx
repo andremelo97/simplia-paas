@@ -125,7 +125,7 @@ export const TemplateDocTypeStep: React.FC = () => {
   const canCreate = !!selectedTemplateId && !!documentType && !isCreating
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <h2 className="text-xl font-bold text-gray-900">
           {t('doc_gen_wizard.step2.title', 'Select Template & Document Type')}
@@ -188,7 +188,7 @@ export const TemplateDocTypeStep: React.FC = () => {
               const tmpl = templates.find(t => t.id === e.target.value)
               if (tmpl) setTemplate(tmpl.id, tmpl.title)
             }}
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 focus:border-[#B725B7] focus:ring-1 focus:ring-[#B725B7] outline-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 focus:border-[#B725B7] focus:ring-1 focus:ring-[#B725B7] outline-none"
           >
             <option value="">{t('doc_gen_wizard.step2.select_template', 'Select a template...')}</option>
             {templates.map((tmpl) => (
@@ -212,13 +212,13 @@ export const TemplateDocTypeStep: React.FC = () => {
               <button
                 key={type}
                 onClick={() => setDocumentType(type)}
-                className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
+                className={`flex flex-col items-center gap-3 p-6 rounded-lg border-2 transition-all ${
                   isSelected
                     ? 'border-[#B725B7] bg-[#B725B7]/5'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
               >
-                <Icon className={`w-6 h-6 ${isSelected ? 'text-[#B725B7]' : 'text-gray-400'}`} />
+                <Icon className={`w-8 h-8 ${isSelected ? 'text-[#B725B7]' : 'text-gray-400'}`} />
                 <span className={`text-sm font-medium ${isSelected ? 'text-[#B725B7]' : 'text-gray-700'}`}>
                   {t(labelKey)}
                 </span>

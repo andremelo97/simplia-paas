@@ -1526,7 +1526,14 @@ export const NewSession: React.FC = () => {
       <Card className="order-5 md:order-none">
         <CardHeader className="py-3 px-4 md:py-4 md:px-6">
           <CardTitle className="flex items-center justify-between text-sm md:text-base">
-            {t('sessions.session_transcription')}
+            <span>
+              {t('sessions.session_transcription')}
+              {transcription.trim() && (
+                <span className="text-xs text-gray-400 font-normal ml-2">
+                  {transcription.trim().split(/\s+/).length} {t('sessions.word_count', 'words')}
+                </span>
+              )}
+            </span>
             <div className="flex items-center gap-2">
               {/* Fullscreen toggle */}
               <button

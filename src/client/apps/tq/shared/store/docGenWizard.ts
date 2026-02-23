@@ -53,9 +53,11 @@ interface DocGenWizardStore {
   setTemplate: (id: string, name: string) => void
   setDocumentType: (type: WizardDocumentType) => void
   setDocument: (id: string, number: string, content: string) => void
+  setTranscriptionText: (text: string) => void
   setDocumentContent: (content: string) => void
   addCreatedDocument: (doc: CreatedDocument) => void
   loopToStep2: () => void
+  resetStep1: () => void
   resetWizard: () => void
 }
 
@@ -105,6 +107,7 @@ export const useDocGenWizardStore = create<DocGenWizardStore>()(
         documentNumber: number,
         documentContent: content,
       }),
+      setTranscriptionText: (text) => set({ transcriptionText: text }),
       setDocumentContent: (content) => set({ documentContent: content }),
       addCreatedDocument: (doc) => set((state) => ({
         createdDocuments: [...state.createdDocuments, doc],
@@ -117,6 +120,23 @@ export const useDocGenWizardStore = create<DocGenWizardStore>()(
         documentId: null,
         documentNumber: null,
         documentContent: null,
+      }),
+      resetStep1: () => set({
+        currentStep: 0,
+        transcriptionId: null,
+        transcriptionStatus: 'idle' as TranscriptionStatus,
+        transcriptionText: null,
+        patientId: null,
+        patientName: null,
+        sessionId: null,
+        sessionNumber: null,
+        selectedTemplateId: null,
+        selectedTemplateName: null,
+        documentType: null,
+        documentId: null,
+        documentNumber: null,
+        documentContent: null,
+        createdDocuments: [],
       }),
       resetWizard: () => set({ ...initialState }),
     }),

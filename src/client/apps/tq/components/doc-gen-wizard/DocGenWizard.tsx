@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { Stepper, Button } from '@client/common/ui'
 import { useDocGenWizardStore } from '../../shared/store/docGenWizard'
-import { ChevronLeft, ChevronRight, X, Loader2, FilePlus } from 'lucide-react'
+import { sessionsService } from '../../services/sessions'
+import { ChevronLeft, X, Loader2, FilePlus, ChevronRight } from 'lucide-react'
 import { AudioPatientStep } from './steps/AudioPatientStep'
 import { TemplateDocTypeStep } from './steps/TemplateDocTypeStep'
 import { ReviewEditStep } from './steps/ReviewEditStep'
@@ -26,27 +27,24 @@ export const DocGenWizard: React.FC = () => {
     transcriptionId,
     patientId,
     sessionId,
-    documentId,
     createdDocuments,
     minimizeWizard,
     closeWizard,
     setStep,
+    setSession,
     loopToStep2,
   } = useDocGenWizardStore()
 
-  if (!isOpen) return null
+  const [isCreatingSession, setIsCreatingSession] = useState(false)
 
-  const isFirstStep = currentStep === 0
-  const isLastStep = currentStep === STEP_DEFINITIONS.length - 1
+  if (!isOpen) return null
 
   // Minimize is blocked during recording/transcription
   const canMinimize = !['recording', 'uploading', 'processing'].includes(transcriptionStatus)
 
-  // Step 1 "Next" gating: transcription completed + patient selected
-  const canAdvanceStep1 = transcriptionStatus === 'completed' && !!patientId && !!transcriptionId
-
-  // Step 2 has its own "Create Document" button, no footer Next
-  // Step 3 has its own "Save & Continue" button, no footer Next
+  // Step 1 gating: transcription completed + patient selected + transcription ID
+  const canCreateSession = transcriptionStatus === 'completed' && !!patientId && !!transcriptionId
+  const hasSession = !!sessionId
 
   const handleMinimize = () => {
     if (canMinimize) {
@@ -65,6 +63,30 @@ export const DocGenWizard: React.FC = () => {
     closeWizard()
     if (lastDoc) {
       navigate(`/documents/${lastDoc.type}/${lastDoc.id}/edit`)
+    }
+  }
+
+  const handleCreateSessionAndAdvance = async () => {
+    if (!canCreateSession) return
+
+    // If session already exists (e.g., after resume), just advance
+    if (hasSession) {
+      setStep(1)
+      return
+    }
+
+    setIsCreatingSession(true)
+    try {
+      const session = await sessionsService.createSession({
+        patient_id: patientId!,
+        transcription_id: transcriptionId!,
+      })
+      setSession(session.id, session.number)
+      setStep(1)
+    } catch (error) {
+      console.error('Failed to create session:', error)
+    } finally {
+      setIsCreatingSession(false)
     }
   }
 
@@ -96,15 +118,27 @@ export const DocGenWizard: React.FC = () => {
             <Button variant="outline" onClick={handleMinimize} disabled={!canMinimize}>
               {t('doc_gen_wizard.cancel', 'Cancel')}
             </Button>
-            <Button
-              variant="primary"
-              onClick={() => setStep(1)}
-              disabled={!canAdvanceStep1 || !sessionId}
-              className="flex items-center gap-1"
-            >
-              {t('doc_gen_wizard.next', 'Next')}
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+            {hasSession ? (
+              <Button
+                variant="primary"
+                onClick={() => setStep(1)}
+                className="flex items-center gap-1"
+              >
+                {t('doc_gen_wizard.next', 'Next')}
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="primary"
+                onClick={handleCreateSessionAndAdvance}
+                disabled={!canCreateSession || isCreatingSession}
+                className="flex items-center gap-2"
+              >
+                {isCreatingSession && <Loader2 className="w-4 h-4 animate-spin" />}
+                {t('doc_gen_wizard.step1.create_session', 'Create Session & Continue')}
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         )
       case 1:

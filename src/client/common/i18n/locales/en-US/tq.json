@@ -413,6 +413,7 @@
     "pause": "Pause",
     "stop": "Stop",
     "session_transcription": "Session Transcription",
+    "word_count": "words",
     "patient_required": "Please select or create a patient before saving the session",
     "create_new_patient": "Create new patient",
     "add_patient_details": "Add Patient Details",

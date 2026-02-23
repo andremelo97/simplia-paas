@@ -380,6 +380,7 @@
     "pause": "Pausar",
     "stop": "Parar",
     "session_transcription": "Transcrição da Sessão",
+    "word_count": "palavras",
     "patient_required": "Selecione ou crie um paciente antes de salvar a sessão",
     "create_new_patient": "Criar novo paciente",
     "add_patient_details": "Adicionar Detalhes do Paciente",

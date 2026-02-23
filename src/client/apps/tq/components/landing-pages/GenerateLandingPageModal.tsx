@@ -312,7 +312,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
                 <div className="flex justify-between">
                   <span className="text-gray-600">{t('modals.generate_public_quote.template')}:</span>
                   <span className="font-medium">
-                    {templates.find((t) => t.id === selectedTemplateId)?.name || '-'}
+                    {templateName || '-'}
                   </span>
                 </div>
                 <div className="flex justify-between">

@@ -23,6 +23,7 @@
 
 const cron = require('node-cron');
 const database = require('../infra/db/database');
+const SupabaseStorageService = require('../services/supabaseStorage');
 const { deleteFileByUrl } = require('../services/supabaseStorage');
 
 /**
@@ -46,9 +47,9 @@ async function cleanupOldAudioFiles() {
     executionId = startResult.rows[0].id;
     console.log(`📝 [Audio Cleanup Job] Execution ID: ${executionId}`);
 
-    // Find all tenant schemas
+    // Find all tenant schemas (need subdomain for storage bucket name)
     const schemasResult = await database.query(`
-      SELECT schema_name
+      SELECT schema_name, subdomain
       FROM public.tenants
       WHERE active = true
     `);
@@ -66,6 +67,7 @@ async function cleanupOldAudioFiles() {
     // Process each tenant schema
     for (const tenantRow of schemasResult.rows) {
       const schema = tenantRow.schema_name;
+      const subdomain = tenantRow.subdomain;
 
       try {
         // Check if transcription table exists (skip schemas without TQ app)
@@ -104,11 +106,26 @@ async function cleanupOldAudioFiles() {
 
         console.log(`🗑️  [Audio Cleanup Job] ${schema}: Found ${result.rows.length} files to delete`);
 
+        // Create storage service once per tenant for path-based deletions
+        const bucketName = `tenant-${subdomain}`;
+        const storageService = new SupabaseStorageService(bucketName);
+
         // Delete each audio file
         for (const row of result.rows) {
           try {
-            // Delete from Supabase
-            const deleted = await deleteFileByUrl(row.audio_url);
+            // Determine if audio_url is a storage path or a full URL
+            const isStoragePath = !row.audio_url.startsWith('http://') &&
+                                  !row.audio_url.startsWith('https://');
+
+            let deleted = false;
+            if (isStoragePath) {
+              // New format: relative path like "audio-files/123.webm"
+              await storageService.deleteFile(row.audio_url);
+              deleted = true;
+            } else {
+              // Legacy format: full Supabase URL
+              deleted = await deleteFileByUrl(row.audio_url);
+            }
 
             if (deleted) {
               // Update database - clear URL, mark as deleted, and set status to expired

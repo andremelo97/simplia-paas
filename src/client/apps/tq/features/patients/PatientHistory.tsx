@@ -765,7 +765,7 @@ export const PatientHistory: React.FC = () => {
                             </div>
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-gray-900">{docTypeLabel}: {docNumber}</span>
+                                <span className="font-medium text-gray-900 text-sm">{docTypeLabel}: {docNumber}</span>
                                 <StatusBadge status={lp.active ? 'active' : 'revoked'} />
                                 {isExpired && <StatusBadge status="expired" />}
                               </div>

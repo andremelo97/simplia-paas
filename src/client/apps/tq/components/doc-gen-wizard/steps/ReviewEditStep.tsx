@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Receipt, ClipboardList, Shield, Loader2, Save } from 'lucide-react'
-import { Button } from '@client/common/ui'
+import { Receipt, ClipboardList, Shield, Loader2, Save, Maximize2, Minimize2 } from 'lucide-react'
+import { Button, TemplateEditor } from '@client/common/ui'
 import { DocumentContentCard } from '../../../features/documents/components'
 import { DOCUMENT_CONFIGS } from '../../../features/documents/documentConfig'
 import { useDocGenWizardStore, WizardDocumentType } from '../../../shared/store/docGenWizard'
@@ -31,6 +31,7 @@ export const ReviewEditStep: React.FC = () => {
 
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isMaximized, setIsMaximized] = useState(false)
 
   if (!documentType || !documentId) return null
 
@@ -75,19 +76,30 @@ export const ReviewEditStep: React.FC = () => {
           )}
         </div>
 
-        <Button
-          variant="primary"
-          onClick={handleSaveAndContinue}
-          disabled={isSaving || !documentContent}
-          className="flex items-center gap-2"
-        >
-          {isSaving ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4" />
-          )}
-          {t('doc_gen_wizard.step3.save_continue', 'Save & Continue')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsMaximized(true)}
+            className="flex items-center gap-1.5"
+            title={t('doc_gen_wizard.step3.maximize', 'Maximize editor')}
+          >
+            <Maximize2 className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleSaveAndContinue}
+            disabled={isSaving || !documentContent}
+            className="flex items-center gap-2"
+          >
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {t('doc_gen_wizard.step3.save_continue', 'Save & Continue')}
+          </Button>
+        </div>
       </div>
 
       <p className="text-sm text-gray-600">
@@ -109,6 +121,50 @@ export const ReviewEditStep: React.FC = () => {
           config={config}
         />
       </div>
+
+      {/* Maximized Editor Overlay */}
+      {isMaximized && (
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center gap-3">
+              <Icon className="w-5 h-5 text-[#B725B7]" />
+              <h3 className="font-semibold text-gray-900">
+                {t(`sidebar.${documentType === 'clinical-note' ? 'clinical_notes' : documentType === 'quote' ? 'quotes' : 'prevention'}`,
+                  DOC_TYPE_LABELS[documentType]
+                )}
+                {documentNumber && <span className="ml-2 text-sm font-mono text-gray-500">{documentNumber}</span>}
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="primary"
+                onClick={() => { setIsMaximized(false); handleSaveAndContinue() }}
+                disabled={isSaving || !documentContent}
+                className="flex items-center gap-2"
+              >
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {t('doc_gen_wizard.step3.save_continue', 'Save & Continue')}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setIsMaximized(false)}
+                title={t('doc_gen_wizard.step3.minimize', 'Minimize editor')}
+              >
+                <Minimize2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          <div className="flex-1 min-h-0 p-6">
+            <TemplateEditor
+              content={documentContent || ''}
+              onChange={setDocumentContent}
+              placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
+              minHeight="100%"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

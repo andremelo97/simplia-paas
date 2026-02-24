@@ -52,6 +52,7 @@ The AI-generated document content appears in a rich text editor. You can:
 
 - Review the content for accuracy.
 - Make quick edits directly in the wizard.
+- Click the **Maximize** button (expand icon) next to "Save & Continue" to open the editor in fullscreen mode for a larger editing area. Click **Minimize** to return to the normal wizard view.
 - Click **Save & Continue** when you are satisfied.
 
 Don't worry about making it perfect here — you can make more detailed edits later on the full document edit page.
@@ -98,6 +99,7 @@ Additional details:
 - Clicking **"Dismiss"** on the resume card permanently closes and resets the wizard (same as "Close Wizard").
 - Minimizing is **blocked** while audio is being recorded, uploaded, or transcribed — you must wait for those processes to finish first.
 - The wizard state persists in your browser. If you accidentally close the tab, you can reopen the wizard and it will resume from the last step.
+- The "Resume / Dismiss" floating card is **draggable** — if it is covering a button or content you need to access, simply click and drag it to a different position on the screen. It will stay where you drop it.
 
 ## Supported Document Types
 

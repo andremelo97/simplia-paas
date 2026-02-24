@@ -94,6 +94,7 @@ New users are not created inside TQ. They are provisioned automatically during t
 - If TQ does not load after clicking the card in Hub, try clearing your browser cache or using a different browser (Chrome or Edge recommended).
 - Each user has their own login. Do not share credentials between staff members.
 - If you forget your password, use the "Forgot Password" link on the Hub login page to reset it via email.
+- Floating cards like "Resume / Dismiss" (from the Document Wizard or Onboarding Wizard) and the minimized Support Chat bubble are **draggable**. If they are covering a button or content, click and drag them to a different position on the screen.
 
 ## Frequently Asked Questions
 

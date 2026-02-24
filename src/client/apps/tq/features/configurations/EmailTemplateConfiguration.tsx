@@ -513,7 +513,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
                     <label htmlFor="showAddress" className={`text-sm cursor-pointer flex-1 ${!branding?.address ? 'text-gray-400' : 'text-gray-700'}`}>
                       {t('configurations.email_template.show_address')}
                     </label>
-                    <span className={`text-xs truncate max-w-[150px] ${branding?.address ? 'text-gray-500' : 'text-gray-400 italic'}`}>
+                    <span className={`text-xs truncate max-w-[9.375rem] ${branding?.address ? 'text-gray-500' : 'text-gray-400 italic'}`}>
                       {branding?.address?.replace(/\n/g, ', ') || t('configurations.email_template.not_configured')}
                     </span>
                   </div>
@@ -653,7 +653,7 @@ export const EmailTemplateConfiguration: React.FC = () => {
             {/* Preview Frame */}
             <div
               className="border border-gray-200 rounded-lg overflow-hidden bg-gray-100"
-              style={{ height: '600px' }}
+              style={{ height: '37.5rem' }}
             >
               {previewLoading && !previewHtml ? (
                 <div className="h-full flex items-center justify-center text-gray-500">

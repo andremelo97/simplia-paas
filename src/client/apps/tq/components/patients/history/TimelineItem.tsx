@@ -49,13 +49,13 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   return (
     <div className="relative flex gap-4 pb-4 last:pb-0">
       {/* Spine Column */}
-      <div className="relative flex flex-col items-center" style={{ width: '40px' }}>
+      <div className="relative flex flex-col items-center" style={{ width: '2.5rem' }}>
         {/* Top connector line - hidden for first item */}
         {!isFirst && (
           <div
             className="absolute top-0 left-1/2 w-0.5 bg-gray-300"
             style={{
-              height: '20px',
+              height: '1.25rem',
               transform: 'translateX(-50%)'
             }}
           />
@@ -64,7 +64,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         {/* Marker/Icon circle */}
         <div
           className="relative z-10 flex-shrink-0"
-          style={{ marginTop: isFirst ? '0' : '20px' }}
+          style={{ marginTop: isFirst ? '0' : '1.25rem' }}
           role="img"
           aria-label={`Timeline marker: ${type}`}
         >

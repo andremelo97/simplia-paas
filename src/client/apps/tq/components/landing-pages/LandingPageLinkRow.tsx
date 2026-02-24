@@ -106,7 +106,7 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
 
         <span className="text-gray-400">|</span>
 
-        <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[220px] flex-1">
+        <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[13.75rem] flex-1">
           {url}
         </code>
         <Button

@@ -208,7 +208,7 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
             >
               {/* Row 1: URL + Status + Views */}
               <div className="flex items-center gap-2 flex-wrap">
-                <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[280px] flex-1">
+                <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[17.5rem] flex-1">
                   {url}
                 </code>
                 <Button

@@ -237,7 +237,7 @@ export const LogoUploadStep: React.FC<LogoUploadStepProps> = ({
         {!branding.logoUrl && !isUploading && !error && (
           <div
             className={`
-              border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[280px]
+              border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[17.5rem]
               ${
                 isDragOver
                   ? 'border-[#B725B7] bg-purple-50'

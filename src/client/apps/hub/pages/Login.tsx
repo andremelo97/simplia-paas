@@ -266,7 +266,7 @@ export const Login: React.FC = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-full max-w-[400px]"
+          className="w-full max-w-[25rem]"
         >
           {/* Logo - mobile only */}
           <div className="flex justify-center mb-6 lg:hidden">
@@ -475,7 +475,7 @@ export const Login: React.FC = () => {
       <div className="hidden lg:flex flex-1 bg-gradient-to-br from-[#B725B7] via-[#a020a0] to-[#E91E63] items-center justify-center px-12 relative overflow-hidden">
         {/* Decorative circles with float + breathing animation */}
         <motion.div
-          className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-white/5"
+          className="absolute top-[-10%] right-[-10%] w-[25rem] h-[25rem] rounded-full bg-white/5"
           animate={{
             y: [0, -40, 0],
             scale: [1, 1.12, 1],
@@ -487,7 +487,7 @@ export const Login: React.FC = () => {
           }}
         />
         <motion.div
-          className="absolute bottom-[-15%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white/5"
+          className="absolute bottom-[-15%] left-[-10%] w-[31.25rem] h-[31.25rem] rounded-full bg-white/5"
           animate={{
             y: [0, 35, 0],
             scale: [1, 0.9, 1],

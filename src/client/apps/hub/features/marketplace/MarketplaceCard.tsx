@@ -74,7 +74,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
         <div className="h-28 w-full rounded-t-lg bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center border-b border-gray-100 px-4">
           <Layout className="w-6 h-6 text-gray-300 mb-1" />
           {lpHeroTitle && (
-            <p className="text-[10px] text-gray-400 text-center line-clamp-2">{lpHeroTitle}</p>
+            <p className="text-[0.625rem] text-gray-400 text-center line-clamp-2">{lpHeroTitle}</p>
           )}
         </div>
       ) : (
@@ -99,18 +99,18 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
 
         {/* Badges */}
         <div className="flex items-center gap-1.5 mt-2">
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[0.625rem] font-medium bg-gray-100 text-gray-600">
             {item.type === 'template' ? <FileText className="w-3 h-3" /> : <Layout className="w-3 h-3" />}
             {typeLabel}
           </span>
-          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium ${specialtyColor}`}>
+          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[0.625rem] font-medium ${specialtyColor}`}>
             {specialtyLabel}
           </span>
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[0.625rem] text-gray-400">
             {item.importCount > 0 && (
               <>
                 <Download className="w-3 h-3 inline mr-0.5" />
@@ -125,7 +125,7 @@ export const MarketplaceCard: React.FC<MarketplaceCardProps> = ({
               onImport(item)
             }}
             disabled={isImporting}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-white bg-[#B725B7] rounded-md hover:bg-[#9a1f9a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-[0.6875rem] font-medium text-white bg-[#B725B7] rounded-md hover:bg-[#9a1f9a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isImporting ? (
               <>

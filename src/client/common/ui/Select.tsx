@@ -39,10 +39,10 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
             className
           )}
           style={{
-            height: '32px',
-            minHeight: '32px',
-            borderRadius: '4px',
-            padding: '4px 6px'
+            height: '2rem',
+            minHeight: '2rem',
+            borderRadius: '0.25rem',
+            padding: '0.25rem 0.375rem'
           }}
           ref={ref}
           {...props}

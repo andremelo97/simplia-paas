@@ -14,6 +14,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     <title>LivoCare Hub</title>
+    <style>
+      /* UI Compaction: 14.4px = 90% of 16px — all rem-based Tailwind scales proportionally */
+      html { font-size: 14.4px; }
+      @media print { html { font-size: 16px !important; } }
+    </style>
   </head>
   <body>
     <div id="root"></div>

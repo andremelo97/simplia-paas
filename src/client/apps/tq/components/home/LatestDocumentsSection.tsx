@@ -266,7 +266,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-gray-900 text-lg">{doc.number}</h3>
-            <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded-full ${getTypeBadgeStyle(doc.type)}`}>
+            <span className={`px-1.5 py-0.5 text-[0.625rem] font-medium rounded-full ${getTypeBadgeStyle(doc.type)}`}>
               {getTypeLabel(doc)}
             </span>
           </div>

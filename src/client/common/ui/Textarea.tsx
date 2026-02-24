@@ -91,14 +91,14 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>((props, re
         rows={rows}
         placeholder={displayPlaceholder}
         className={cn(
-          "flex min-h-[80px] w-full rounded-md border border-gray-200 bg-white/70 px-3 py-2 text-sm shadow-sm transition-all resize-vertical focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex min-h-[5rem] w-full rounded-md border border-gray-200 bg-white/70 px-3 py-2 text-sm shadow-sm transition-all resize-vertical focus-visible:outline-none hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50",
           (hasError || shouldShowRequiredState) && "border-red-300 focus-visible:border-red-500 placeholder:text-red-400",
           !hasError && !shouldShowRequiredState && "focus-visible:border-[var(--brand-primary)] placeholder:text-gray-400",
           className
         )}
         style={{
-          borderRadius: '4px',
-          padding: '6px'
+          borderRadius: '0.25rem',
+          padding: '0.375rem'
         }}
         onFocus={handleFocus}
         onBlur={handleBlur}

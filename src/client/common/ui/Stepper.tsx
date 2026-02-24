@@ -55,7 +55,7 @@ export const Stepper: React.FC<StepperProps> = ({
               </button>
               <span
                 className={`
-                  mt-2 text-xs font-medium max-w-[80px] text-center
+                  mt-2 text-xs font-medium max-w-[5rem] text-center
                   ${isCurrent ? 'text-[#B725B7]' : isCompleted ? 'text-gray-700' : 'text-gray-400'}
                 `}
               >

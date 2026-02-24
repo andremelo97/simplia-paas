@@ -206,7 +206,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose, onO
               </div>
 
               {/* Source note */}
-              <p className="text-[11px] text-gray-400 flex items-center gap-1.5 pt-1">
+              <p className="text-[0.6875rem] text-gray-400 flex items-center gap-1.5 pt-1">
                 <BookOpen className="w-3 h-3 flex-shrink-0" />
                 {t('support_modal.ai_source_note')}
               </p>

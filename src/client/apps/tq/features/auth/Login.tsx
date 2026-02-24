@@ -77,9 +77,9 @@ export const Login: React.FC = () => {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="mx-auto w-full max-w-[380px]"
+        className="mx-auto w-full max-w-[23.75rem]"
       >
-        <Card className="min-h-[360px] flex flex-col justify-between">
+        <Card className="min-h-[22.5rem] flex flex-col justify-between">
           <CardHeader className="text-center space-y-3 p-8 pb-4">
             <div className="flex justify-center mb-2">
               <img

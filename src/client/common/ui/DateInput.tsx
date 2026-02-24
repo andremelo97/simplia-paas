@@ -104,10 +104,10 @@ const DateInput = React.forwardRef<HTMLInputElement, DateInputProps>(
               className
             )}
             style={{
-              height: '32px',
-              minHeight: '32px',
-              borderRadius: '4px',
-              padding: '4px 8px'
+              height: '2rem',
+              minHeight: '2rem',
+              borderRadius: '0.25rem',
+              padding: '0.25rem 0.5rem'
             }}
           >
             <span className={cn("flex-1 truncate", !displayValue && "text-gray-400")}>

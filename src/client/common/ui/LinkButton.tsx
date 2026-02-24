@@ -20,13 +20,13 @@ export const LinkButton: React.FC<LinkButtonProps> = ({
   // Custom styles for all variants (matching Button component)
   const customStyles = {
     fontFamily: 'Inter, sans-serif',
-    height: '32px',
-    minHeight: '32px',
+    height: '2rem',
+    minHeight: '2rem',
     ...(variant === 'default' && {
       backgroundColor: '#000000',
       color: '#ffffff',
       border: 'none',
-      borderRadius: '5px'
+      borderRadius: '0.3125rem'
     })
   }
 

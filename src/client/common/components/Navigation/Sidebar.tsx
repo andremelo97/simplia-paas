@@ -199,10 +199,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         className="w-5 h-5"
                         style={{
                           color: 'inherit',
-                          width: '20px',
-                          height: '20px',
-                          minWidth: '20px',
-                          minHeight: '20px',
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          minWidth: '1.25rem',
+                          minHeight: '1.25rem',
                           flexShrink: 0
                         }}
                       />
@@ -300,10 +300,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         className="w-5 h-5"
                         style={{
                           color: 'inherit',
-                          width: '20px',
-                          height: '20px',
-                          minWidth: '20px',
-                          minHeight: '20px',
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          minWidth: '1.25rem',
+                          minHeight: '1.25rem',
                           flexShrink: 0
                         }}
                       />
@@ -364,10 +364,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         className="w-5 h-5"
                         style={{
                           color: 'inherit',
-                          width: '20px !important',
-                          height: '20px !important',
-                          minWidth: '20px',
-                          minHeight: '20px',
+                          width: '1.25rem',
+                          height: '1.25rem',
+                          minWidth: '1.25rem',
+                          minHeight: '1.25rem',
                           flexShrink: 0
                         }}
                       />
@@ -424,10 +424,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       className="w-5 h-5"
                       style={{
                         color: 'inherit',
-                        width: '20px !important',
-                        height: '20px !important',
-                        minWidth: '20px',
-                        minHeight: '20px',
+                        width: '1.25rem',
+                        height: '1.25rem',
+                        minWidth: '1.25rem',
+                        minHeight: '1.25rem',
                         flexShrink: 0
                       }}
                     />

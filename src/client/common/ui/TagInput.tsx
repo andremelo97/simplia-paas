@@ -105,13 +105,13 @@ const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>((props, ref) 
       <div
         onClick={handleContainerClick}
         className={cn(
-          "flex flex-wrap gap-2 min-h-[32px] w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1.5 text-sm shadow-sm transition-all hover:bg-white/90",
+          "flex flex-wrap gap-2 min-h-[2rem] w-full rounded-md border border-gray-200 bg-white/70 px-2 py-1.5 text-sm shadow-sm transition-all hover:bg-white/90",
           hasError && "border-red-300 focus-within:border-red-500",
           !hasError && "focus-within:border-[#B725B7]",
           disabled && "cursor-not-allowed opacity-50"
         )}
         style={{
-          borderRadius: '4px'
+          borderRadius: '0.25rem'
         }}
       >
         {value.map((tag) => (
@@ -153,11 +153,11 @@ const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>((props, ref) 
           placeholder={value.length === 0 ? placeholder : ''}
           disabled={disabled}
           className={cn(
-            "flex-1 min-w-[120px] bg-transparent outline-none placeholder:text-gray-400",
+            "flex-1 min-w-[7.5rem] bg-transparent outline-none placeholder:text-gray-400",
             disabled && "cursor-not-allowed"
           )}
           style={{
-            height: '24px'
+            height: '1.5rem'
           }}
         />
       </div>

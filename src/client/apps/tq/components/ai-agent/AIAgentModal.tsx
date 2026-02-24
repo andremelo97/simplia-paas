@@ -201,7 +201,7 @@ export const AIAgentModal: React.FC<AIAgentModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: 'spring', duration: 0.3 }}
-          className="relative bg-white rounded-lg shadow-2xl w-full max-w-5xl h-[80vh] max-h-[800px] flex flex-col"
+          className="relative bg-white rounded-lg shadow-2xl w-full max-w-5xl h-[80vh] max-h-[50rem] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}

@@ -194,7 +194,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
       >
         <Headphones className="w-4 h-4 md:w-6 md:h-6" />
         {messages.length > 0 && (
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 rounded-full text-[8px] md:text-[10px] font-bold flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 rounded-full text-[0.5rem] md:text-[0.625rem] font-bold flex items-center justify-center">
             {messages.filter(m => m.role === 'assistant').length}
           </span>
         )}
@@ -209,7 +209,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
         transition={{ type: 'spring', duration: 0.35 }}
-        className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-50 w-full md:w-[400px] h-full md:h-[550px] md:max-h-[calc(100vh-8rem)] bg-white md:rounded-xl md:shadow-2xl md:border md:border-gray-200 flex flex-col overflow-hidden"
+        className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-50 w-full md:w-[25rem] h-full md:h-[34.375rem] md:max-h-[calc(100vh-8rem)] bg-white md:rounded-xl md:shadow-2xl md:border md:border-gray-200 flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gradient-to-r from-teal-50 to-white flex-shrink-0">
@@ -276,11 +276,11 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                   {t('modals.support_agent.welcome_greeting', { name: userFirstName })}
                 </h3>
                 {tenantName && !tenantName.match(/^Tenant \d+$/) && (
-                  <p className="text-[11px] text-gray-400 mb-2">
+                  <p className="text-[0.6875rem] text-gray-400 mb-2">
                     {tenantName} · {t(`modals.support_agent.role_${userRole}`, { defaultValue: userRole })}
                   </p>
                 )}
-                <p className="text-xs text-gray-500 max-w-[280px]">
+                <p className="text-xs text-gray-500 max-w-[17.5rem]">
                   {t('modals.support_agent.welcome_message')}
                 </p>
               </div>
@@ -295,7 +295,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                     <React.Fragment key={index}>
                       {showDateSeparator && message.timestamp && (
                         <div className="flex items-center justify-center py-1">
-                          <span className="text-[10px] text-gray-400 bg-gray-100 rounded-full px-2.5 py-0.5">
+                          <span className="text-[0.625rem] text-gray-400 bg-gray-100 rounded-full px-2.5 py-0.5">
                             {getDateLabel(message.timestamp)}
                           </span>
                         </div>
@@ -315,12 +315,12 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                                 </div>
                               </CardContent>
                             </Card>
-                            {time && <span className="text-[10px] text-gray-300 ml-1 mt-0.5 block">{time}</span>}
+                            {time && <span className="text-[0.625rem] text-gray-300 ml-1 mt-0.5 block">{time}</span>}
                           </div>
                         </div>
                       ) : (
                         <div className="flex gap-2 justify-end">
-                          <div className="flex-1 max-w-[280px]">
+                          <div className="flex-1 max-w-[17.5rem]">
                             <Card className="bg-teal-50 border-teal-100">
                               <CardContent className="p-2.5">
                                 <div className="whitespace-pre-wrap font-sans text-xs text-gray-800" style={{ lineHeight: '1.6' }}>
@@ -328,7 +328,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
                                 </div>
                               </CardContent>
                             </Card>
-                            {time && <span className="text-[10px] text-gray-300 mt-0.5 block text-right mr-1">{time}</span>}
+                            {time && <span className="text-[0.625rem] text-gray-300 mt-0.5 block text-right mr-1">{time}</span>}
                           </div>
                           <div className="flex-shrink-0">
                             <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--brand-tertiary-bg, #f3e8ff)' }}>
@@ -389,7 +389,7 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
             </div>
 
             {/* Human support link */}
-            <div className="px-3 pb-2.5 flex items-center justify-center gap-3 text-[11px] text-gray-400">
+            <div className="px-3 pb-2.5 flex items-center justify-center gap-3 text-[0.6875rem] text-gray-400">
               <span>{t('modals.support_agent.contact_human')}</span>
               <a
                 href={`https://wa.me/${whatsappNumber}`}

@@ -33,7 +33,7 @@ export function ConfigurationLayout<T extends string>({
     <div className="h-full flex">
       {/* Configuration Options Sidebar - responsive width */}
       <div
-        className={`w-[200px] lg:w-1/5 lg:min-w-[220px] bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-transform duration-300 ease-out flex-shrink-0 ${
+        className={`w-[12.5rem] lg:w-1/5 lg:min-w-[13.75rem] bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-transform duration-300 ease-out flex-shrink-0 ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

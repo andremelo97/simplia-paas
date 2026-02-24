@@ -168,7 +168,7 @@ export const BugReportModal: React.FC<BugReportModalProps> = ({ isOpen, onClose 
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t('bug_report.description_placeholder')}
-            className="mt-1 min-h-[150px]"
+            className="mt-1 min-h-[9.375rem]"
           />
         </div>
 

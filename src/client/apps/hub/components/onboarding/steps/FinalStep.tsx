@@ -200,7 +200,7 @@ export const FinalStep: React.FC<FinalStepProps> = ({
                   src={branding.logoUrl}
                   alt="Logo"
                   className="max-h-24 w-auto object-contain"
-                  style={{ minWidth: '80px' }}
+                  style={{ minWidth: '5rem' }}
                 />
               </div>
             ) : (

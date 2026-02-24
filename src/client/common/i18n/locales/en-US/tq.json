@@ -956,7 +956,8 @@
         "sending_email": "Sending...",
         "email_sent": "Email sent!",
         "email_failed": "Failed to send email",
-        "generate_new_link": "Generate a new link"
+        "generate_new_link": "Generate a new link",
+        "expires": "Expires"
       },
       "section": {
         "title": "Shared Links",

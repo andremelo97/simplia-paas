@@ -206,16 +206,16 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
               key={lp.id}
               className={`border border-gray-200 rounded-lg p-3 text-sm space-y-2 ${isDisabled ? 'bg-gray-50 opacity-75' : 'bg-gray-50/50'}`}
             >
-              {/* Row 1: URL + Status + Views */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate max-w-[17.5rem] flex-1">
+              {/* Row 1: Link + Password + Status + Views */}
+              <div className="flex items-center gap-2">
+                <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 truncate flex-1 min-w-0">
                   {url}
                 </code>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopyLink(lp)}
-                  className="h-7 px-1.5 text-sm gap-1"
+                  className="h-7 px-1.5 text-sm gap-1 flex-shrink-0"
                 >
                   {copiedId === lp.id ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
                 </Button>
@@ -223,38 +223,40 @@ export const LandingPageLinksSection: React.FC<LandingPageLinksSectionProps> = (
                 {lp.password && (
                   <>
                     <span className="text-gray-400">|</span>
-                    <span className="text-sm text-gray-500">{t('landing_pages.links.card.password')}:</span>
-                    <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 font-mono">
+                    <span className="text-sm text-gray-500 flex-shrink-0">{t('landing_pages.links.card.password')}:</span>
+                    <code className="text-sm bg-white border border-gray-200 rounded px-2 py-0.5 font-mono flex-shrink-0">
                       {lp.password}
                     </code>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleCopyPassword(lp)}
-                      className="h-7 px-1.5 text-sm gap-1"
+                      className="h-7 px-1.5 text-sm gap-1 flex-shrink-0"
                     >
                       {copiedPasswordId === lp.id ? <CheckCircle2 size={14} className="text-green-600" /> : <Copy size={14} />}
                     </Button>
                   </>
                 )}
 
-                <span className="text-gray-400">|</span>
+                <span className="text-gray-400 flex-shrink-0">|</span>
                 <StatusBadge status={status} />
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 flex-shrink-0">
                   <Eye size={14} className="inline mr-0.5" />{lp.viewsCount}
                 </span>
-                <span className="text-gray-400">|</span>
-                <span className="text-sm text-gray-500">
-                  {formatShortDate(lp.createdAt)}
-                </span>
+              </div>
+
+              {/* Row 2: Dates */}
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <span>{t('landing_pages.links.card.created')}: {formatShortDate(lp.createdAt)}</span>
                 {lp.expiresAt && (
-                  <span className="text-sm text-gray-500">
-                    — {formatShortDate(lp.expiresAt)}
-                  </span>
+                  <>
+                    <span className="text-gray-300">|</span>
+                    <span>{t('landing_pages.links.card.expires')}: {formatShortDate(lp.expiresAt)}</span>
+                  </>
                 )}
               </div>
 
-              {/* Row 2: Actions */}
+              {/* Row 3: Actions */}
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Tooltip
                   content={isDisabled ? t('landing_pages.links.card.generate_new_link') : t('modals.generate_public_quote.whatsapp_no_phone')}

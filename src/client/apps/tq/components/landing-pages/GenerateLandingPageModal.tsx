@@ -403,7 +403,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
             {/* Send buttons */}
             <div className="space-y-3">
               {/* WhatsApp */}
-              <Tooltip content={t('modals.generate_public_quote.whatsapp_no_phone')} disabled={!!patientPhone} side="bottom">
+              <Tooltip content={t('modals.generate_public_quote.whatsapp_no_phone')} disabled={!!patientPhone} side="bottom" className="w-full">
                 <Button
                   variant="secondary"
                   className="w-full justify-center gap-2 bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
@@ -416,7 +416,7 @@ export const GenerateLandingPageModal: React.FC<GenerateLandingPageModalProps> =
               </Tooltip>
 
               {/* Email */}
-              <Tooltip content={t('modals.generate_public_quote.email_no_email')} disabled={!!patientEmail} side="bottom">
+              <Tooltip content={t('modals.generate_public_quote.email_no_email')} disabled={!!patientEmail} side="bottom" className="w-full">
                 <Button
                   variant="secondary"
                   className="w-full justify-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200"

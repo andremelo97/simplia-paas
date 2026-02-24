@@ -923,7 +923,8 @@
         "sending_email": "Enviando...",
         "email_sent": "Email enviado!",
         "email_failed": "Falha ao enviar email",
-        "generate_new_link": "Gerar novo link"
+        "generate_new_link": "Gerar novo link",
+        "expires": "Expira"
       },
       "section": {
         "title": "Links Compartilhados",

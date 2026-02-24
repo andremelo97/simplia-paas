@@ -21,7 +21,7 @@ export const Stepper: React.FC<StepperProps> = ({
   className = ''
 }) => {
   return (
-    <div className={`flex items-center justify-center ${className}`}>
+    <div className={`flex items-start justify-center ${className}`}>
       {steps.map((step, index) => {
         const isCompleted = index < currentStep
         const isCurrent = index === currentStep
@@ -67,7 +67,7 @@ export const Stepper: React.FC<StepperProps> = ({
             {index < steps.length - 1 && (
               <div
                 className={`
-                  w-12 h-0.5 mx-2 mt-[-1.25rem]
+                  w-12 h-0.5 mx-2 mt-5
                   ${index < currentStep ? 'bg-[#B725B7]' : 'bg-gray-200'}
                 `}
               />

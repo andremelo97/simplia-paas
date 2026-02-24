@@ -9,6 +9,7 @@ interface DocumentContentCardProps {
   config: DocumentConfig
   disabled?: boolean
   error?: string
+  headerAction?: React.ReactNode
 }
 
 export const DocumentContentCard: React.FC<DocumentContentCardProps> = ({
@@ -16,17 +17,21 @@ export const DocumentContentCard: React.FC<DocumentContentCardProps> = ({
   onChange,
   config,
   disabled = false,
-  error = ''
+  error = '',
+  headerAction
 }) => {
   const { t } = useTranslation('tq')
 
   return (
     <Card>
       <CardHeader className="p-6 pb-4">
-        <h2 className="text-lg font-semibold text-gray-900">
-          {t(`${config.i18nKey}.content_section`, t('quotes.quote_content'))}
-          <span className="ml-1 text-red-500" aria-hidden="true">*</span>
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {t(`${config.i18nKey}.content_section`, t('quotes.quote_content'))}
+            <span className="ml-1 text-red-500" aria-hidden="true">*</span>
+          </h2>
+          {headerAction}
+        </div>
       </CardHeader>
 
       <CardContent className="px-6 pb-6">

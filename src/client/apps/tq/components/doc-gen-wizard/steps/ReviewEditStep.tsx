@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Receipt, ClipboardList, Shield, Loader2, Save, Maximize2, Minimize2 } from 'lucide-react'
-import { Button, TemplateEditor } from '@client/common/ui'
+import { Button } from '@client/common/ui'
+import { SimpleEditor } from '@shared/components/tiptap-templates/simple/simple-editor'
 import { DocumentContentCard } from '../../../features/documents/components'
 import { DOCUMENT_CONFIGS } from '../../../features/documents/documentConfig'
 import { useDocGenWizardStore, WizardDocumentType } from '../../../shared/store/docGenWizard'
@@ -76,30 +77,19 @@ export const ReviewEditStep: React.FC = () => {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsMaximized(true)}
-            className="flex items-center gap-1.5"
-            title={t('doc_gen_wizard.step3.maximize', 'Maximize editor')}
-          >
-            <Maximize2 className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSaveAndContinue}
-            disabled={isSaving || !documentContent}
-            className="flex items-center gap-2"
-          >
-            {isSaving ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Save className="w-4 h-4" />
-            )}
-            {t('doc_gen_wizard.step3.save_continue', 'Save & Continue')}
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          onClick={handleSaveAndContinue}
+          disabled={isSaving || !documentContent}
+          className="flex items-center gap-2"
+        >
+          {isSaving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Save className="w-4 h-4" />
+          )}
+          {t('doc_gen_wizard.step3.save_continue', 'Save & Continue')}
+        </Button>
       </div>
 
       <p className="text-sm text-gray-600">
@@ -119,28 +109,40 @@ export const ReviewEditStep: React.FC = () => {
           content={documentContent || ''}
           onChange={setDocumentContent}
           config={config}
+          headerAction={
+            <button
+              onClick={() => setIsMaximized(true)}
+              className="flex items-center justify-center w-7 h-7 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              title={t('doc_gen_wizard.step3.maximize', 'Expand')}
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
+          }
         />
       </div>
 
-      {/* Maximized Editor Overlay — editor fills entire screen */}
+      {/* Fullscreen editor overlay — same pattern as Step 2 transcription */}
       {isMaximized && (
-        <div className="fixed inset-0 z-[60] bg-white template-editor-fullscreen">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsMaximized(false)}
-            className="absolute top-3 right-3 z-10"
-            title={t('doc_gen_wizard.step3.minimize', 'Minimize editor')}
-          >
-            <Minimize2 className="w-4 h-4" />
-          </Button>
-          <div className="h-full">
-            <TemplateEditor
-              content={documentContent || ''}
-              onChange={setDocumentContent}
-              placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
-              minHeight="100%"
-            />
+        <div className="fixed inset-0 z-[60] bg-white flex flex-col">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-900">
+              {t(`${config.i18nKey}.content_section`, t('quotes.quote_content'))}
+            </h2>
+            <button
+              onClick={() => setIsMaximized(false)}
+              className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <Minimize2 className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 relative min-h-0">
+            <div className="absolute inset-0">
+              <SimpleEditor
+                content={documentContent || ''}
+                onChange={setDocumentContent}
+                placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
+              />
+            </div>
           </div>
         </div>
       )}

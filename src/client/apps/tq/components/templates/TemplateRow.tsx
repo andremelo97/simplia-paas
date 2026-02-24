@@ -58,7 +58,7 @@ export const TemplateRow: React.FC<TemplateRowProps> = ({
       </div>
 
       {/* Description or Content Preview - hidden on tablet */}
-      <div className="min-w-0 flex-1 hidden lg:block">
+      <div className="min-w-0 flex-1 hidden lg:block overflow-hidden">
         <Tooltip content={template.description || truncateContent(template.content)}>
           <span className="text-gray-600 block truncate">
             {template.description || truncateContent(template.content)}

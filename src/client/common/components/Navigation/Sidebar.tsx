@@ -106,7 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         isOpen ? "w-64" : "w-16",
         className
       )}
-      style={{ width: isOpen ? '210px' : '64px' }}
+      style={{ width: isOpen ? '13.125rem' : '4rem' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-200/50 h-16 px-6 shadow-sm bg-white">
@@ -156,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Navigation */}
-      <nav className={cn("flex-1 min-h-0", isOpen && "overflow-y-auto")} style={{ padding: '16px', gap: '8px', display: 'flex', flexDirection: 'column' }}>
+      <nav className={cn("flex-1 min-h-0", isOpen && "overflow-y-auto")} style={{ padding: '1rem', gap: '0.5rem', display: 'flex', flexDirection: 'column' }}>
         {navigation.map((item, index) => {
           const Icon = item.icon
           const hasChildren = item.children && item.children.length > 0
@@ -215,7 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.2, delay: index * 0.05 }}
                       className="flex-1 flex items-center justify-between"
-                      style={{ marginLeft: '10px' }}
+                      style={{ marginLeft: '0.625rem' }}
                     >
                       <span className="font-medium text-sm">{item.name}</span>
                       <ChevronDown
@@ -317,7 +317,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                     className="flex-1"
-                    style={{ marginLeft: '10px' }}
+                    style={{ marginLeft: '0.625rem' }}
                   >
                     {isHighlight ? (
                       <div
@@ -380,7 +380,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.2, delay: index * 0.05 }}
                       className="flex-1"
-                      style={{ marginLeft: '10px' }}
+                      style={{ marginLeft: '0.625rem' }}
                     >
                       <div className="font-medium text-sm">{item.name}</div>
                     </motion.div>
@@ -394,7 +394,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Bottom Actions */}
       {bottomActions && bottomActions.length > 0 && (
-        <div style={{ padding: '8px 16px 16px', borderTop: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ padding: '0.5rem 1rem 1rem', borderTop: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
           {bottomActions.map((action) => {
             const ActionIcon = action.icon
             const isDanger = action.variant === 'danger'
@@ -440,7 +440,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.2 }}
                     className="flex-1"
-                    style={{ marginLeft: '10px' }}
+                    style={{ marginLeft: '0.625rem' }}
                   >
                     <div className="font-medium text-sm">{action.label}</div>
                   </motion.div>

@@ -58,7 +58,7 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(({
             "peer/select h-8 rounded-l border border-r-0 border-gray-200 bg-gray-50 px-1.5 text-sm shadow-sm transition-all focus:outline-none focus:border-[#B725B7] disabled:cursor-not-allowed disabled:opacity-50",
             hasError && "border-red-300"
           )}
-          style={{ width: '88px' }}
+          style={{ width: '5.5rem' }}
         >
           {COUNTRIES.map((country) => (
             <option key={country.code} value={country.code}>

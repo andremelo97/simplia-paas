@@ -1414,7 +1414,7 @@ export const NewSession: React.FC = () => {
             <div className="relative inline-block">
               {isNewSessionEnabled() && (
                 <div
-                  className="absolute -inset-[3px] rounded-md animate-pulse"
+                  className="absolute -inset-[0.1875rem] rounded-md animate-pulse"
                   style={{
                     background: 'linear-gradient(90deg, #B725B7, #E91E63, #B725B7)',
                     backgroundSize: '200% 100%',
@@ -1519,7 +1519,7 @@ export const NewSession: React.FC = () => {
       <div className="lg:hidden order-4 md:order-none flex flex-wrap items-center gap-2">
         <div className="relative inline-block">
           {isNewSessionEnabled() && (
-            <div className="absolute -inset-[3px] rounded-md animate-pulse" style={{ background: 'linear-gradient(90deg, #B725B7, #E91E63, #B725B7)', backgroundSize: '200% 100%', animation: 'gradient-shift 3s ease infinite, pulse 2s ease-in-out infinite', zIndex: 0 }} />
+            <div className="absolute -inset-[0.1875rem] rounded-md animate-pulse" style={{ background: 'linear-gradient(90deg, #B725B7, #E91E63, #B725B7)', backgroundSize: '200% 100%', animation: 'gradient-shift 3s ease infinite, pulse 2s ease-in-out infinite', zIndex: 0 }} />
           )}
           <Button variant="primary" disabled={!isNewSessionEnabled()} onClick={handleNewSession} className="flex items-center gap-1.5 text-xs relative z-10">
             {isCreatingSession ? (<><div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white mr-1" />{t('common.saving')}</>) : (<><Plus className="w-3.5 h-3.5" />{t('sessions.create')}</>)}

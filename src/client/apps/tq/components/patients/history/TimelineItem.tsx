@@ -76,8 +76,8 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
           <div
             className="absolute w-0.5 bg-gray-300"
             style={{
-              top: isFirst ? '32px' : '52px',
-              bottom: '-16px',
+              top: isFirst ? '2rem' : '3.25rem',
+              bottom: '-1rem',
               left: '50%',
               transform: 'translateX(-50%)'
             }}
@@ -86,7 +86,7 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
       </div>
 
       {/* Content Column */}
-      <div className="flex-1 min-w-0" style={{ marginTop: isFirst ? '0' : '20px' }}>
+      <div className="flex-1 min-w-0" style={{ marginTop: isFirst ? '0' : '1.25rem' }}>
         <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-2">

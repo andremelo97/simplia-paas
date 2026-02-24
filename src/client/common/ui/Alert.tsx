@@ -7,11 +7,11 @@ const alertVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-white text-gray-950 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-gray-950",
+        default: "bg-white text-gray-950 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-0.1875rem] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-gray-950",
         destructive:
-          "border-red-500/50 text-red-700 bg-red-50/50 dark:border-red-500 [&>svg]:text-red-600 dark:text-red-50 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
+          "border-red-500/50 text-red-700 bg-red-50/50 dark:border-red-500 [&>svg]:text-red-600 dark:text-red-50 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-0.1875rem] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
         error:
-          "border-red-500/50 text-red-700 bg-red-50/50 [&>svg]:text-red-600 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
+          "border-red-500/50 text-red-700 bg-red-50/50 [&>svg]:text-red-600 p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-0.1875rem] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4",
         warning:
           "border-transparent overflow-hidden bg-white p-6",
         gradient:

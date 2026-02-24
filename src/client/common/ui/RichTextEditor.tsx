@@ -19,7 +19,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Start typing...",
   className,
   readonly = false,
-  minHeight = "150px"
+  minHeight = "9.375rem"
 }) => {
   const editor = useEditor({
     extensions: [

@@ -96,21 +96,21 @@ button[data-variant="secondary"] {
 .template-editor-constrained .simple-editor-wrapper {
   width: 100% !important;
   height: auto !important;
-  max-height: 500px !important;
+  max-height: 31.25rem !important;
   overflow: auto !important;
 }
 
 .template-editor-constrained .simple-editor-content {
   max-width: 100% !important;
   height: auto !important;
-  min-height: 400px !important;
+  min-height: 25rem !important;
   margin-top: 1px !important;
 }
 
 .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor {
   padding: 1rem !important;
-  min-height: 350px !important;
-  max-height: 400px !important;
+  min-height: 21.875rem !important;
+  max-height: 25rem !important;
   overflow-y: auto !important;
   background-color: white !important;
   color: #333 !important;

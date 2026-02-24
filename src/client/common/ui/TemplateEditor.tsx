@@ -38,7 +38,7 @@ export const TemplateEditor: React.FC<TemplateEditorProps> = ({
   onChange,
   placeholder = "Create your template using [placeholders], $variables$, and (instructions)...",
   readonly = false,
-  minHeight = "400px",
+  minHeight = "25rem",
   className,
   label,
   error,

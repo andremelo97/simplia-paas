@@ -16,6 +16,7 @@ import { MobileRouteGuard } from './MobileRouteGuard'
 import { MobileBottomNav } from './MobileBottomNav'
 import { InstallAppBanner } from '@client/common/components'
 import { SupportChatWidget } from '../../components/support-agent/SupportChatWidget'
+import { DraggableFloat } from '@client/common/ui/DraggableFloat'
 import { useIsMobile } from '@shared/hooks/use-mobile'
 
 export const Layout: React.FC = () => {
@@ -109,7 +110,7 @@ export const Layout: React.FC = () => {
 
       {/* Floating Resume Wizard Button (admin only, not on mobile) */}
       {isAdmin && showResumeHint && !isMobile && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <DraggableFloat className="bottom-6 right-6">
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#B725B7] to-[#E91E63] flex items-center justify-center flex-shrink-0">
@@ -145,12 +146,12 @@ export const Layout: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </DraggableFloat>
       )}
 
       {/* Floating Resume Doc Gen Wizard Button (not on mobile, when onboarding hint is not showing) */}
       {showDocGenResumeHint && !showResumeHint && !isMobile && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+        <DraggableFloat className="bottom-6 right-6">
           <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-xs">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5ED6CE] to-[#B725B7] flex items-center justify-center flex-shrink-0">
@@ -187,7 +188,7 @@ export const Layout: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </DraggableFloat>
       )}
 
       {/* Support Chat Widget (floating, persists across routes) */}

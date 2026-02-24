@@ -20,6 +20,7 @@ import {
   Alert,
   AlertDescription
 } from '@client/common/ui'
+import { DraggableFloat } from '@client/common/ui/DraggableFloat'
 import { supportAgentService, SupportChatMessage, SupportUserContext } from '../../services/supportAgentService'
 import { useAuthStore } from '../../shared/store/auth'
 import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
@@ -183,22 +184,23 @@ export const SupportChatWidget: React.FC<SupportChatWidgetProps> = ({ open, onCl
   // Minimized: show floating bubble
   if (minimized) {
     return (
-      <motion.button
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.8, opacity: 0 }}
-        transition={{ type: 'spring', duration: 0.3 }}
-        onClick={() => setMinimized(false)}
-        className="fixed bottom-[4.5rem] right-3 md:bottom-6 md:right-6 z-50 w-10 h-10 md:w-14 md:h-14 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
-        title={t('modals.support_agent.title')}
-      >
-        <Headphones className="w-4 h-4 md:w-6 md:h-6" />
-        {messages.length > 0 && (
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 rounded-full text-[0.5rem] md:text-[0.625rem] font-bold flex items-center justify-center">
-            {messages.filter(m => m.role === 'assistant').length}
-          </span>
-        )}
-      </motion.button>
+      <DraggableFloat className="bottom-[4.5rem] right-3 md:bottom-6 md:right-6">
+        <motion.button
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: 'spring', duration: 0.3 }}
+          onClick={() => setMinimized(false)}
+          className="relative w-10 h-10 md:w-14 md:h-14 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors"
+          title={t('modals.support_agent.title')}
+        >
+          <Headphones className="w-4 h-4 md:w-6 md:h-6" />
+          {messages.length > 0 && (
+            <span className="absolute -top-1 -right-1 w-3.5 h-3.5 md:w-4 md:h-4 bg-red-500 rounded-full text-[0.5rem] md:text-[0.625rem] font-bold flex items-center justify-center">
+              {messages.filter(m => m.role === 'assistant').length}
+            </span>
+          )}
+        </motion.button>
+      </DraggableFloat>
     )
   }
 

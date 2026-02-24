@@ -122,40 +122,19 @@ export const ReviewEditStep: React.FC = () => {
         />
       </div>
 
-      {/* Maximized Editor Overlay */}
+      {/* Maximized Editor Overlay — editor fills entire screen */}
       {isMaximized && (
-        <div className="fixed inset-0 z-[60] bg-white flex flex-col">
-          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-gray-50">
-            <div className="flex items-center gap-3">
-              <Icon className="w-5 h-5 text-[#B725B7]" />
-              <h3 className="font-semibold text-gray-900">
-                {t(`sidebar.${documentType === 'clinical-note' ? 'clinical_notes' : documentType === 'quote' ? 'quotes' : 'prevention'}`,
-                  DOC_TYPE_LABELS[documentType]
-                )}
-                {documentNumber && <span className="ml-2 text-sm font-mono text-gray-500">{documentNumber}</span>}
-              </h3>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="primary"
-                onClick={() => { setIsMaximized(false); handleSaveAndContinue() }}
-                disabled={isSaving || !documentContent}
-                className="flex items-center gap-2"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {t('doc_gen_wizard.step3.save_continue', 'Save & Continue')}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsMaximized(false)}
-                title={t('doc_gen_wizard.step3.minimize', 'Minimize editor')}
-              >
-                <Minimize2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-          <div className="flex-1 min-h-0 p-6">
+        <div className="fixed inset-0 z-[60] bg-white template-editor-fullscreen">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsMaximized(false)}
+            className="absolute top-3 right-3 z-10"
+            title={t('doc_gen_wizard.step3.minimize', 'Minimize editor')}
+          >
+            <Minimize2 className="w-4 h-4" />
+          </Button>
+          <div className="h-full">
             <TemplateEditor
               content={documentContent || ''}
               onChange={setDocumentContent}

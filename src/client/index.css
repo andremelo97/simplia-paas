@@ -92,6 +92,41 @@ button[data-variant="secondary"] {
   color: var(--brand-primary-hover) !important;
 }
 
+/* Template Editor Fullscreen — override constraints to fill parent */
+.template-editor-fullscreen .simple-editor-wrapper {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: none !important;
+  overflow: auto !important;
+}
+
+.template-editor-fullscreen .simple-editor-content {
+  max-width: 100% !important;
+  height: calc(100% - 2.5rem) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  margin-top: 1px !important;
+}
+
+.template-editor-fullscreen .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  padding: 1rem !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  background-color: white !important;
+  color: #333 !important;
+  border: 1px solid #e5e7eb !important;
+  border-top: none !important;
+  border-radius: 0 !important;
+}
+
+.dark .template-editor-fullscreen .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  background-color: #0E0E11 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
 /* Template Editor Constraints */
 .template-editor-constrained .simple-editor-wrapper {
   width: 100% !important;

@@ -181,12 +181,14 @@ button[data-variant="secondary"] {
 .template-editor-maximized .template-editor-constrained .simple-editor-wrapper {
   max-height: none !important;
   height: 100% !important;
+  overflow: hidden !important;
 }
 
 .template-editor-maximized .template-editor-constrained .simple-editor-content {
   height: calc(100% - 2.5rem) !important;
   max-height: none !important;
   min-height: 0 !important;
+  overflow: hidden !important;
 }
 
 .template-editor-maximized .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor {

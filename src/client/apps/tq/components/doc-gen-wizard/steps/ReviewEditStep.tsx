@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { Receipt, ClipboardList, Shield, Loader2, Save, Maximize2, Minimize2 } from 'lucide-react'
@@ -33,6 +33,14 @@ export const ReviewEditStep: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isMaximized, setIsMaximized] = useState(false)
+
+  // Lock body scroll when maximized
+  useEffect(() => {
+    if (isMaximized) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [isMaximized])
 
   if (!documentType || !documentId) return null
 

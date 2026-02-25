@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { Receipt, ClipboardList, Shield, Loader2, Save, Maximize2, Minimize2 } from 'lucide-react'
 import { Button, TemplateEditor } from '@client/common/ui'
@@ -120,29 +121,33 @@ export const ReviewEditStep: React.FC = () => {
         />
       </div>
 
-      {/* Fullscreen editor overlay — same TemplateEditor, just unconstrained height */}
-      {isMaximized && (
-        <div className="fixed inset-0 z-[999] bg-white flex flex-col">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <h2 className="text-sm font-semibold text-gray-900">
-              {t(`${config.i18nKey}.content_section`, t('quotes.quote_content'))}
-            </h2>
-            <button
-              onClick={() => setIsMaximized(false)}
-              className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
-            >
-              <Minimize2 className="w-4 h-4" />
-            </button>
+      {/* Maximized editor — portal to body so it escapes wizard stacking context */}
+      {isMaximized && createPortal(
+        <div className="fixed inset-0 z-[999] bg-black/60 flex items-center justify-center p-6">
+          <div className="bg-white rounded-xl shadow-2xl flex flex-col w-full h-full">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 flex-shrink-0 rounded-t-xl">
+              <h2 className="text-sm font-semibold text-gray-900">
+                {t(`${config.i18nKey}.content_section`, t('quotes.quote_content'))}
+              </h2>
+              <button
+                onClick={() => setIsMaximized(false)}
+                className="flex items-center justify-center w-8 h-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                title={t('doc_gen_wizard.step3.minimize', 'Minimize')}
+              >
+                <Minimize2 className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 p-4 template-editor-maximized">
+              <TemplateEditor
+                content={documentContent || ''}
+                onChange={setDocumentContent}
+                placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
+                minHeight="100%"
+              />
+            </div>
           </div>
-          <div className="flex-1 min-h-0 p-4 template-editor-maximized">
-            <TemplateEditor
-              content={documentContent || ''}
-              onChange={setDocumentContent}
-              placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
-              minHeight="100%"
-            />
-          </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

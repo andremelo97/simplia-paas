@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Receipt, ClipboardList, Shield, Loader2, Save, Maximize2, Minimize2 } from 'lucide-react'
-import { Button } from '@client/common/ui'
-import { SimpleEditor } from '@shared/components/tiptap-templates/simple/simple-editor'
+import { Button, TemplateEditor } from '@client/common/ui'
 import { DocumentContentCard } from '../../../features/documents/components'
 import { DOCUMENT_CONFIGS } from '../../../features/documents/documentConfig'
 import { useDocGenWizardStore, WizardDocumentType } from '../../../shared/store/docGenWizard'
@@ -121,7 +120,7 @@ export const ReviewEditStep: React.FC = () => {
         />
       </div>
 
-      {/* Fullscreen editor overlay — same pattern as Step 2 transcription */}
+      {/* Fullscreen editor overlay — same TemplateEditor, just unconstrained height */}
       {isMaximized && (
         <div className="fixed inset-0 z-[60] bg-white flex flex-col">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
@@ -135,14 +134,13 @@ export const ReviewEditStep: React.FC = () => {
               <Minimize2 className="w-4 h-4" />
             </button>
           </div>
-          <div className="flex-1 relative min-h-0">
-            <div className="absolute inset-0">
-              <SimpleEditor
-                content={documentContent || ''}
-                onChange={setDocumentContent}
-                placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
-              />
-            </div>
+          <div className="flex-1 min-h-0 p-4 template-editor-maximized">
+            <TemplateEditor
+              content={documentContent || ''}
+              onChange={setDocumentContent}
+              placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
+              minHeight="100%"
+            />
           </div>
         </div>
       )}

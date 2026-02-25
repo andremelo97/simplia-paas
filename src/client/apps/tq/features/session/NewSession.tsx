@@ -407,11 +407,26 @@ export const NewSession: React.FC = () => {
     return () => clearTimeout(timeout)
   }, [debouncedTranscription, session?.transcription])
 
+  // Fetch recent patients (no search query — shown on focus)
+  const fetchRecentPatients = useCallback(async () => {
+    if (patientMode !== 'search') return
+    setIsSearching(true)
+    try {
+      const results = await patientsService.searchPatients({ limit: 5 })
+      setSearchResults(results)
+      setShowSearchResults(results.length > 0)
+    } catch {
+      // ignore
+    } finally {
+      setIsSearching(false)
+    }
+  }, [patientMode])
+
   // Patient search effect
   useEffect(() => {
     const searchPatients = async () => {
       if (patientMode !== 'search' || !debouncedSearchQuery.trim()) {
-        setSearchResults([])
+        if (!debouncedSearchQuery.trim()) setSearchResults([])
         return
       }
 
@@ -419,7 +434,7 @@ export const NewSession: React.FC = () => {
       try {
         const results = await patientsService.searchPatients({
           search: debouncedSearchQuery,
-          limit: 10 // Buscar mais resultados para poder fazer a ordenação
+          limit: 10
         })
 
         // Ordenar resultados: STARTS WITH primeiro, depois CONTAINS
@@ -428,7 +443,6 @@ export const NewSession: React.FC = () => {
             const fullName = `${patient.firstName || ''} ${patient.lastName || ''}`.trim().toLowerCase()
             const searchLower = debouncedSearchQuery.toLowerCase()
 
-            // Verificar se o nome completo ou primeiro nome ou último nome começam com a busca
             const startsWithFull = fullName.startsWith(searchLower)
             const startsWithFirst = (patient.firstName || '').toLowerCase().startsWith(searchLower)
             const startsWithLast = (patient.lastName || '').toLowerCase().startsWith(searchLower)
@@ -436,12 +450,12 @@ export const NewSession: React.FC = () => {
 
             return {
               ...patient,
-              _searchScore: startsWith ? 1 : 0 // 1 para STARTS WITH, 0 para CONTAINS
+              _searchScore: startsWith ? 1 : 0
             }
           })
-          .sort((a, b) => b._searchScore - a._searchScore) // Ordenar por score (STARTS WITH primeiro)
-          .slice(0, 5) // Limitar a 5 resultados finais
-          .map(({ _searchScore, ...patient }) => patient) // Remover o campo auxiliar
+          .sort((a, b) => b._searchScore - a._searchScore)
+          .slice(0, 5)
+          .map(({ _searchScore, ...patient }) => patient)
 
         setSearchResults(sortedResults)
         setShowSearchResults(sortedResults.length > 0)
@@ -1312,8 +1326,12 @@ export const NewSession: React.FC = () => {
                   }
                 }}
                 onFocus={() => {
-                  if (patientMode === 'search' && searchResults.length > 0) {
-                    setShowSearchResults(true)
+                  if (patientMode === 'search') {
+                    if (searchQuery.trim()) {
+                      if (searchResults.length > 0) setShowSearchResults(true)
+                    } else {
+                      fetchRecentPatients()
+                    }
                   }
                 }}
                 disabled={isCreatingPatient || !!createdPatient || (patientMode === 'search' && selectedPatient)}
@@ -1324,7 +1342,7 @@ export const NewSession: React.FC = () => {
               />
 
               {/* Search results dropdown */}
-              {patientMode === 'search' && searchQuery.trim() && showSearchResults && searchResults.length > 0 && (
+              {patientMode === 'search' && showSearchResults && searchResults.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((patient) => (
                     <button

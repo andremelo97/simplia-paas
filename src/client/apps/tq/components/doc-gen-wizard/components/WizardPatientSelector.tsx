@@ -37,10 +37,25 @@ export const WizardPatientSelector: React.FC = () => {
   const searchContainerRef = useRef<HTMLDivElement>(null)
   const debouncedQuery = useDebouncedValue(searchQuery, 300)
 
+  // Fetch recent patients (no search query — shown on focus)
+  const fetchRecentPatients = useCallback(async () => {
+    if (mode !== 'search') return
+    setIsSearching(true)
+    try {
+      const results = await patientsService.searchPatients({ limit: 5 })
+      setSearchResults(results as SearchPatient[])
+      setShowResults(results.length > 0)
+    } catch {
+      // ignore
+    } finally {
+      setIsSearching(false)
+    }
+  }, [mode])
+
   // Search patients
   useEffect(() => {
     if (mode !== 'search' || !debouncedQuery.trim()) {
-      setSearchResults([])
+      if (!debouncedQuery.trim()) setSearchResults([])
       return
     }
 
@@ -161,14 +176,20 @@ export const WizardPatientSelector: React.FC = () => {
               }
             }}
             onFocus={() => {
-              if (mode === 'search' && searchResults.length > 0) setShowResults(true)
+              if (mode === 'search') {
+                if (searchQuery.trim()) {
+                  if (searchResults.length > 0) setShowResults(true)
+                } else {
+                  fetchRecentPatients()
+                }
+              }
             }}
             disabled={isCreating}
             className={`bg-white ${isSelected ? 'border-2 border-[var(--brand-tertiary)]' : ''}`}
           />
 
           {/* Search results dropdown */}
-          {mode === 'search' && searchQuery.trim() && showResults && searchResults.length > 0 && (
+          {mode === 'search' && showResults && searchResults.length > 0 && (
             <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
               {searchResults.map((patient) => (
                 <button

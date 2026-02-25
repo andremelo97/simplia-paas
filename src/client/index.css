@@ -92,24 +92,6 @@ button[data-variant="secondary"] {
   color: var(--brand-primary-hover) !important;
 }
 
-/* Template Editor Maximized — same look as constrained but fills parent height */
-.template-editor-maximized .simple-editor-wrapper {
-  max-height: none !important;
-  height: 100% !important;
-}
-
-.template-editor-maximized .simple-editor-content {
-  height: calc(100% - 2.5rem) !important;
-  max-height: none !important;
-  min-height: 0 !important;
-}
-
-.template-editor-maximized .simple-editor-content .tiptap.ProseMirror.simple-editor {
-  min-height: 0 !important;
-  max-height: none !important;
-  height: 100% !important;
-}
-
 /* Template Editor Constraints */
 .template-editor-constrained .simple-editor-wrapper {
   width: 100% !important;
@@ -187,6 +169,30 @@ button[data-variant="secondary"] {
 .dark .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor ::selection {
   background-color: color-mix(in srgb, var(--brand-primary) 30%, black) !important;
   color: inherit !important;
+}
+
+/* Template Editor Maximized — overrides constrained height limits to fill parent */
+.template-editor-maximized,
+.template-editor-maximized > div,
+.template-editor-maximized .template-editor-constrained {
+  height: 100% !important;
+}
+
+.template-editor-maximized .template-editor-constrained .simple-editor-wrapper {
+  max-height: none !important;
+  height: 100% !important;
+}
+
+.template-editor-maximized .template-editor-constrained .simple-editor-content {
+  height: calc(100% - 2.5rem) !important;
+  max-height: none !important;
+  min-height: 0 !important;
+}
+
+.template-editor-maximized .template-editor-constrained .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  min-height: 0 !important;
+  max-height: none !important;
+  height: 100% !important;
 }
 
 /* === Puck Preview (.prose) Compatibility === */

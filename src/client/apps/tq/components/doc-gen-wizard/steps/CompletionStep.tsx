@@ -1,9 +1,13 @@
-import React, { useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus, Info, Minimize2, RotateCcw } from 'lucide-react'
+import { CheckCircle2, Receipt, ClipboardList, Shield, ExternalLink, FilePlus, Info, Minimize2, RotateCcw, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { Button } from '@client/common/ui'
+import { useDateFormatter } from '@client/common/hooks/useDateFormatter'
 import { useDocGenWizardStore, WizardDocumentType, CreatedDocument } from '../../../shared/store/docGenWizard'
+import { quotesService } from '../../../services/quotes'
+import { clinicalNotesService } from '../../../services/clinicalNotes'
+import { preventionService } from '../../../services/prevention'
 
 const DOC_TYPE_ICONS: Record<WizardDocumentType, typeof Receipt> = {
   'quote': Receipt,
@@ -17,10 +21,22 @@ const DOC_TYPE_LABELS: Record<WizardDocumentType, string> = {
   'prevention': 'Prevention',
 }
 
+interface SessionDocument {
+  id: string
+  number: string
+  type: WizardDocumentType
+  createdAt: string
+  createdBy?: { firstName: string; lastName: string }
+}
+
+const PAGE_SIZE = 5
+
 export const CompletionStep: React.FC = () => {
   const { t } = useTranslation('tq')
   const navigate = useNavigate()
+  const { formatShortDate } = useDateFormatter()
   const {
+    sessionId,
     sessionNumber,
     patientName,
     createdDocuments,
@@ -30,7 +46,66 @@ export const CompletionStep: React.FC = () => {
     openWizard,
   } = useDocGenWizardStore()
 
-  const handleOpenDocument = (doc: CreatedDocument) => {
+  const [sessionDocs, setSessionDocs] = useState<SessionDocument[]>([])
+  const [isLoadingDocs, setIsLoadingDocs] = useState(false)
+  const [page, setPage] = useState(0)
+
+  // Fetch all documents for this session
+  useEffect(() => {
+    if (!sessionId) return
+
+    const fetchSessionDocs = async () => {
+      setIsLoadingDocs(true)
+      try {
+        const [quotesRes, notesRes, prevRes] = await Promise.all([
+          quotesService.list({ sessionId }).catch(() => ({ data: [] })),
+          clinicalNotesService.list({ sessionId }).catch(() => ({ data: [] })),
+          preventionService.list({ sessionId }).catch(() => ({ data: [] })),
+        ])
+
+        const docs: SessionDocument[] = [
+          ...quotesRes.data.map(q => ({
+            id: q.id,
+            number: q.number,
+            type: 'quote' as WizardDocumentType,
+            createdAt: q.created_at,
+            createdBy: q.createdBy,
+          })),
+          ...notesRes.data.map(n => ({
+            id: n.id,
+            number: n.number,
+            type: 'clinical-note' as WizardDocumentType,
+            createdAt: n.created_at,
+            createdBy: n.createdBy,
+          })),
+          ...prevRes.data.map(p => ({
+            id: p.id,
+            number: p.number,
+            type: 'prevention' as WizardDocumentType,
+            createdAt: p.createdAt,
+            createdBy: p.createdBy,
+          })),
+        ]
+
+        docs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        setSessionDocs(docs)
+      } catch {
+        // ignore
+      } finally {
+        setIsLoadingDocs(false)
+      }
+    }
+
+    fetchSessionDocs()
+  }, [sessionId, createdDocuments.length])
+
+  const totalPages = Math.max(1, Math.ceil(sessionDocs.length / PAGE_SIZE))
+  const pagedDocs = useMemo(
+    () => sessionDocs.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE),
+    [sessionDocs, page]
+  )
+
+  const handleOpenDocument = (doc: { id: string; type: WizardDocumentType }) => {
     minimizeWizard()
     navigate(`/documents/${doc.type}/${doc.id}/edit`)
   }
@@ -113,32 +188,85 @@ export const CompletionStep: React.FC = () => {
         )
       })()}
 
-      {/* Created documents list */}
+      {/* Session documents list (all docs for this session) */}
       <div className="text-left space-y-2">
         <p className="text-xs uppercase tracking-wider text-gray-500">
-          {t('doc_gen_wizard.step4.documents_label', 'Documents Created')}
-          {' '}({createdDocuments.length})
+          {t('doc_gen_wizard.step4.session_documents_label', 'Session Documents')}
+          {!isLoadingDocs && sessionDocs.length > 0 && ` (${sessionDocs.length})`}
         </p>
-        {createdDocuments.map((doc) => {
-          const Icon = DOC_TYPE_ICONS[doc.type as WizardDocumentType] || Receipt
-          const label = DOC_TYPE_LABELS[doc.type as WizardDocumentType] || doc.type
-          return (
-            <button
-              key={doc.id}
-              onClick={() => handleOpenDocument(doc)}
-              className="w-full flex items-center justify-between gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-[#B725B7]/5 transition-colors text-left group"
-            >
-              <div className="flex items-center gap-3">
-                <Icon className="w-5 h-5 text-gray-400 group-hover:text-[#B725B7]" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">{label}</p>
-                  <p className="text-xs text-gray-500 font-mono">{doc.number}</p>
-                </div>
+
+        {isLoadingDocs ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
+          </div>
+        ) : sessionDocs.length === 0 ? (
+          <p className="text-sm text-gray-400 py-4">
+            {t('doc_gen_wizard.step4.no_documents', 'No documents found for this session.')}
+          </p>
+        ) : (
+          <>
+            {pagedDocs.map((doc) => {
+              const Icon = DOC_TYPE_ICONS[doc.type] || Receipt
+              const label = t(
+                `sidebar.${doc.type === 'clinical-note' ? 'clinical_notes' : doc.type === 'quote' ? 'quotes' : 'prevention'}`,
+                DOC_TYPE_LABELS[doc.type]
+              )
+              const isNew = createdDocuments.some(cd => cd.id === doc.id)
+              return (
+                <button
+                  key={doc.id}
+                  onClick={() => handleOpenDocument(doc)}
+                  className="w-full flex items-center justify-between gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-[#B725B7] hover:bg-[#B725B7]/5 transition-colors text-left group"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon className="w-4 h-4 text-gray-400 group-hover:text-[#B725B7] flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">{doc.number}</p>
+                        {isNew && (
+                          <span className="text-[0.625rem] font-semibold uppercase px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 flex-shrink-0">
+                            {t('doc_gen_wizard.step4.new_badge', 'new')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {label}
+                        {doc.createdBy && ` · ${doc.createdBy.firstName} ${doc.createdBy.lastName}`}
+                        {doc.createdAt && ` · ${formatShortDate(doc.createdAt)}`}
+                      </p>
+                    </div>
+                  </div>
+                  <ExternalLink className="w-3.5 h-3.5 text-gray-400 group-hover:text-[#B725B7] flex-shrink-0" />
+                </button>
+              )
+            })}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  onClick={() => setPage(p => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  {t('common:previous', 'Previous')}
+                </button>
+                <span className="text-xs text-gray-400">
+                  {page + 1} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  {t('common:next', 'Next')}
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-[#B725B7]" />
-            </button>
-          )
-        })}
+            )}
+          </>
+        )}
       </div>
 
       {/* Actions */}

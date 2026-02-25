@@ -167,8 +167,8 @@ export const Layout: React.FC = () => {
                 <div className="flex items-center gap-2 mt-3">
                   <button
                     onClick={openDocGenWizard}
-                    className="px-3 py-1.5 text-xs font-medium text-white rounded-md hover:opacity-90 transition-colors"
-                    style={{ backgroundColor: 'var(--brand-tertiary)' }}
+                    className="px-3 py-1.5 text-xs font-medium text-white rounded-md transition-colors"
+                    style={{ backgroundColor: 'var(--brand-primary)', }}
                   >
                     {t('doc_gen_wizard.resume.button', 'Resume')}
                   </button>

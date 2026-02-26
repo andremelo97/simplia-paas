@@ -202,16 +202,6 @@ export const LandingPageLinkRow: React.FC<LandingPageLinkRowProps> = ({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => window.open(`/landing-pages/links/${landingPage.id}/preview`, '_blank')}
-          className="h-7 text-sm gap-1"
-        >
-          <Eye size={14} />
-          {t('landing_pages.links.card.preview')}
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
           onClick={() => window.open(url, '_blank')}
           className="h-7 text-sm gap-1"
           disabled={isDisabled}

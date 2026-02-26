@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { Receipt, ClipboardList, Shield, Loader2, Save, Maximize2, Minimize2 } from 'lucide-react'
@@ -21,14 +21,21 @@ const DOC_TYPE_LABELS: Record<WizardDocumentType, string> = {
 
 export const ReviewEditStep: React.FC = () => {
   const { t } = useTranslation('tq')
-  const {
-    documentId,
-    documentNumber,
-    documentContent,
-    documentType,
-    setDocumentContent,
-    setStep,
-  } = useDocGenWizardStore()
+
+  // Read stable fields (don't change while on this step)
+  const { documentId, documentNumber, documentType, setDocumentContent, setStep } = useDocGenWizardStore()
+
+  // Read documentContent ONCE to seed local state — don't subscribe to its changes.
+  // This prevents the SimpleEditor from re-initializing on every keystroke (TipTap
+  // compares content prop vs editor.getHTML() and calls setContent when they differ,
+  // which resets the cursor position on complex HTML like quote/prevention templates).
+  const initialContent = useRef(useDocGenWizardStore.getState().documentContent || '').current
+  const [localContent, setLocalContent] = useState<string>(initialContent)
+
+  const handleContentChange = useCallback((value: string) => {
+    setLocalContent(value)
+    setDocumentContent(value)
+  }, [setDocumentContent])
 
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -48,13 +55,13 @@ export const ReviewEditStep: React.FC = () => {
   const Icon = DOC_TYPE_ICONS[documentType]
 
   const handleSaveAndContinue = async () => {
-    if (!documentContent || !documentId) return
+    if (!localContent || !documentId) return
 
     setIsSaving(true)
     setError(null)
 
     try {
-      await config.update(documentId, { content: documentContent })
+      await config.update(documentId, { content: localContent })
       setStep(4)
     } catch (err) {
       setError(
@@ -88,7 +95,7 @@ export const ReviewEditStep: React.FC = () => {
         <Button
           variant="primary"
           onClick={handleSaveAndContinue}
-          disabled={isSaving || !documentContent}
+          disabled={isSaving || !localContent}
           className="flex items-center gap-2"
         >
           {isSaving ? (
@@ -114,8 +121,8 @@ export const ReviewEditStep: React.FC = () => {
       {/* Content Editor */}
       <div className="flex-1 min-h-0">
         <DocumentContentCard
-          content={documentContent || ''}
-          onChange={setDocumentContent}
+          content={localContent}
+          onChange={handleContentChange}
           config={config}
           headerAction={
             <button
@@ -147,8 +154,8 @@ export const ReviewEditStep: React.FC = () => {
             </div>
             <div className="flex-1 min-h-0 p-4 template-editor-maximized">
               <TemplateEditor
-                content={documentContent || ''}
-                onChange={setDocumentContent}
+                content={localContent}
+                onChange={handleContentChange}
                 placeholder={t(`${config.i18nKey}.placeholders.content`, t('quotes.placeholders.content'))}
                 minHeight="100%"
               />
